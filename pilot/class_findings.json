@@ -1,0 +1,346 @@
+[
+  {
+    "id": "NO_STATE_MACHINE",
+    "severity": "HIGH",
+    "layer": "class",
+    "title": "状态机缺失：9/9 种迁移全部被接受，含回退",
+    "detail": "DDL 只有取值白名单 CHECK (status IN (...))，没有任何迁移约束；实测 9 种迁移全部 200 成功。业务后果：已付款（DEPOSIT_PAID）/已完成（COMPLETED）的订单可以被改回 PENDING，押金与结算状态和现实不符，而且没有留下任何迁移记录。",
+    "evidence": {
+      "allowed": [
+        "PENDING->PENDING",
+        "PENDING->DEPOSIT_PAID",
+        "PENDING->COMPLETED",
+        "DEPOSIT_PAID->PENDING",
+        "DEPOSIT_PAID->DEPOSIT_PAID",
+        "DEPOSIT_PAID->COMPLETED",
+        "COMPLETED->PENDING",
+        "COMPLETED->DEPOSIT_PAID",
+        "COMPLETED->COMPLETED"
+      ],
+      "backward_transitions": [
+        "PENDING->DEPOSIT_PAID",
+        "PENDING->COMPLETED",
+        "DEPOSIT_PAID->COMPLETED"
+      ],
+      "ddl_check": "status IN ('PENDING','DEPOSIT_PAID','COMPLETED')"
+    }
+  },
+  {
+    "id": "INDEX_UNUSABLE_FOR_QUERY_PATTERN",
+    "severity": "HIGH",
+    "layer": "class→service",
+    "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.752ms vs 0.013ms，差 596 倍）",
+    "detail": "迁移文件建了 products(name) 索引，但服务层关键词搜索写的是 lower(name) LIKE '%kw%'：lower() 让索引无法用于定位，前导 % 让 btree 本来也用不上。EXPLAIN 显示走 Filter 全量过滤而非 Index Cond。类层把索引交给服务层，但服务层不知道该怎么用它 —— 声明没有传递下去。",
+    "evidence": {
+      "like_prefix_lower_ms": 7.752,
+      "exact_equal_ms": 0.013,
+      "index_cond_present": true,
+      "like_has_index_cond": false,
+      "scale_rows": 50000
+    }
+  },
+  {
+    "id": "CLASS-RULE-MISSING-IN-ALL-LAYERS",
+    "severity": "HIGH",
+    "layer": "class",
+    "title": "4 条业务不变量在 DB / DTO / 服务层三层全都不存在",
+    "detail": "这些不是「某一层写错了」，而是三层都没有表达过 —— 没有任何一层承担校验责任，实测 API 也全部放行并落库。订单的业务语义（定金不超过成交价、预订时间在未来、联系方式是手机号、完成必有定金）目前只存在于人的脑子里，不存在于任何一行代码或迁移文件里。",
+    "evidence": {
+      "rules": [
+        {
+          "rule": "deposit_cent > final_price_cent（定金大于成交价）",
+          "table": "orders",
+          "db_blocked": false,
+          "api_http": 200,
+          "api_note": "定金 999999 > 成交价 1，落库无异常"
+        },
+        {
+          "rule": "reservation_time 在过去（预订过去的日期）",
+          "table": "orders",
+          "db_blocked": false,
+          "api_http": 200,
+          "api_note": "预订时间取一年前，接口照常受理并落库"
+        },
+        {
+          "rule": "customer_phone 非手机号格式",
+          "table": "orders",
+          "db_blocked": false,
+          "api_http": 200,
+          "api_note": "customer_phone 落库为 'not-a-phone'"
+        },
+        {
+          "rule": "status=COMPLETED 但 deposit_cent=0（未付定金却已完成）",
+          "table": "orders",
+          "db_blocked": false,
+          "api_http": 200,
+          "api_note": "订单直接置为已完成，定金为 0"
+        }
+      ]
+    }
+  },
+  {
+    "id": "SOFT_DELETE_RESURRECTS_ROW",
+    "severity": "MEDIUM",
+    "layer": "class",
+    "title": "软删除的行会被同名重建「复活」，id 与 sort_order 沿用旧值",
+    "detail": "删除分类后用同名重建，命中的是同一条已软删记录（id 不变、sort_order 沿用旧的），而不是新建。DDL 的 UNIQUE(name) 与软删除语义冲突：删除不是删除，是可复活。id 复用会让历史引用（商品、订单快照）指向一个「看起来是新」的实体。",
+    "evidence": {
+      "category": "ai_probe_cat_cde7ef",
+      "create": 200,
+      "delete": 200,
+      "recreate": 200,
+      "db_rows": [
+        [
+          "126",
+          "f"
+        ]
+      ]
+    }
+  },
+  {
+    "id": "NO_DATA_LIFECYCLE",
+    "severity": "MEDIUM",
+    "layer": "class",
+    "title": "orders 表没有软删/归档，永久增长（当前 192 kB）",
+    "detail": "products/packages/categories 都有 is_deleted，orders 没有。订单是唯一不设生命周期的表，还带 2 个 jsonb 快照列和 6 个索引 —— 数据量上来后这张表会最先撑爆。",
+    "evidence": {
+      "orders_size": "192 kB",
+      "table_sizes": {
+        "orders": "192 kB",
+        "packages": "144 kB",
+        "products": "144 kB",
+        "categories": "104 kB",
+        "package_items": "104 kB",
+        "package_types": "104 kB",
+        "flyway_schema_history": "48 kB"
+      }
+    }
+  },
+  {
+    "id": "CLASS-NOTNULL-BYPASSED-BY-EMPTY-STRING",
+    "severity": "MEDIUM",
+    "layer": "class",
+    "title": "orders.address 声明 NOT NULL，实际用空串绕过 —— 非空约束只挡了 NULL",
+    "detail": "三方声明：DB 列 address 为 NOT NULL，实体 @Column(nullable=false)，但 DTO 的 address 没有任何约束。实测：客户端不传 address，接口返回 200，库里落的是空串 ''。NOT NULL 只证明列不是 NULL，空串照样入库 —— 约束拦不住业务上的空。后果：订单地址为空，宴会执行单拿不到地址，且没有任何一层会报错。",
+    "evidence": {
+      "dto": "CreateOrderRequest",
+      "field": "address",
+      "column": "address",
+      "db_not_null": true,
+      "dto_constraints": [],
+      "entity_nullable": false,
+      "http": 200,
+      "db_value": ""
+    }
+  },
+  {
+    "id": "CLASS-REQUIRED-CHECKED-IN-SERVICE-LAYER",
+    "severity": "MEDIUM",
+    "layer": "class",
+    "title": "orders.finalPriceCent 必填性校验落在服务层，DTO 少一条 @NotNull",
+    "detail": "DB 与实体都声明 NOT NULL，DTO 只写了 @Min(0) 而没有 @NotNull —— 字段在传输层是可空的，靠服务层补一句判断拦住。实测：传 null 返回 422 / PRICE_INVALID，文案是「成交价不能小于 0」。后果一：责任错层，任何绕过服务层的写入方（脚本、数据修复）都会撞 DB 报错；后果二：报错文案说的是「小于 0」，真实原因是「不能为空」，客户端无法据此定位。",
+    "evidence": {
+      "dto": "CreateOrderRequest",
+      "field": "finalPriceCent",
+      "column": "final_price_cent",
+      "dto_constraints": [
+        "Min(0)"
+      ],
+      "db_not_null": true,
+      "http": 422,
+      "code": "PRICE_INVALID",
+      "message": "成交价不能小于 0"
+    }
+  },
+  {
+    "id": "CLASS-PUT-WIPES-UNSET-FIELD",
+    "severity": "MEDIUM",
+    "layer": "class",
+    "title": "PUT 是全量覆盖：不传的 imageUrl 会被抹成 NULL",
+    "detail": "UpdateProductRequest.imageUrl 没有任何约束（可缺省），但 PUT 的语义是全量替换。实测：创建时带图片路径，随后一次不带 imageUrl 的 PUT 之后，image_url 变成 NULL。后果不是校验问题而是数据丢失 —— 磁盘上的图片文件还在，但数据库里的引用没了，文件成为孤儿，前端永远拿不到图。",
+    "evidence": {
+      "entity": "products",
+      "id": 851259,
+      "changed_columns": [
+        "description",
+        "image_url",
+        "is_active",
+        "name",
+        "price_cent",
+        "unit",
+        "updated_at"
+      ],
+      "final_row": {
+        "id": 851259,
+        "name": "ai_probe_fp2",
+        "unit": "克",
+        "image_url": null,
+        "is_active": false,
+        "created_at": "2026-11-07T10:32:42.550619+00:00",
+        "is_deleted": true,
+        "price_cent": 9999,
+        "updated_at": "2026-11-07T10:32:42.952412+00:00",
+        "category_id": 2,
+        "description": "changed"
+      }
+    }
+  },
+  {
+    "id": "CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES",
+    "severity": "LOW",
+    "layer": "class",
+    "title": "products.is_active 的默认值被声明了三遍",
+    "detail": "DB 列有 DEFAULT true，DTO 允许缺省，服务层再兜底成 true。实测：缺省时接口返回 200，落库 is_active=True。同一个默认值写三遍，改任何一处（比如把产品默认改成下架）另外两处不会跟着变，且不会有任何报错 —— 属于典型的静默漂移。",
+    "evidence": {
+      "table": "products",
+      "column": "is_active",
+      "db_default": "true",
+      "dto_constraints": [],
+      "observed_value": true,
+      "http": 200
+    }
+  },
+  {
+    "id": "CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES",
+    "severity": "LOW",
+    "layer": "class",
+    "title": "packages.is_active 的默认值被声明了三遍",
+    "detail": "DB 列有 DEFAULT true，DTO 允许缺省，服务层再兜底成 true。实测：缺省时接口返回 200，落库 is_active=True。同一个默认值写三遍，改任何一处（比如把产品默认改成下架）另外两处不会跟着变，且不会有任何报错 —— 属于典型的静默漂移。",
+    "evidence": {
+      "table": "packages",
+      "column": "is_active",
+      "db_default": "true",
+      "dto_constraints": [],
+      "observed_value": true,
+      "http": 200
+    }
+  },
+  {
+    "id": "CLASS-ERROR-MESSAGE-MISMATCH",
+    "severity": "LOW",
+    "layer": "class",
+    "title": "finalPriceCent=null 的报错文案说的是「小于 0」，真实原因是「不能为空」",
+    "detail": "null 触发的是必填缺失，却复用了一个数值区间的错误文案。客户端拿到 422 后按「价格太小」去提示用户，实际用户根本没填价格。这类错误文案漂移会让前端提示整体失真。",
+    "evidence": {
+      "http": 422,
+      "code": "PRICE_INVALID",
+      "message": "成交价不能小于 0",
+      "label": "finalPriceCent=null（DTO 可空，DB NOT NULL）"
+    }
+  },
+  {
+    "id": "CLASS-ENUM-CASE-SENSITIVE",
+    "severity": "LOW",
+    "layer": "class",
+    "title": "订单状态枚举大小写敏感，小写 pending 直接 400",
+    "detail": "DTO 的 status 字段直接用 OrderStatus 枚举，Jackson 默认大小写敏感。实测传 'pending' 返回 400「订单状态不正确」。对外 API 的枚举值应当约定为大小写不敏感或明确写进 OpenAPI，否则每个新客户端都会踩一次。",
+    "evidence": {
+      "http": 400,
+      "code": "ORDER_STATUS_INVALID",
+      "message": "订单状态不正确"
+    }
+  },
+  {
+    "id": "ENUM_CHECK_ALIGNED",
+    "severity": "INFO",
+    "layer": "class",
+    "title": "OrderStatus 枚举与 DB CHECK 白名单完全一致（3/3）",
+    "detail": "这是一次「没有问题」的差分结论 —— 差分引擎既能报问题也能给出通过结论。",
+    "evidence": {
+      "java": [
+        "PENDING",
+        "DEPOSIT_PAID",
+        "COMPLETED"
+      ],
+      "db": [
+        "PENDING",
+        "DEPOSIT_PAID",
+        "COMPLETED"
+      ]
+    }
+  },
+  {
+    "id": "CLASS-NULLABILITY-ALIGNED",
+    "severity": "INFO",
+    "layer": "class",
+    "title": "可空性三方一致 27/31 列（同向设防 21 · DTO 更严 0 · 都可空 6）",
+    "detail": "这是差分引擎的通过结论：DTO 的非空声明要么与 DB 一致，要么比 DB 更严（DTO 先拦，留给 DB 兜底），方向正确。不成立的只有下面单列出来的那几列。",
+    "evidence": {
+      "aligned_columns": 27,
+      "total_columns": 31,
+      "same_direction": 21,
+      "dto_stricter": 0,
+      "both_nullable": 6
+    }
+  },
+  {
+    "id": "CLASS-CHECK-DTO-ALIGNED",
+    "severity": "INFO",
+    "layer": "class",
+    "title": "8/8 条 DB CHECK 在 DTO 层都有同义约束，防线链条闭合",
+    "detail": "DB 的 CHECK 不是孤岛：DTO 层有等价声明，两层同时设防。这类对齐决定了改一条业务规则要不要同时动三个文件。",
+    "evidence": {
+      "aligned": [
+        {
+          "constraint": "chk_orders_table_count",
+          "column": "table_count",
+          "dto": "CreateOrderRequest.tableCount",
+          "match": "tableCount @Min(1)"
+        },
+        {
+          "constraint": "chk_orders_deposit_cent",
+          "column": "deposit_cent",
+          "dto": "CreateOrderRequest.depositCent",
+          "match": "depositCent @Min(0)"
+        },
+        {
+          "constraint": "chk_orders_status",
+          "column": "status",
+          "dto": "CreateOrderRequest.status",
+          "match": "status @NotNull + 枚举 ['PENDING', 'DEPOSIT_PAID', 'COMPLETED']"
+        },
+        {
+          "constraint": "chk_orders_final_price_cent",
+          "column": "final_price_cent",
+          "dto": "CreateOrderRequest.finalPriceCent",
+          "match": "finalPriceCent @Min(0)"
+        },
+        {
+          "constraint": "chk_orders_plan_total_cent",
+          "column": "plan_total_cent",
+          "dto": "CreateOrderRequest.planTotalCent",
+          "match": "planTotalCent @Min(0)"
+        },
+        {
+          "constraint": "chk_package_items_quantity",
+          "column": "quantity",
+          "dto": "PackageItemRequest.quantity",
+          "match": "quantity @Min(1)"
+        },
+        {
+          "constraint": "chk_packages_price_cent",
+          "column": "price_cent",
+          "dto": "CreatePackageRequest.priceCent",
+          "match": "priceCent @Min(0)"
+        },
+        {
+          "constraint": "chk_products_price_cent",
+          "column": "price_cent",
+          "dto": "CreateProductRequest.priceCent",
+          "match": "priceCent @Min(0)"
+        }
+      ]
+    }
+  },
+  {
+    "id": "CLASS-PUT-REQUIRED-FK-GUARDED",
+    "severity": "INFO",
+    "layer": "class",
+    "title": "PUT 缺省必填外键被 DTO 的 @NotNull 挡住（400，DB 无脏数据）",
+    "detail": "categoryId 在 DTO 上有 @NotNull，实测缺省时接口返回 400 且行未被改动。这是可空性差分里方向正确的一例：声明在最靠近输入的地方设防。",
+    "evidence": {
+      "http": 400,
+      "changed": []
+    }
+  }
+]

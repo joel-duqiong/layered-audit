@@ -1,0 +1,353 @@
+[
+  {
+    "id": "NO_AUTHZ",
+    "severity": "CRITICAL",
+    "endpoint": "ALL",
+    "title": "全系统零鉴权：无凭证即可读写全部业务数据",
+    "detail": "源码无任何鉴权注解 (空)、classpath 无 spring-security；动态实测带伪造 Bearer token 仍可成功读取订单 /api/orders。这里不是实现漏了鉴权，而是授权不变量根本不存在。",
+    "repro": "curl http://127.0.0.1:8081/api/orders   # 无任何凭证",
+    "evidence": {
+      "probe_result": "HTTP 200 + 返回客户姓名/电话",
+      "static_evidence": "security_annotations=[] spring_security_on_classpath=False"
+    }
+  },
+  {
+    "id": "UNHANDLED_HTTP_EXCEPTION",
+    "severity": "HIGH",
+    "endpoint": "POST /api/uploads/package-image",
+    "title": "客户端错误被当成服务端错误：返回 [500]",
+    "detail": "OpenAPI 只声明 200；畸形请求触发 500 INTERNAL_ERROR。GlobalExceptionHandler 没有为该异常类型注册 @ExceptionHandler，落到兜底 Exception 分支 —— 客户端错误被当成服务端故障，污染告警与 SLO。",
+    "repro": "curl -X POST 见 observation.json 中 key=POST /api/uploads/package-image 的 missing_multipart_part 场景",
+    "evidence": {
+      "observed_status": [
+        500
+      ],
+      "declared_status": [
+        "200"
+      ]
+    }
+  },
+  {
+    "id": "UNHANDLED_HTTP_EXCEPTION",
+    "severity": "HIGH",
+    "endpoint": "POST /api/uploads/product-image",
+    "title": "客户端错误被当成服务端错误：返回 [500]",
+    "detail": "OpenAPI 只声明 200；畸形请求触发 500 INTERNAL_ERROR。GlobalExceptionHandler 没有为该异常类型注册 @ExceptionHandler，落到兜底 Exception 分支 —— 客户端错误被当成服务端故障，污染告警与 SLO。",
+    "repro": "curl -X POST 见 observation.json 中 key=POST /api/uploads/product-image 的 missing_multipart_part 场景",
+    "evidence": {
+      "observed_status": [
+        500
+      ],
+      "declared_status": [
+        "200"
+      ]
+    }
+  },
+  {
+    "id": "TYPE_COERCION",
+    "severity": "MEDIUM",
+    "endpoint": "POST /api/categories",
+    "title": "错误 JSON 类型被隐式转换后接受（字段 name）",
+    "detail": "OpenAPI 声明该字段为特定类型，实际发送错误类型仍被 200 接受——Jackson 隐式把数字转成字符串等。调用方拼错类型不会报错，只会静默变成脏数据。",
+    "repro": "curl -X POST /api/categories -d {\"name\": 12345}",
+    "evidence": {
+      "scenario": "wrong_type:name",
+      "accepted_value": {
+        "id": 63,
+        "name": "12345",
+        "sortOrder": 140
+      }
+    }
+  },
+  {
+    "id": "TYPE_COERCION",
+    "severity": "MEDIUM",
+    "endpoint": "POST /api/package-types",
+    "title": "错误 JSON 类型被隐式转换后接受（字段 name）",
+    "detail": "OpenAPI 声明该字段为特定类型，实际发送错误类型仍被 200 接受——Jackson 隐式把数字转成字符串等。调用方拼错类型不会报错，只会静默变成脏数据。",
+    "repro": "curl -X POST /api/package-types -d {\"name\": 12345}",
+    "evidence": {
+      "scenario": "wrong_type:name",
+      "accepted_value": {
+        "id": 33,
+        "name": "12345",
+        "sortOrder": 120
+      }
+    }
+  },
+  {
+    "id": "INTERNAL_LEAK",
+    "severity": "MEDIUM",
+    "endpoint": "DELETE /api/categories/{id}",
+    "title": "错误响应把内部实现细节返回给客户端",
+    "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+    "repro": "curl -X DELETE /api/categories/None",
+    "evidence": {
+      "details_message": "Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"None\""
+    }
+  },
+  {
+    "id": "INTERNAL_LEAK",
+    "severity": "MEDIUM",
+    "endpoint": "DELETE /api/package-types/{id}",
+    "title": "错误响应把内部实现细节返回给客户端",
+    "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+    "repro": "curl -X DELETE /api/package-types/None",
+    "evidence": {
+      "details_message": "Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"None\""
+    }
+  },
+  {
+    "id": "INTERNAL_LEAK",
+    "severity": "MEDIUM",
+    "endpoint": "DELETE /api/packages/{id}",
+    "title": "错误响应把内部实现细节返回给客户端",
+    "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+    "repro": "curl -X DELETE /api/packages/None",
+    "evidence": {
+      "details_message": "Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"None\""
+    }
+  },
+  {
+    "id": "INTERNAL_LEAK",
+    "severity": "MEDIUM",
+    "endpoint": "DELETE /api/products/{id}",
+    "title": "错误响应把内部实现细节返回给客户端",
+    "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+    "repro": "curl -X DELETE /api/products/None",
+    "evidence": {
+      "details_message": "Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"None\""
+    }
+  },
+  {
+    "id": "INTERNAL_LEAK",
+    "severity": "MEDIUM",
+    "endpoint": "GET /api/orders/{id}",
+    "title": "错误响应把内部实现细节返回给客户端",
+    "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+    "repro": "curl -X GET /api/orders/None",
+    "evidence": {
+      "details_message": "Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"None\""
+    }
+  },
+  {
+    "id": "INTERNAL_LEAK",
+    "severity": "MEDIUM",
+    "endpoint": "GET /api/packages/{id}",
+    "title": "错误响应把内部实现细节返回给客户端",
+    "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+    "repro": "curl -X GET /api/packages/None",
+    "evidence": {
+      "details_message": "Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"None\""
+    }
+  },
+  {
+    "id": "INTERNAL_LEAK",
+    "severity": "MEDIUM",
+    "endpoint": "PATCH /api/orders/{id}/status",
+    "title": "错误响应把内部实现细节返回给客户端",
+    "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+    "repro": "curl -X PATCH /api/orders/None/status",
+    "evidence": {
+      "details_message": "Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"None\""
+    }
+  },
+  {
+    "id": "INTERNAL_LEAK",
+    "severity": "MEDIUM",
+    "endpoint": "PATCH /api/orders/{id}/status",
+    "title": "错误响应把内部实现细节返回给客户端",
+    "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+    "repro": "curl -X PATCH /api/orders/None/status",
+    "evidence": {
+      "details_message": "Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"None\""
+    }
+  },
+  {
+    "id": "INTERNAL_LEAK",
+    "severity": "MEDIUM",
+    "endpoint": "PATCH /api/orders/{id}/status",
+    "title": "错误响应把内部实现细节返回给客户端",
+    "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+    "repro": "curl -X PATCH /api/orders/None/status",
+    "evidence": {
+      "details_message": "Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"None\""
+    }
+  },
+  {
+    "id": "INTERNAL_LEAK",
+    "severity": "MEDIUM",
+    "endpoint": "PATCH /api/packages/{id}/status",
+    "title": "错误响应把内部实现细节返回给客户端",
+    "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+    "repro": "curl -X PATCH /api/packages/None/status",
+    "evidence": {
+      "details_message": "Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"None\""
+    }
+  },
+  {
+    "id": "INTERNAL_LEAK",
+    "severity": "MEDIUM",
+    "endpoint": "PATCH /api/packages/{id}/status",
+    "title": "错误响应把内部实现细节返回给客户端",
+    "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+    "repro": "curl -X PATCH /api/packages/None/status",
+    "evidence": {
+      "details_message": "Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"None\""
+    }
+  },
+  {
+    "id": "INTERNAL_LEAK",
+    "severity": "MEDIUM",
+    "endpoint": "PATCH /api/packages/{id}/status",
+    "title": "错误响应把内部实现细节返回给客户端",
+    "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+    "repro": "curl -X PATCH /api/packages/None/status",
+    "evidence": {
+      "details_message": "Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"None\""
+    }
+  },
+  {
+    "id": "INTERNAL_LEAK",
+    "severity": "MEDIUM",
+    "endpoint": "PATCH /api/products/{id}/status",
+    "title": "错误响应把内部实现细节返回给客户端",
+    "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+    "repro": "curl -X PATCH /api/products/None/status",
+    "evidence": {
+      "details_message": "Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"None\""
+    }
+  },
+  {
+    "id": "INTERNAL_LEAK",
+    "severity": "MEDIUM",
+    "endpoint": "PATCH /api/products/{id}/status",
+    "title": "错误响应把内部实现细节返回给客户端",
+    "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+    "repro": "curl -X PATCH /api/products/None/status",
+    "evidence": {
+      "details_message": "Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"None\""
+    }
+  },
+  {
+    "id": "INTERNAL_LEAK",
+    "severity": "MEDIUM",
+    "endpoint": "PATCH /api/products/{id}/status",
+    "title": "错误响应把内部实现细节返回给客户端",
+    "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+    "repro": "curl -X PATCH /api/products/None/status",
+    "evidence": {
+      "details_message": "Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"None\""
+    }
+  },
+  {
+    "id": "INTERNAL_LEAK",
+    "severity": "MEDIUM",
+    "endpoint": "POST /api/products",
+    "title": "错误响应把内部实现细节返回给客户端",
+    "detail": "details.message 直接透传框架异常原文（JSON parse error: Cannot deserialize value of type `java.lang.Long` from String ...），泄漏内部类名、框架类型与反序列化细节。",
+    "repro": "curl -X POST /api/products",
+    "evidence": {
+      "details_message": "JSON parse error: Cannot deserialize value of type `java.lang.Long` from String \"not-a-number\": not a valid `java.lang.Long` value"
+    }
+  },
+  {
+    "id": "INTERNAL_LEAK",
+    "severity": "MEDIUM",
+    "endpoint": "PUT /api/orders/{id}",
+    "title": "错误响应把内部实现细节返回给客户端",
+    "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+    "repro": "curl -X PUT /api/orders/None",
+    "evidence": {
+      "details_message": "Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"None\""
+    }
+  },
+  {
+    "id": "INTERNAL_LEAK",
+    "severity": "MEDIUM",
+    "endpoint": "PUT /api/orders/{id}",
+    "title": "错误响应把内部实现细节返回给客户端",
+    "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+    "repro": "curl -X PUT /api/orders/None",
+    "evidence": {
+      "details_message": "Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"None\""
+    }
+  },
+  {
+    "id": "INTERNAL_LEAK",
+    "severity": "MEDIUM",
+    "endpoint": "PUT /api/orders/{id}",
+    "title": "错误响应把内部实现细节返回给客户端",
+    "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+    "repro": "curl -X PUT /api/orders/None",
+    "evidence": {
+      "details_message": "Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"None\""
+    }
+  },
+  {
+    "id": "INTERNAL_LEAK",
+    "severity": "MEDIUM",
+    "endpoint": "PUT /api/packages/{id}",
+    "title": "错误响应把内部实现细节返回给客户端",
+    "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+    "repro": "curl -X PUT /api/packages/None",
+    "evidence": {
+      "details_message": "Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"None\""
+    }
+  },
+  {
+    "id": "INTERNAL_LEAK",
+    "severity": "MEDIUM",
+    "endpoint": "PUT /api/packages/{id}",
+    "title": "错误响应把内部实现细节返回给客户端",
+    "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+    "repro": "curl -X PUT /api/packages/None",
+    "evidence": {
+      "details_message": "Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"None\""
+    }
+  },
+  {
+    "id": "INTERNAL_LEAK",
+    "severity": "MEDIUM",
+    "endpoint": "PUT /api/packages/{id}",
+    "title": "错误响应把内部实现细节返回给客户端",
+    "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+    "repro": "curl -X PUT /api/packages/None",
+    "evidence": {
+      "details_message": "Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"None\""
+    }
+  },
+  {
+    "id": "INTERNAL_LEAK",
+    "severity": "MEDIUM",
+    "endpoint": "PUT /api/products/{id}",
+    "title": "错误响应把内部实现细节返回给客户端",
+    "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+    "repro": "curl -X PUT /api/products/None",
+    "evidence": {
+      "details_message": "Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"None\""
+    }
+  },
+  {
+    "id": "INTERNAL_LEAK",
+    "severity": "MEDIUM",
+    "endpoint": "PUT /api/products/{id}",
+    "title": "错误响应把内部实现细节返回给客户端",
+    "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+    "repro": "curl -X PUT /api/products/None",
+    "evidence": {
+      "details_message": "Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"None\""
+    }
+  },
+  {
+    "id": "INTERNAL_LEAK",
+    "severity": "MEDIUM",
+    "endpoint": "PUT /api/products/{id}",
+    "title": "错误响应把内部实现细节返回给客户端",
+    "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+    "repro": "curl -X PUT /api/products/None",
+    "evidence": {
+      "details_message": "Method parameter 'id': Failed to convert value of type 'java.lang.String' to required type 'java.lang.Long'; For input string: \"None\""
+    }
+  }
+]

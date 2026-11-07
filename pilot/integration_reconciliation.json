@@ -1,0 +1,1356 @@
+{
+  "generated_at": "2026-11-07T18:32:45.450499",
+  "base_url": "http://127.0.0.1:8081",
+  "reconciliation": [
+    {
+      "entity": "products",
+      "field": "id",
+      "api_field": "id",
+      "db_value": 851366,
+      "api_value": 851366,
+      "frontend_usage": "id",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "products",
+      "field": "name",
+      "api_field": "name",
+      "db_value": "ai_probe_rc_prod",
+      "api_value": "ai_probe_rc_prod",
+      "frontend_usage": "name",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "products",
+      "field": "unit",
+      "api_field": "unit",
+      "db_value": "g",
+      "api_value": "g",
+      "frontend_usage": "unit",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "products",
+      "field": "image_url",
+      "api_field": "imageUrl",
+      "db_value": null,
+      "api_value": null,
+      "frontend_usage": "imageUrl",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "products",
+      "field": "is_active",
+      "api_field": "isActive",
+      "db_value": false,
+      "api_value": false,
+      "frontend_usage": "isActive",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "products",
+      "field": "created_at",
+      "api_field": "createdAt",
+      "db_value": "2026-11-07T10:32:44.751599+00:00",
+      "api_value": "2026-11-07T10:32:44.751599Z",
+      "frontend_usage": null,
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "products",
+      "field": "is_deleted",
+      "api_field": null,
+      "db_value": false,
+      "api_value": null,
+      "frontend_usage": null,
+      "verdict": "API_OMITS",
+      "severity_hint": "INFO",
+      "note": "DB 有这一列，API 不返回 —— 前端拿不到这一列"
+    },
+    {
+      "entity": "products",
+      "field": "price_cent",
+      "api_field": "priceCent",
+      "db_value": 5000,
+      "api_value": 5000,
+      "frontend_usage": "priceCent",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "products",
+      "field": "updated_at",
+      "api_field": "updatedAt",
+      "db_value": "2026-11-07T10:32:44.751599+00:00",
+      "api_value": "2026-11-07T10:32:44.751599Z",
+      "frontend_usage": null,
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "products",
+      "field": "category_id",
+      "api_field": "categoryId",
+      "db_value": 1,
+      "api_value": 1,
+      "frontend_usage": "categoryId",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "products",
+      "field": "description",
+      "api_field": "description",
+      "db_value": "ai_probe_rc_desc",
+      "api_value": "ai_probe_rc_desc",
+      "frontend_usage": "description",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "products",
+      "field": null,
+      "api_field": "categoryId",
+      "db_value": null,
+      "api_value": 1,
+      "frontend_usage": "categoryId",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "products",
+      "field": null,
+      "api_field": "categoryName",
+      "db_value": null,
+      "api_value": "凉菜",
+      "frontend_usage": "categoryName",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "products",
+      "field": null,
+      "api_field": "createdAt",
+      "db_value": null,
+      "api_value": "2026-11-07T10:32:44.751599Z",
+      "frontend_usage": null,
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "products",
+      "field": null,
+      "api_field": "imageUrl",
+      "db_value": null,
+      "api_value": null,
+      "frontend_usage": "imageUrl",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "products",
+      "field": null,
+      "api_field": "isActive",
+      "db_value": null,
+      "api_value": false,
+      "frontend_usage": "isActive",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "products",
+      "field": null,
+      "api_field": "priceCent",
+      "db_value": null,
+      "api_value": 5000,
+      "frontend_usage": "priceCent",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "products",
+      "field": null,
+      "api_field": "updatedAt",
+      "db_value": null,
+      "api_value": "2026-11-07T10:32:44.751599Z",
+      "frontend_usage": null,
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "products",
+      "field": null,
+      "api_field": "createdAt",
+      "db_value": null,
+      "api_value": "2026-11-07T10:32:44.751599Z",
+      "frontend_usage": null,
+      "verdict": "FRONTEND_IGNORES",
+      "severity_hint": "INFO",
+      "note": "API 返回了但前端 mapper 不消费 —— 死字段"
+    },
+    {
+      "entity": "products",
+      "field": null,
+      "api_field": "updatedAt",
+      "db_value": null,
+      "api_value": "2026-11-07T10:32:44.751599Z",
+      "frontend_usage": null,
+      "verdict": "FRONTEND_IGNORES",
+      "severity_hint": "INFO",
+      "note": "API 返回了但前端 mapper 不消费 —— 死字段"
+    },
+    {
+      "entity": "products",
+      "field": "price_cent",
+      "api_field": "price_cent",
+      "db_value": null,
+      "api_value": null,
+      "frontend_usage": "mapProduct.price（前端真实 mapper 输出）",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": "DB/API 都是 5000 分，前端真实 mapper 渲染 50 元"
+    },
+    {
+      "entity": "products",
+      "field": "image_url",
+      "api_field": "image_url",
+      "db_value": null,
+      "api_value": null,
+      "frontend_usage": "mapProduct.image = imageUrl || photo",
+      "verdict": "SEMANTIC_MISMATCH",
+      "severity_hint": "MEDIUM",
+      "note": "商品 imageUrl 为空，前端真实 mapper 兜底成 /uploads/seed/packages/package-01.jpg —— 商品位用了套餐种子图"
+    },
+    {
+      "entity": "products",
+      "field": "is_active",
+      "api_field": "is_active",
+      "db_value": null,
+      "api_value": null,
+      "frontend_usage": "mapProduct.active = Boolean(isActive)",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": "DB is_active=False → API False → 前端 False"
+    },
+    {
+      "entity": "packages",
+      "field": "id",
+      "api_field": "id",
+      "db_value": 134,
+      "api_value": 134,
+      "frontend_usage": "id",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "packages",
+      "field": "name",
+      "api_field": "name",
+      "db_value": "ai_probe_rc_pkg",
+      "api_value": "ai_probe_rc_pkg",
+      "frontend_usage": "name",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "packages",
+      "field": "image_url",
+      "api_field": "imageUrl",
+      "db_value": "/uploads/seed/packages/package-01.jpg",
+      "api_value": "/uploads/seed/packages/package-01.jpg",
+      "frontend_usage": "imageUrl",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "packages",
+      "field": "is_active",
+      "api_field": "isActive",
+      "db_value": true,
+      "api_value": true,
+      "frontend_usage": "isActive",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "packages",
+      "field": "created_at",
+      "api_field": "createdAt",
+      "db_value": "2026-11-07T10:32:44.889784+00:00",
+      "api_value": "2026-11-07T10:32:44.889784Z",
+      "frontend_usage": null,
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "packages",
+      "field": "is_deleted",
+      "api_field": null,
+      "db_value": false,
+      "api_value": null,
+      "frontend_usage": null,
+      "verdict": "API_OMITS",
+      "severity_hint": "INFO",
+      "note": "DB 有这一列，API 不返回 —— 前端拿不到这一列"
+    },
+    {
+      "entity": "packages",
+      "field": "price_cent",
+      "api_field": "priceCent",
+      "db_value": 8888,
+      "api_value": 8888,
+      "frontend_usage": "priceCent",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "packages",
+      "field": "updated_at",
+      "api_field": "updatedAt",
+      "db_value": "2026-11-07T10:32:44.889784+00:00",
+      "api_value": "2026-11-07T10:32:44.889784Z",
+      "frontend_usage": null,
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "packages",
+      "field": "description",
+      "api_field": "description",
+      "db_value": "ai_probe_rc_pkg_desc",
+      "api_value": "ai_probe_rc_pkg_desc",
+      "frontend_usage": "description",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "packages",
+      "field": "banquet_type",
+      "api_field": "banquetType",
+      "db_value": "生日宴",
+      "api_value": "生日宴",
+      "frontend_usage": "banquetType",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "packages",
+      "field": null,
+      "api_field": "banquetType",
+      "db_value": null,
+      "api_value": "生日宴",
+      "frontend_usage": "banquetType",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "packages",
+      "field": null,
+      "api_field": "createdAt",
+      "db_value": null,
+      "api_value": "2026-11-07T10:32:44.889784Z",
+      "frontend_usage": null,
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "packages",
+      "field": null,
+      "api_field": "imageUrl",
+      "db_value": null,
+      "api_value": "/uploads/seed/packages/package-01.jpg",
+      "frontend_usage": "imageUrl",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "packages",
+      "field": null,
+      "api_field": "isActive",
+      "db_value": null,
+      "api_value": true,
+      "frontend_usage": "isActive",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "packages",
+      "field": null,
+      "api_field": "itemCount",
+      "db_value": null,
+      "api_value": 1,
+      "frontend_usage": "itemCount",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "packages",
+      "field": null,
+      "api_field": "items",
+      "db_value": null,
+      "api_value": [
+        {
+          "productId": 851366,
+          "productName": "ai_probe_rc_prod",
+          "categoryId": 1,
+          "categoryName": "凉菜",
+          "priceCent": 5000,
+          "unit": "g",
+          "imageUrl": null,
+          "quantity": 3
+        }
+      ],
+      "frontend_usage": "items",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "packages",
+      "field": null,
+      "api_field": "priceCent",
+      "db_value": null,
+      "api_value": 8888,
+      "frontend_usage": "priceCent",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "packages",
+      "field": null,
+      "api_field": "updatedAt",
+      "db_value": null,
+      "api_value": "2026-11-07T10:32:44.889784Z",
+      "frontend_usage": null,
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "packages",
+      "field": null,
+      "api_field": "createdAt",
+      "db_value": null,
+      "api_value": "2026-11-07T10:32:44.889784Z",
+      "frontend_usage": null,
+      "verdict": "FRONTEND_IGNORES",
+      "severity_hint": "INFO",
+      "note": "API 返回了但前端 mapper 不消费 —— 死字段"
+    },
+    {
+      "entity": "packages",
+      "field": null,
+      "api_field": "updatedAt",
+      "db_value": null,
+      "api_value": "2026-11-07T10:32:44.889784Z",
+      "frontend_usage": null,
+      "verdict": "FRONTEND_IGNORES",
+      "severity_hint": "INFO",
+      "note": "API 返回了但前端 mapper 不消费 —— 死字段"
+    },
+    {
+      "entity": "packages",
+      "field": "price_cent",
+      "api_field": "price_cent",
+      "db_value": null,
+      "api_value": null,
+      "frontend_usage": "mapPackage.price（前端真实 mapper 输出）",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": "DB/API 都是 8888 分，前端真实 mapper 渲染 88.88 元"
+    },
+    {
+      "entity": "package_items",
+      "field": "id",
+      "api_field": null,
+      "db_value": 171,
+      "api_value": null,
+      "frontend_usage": null,
+      "verdict": "API_OMITS",
+      "severity_hint": "MEDIUM",
+      "note": "DB 有这一列，API 不返回 —— 前端拿不到这一列"
+    },
+    {
+      "entity": "package_items",
+      "field": "quantity",
+      "api_field": "quantity",
+      "db_value": 3,
+      "api_value": 3,
+      "frontend_usage": "quantity",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "package_items",
+      "field": "created_at",
+      "api_field": null,
+      "db_value": "2026-11-07T10:32:44.890303+00:00",
+      "api_value": null,
+      "frontend_usage": null,
+      "verdict": "API_OMITS",
+      "severity_hint": "INFO",
+      "note": "DB 有这一列，API 不返回 —— 前端拿不到这一列"
+    },
+    {
+      "entity": "package_items",
+      "field": "package_id",
+      "api_field": null,
+      "db_value": 134,
+      "api_value": null,
+      "frontend_usage": null,
+      "verdict": "API_OMITS",
+      "severity_hint": "MEDIUM",
+      "note": "DB 有这一列，API 不返回 —— 前端拿不到这一列"
+    },
+    {
+      "entity": "package_items",
+      "field": "product_id",
+      "api_field": "productId",
+      "db_value": 851366,
+      "api_value": 851366,
+      "frontend_usage": "productId",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "package_items",
+      "field": "updated_at",
+      "api_field": null,
+      "db_value": "2026-11-07T10:32:44.890303+00:00",
+      "api_value": null,
+      "frontend_usage": null,
+      "verdict": "API_OMITS",
+      "severity_hint": "INFO",
+      "note": "DB 有这一列，API 不返回 —— 前端拿不到这一列"
+    },
+    {
+      "entity": "package_items",
+      "field": null,
+      "api_field": "categoryId",
+      "db_value": null,
+      "api_value": 1,
+      "frontend_usage": null,
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "package_items",
+      "field": null,
+      "api_field": "categoryName",
+      "db_value": null,
+      "api_value": "凉菜",
+      "frontend_usage": "categoryName",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "package_items",
+      "field": null,
+      "api_field": "imageUrl",
+      "db_value": null,
+      "api_value": null,
+      "frontend_usage": null,
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "package_items",
+      "field": null,
+      "api_field": "priceCent",
+      "db_value": null,
+      "api_value": 5000,
+      "frontend_usage": null,
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "package_items",
+      "field": null,
+      "api_field": "productId",
+      "db_value": null,
+      "api_value": 851366,
+      "frontend_usage": "productId",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "package_items",
+      "field": null,
+      "api_field": "productName",
+      "db_value": null,
+      "api_value": "ai_probe_rc_prod",
+      "frontend_usage": null,
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "package_items",
+      "field": null,
+      "api_field": "unit",
+      "db_value": null,
+      "api_value": "g",
+      "frontend_usage": null,
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "package_items",
+      "field": null,
+      "api_field": "categoryId",
+      "db_value": null,
+      "api_value": 1,
+      "frontend_usage": null,
+      "verdict": "FRONTEND_IGNORES",
+      "severity_hint": "LOW",
+      "note": "API 返回了但前端 mapper 不消费 —— 死字段"
+    },
+    {
+      "entity": "package_items",
+      "field": null,
+      "api_field": "imageUrl",
+      "db_value": null,
+      "api_value": null,
+      "frontend_usage": null,
+      "verdict": "FRONTEND_IGNORES",
+      "severity_hint": "LOW",
+      "note": "API 返回了但前端 mapper 不消费 —— 死字段"
+    },
+    {
+      "entity": "package_items",
+      "field": null,
+      "api_field": "priceCent",
+      "db_value": null,
+      "api_value": 5000,
+      "frontend_usage": null,
+      "verdict": "FRONTEND_IGNORES",
+      "severity_hint": "LOW",
+      "note": "API 返回了但前端 mapper 不消费 —— 死字段"
+    },
+    {
+      "entity": "package_items",
+      "field": null,
+      "api_field": "productName",
+      "db_value": null,
+      "api_value": "ai_probe_rc_prod",
+      "frontend_usage": null,
+      "verdict": "FRONTEND_IGNORES",
+      "severity_hint": "LOW",
+      "note": "API 返回了但前端 mapper 不消费 —— 死字段"
+    },
+    {
+      "entity": "package_items",
+      "field": null,
+      "api_field": "unit",
+      "db_value": null,
+      "api_value": "g",
+      "frontend_usage": null,
+      "verdict": "FRONTEND_IGNORES",
+      "severity_hint": "LOW",
+      "note": "API 返回了但前端 mapper 不消费 —— 死字段"
+    },
+    {
+      "entity": "packages",
+      "field": "item_count",
+      "api_field": "item_count",
+      "db_value": null,
+      "api_value": null,
+      "frontend_usage": "mapPackage.dishes = itemCount ?? items.length",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": "API itemCount=1 vs DB 明细 1 行"
+    },
+    {
+      "entity": "packages",
+      "field": "item_count",
+      "api_field": "item_count",
+      "db_value": null,
+      "api_value": null,
+      "frontend_usage": "App.jsx visibleItemCount vs mapPackage.dishes",
+      "verdict": "SEMANTIC_MISMATCH",
+      "severity_hint": "MEDIUM",
+      "note": "套餐卡片显示「1 个商品」（= API itemCount，含下架商品），选套餐弹层显示「0 个菜品」（= 在架商品数），同一套餐两个数字不同"
+    },
+    {
+      "entity": "orders",
+      "field": "id",
+      "api_field": "id",
+      "db_value": 498,
+      "api_value": 498,
+      "frontend_usage": "id",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "orders",
+      "field": "remark",
+      "api_field": "remark",
+      "db_value": "ai_probe_rc_remark",
+      "api_value": "ai_probe_rc_remark",
+      "frontend_usage": "remark",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "orders",
+      "field": "status",
+      "api_field": "status",
+      "db_value": "PENDING",
+      "api_value": "PENDING",
+      "frontend_usage": "status",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "orders",
+      "field": "address",
+      "api_field": "address",
+      "db_value": "ai_probe_rc_addr",
+      "api_value": "ai_probe_rc_addr",
+      "frontend_usage": "address",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "orders",
+      "field": "order_no",
+      "api_field": "orderNo",
+      "db_value": "DD20261107183245256",
+      "api_value": "DD20261107183245256",
+      "frontend_usage": "orderNo",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "orders",
+      "field": "created_at",
+      "api_field": "createdAt",
+      "db_value": "2026-11-07T10:32:45.134756+00:00",
+      "api_value": "2026-11-07T10:32:45.134756Z",
+      "frontend_usage": "createdAt",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "orders",
+      "field": "package_id",
+      "api_field": "packageId",
+      "db_value": 134,
+      "api_value": 134,
+      "frontend_usage": "packageId",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "orders",
+      "field": "updated_at",
+      "api_field": "updatedAt",
+      "db_value": "2026-11-07T10:32:45.135364+00:00",
+      "api_value": "2026-11-07T10:32:45.135364Z",
+      "frontend_usage": null,
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "orders",
+      "field": "table_count",
+      "api_field": "tableCount",
+      "db_value": 7,
+      "api_value": 7,
+      "frontend_usage": "tableCount",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "orders",
+      "field": "banquet_name",
+      "api_field": "banquetName",
+      "db_value": "ai_probe_rc_banq",
+      "api_value": "ai_probe_rc_banq",
+      "frontend_usage": "banquetName",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "orders",
+      "field": "banquet_type",
+      "api_field": "banquetType",
+      "db_value": "ai_probe_rc_banq_type",
+      "api_value": "ai_probe_rc_banq_type",
+      "frontend_usage": "banquetType",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "orders",
+      "field": "deposit_cent",
+      "api_field": "depositCent",
+      "db_value": 1111,
+      "api_value": 1111,
+      "frontend_usage": "depositCent",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "orders",
+      "field": "customer_name",
+      "api_field": "customerName",
+      "db_value": "ai_probe_rc_cust",
+      "api_value": "ai_probe_rc_cust",
+      "frontend_usage": "customerName",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "orders",
+      "field": "customer_phone",
+      "api_field": "customerPhone",
+      "db_value": "13800000999",
+      "api_value": "13800000999",
+      "frontend_usage": "customerPhone",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "orders",
+      "field": "plan_total_cent",
+      "api_field": "planTotalCent",
+      "db_value": 24680,
+      "api_value": 24680,
+      "frontend_usage": "planTotalCent",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "orders",
+      "field": "use_final_price",
+      "api_field": "useFinalPrice",
+      "db_value": true,
+      "api_value": true,
+      "frontend_usage": "useFinalPrice",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "orders",
+      "field": "final_price_cent",
+      "api_field": "finalPriceCent",
+      "db_value": 13579,
+      "api_value": 13579,
+      "frontend_usage": "finalPriceCent",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "orders",
+      "field": "package_snapshot",
+      "api_field": "packageSnapshot",
+      "db_value": {
+        "items": [
+          {
+            "unit": "g",
+            "imageUrl": null,
+            "quantity": 3,
+            "priceCent": 5000,
+            "productId": 851366,
+            "productName": "ai_probe_rc_prod",
+            "categoryName": "凉菜"
+          }
+        ],
+        "imageUrl": "/uploads/seed/packages/package-01.jpg",
+        "packageId": 134,
+        "priceCent": 8888,
+        "banquetType": "生日宴",
+        "packageName": "ai_probe_rc_pkg"
+      },
+      "api_value": {
+        "items": [
+          {
+            "unit": "g",
+            "imageUrl": null,
+            "quantity": 3,
+            "priceCent": 5000,
+            "productId": 851366,
+            "productName": "ai_probe_rc_prod",
+            "categoryName": "凉菜"
+          }
+        ],
+        "imageUrl": "/uploads/seed/packages/package-01.jpg",
+        "packageId": 134,
+        "priceCent": 8888,
+        "banquetType": "生日宴",
+        "packageName": "ai_probe_rc_pkg"
+      },
+      "frontend_usage": "packageSnapshot",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "orders",
+      "field": "reservation_time",
+      "api_field": "reservationTime",
+      "db_value": "2027-03-05T10:30:00+00:00",
+      "api_value": "2027-03-05T10:30:00Z",
+      "frontend_usage": "reservationTime",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "orders",
+      "field": "added_items_snapshot",
+      "api_field": "addedItemsSnapshot",
+      "db_value": [
+        {
+          "unit": "g",
+          "imageUrl": null,
+          "quantity": 2,
+          "priceCent": 5000,
+          "productId": 851366,
+          "productName": "ai_probe_rc_prod",
+          "categoryName": "凉菜"
+        }
+      ],
+      "api_value": [
+        {
+          "unit": "g",
+          "imageUrl": null,
+          "quantity": 2,
+          "priceCent": 5000,
+          "productId": 851366,
+          "productName": "ai_probe_rc_prod",
+          "categoryName": "凉菜"
+        }
+      ],
+      "frontend_usage": "addedItemsSnapshot",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": null
+    },
+    {
+      "entity": "orders",
+      "field": null,
+      "api_field": "addedItemsSnapshot",
+      "db_value": null,
+      "api_value": [
+        {
+          "unit": "g",
+          "imageUrl": null,
+          "quantity": 2,
+          "priceCent": 5000,
+          "productId": 851366,
+          "productName": "ai_probe_rc_prod",
+          "categoryName": "凉菜"
+        }
+      ],
+      "frontend_usage": "addedItemsSnapshot",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "orders",
+      "field": null,
+      "api_field": "banquetName",
+      "db_value": null,
+      "api_value": "ai_probe_rc_banq",
+      "frontend_usage": "banquetName",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "orders",
+      "field": null,
+      "api_field": "banquetType",
+      "db_value": null,
+      "api_value": "ai_probe_rc_banq_type",
+      "frontend_usage": "banquetType",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "orders",
+      "field": null,
+      "api_field": "createdAt",
+      "db_value": null,
+      "api_value": "2026-11-07T10:32:45.134756Z",
+      "frontend_usage": "createdAt",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "orders",
+      "field": null,
+      "api_field": "customerName",
+      "db_value": null,
+      "api_value": "ai_probe_rc_cust",
+      "frontend_usage": "customerName",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "orders",
+      "field": null,
+      "api_field": "customerPhone",
+      "db_value": null,
+      "api_value": "13800000999",
+      "frontend_usage": "customerPhone",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "orders",
+      "field": null,
+      "api_field": "depositCent",
+      "db_value": null,
+      "api_value": 1111,
+      "frontend_usage": "depositCent",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "orders",
+      "field": null,
+      "api_field": "finalPriceCent",
+      "db_value": null,
+      "api_value": 13579,
+      "frontend_usage": "finalPriceCent",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "orders",
+      "field": null,
+      "api_field": "orderNo",
+      "db_value": null,
+      "api_value": "DD20261107183245256",
+      "frontend_usage": "orderNo",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "orders",
+      "field": null,
+      "api_field": "packageId",
+      "db_value": null,
+      "api_value": 134,
+      "frontend_usage": "packageId",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "orders",
+      "field": null,
+      "api_field": "packageSnapshot",
+      "db_value": null,
+      "api_value": {
+        "items": [
+          {
+            "unit": "g",
+            "imageUrl": null,
+            "quantity": 3,
+            "priceCent": 5000,
+            "productId": 851366,
+            "productName": "ai_probe_rc_prod",
+            "categoryName": "凉菜"
+          }
+        ],
+        "imageUrl": "/uploads/seed/packages/package-01.jpg",
+        "packageId": 134,
+        "priceCent": 8888,
+        "banquetType": "生日宴",
+        "packageName": "ai_probe_rc_pkg"
+      },
+      "frontend_usage": "packageSnapshot",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "orders",
+      "field": null,
+      "api_field": "planTotalCent",
+      "db_value": null,
+      "api_value": 24680,
+      "frontend_usage": "planTotalCent",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "orders",
+      "field": null,
+      "api_field": "reservationTime",
+      "db_value": null,
+      "api_value": "2027-03-05T10:30:00Z",
+      "frontend_usage": "reservationTime",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "orders",
+      "field": null,
+      "api_field": "tableCount",
+      "db_value": null,
+      "api_value": 7,
+      "frontend_usage": "tableCount",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "orders",
+      "field": null,
+      "api_field": "updatedAt",
+      "db_value": null,
+      "api_value": "2026-11-07T10:32:45.135364Z",
+      "frontend_usage": null,
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "orders",
+      "field": null,
+      "api_field": "useFinalPrice",
+      "db_value": null,
+      "api_value": true,
+      "frontend_usage": "useFinalPrice",
+      "verdict": "DERIVED",
+      "severity_hint": "INFO",
+      "note": "API 返回的值在本表没有对应列（join 或计算派生）"
+    },
+    {
+      "entity": "orders",
+      "field": null,
+      "api_field": "updatedAt",
+      "db_value": null,
+      "api_value": "2026-11-07T10:32:45.135364Z",
+      "frontend_usage": null,
+      "verdict": "FRONTEND_IGNORES",
+      "severity_hint": "INFO",
+      "note": "API 返回了但前端 mapper 不消费 —— 死字段"
+    },
+    {
+      "entity": "orders",
+      "field": "final_price_cent",
+      "api_field": "final_price_cent",
+      "db_value": null,
+      "api_value": null,
+      "frontend_usage": "mapOrder.amount（前端真实 mapper 输出）",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": "DB/API 都是 13579 分，前端真实 mapper 渲染 135.79 元"
+    },
+    {
+      "entity": "orders",
+      "field": "reservation_time",
+      "api_field": "reservation_time",
+      "db_value": null,
+      "api_value": null,
+      "frontend_usage": "mapOrder.time = formatOrderTime(item.reservationTime)",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": "写入 2027-03-05T18:30:00+08:00 → DB 2027-03-05T10:30:00+00:00 → API 2027-03-05T10:30:00Z → 前端渲染 2027-03-05 18:30"
+    },
+    {
+      "entity": "orders",
+      "field": "plan_total_cent",
+      "api_field": "plan_total_cent",
+      "db_value": null,
+      "api_value": null,
+      "frontend_usage": "mapOrder.planTotal = centToYuan(item.planTotalCent)",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": "DB/API 都是 24680 分，前端真实 mapper 渲染 246.8 元"
+    },
+    {
+      "entity": "orders",
+      "field": "status",
+      "api_field": "status",
+      "db_value": null,
+      "api_value": null,
+      "frontend_usage": "mapOrder.status = fromApiStatus(item.status)",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": "DB PENDING → API PENDING → 前端 待确认"
+    },
+    {
+      "entity": "orders",
+      "field": "package_snapshot",
+      "api_field": "package_snapshot",
+      "db_value": null,
+      "api_value": null,
+      "frontend_usage": "mapOrder 读 packageSnapshot.*",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": "DB 快照键 ['banquetType', 'imageUrl', 'items', 'packageId', 'packageName', 'priceCent'] / API 快照键 ['banquetType', 'imageUrl', 'items', 'packageId', 'packageName', 'priceCent'] / 前端要读 ['banquetType', 'items', 'packageId', 'packageName']"
+    },
+    {
+      "entity": "orders",
+      "field": "package_snapshot.items",
+      "api_field": "package_snapshot.items",
+      "db_value": null,
+      "api_value": null,
+      "frontend_usage": "mapOrder 读 packageSnapshot.items[].*",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": "DB 明细键 ['categoryName', 'imageUrl', 'priceCent', 'productId', 'productName', 'quantity', 'unit'] / API 明细键 ['categoryName', 'imageUrl', 'priceCent', 'productId', 'productName', 'quantity', 'unit']"
+    },
+    {
+      "entity": "orders",
+      "field": "final_price_cent",
+      "api_field": "final_price_cent",
+      "db_value": null,
+      "api_value": null,
+      "frontend_usage": "前端视图模型明细合计 vs 订单金额",
+      "verdict": "SEMANTIC_MISMATCH",
+      "severity_hint": "HIGH",
+      "note": "前端看到的明细合计 25000 分（250.0 元） vs 订单金额 13579 分（135.79 元），差额 11421 分；服务端对 finalPriceCent 不做任何核对"
+    },
+    {
+      "entity": "orders",
+      "field": "added_items_snapshot",
+      "api_field": "added_items_snapshot",
+      "db_value": null,
+      "api_value": null,
+      "frontend_usage": "mapOrder 读 addedItemsSnapshot[].*",
+      "verdict": "ALIGNED",
+      "severity_hint": "INFO",
+      "note": "前端要读 ['priceCent', 'productId', 'productName', 'quantity'] / API 加购明细键 ['categoryName', 'imageUrl', 'priceCent', 'productId', 'productName', 'quantity', 'unit']"
+    },
+    {
+      "entity": "packages",
+      "field": "banquet_type",
+      "api_field": "banquet_type",
+      "db_value": null,
+      "api_value": null,
+      "frontend_usage": "DB 直写绕过服务层校验",
+      "verdict": "SEMANTIC_MISMATCH",
+      "severity_hint": "HIGH",
+      "note": "服务层有 PACKAGE_TYPE_NOT_FOUND 校验，DB 直写畅通无阻"
+    },
+    {
+      "entity": "orders",
+      "field": "customer_phone",
+      "api_field": "customer_phone",
+      "db_value": null,
+      "api_value": null,
+      "frontend_usage": "DB 直写绕过服务层校验",
+      "verdict": "SEMANTIC_MISMATCH",
+      "severity_hint": "HIGH",
+      "note": "服务层有 无 校验，DB 直写畅通无阻"
+    }
+  ],
+  "verdict_counts": {
+    "ALIGNED": 52,
+    "API_OMITS": 6,
+    "DERIVED": 38,
+    "FRONTEND_IGNORES": 10,
+    "SEMANTIC_MISMATCH": 5
+  },
+  "meta": {
+    "products": {
+      "product_id": 851366
+    },
+    "packages": {
+      "package_id": 134,
+      "banquet_type": "生日宴"
+    },
+    "orders": {
+      "order_id": 498,
+      "snapshot": {
+        "items": [
+          {
+            "unit": "g",
+            "imageUrl": null,
+            "quantity": 3,
+            "priceCent": 5000,
+            "productId": 851366,
+            "productName": "ai_probe_rc_prod",
+            "categoryName": "凉菜"
+          }
+        ],
+        "imageUrl": "/uploads/seed/packages/package-01.jpg",
+        "packageId": 134,
+        "priceCent": 8888,
+        "banquetType": "生日宴",
+        "packageName": "ai_probe_rc_pkg"
+      }
+    }
+  }
+}

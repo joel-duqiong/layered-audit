@@ -1,0 +1,14 @@
+# 各层运行产物：可由 run_pipeline.sh 重新生成，不入库
+pilot/observation.json
+pilot/declaration.json
+pilot/*_observation.json
+pilot/*_observation_replay.json
+pilot/*_declaration.json
+pilot/*_diff.json
+pilot/*_contract.json
+pilot/file_deps.txt
+pilot/openapi.json
+pilot/__pycache__/
+pilot/class_harness/
+pilot/file_harness/
+pilot/fn_harness/

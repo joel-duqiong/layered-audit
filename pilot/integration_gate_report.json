@@ -1,0 +1,11 @@
+{
+  "generated_at": "2026-11-07T18:34:32.023659",
+  "verdict": "GREEN",
+  "red_count": 0,
+  "green_count": 0,
+  "baseline_aligned": 52,
+  "current_aligned": 52,
+  "baseline_confirmed": 5,
+  "current_confirmed": 5,
+  "diffs": []
+}

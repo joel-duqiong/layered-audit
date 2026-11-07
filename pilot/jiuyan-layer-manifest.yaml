@@ -1,0 +1,235 @@
+# 交接与状态入口见 ../HANDOFF.md（先读它，再读本文件与 ../layers.yaml）
+# 分层 agent 绑定到真实被测系统
+sut:
+  name: jiuyan
+  repo: /Users/june/jiuyan
+  stack: Spring Boot 3 + PostgreSQL + JPA/MyBatis + Vite
+  scale: 63 java files / 7 controller / 6 service / 21 dto / 5 mapper
+  unit_tests: 0
+  harness: /Users/june/tests/auto-api  (pytest + OpenAPI 快照 + HTTP recordings)
+
+# 每层 agent = 固定靶区 + 固定 oracle。异质性来自 oracle 绑定，不来自 prompt 人设。
+agents:
+
+  - id: fn-order
+    layer: function
+    carrier: JVM 内反射直调（javap 字节码声明 + 动态属性/边界用例），仓库用动态代理打桩
+    scope:
+      - service/OrderService.java#generateOrderNo
+      - service/OrderService.java#parseStatus
+      - service/OrderService.java#parseDateScope
+      - service/OrderService.java#resolveFinalPrice
+      - service/OrderService.java#normalizePackageItems
+      - service/OrderService.java#normalizeAddedItems
+      - service/OrderService.java#buildPackageSnapshot
+      - service/OrderService.java#apply
+      - service/UploadService.java#uploadImage
+      - service/CategoryService.java#create
+      - service/ProductService.java#normalizePage / #normalizePageSize
+      - service/PackageService.java#normalizePage / #normalizePageSize
+    oracle: [property_based_test, boundary_test, bytecode_contract_diff]
+    status: 已落地（fn_static.py / fn_dynamic.py / fn_diff.py，92 用例，64 通过 / 28 失败 -> 8 条缺陷）
+    hypotheses:
+      - "generateOrderNo: DD+yyyyMMddHHmmss+3位随机(000-999)，同秒仅1000槽位，existsByOrderNo 与 insert 非原子 -> 并发重复单号/唯一键冲突"
+      - "parseStatus: OrderStatus.valueOf 抛 IllegalArgumentException 而非 BusinessException -> 非法状态返回500而非400"
+    hypothesis_verdicts:
+      - {hypothesis: generateOrderNo 槽位不足, verdict: CONFIRMED, evidence: 并发 3000 次实测重复 2052 个}
+      - {hypothesis: parseStatus 漏成 500, verdict: FALSIFIED, evidence: 字节码异常表已捕获 IllegalArgumentException，实测 422}
+    out_of_scope: [transaction_boundary, state_machine, authorization, latency]
+
+  - id: file-order
+    layer: file
+    carrier: JVM 内整类实例化（javap 字节码声明 + 仓库动态代理打桩 + 中间态快照 + logback ListAppender 抓日志）+ 真实容器 HTTP 探针
+    scope:
+      - service/PackageService.java
+      - service/UploadService.java
+      - config/WebConfig.java
+      - config/TraceIdFilter.java
+      - config/TraceContext.java
+      - config/ApiResponseAdvice.java
+      - exception/GlobalExceptionHandler.java
+      - 全仓 63 文件 / 466 方法的字段使用矩阵与跨文件重复方法体
+    oracle: [bytecode_contract_diff, order_permutation_experiment, cross_file_consistency, resource_boundary_probe]
+    status: 已落地（file_static.py / file_dynamic.py / file_diff.py，22 用例 + 13 探针 / 58 判定 / 1 不符 -> 12 缺陷 + 6 通过结论）
+    hypotheses:
+      - "OrderService.create: 快照JSON构建与 save 的先后顺序在事务内外不一致 -> 异常时留下半写快照"
+      - "WebConfig: /uploads/** 静态映射目录来自配置，未与 UploadService 的 normalize 根路径做同源校验"
+      - "PackageService.update: 明细先全量替换再校验商品存在 -> 商品不存在时留下半写明细"
+      - "TraceIdFilter: clientIp 直接采信 X-Forwarded-For 首段 -> 审计日志里的来源 IP 可被客户端伪造"
+      - "GlobalExceptionHandler: 错误响应用 ex.getMessage() 拼 details -> DB 约束名与原始请求体片段被回显"
+      - "上传体积上限不在代码里，在 application.yml 里 -> 改配置时错误文案与接口文档不会跟着改"
+    hypothesis_verdicts:
+      - {hypothesis: 快照构建与 save 顺序不一致, verdict: NOT_REPRODUCIBLE_IN_SCOPE, evidence: 本层未覆盖 OrderService.create，快照顺序归函数层}
+      - {hypothesis: 静态映射根与上传根非同源, verdict: FALSIFIED, evidence: 实测两者同为 /app/uploads，same_root=true}
+      - {hypothesis: 明细先替换后校验会留残局, verdict: CONFIRMED, evidence: 字节码 removeIf 早于 findProduct；JVM 实测 2 条明细 -> 异常后 0 条}
+      - {hypothesis: XFF 可伪造来源 IP, verdict: CONFIRMED, evidence: 真实容器日志 clientIp=9.9.9.9，真实对端 127.0.0.1}
+      - {hypothesis: 错误响应回显内部细节, verdict: CONFIRMED, evidence: 实测回显 uk_orders_order_no 与 {"password":"hunter2"} 原始片段}
+      - {hypothesis: 上传体积无上限, verdict: FALSIFIED_AT_BOUNDARY, evidence: 实测 1MB/4MB 通过、6MB/20MB 被拒；上限由 application.yml 承担而非代码}
+      - {hypothesis: CRLF traceId 可伪造日志行, verdict: FALSIFIED, evidence: Tomcat 连接器返回 400；但 U+2028 未被拦，原样进入日志}
+    out_of_scope: [single_expression_logic, entity_invariant, cross_service_flow]
+    note: >-
+      本层只对三件事开单：O1 跨方法/跨文件一致性、O2 顺序与原子性、O3 资源边界同源性。
+      服务层的 INTERNAL_LEAK（24 条）在本层收敛成 2 条根因（FILE-DB-CONSTRAINT-LEAK /
+      FILE-BADREQUEST-ECHO）—— 高层现象不重复开单，引用即可。
+
+  - id: cls-order
+    layer: class
+    carrier: 反射导出 DTO/实体约束声明 + PostgreSQL 实况（information_schema / pg_constraint）+ 影子表等比放大 + 真实容器 HTTP 写路径
+    scope:
+      - entity/*.java（7 个实体类）
+      - dto/*.java（21 个 record）
+      - Flyway 迁移（6 张业务表 / 18 条约束 / 12 个索引）
+      - 字段生命周期：声明 → 传输 → 写入 → 存储 → 约束
+    oracle: [three_way_diff(db_entity_dto), constraint_probe, lifecycle_trace, write_footprint_diff, scale_experiment]
+    status: 已落地（class_contract.py / class_static.py / class_dynamic.py / class_contract_diff.py + class_diff.py，8 条 CHECK 实测 / 8 个契约边界用例 / 3 个可空性用例 / 5 步写入足迹 / 5 万行影子表 -> 16 条结论：3 HIGH / 5 MEDIUM / 4 LOW / 4 INFO）
+    hypotheses:
+      - "DB CHECK 只在 DDL 里，Java 侧无声明 -> 业务规则分裂在两层"
+      - "DTO 少 @NotNull，必填性靠服务层兜 -> 非空责任错层"
+      - "orders.address 声明 NOT NULL，服务层兜成空串 -> 非空约束形同虚设"
+      - "订单业务不变量（定金<=成交价 / 预订时间在未来 / 手机号 / 完成必有定金）三层全无声明"
+      - "PUT 全量覆盖会把未传的 imageUrl 抹成 NULL -> 图片引用丢失成孤儿文件"
+      - "is_active 默认值在 DB default / DTO 缺省 / 服务层兜底三处各写一遍"
+      - "OrderStatus 枚举无 CANCELLED/EXPIRED，updateStatus 无状态机约束 -> 允许非法跃迁 (PENDING->COMPLETED 直跳)"
+      - "BaseEntity @PrePersist/@PreUpdate 与 @MappedSuperclass 混用: setCreatedAt 无保护 -> 审计字段可被业务层改写"
+    hypothesis_verdicts:
+      - {hypothesis: CHECK 只在 DDL 里, verdict: FALSIFIED, evidence: 8/8 CHECK 在 DTO 层都有同义约束（@Min / @NotNull+枚举）；上一版凭「实体没声明」判定的 4 条 RULE_ONLY_IN_DB 是漏看 DTO 这一维的误报，已撤回}
+      - {hypothesis: DTO 少 @NotNull, verdict: CONFIRMED, evidence: finalPriceCent 只有 @Min(0)；实测 null 由服务层拦成 422，且文案写成「成交价不能小于 0」}
+      - {hypothesis: address 空串绕过 NOT NULL, verdict: CONFIRMED, evidence: 不传 address 接口 200，库里落的是空串 ''}
+      - {hypothesis: 业务不变量三层全缺, verdict: CONFIRMED, evidence: DB 直写与真实 API 双双放行：定金 999999 > 成交价 1、预订时间一年前、phone='not-a-phone'、COMPLETED 且定金 0}
+      - {hypothesis: PUT 抹掉 imageUrl, verdict: CONFIRMED, evidence: 创建带图 -> 不带 imageUrl 的 PUT -> image_url=NULL，磁盘文件仍在但引用没了}
+      - {hypothesis: 默认值三处声明, verdict: CONFIRMED, evidence: products/packages 的 is_active 缺省落库 true，DB default 与服务层兜底同为 true，改一处不会同步}
+      - {hypothesis: 非法状态跃迁, verdict: CONFIRMED, evidence: 9/9 种迁移全部 200，含 COMPLETED->PENDING 回退}
+    out_of_scope: [single_method_logic, http_contract, end_to_end_business, transaction_boundary]
+    note: >-
+      类层 v2 把视角从「实体 ↔ DDL」扩到「实体字段的完整生命周期」，
+      三方差分 = DB 实况 ↔ JPA 实体 ↔ DTO 契约，动态侧再补一条实测写入足迹（写前写后整行快照差分）。
+      差分结论包含通过项（27/31 列可空性一致、8/8 CHECK 在 DTO 有同义约束），
+      与缺陷同权重输出 —— 只有不一致的列才单列。
+
+  - id: svc-order
+    layer: service
+    scope: [service/OrderService.java, controller/OrderController.java, api-docs]
+    oracle: [contract_test, schema_diff, authz_test]
+    status: 已落地（contract_static / contract_dynamic / contract_diff，30 条结论：1 CRIT / 2 HIGH / 27 MED）
+    hypotheses:
+      - "全后端零鉴权: 无 spring-security / 无 @PreAuthorize -> 任意人可读写任意订单"
+      - "OpenAPI 声明与实现漂移: 参数校验 @Valid 覆盖不全, 分页 pageSize 无上限"
+    hypothesis_verdicts:
+      - {hypothesis: 全后端零鉴权, verdict: CONFIRMED, evidence: 7 个端点无凭证读写全部 200；集成层 CHAIN-A 复现跨会话读写}
+      - {hypothesis: OpenAPI 漂移, verdict: PARTIALLY_CONFIRMED, evidence: @Valid 生效（非法入参 400）；但 pageSize 上限 100 只写在服务层 normalizePageSize 里，契约零声明}
+    out_of_scope: [entity_invariant, intra_method_logic, cross_service_attack_chain]
+
+  - id: svc-upload
+    layer: service
+    scope: [service/UploadService.java, controller/UploadController.java]
+    oracle: [contract_test, static_analysis, load_test]
+    cwe: [CWE-434, CWE-770]
+    status: 已落地（内容嗅探问题在函数层开单；体积上限在文件层证伪；端到端可读回在集成层开单）
+    hypotheses:
+      - "contentType 由客户端提供, ALLOWED_CONTENT_TYPES 白名单可伪造 -> 任意字节以 .jpg 落地 (CWE-434)"
+      - "无文件大小限制 -> 上传放大 DoS (CWE-770)"
+    hypothesis_verdicts:
+      - {hypothesis: contentType 可伪造, verdict: CONFIRMED, evidence: 非图片字节以 .png 落盘（函数层 FN-UPLOAD-NO-CONTENT-SNIFF），且可被匿名原样下载（集成层 CHAIN-B）}
+      - {hypothesis: 无体积上限, verdict: FALSIFIED_AT_BOUNDARY, evidence: 文件层实测 1MB/4MB 通过、6MB/20MB 被拒；上限由 application.yml 承担而非代码}
+    out_of_scope: [intra_method_logic, cross_service_chain]
+
+  - id: svc-catalog
+    layer: service
+    scope: [service/ProductService.java, service/PackageService.java, service/CategoryService.java, service/PackageTypeService.java]
+    oracle: [contract_test, schema_diff, static_analysis]
+    status: 已落地（分页上限行为一致但实现逐字复制；like 查询走不了声明的索引）
+    hypotheses:
+      - "四个 service 的 normalizePage/normalizePageSize 各自复制 -> 上限行为不一致 (DRY/契约漂移)"
+      - "Specification cb.like 未走索引 -> 深分页下性能塌陷"
+    hypothesis_verdicts:
+      - {hypothesis: 分页上限行为漂移, verdict: PARTIALLY_FALSIFIED, evidence: 三个 service 的上限都是 100，行为一致；问题在逐字复制三份（文件层 FILE-DUPLICATE-HELPERS-ACROSS-SERVICES）}
+      - {hypothesis: like 未走索引, verdict: CONFIRMED, evidence: 类层实测 idx_products_name 对服务层查询模式无效（7.684ms vs 0.013ms，差 591 倍）}
+    out_of_scope: [intra_method_logic, end_to_end_business]
+
+  - id: int-flow
+    layer: integration
+    scope: [jiuyan + auto-api recordings + PostgreSQL + 前端真实 mapper]
+    carrier: 真实容器 HTTP 探针 + PostgreSQL 实况 + 录制流量回放 + Node 直跑 src/api/banquetApi.js 的前端真实视图模型
+    oracle: [three_source_reconciliation, attack_chain_execution, frontend_view_model, e2e_scenario, trace_reconstruction, attack_graph]
+    cwe: [CWE-506, CWE-829]
+    status: 已落地（integration_static / integration_dynamic / integration_reconcile / integration_chain / integration_diff / integration_gate；真三方对账 111 项 + 5 条攻击链全部 CONFIRMED + 14 条缺陷 / 31 项通过；结论已钉成基线，回归即红）
+    hypotheses:
+      - "业务: 订单快照金额 与 后续套餐改价/商品下架 后的实际结算金额不一致"
+      - "漏洞: 无鉴权 + /uploads 公开静态映射 -> 上传->读取 攻击链"
+      - "性能: list 分页 count(*) + 模糊 like + 无索引 -> 端到端延迟随数据量塌陷"
+      - "对账: API 响应 ↔ DB 实际行 ↔ 前端消费语义 三方是否闭合"
+    hypothesis_verdicts:
+      - {hypothesis: 快照金额与结算金额不一致, verdict: CONFIRMED, evidence: 订单自身成交价与快照明细合计无任何算术关系（前端可见明细合计 4950.00 元 vs 订单金额 0.01 元）}
+      - {hypothesis: 上传->读取 攻击链, verdict: CONFIRMED, evidence: 非图片字节以 .png 落盘后，匿名连接 GET 该路径 200 且字节逐字节一致（CHAIN-B）}
+      - {hypothesis: 端到端延迟随数据量塌陷, verdict: PARTIALLY_CONFIRMED, evidence: 类层实测索引不可用（591 倍）；端到端延迟本层未复现，套餐/商品改价与下架后的结算一致性仍靠快照而非实时价}
+      - {hypothesis: 三方对账闭合, verdict: PARTIALLY_FALSIFIED, evidence: 金额单位、时区、快照键、itemCount 全闭合；语义不闭合 4 处（明细合计无核对 / 前端两处商品数口径不同 / 商品缺图兜底成套餐图 / DB 直写绕过服务层校验）}
+    out_of_scope: [单类内逻辑, 单文件状态]
+    note: "只做跨层关联与端到端语义判定，不重做下层分析，不重复开单；链级后果（低层看不到的部分）归本层开单"
+    regression_assets:
+      - {name: 集权层门禁, path: pilot/integration_gate.py, kind: 基线比对, exit_code: 1, baseline: pilot/integration_baseline.json, wired_into: pilot/run_pipeline.sh, blocks: "ALIGNED 项掉档 / 新增 VALUE_MISMATCH·SEMANTIC_MISMATCH·FRONTEND_MISSING / 攻击链由未确认转为 CONFIRMED", workflow: "改完用 --accept 接受新基线"}
+      - {name: 闭合不变量回归, path: tests/test_integration_alignment.py, kind: pytest 真通过, cases: 7, asserts: "前端必读字段齐全 / 金额单位分→元 / 时区 / 快照键三方一致 / itemCount / 状态枚举闭合", third_source: "Node 直跑 src/api/banquetApi.js + 静态抽取 mapper 必读字段"}
+      - {name: 攻击链回归, path: tests/test_attack_chains.py, kind: pytest xfail(strict=True), cases: 7, asserts: "匿名写入被拒 / 明文手机号不外泄 / 非图片上传被拒 / 落盘不可匿名读回 / 成交价需与明细核对 / 改明细需重核金额 / 状态跃迁受限", note: "断言的是应该发生什么；缺陷修好后 XPASS 变红，强制摘掉 xfail 标记"}
+
+# 跨层收口层（不属于任何一个 agent 层）：把五层各说各话的 findings 统一到 layers.yaml
+# 的证据 schema，再按根因归并、按契约自检归属与覆盖度。
+cross_layer:
+  scripts:
+    - {name: findings_schema.py, role: 从 ../layers.yaml 现场解析 category / escalation_to / out_of_scope 并做 schema 校验, note: "类别清单不硬编码，契约改了矩阵自动跟着改"}
+    - {name: finding_meta.py, role: 人工标注表 59 个 id -> category / claim / owner / confidence / ground_truth / cwe / root_cause_key, note: "人工判定不是脚本推断；判不出来的写 UNMAPPED 并给 suggested_category"}
+    - {name: normalize_findings.py, role: 五层输出 -> 统一 schema 总表, outputs: [all_findings.json], exit_code: "1=结构性违规(阻断) 2=契约缺口(不阻断)"}
+    - {name: aggregate_findings.py, role: 根因归并 + 归属校验 + 覆盖度矩阵, outputs: [root_causes.json, audit_report.md], exit_code: "0=无硬违规 1(--strict)=有硬违规"}
+  measured:
+    findings_total: 86
+    root_causes: 52
+    required_fields_present: "10/10 × 86 条 = 100%"
+    location_file: 66
+    location_line: 43
+    repro_cmd: {case: 8, endpoint: 30, layer: 34, reference: 14}
+    category_fit: {exact: 38, stretched: 39, unmapped: 9}
+    owner_stamped: "86/86"
+    hard_violations: 1
+    zero_coverage_categories: 10
+  hard_violations:
+    - {root_cause: index.idx_products_name_unusable, reason: "class 层的 out_of_scope 含 service_latency，这条应由 service 层开单", escalation: "class -> service 的上提本身合法，但开单位置越界"}
+  merge_hints:
+    - {root_cause: errhandler.internal_detail_leak, count: 25, note: "25 个接口各开一单，实为 GlobalExceptionHandler 一处根因"}
+    - {root_cause: errhandler.client_error_mapped_to_500, count: 2}
+    - {root_cause: jackson.lenient_type_coercion, count: 2}
+    - {root_cause: column.default_declared_in_three_places, count: 2}
+  contract_gaps:
+    - {uids: 6, layer: file, issue: "file 层的三类（state_consistency / error_handling_pattern / cohesion）装不下安全策略类发现（CORS 白名单过宽 / 信任客户端 XFF / 客户端可控 traceId）", suggestion: "修订 layers.yaml 的 file 层类别，或把这些发现挪到 service.authz"}
+    - {uids: 2, layer: class, issue: "默认值声明三处属跨文件 cohesion，class 层无对应类别且 escalation_to 不含 file"}
+    - {uids: 1, layer: integration, issue: "覆盖度缺口是工具属性，不是被测系统性质，integration 层无对应类别"}
+  wired_into: pilot/run_pipeline.sh
+  status: 已落地（86 条发现归一化，52 条根因；硬违规 1 条，契约缺口 9 条待人工决策）
+
+# 归属规则: owner = 能给出可复现证据的最低层。高层可引用低层缺陷作佐证, 不得重复开单。
+attribution:
+  - {pattern: "单号碰撞/唯一键冲突", layers: [function, service], owner: function}
+  - {pattern: "成交价无上界/定价权在客户端", layers: [function, service, integration], owner: function}
+  - {pattern: "快照明细归属/空明细回退", layers: [function, integration], owner: function}
+  - {pattern: "上传内容不嗅探/无体积上限", layers: [function, service], owner: function}
+  - {pattern: "非法状态跃迁", layers: [class, service], owner: class}
+  - {pattern: "上传任意字节落盘", layers: [service, integration], owner: service}
+  - {pattern: "无鉴权导致越权读写", layers: [service, integration], owner: service}
+  - {pattern: "错误响应回显内部细节(DB约束名/原始请求体)", layers: [file, service], owner: file}
+  - {pattern: "审计日志来源IP被客户端伪造", layers: [file], owner: file}
+  - {pattern: "同一限制的数字散落多处(配置/文案/接口文档)", layers: [file], owner: file}
+  - {pattern: "同一类错误两种状态码(400 vs 422)", layers: [file, service], owner: file}
+  - {pattern: "客户端可控值直接进日志/日志行可被切分", layers: [file], owner: file}
+  - {pattern: "先变更后校验(中途失败留残局)", layers: [file], owner: file}
+  - {pattern: "静态资源根目录规范化依赖环境偶然", layers: [file], owner: file}
+  - {pattern: "分页/校验辅助方法跨文件逐字复制", layers: [file, service], owner: file}
+  - {pattern: "NOT NULL 只挡 NULL，空串/默认值绕过业务非空", layers: [class], owner: class}
+  - {pattern: "必填性校验落在服务层而非 DTO 契约", layers: [class], owner: class}
+  - {pattern: "业务不变量三层全无声明(DB/DTO/服务层都没有)", layers: [class], owner: class}
+  - {pattern: "同一默认值在 DB default / DTO 缺省 / 服务层兜底各写一遍", layers: [class], owner: class}
+  - {pattern: "PUT 全量覆盖抹掉未传字段(图片引用丢失)", layers: [class], owner: class}
+  - {pattern: "错误文案与真实触发原因不符", layers: [class], owner: class}
+  - {pattern: "对外枚举大小写敏感", layers: [class, service], owner: class}
+  - {pattern: "匿名写入连带重写订单快照(快照失去证据效力)", layers: [integration], owner: integration}
+  - {pattern: "上传内容可被匿名原样读回", layers: [integration], owner: integration}
+  - {pattern: "敏感字段只在渲染层脱敏(接口与库都是明文)", layers: [integration], owner: integration}
+  - {pattern: "同一份数据前端两处计数口径不一致", layers: [integration], owner: integration}
+  - {pattern: "兜底图取自别的资源域(商品位用套餐图)", layers: [integration], owner: integration}
+  - {pattern: "DB/API/前端三方数值不一致", layers: [integration], owner: integration}

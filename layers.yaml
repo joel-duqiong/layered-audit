@@ -1,0 +1,101 @@
+# 分层缺陷审计 —— 层契约 v0.1
+# 整个系统的单一事实来源。所有 agent / 检测器 / 证据 schema 以此为准。
+# 规则：每个缺陷类型只属于一个层(owner)，其他层只能佐证，不得重复上报。
+# 契约变更必须走 git 提交，禁止运行期动态修改。
+
+version: 0.1
+schema_version: 1
+
+evidence:
+  required:
+    - {id: string, layer: "enum[function,file,class,service,integration]", category: string}
+    - location: {file: string, line: int, symbol: string}
+    - claim: string            # 一句话怀疑什么，不是结论
+    - evidence_refs: [string]  # 日志/trace/变异体/脚本
+    - repro_cmd: string        # 可复跑命令，无则空
+    - confidence: float        # 0-1，<0.6 标 weakEdge 不丢弃
+    - ground_truth: "enum[verified,unverified,mutant_survivor]"
+    - cwe: [string]
+  optional:
+    - {triggering_condition: string, affected_scope: [string], counter_evidence: [string]}
+
+layers:
+  - id: function
+    label: 函数 agent
+    granularity: 单个函数体
+    categories:
+      - {id: boundary,          desc: "边界值/空值/越界/精度丢失",        oracle: [mutation_test, property_based_test, static_analysis]}
+      - {id: complexity,        desc: "算法复杂度/循环不终止/冗余计算",      oracle: [static_analysis, benchmark]}
+      - {id: exception_path,    desc: "异常路径缺失/错误吞没/资源未释放",     oracle: [static_analysis, mutation_test]}
+      - {id: numeric,           desc: "溢出/截断/单位换算错误",             oracle: [property_based_test, mutation_test]}
+    out_of_scope: [state_consistency, caller_contract, service_latency]
+    escalation_to: [file, service]
+
+  - id: file
+    label: 文件 agent
+    granularity: 单文件内多个函数
+    categories:
+      - {id: state_consistency,      desc: "文件内共享状态读写不一致/初始化顺序依赖", oracle: [static_analysis, order_permutation_experiment]}
+      - {id: error_handling_pattern, desc: "同文件异常处理风格分裂/资源泄漏模式",     oracle: [static_analysis, mutation_test]}
+      - {id: cohesion,              desc: "文件承担多重职责/命名与实现不符",          oracle: [static_analysis]}
+    out_of_scope: [class_contract, service_latency]
+    escalation_to: [class, service]
+
+  - id: class
+    label: 类 agent
+    granularity: 单个类及其成员
+    categories:
+      - {id: encapsulation_leak, desc: "封装泄漏/可变状态外泄/内部表示被依赖", oracle: [static_analysis, mutation_test]}
+      - {id: invariant,         desc: "类不变式在公开方法上未强制",           oracle: [property_based_test, mutation_test]}
+      - {id: contract_violation,desc: "方法契约与调用方假设不符/副作用未声明",  oracle: [contract_test, mutation_test]}
+      - {id: inheritance_design,desc: "继承层次行为漂移/违反里氏替换",          oracle: [static_analysis, property_based_test]}
+    out_of_scope: [service_latency, end_to_end_business]
+    escalation_to: [service]
+
+  - id: service
+    label: 服务 agent
+    granularity: 一个可部署服务边界
+    categories:
+      - {id: interface_contract, desc: "API 契约违反/错误码语义不一致/版本兼容", oracle: [contract_test, schema_diff]}
+      - {id: resilience,        desc: "超时/重试/熔断/幂等/降级缺失或错误",     oracle: [contract_test, chaos_experiment]}
+      - {id: authz,             desc: "认证鉴权缺失/越权/权限边界错误",         oracle: [static_analysis, authz_test], cwe: [CWE-862, CWE-863, CWE-306]}
+      - {id: data_consistency,  desc: "缓存与DB不一致/事务边界错/并发写冲突",   oracle: [concurrency_test, property_based_test]}
+      - {id: resource_leak,     desc: "连接/线程/文件泄漏/容量无上限",          oracle: [static_analysis, load_test]}
+      - {id: service_latency,   desc: "慢路径/缺索引/超时预算超限",            oracle: [load_test, trace_analysis]}
+    out_of_scope: [end_to_end_business, cross_service_attack_chain]
+    escalation_to: [integration]
+
+  - id: integration
+    label: 集权 agent
+    granularity: 跨服务的端到端流程
+    # 只做跨层关联与端到端语义判定，不重做下层分析。
+    categories:
+      - {id: end_to_end_business,      desc: "跨服务业务流程语义错误(单服务各看合理,串起来错)", oracle: [e2e_scenario, trace_reconstruction]}
+      - {id: cross_service_performance, desc: "端到端延迟/级联超时/放大效应",                    oracle: [e2e_load_test, trace_analysis]}
+      - {id: cross_service_attack_chain,desc: "跨服务攻击链/信任边界穿透/横向移动",              oracle: [attack_graph, threat_modeling], cwe: [CWE-506, CWE-829]}
+      - {id: cross_layer_correlation,  desc: "同一根因在多层同时显现(归并不新增检测)",           oracle: [graph_correlation]}
+    out_of_scope: [single_unit_analysis]
+    escalation_to: []
+
+attribution:
+  rule:
+    - "owner = 能给出可复现证据的最低层(最接近根因)"
+    - "高层可引用低层缺陷作佐证，但不得重复开单"
+    - "跨服务业务/性能/攻击链 owner 归 integration"
+  cross_layer_patterns:
+    - {name: "过度 stub 掩盖顺序依赖", layers: [class, service], owner: class, note: "stub 在类层,暴露为服务层 flaky"}
+    - {name: "缺幂等导致重试放大",     layers: [service, integration], owner: service}
+    - {name: "缓存不一致并发下暴露",   layers: [class, service], owner: class, note: "owner 取不变式被破坏的层,不是症状显现的层"}
+
+agents:
+  total: 9
+  constraint:
+    max_agents: 12
+    max_tokens_per_round: 2000000
+    diversity_source: bound_oracle
+  by_layer:
+    - {layer: function, count: 1, note: "单元内问题可确定性判定,无需多 agent"}
+    - {layer: file, count: 1}
+    - {layer: class, count: 2, note: "一个查不变式/封装,一个查契约/继承(异质性来自绑定不同 oracle)"}
+    - {layer: service, count: 4, note: "按 category 分组,每组一个 agent,绑定对应 oracle"}
+    - {layer: integration, count: 1, note: "集权,只聚合与跨层关联,不重新分析"}

@@ -1,0 +1,445 @@
+# 分层缺陷审计 —— 交接文档
+
+> 更新时间：2026-11-07 ｜ 面向「接手的人 / 另一个 AI」
+> 读法：先读本文 → 再读 `layers.yaml`（层契约，唯一事实来源）→ 不要靠猜代码。
+> 本文的 §5（方案）与 §11（剩余工作）是接手重点，别只翻台账。
+
+---
+
+## 1. 这个项目是做什么的
+
+**一句话**：给自己维护的系统（`/Users/june/jiuyan`，农村宴席 Pad 谈单系统）建一条
+「可复现、可归属、可回归」的多层缺陷审计流水线 —— 不是通用扫描器。
+
+### 为什么不是通用扫描器
+
+| 通用工具给什么 | 这套给什么 |
+|---|---|
+| 「这里可能有问题」 | 「错在哪一层、谁负责、怎么复现、修了会不会再犯」 |
+| 一次性输出 | 有基线、有门禁、改完代码立刻知道有没有回归 |
+| 扁平的缺陷列表 | 按层归属，高层引用低层，不重复开单 |
+
+### 成功标准（可验证，不是口号）
+
+1. **每条缺陷有可复跑证据** —— 证据来自真实容器 / 真实 DB / 真实前端代码，不是推测。
+2. **每条缺陷归属唯一层** —— owner = 能给出可复现证据的最低层。
+3. **修完能自动回归** —— 缺陷固化进门禁基线 + pytest 用例。
+4. **漏检率有对抗性度量** —— 攻击链从「单点洞」升级为「串起来能干什么」。
+
+### 边界（明确不做）
+
+- 只审 `jiuyan`，**不改被测系统任何文件**（含前端源码，只读）。
+- 不做通用 SAST/DAST 集成，不做安全扫描器；不做性能压测平台。
+- 不重做下层已开单的缺陷；高层只能引用并量化后果。
+
+---
+
+## 2. 一句话现状
+
+五层全部落地并跑通；共 **86 条 finding，按根因归并后 52 条根因**，其中 6 条 CRITICAL。
+集权层已升级为「真三方对账 + 攻击链 + 常驻门禁」，全部缺陷已固化成 pytest 回归资产。
+**跨层收口层也已落地**：五层输出统一到 layers.yaml 的 10 字段证据 schema（86/86 结构齐备），
+`owner` 补齐到 86/86，根因归并 86→52，产出 category×层 覆盖度矩阵（10 个类别零覆盖）。
+
+---
+
+## 3. 环境前提（缺一不可）
+
+| 依赖 | 值 | 检查方式 |
+|---|---|---|
+| 容器 | `jiuyan-backend` / `jiuyan-postgres` / `jiuyan-frontend` 必须 up | `docker ps` |
+| 后端 | `http://127.0.0.1:8081`（`JIUYAN_BASE_URL` 可覆盖） | `curl /api/categories` |
+| 前端源码 | `/Users/june/jiuyan/src`（`JIUYAN_FE_DIR` 可覆盖） | 文件存在即可，**只读** |
+| Node | v22+（跑前端真实 mapper 用） | `node -v` |
+| Python | 3.14（试点用），依赖 `requests` | `python3 -V` |
+
+---
+
+## 4. 目录
+
+```
+/Users/june/.cc-weixin/workspace/layered-audit/
+├── HANDOFF.md          ← 本文，唯一入口
+├── layers.yaml         层契约 v0.1（层定义 / 证据 schema / 归属规则 / agent 编排规划）
+└── pilot/              全部实现与产物（22 个脚本）
+/Users/june/tests/auto-api/   另一个仓库：pytest 回归资产（见 §10）
+```
+
+---
+
+## 5. 方案：这套审计到底怎么跑的
+
+### 5.1 核心方法论：把每个 agent 当成一个函数来设计
+
+```
+签名 = scope（管哪一段） + oracle（用什么手段判定）
+行为 = 先静态（便宜，得出「声明」） → 再动态（实测，得出「实况」） → 差分（缺口 = 缺陷）
+```
+
+三层含义：
+
+- **静态 = 声明**：这个系统自称有什么契约、什么结构、什么规则。例：字节码里声明的方法签名、DDL 里的约束、OpenAPI 里的类型、前端 mapper 里读的字段。
+- **动态 = 实况**：真跑一遍，看它实际做了什么。例：JVM 直调、整类实例化、HTTP 实测、连真实 PostgreSQL、Node 直跑前端 mapper。
+- **差分 = 出单**：声明与实况对不上的地方，就是缺陷。**只看声明不看实况会漏，只看实况不看声明会变成随机测试。**
+
+这套「声明 vs 实况」的差分，是全项目所有缺陷的来源。
+
+### 5.2 五层契约与边界
+
+| 层 | 粒度 | 内禀问题（categories） | 明确不管 | 越层升级到 |
+|---|---|---|---|---|
+| function | 单个函数体 | 边界 / 复杂度 / 异常路径 / 数值 | 状态一致性、调用方契约、服务延迟 | file, service |
+| file | 单文件内多函数 | 文件内共享状态 / 异常处理风格分裂 / 内聚性 | 类契约、服务延迟 | class, service |
+| class | 单个类及成员 | 封装泄漏 / 类不变式 / 方法契约 / 继承设计 | 服务延迟、端到端业务 | service |
+| service | 一个可部署服务边界 | 接口契约 / 韧性 / 鉴权 / 数据一致性 / 资源泄漏 / 服务延迟 | 端到端业务、跨服务攻击链 | integration |
+| integration | 跨服务端到端流程 | 端到端业务语义 / 端到端性能 / 跨服务攻击链 / 跨层关联 | 单点分析 | — |
+
+**「一层一层往上抽」**：每层只管自己那层的内禀问题；只有在跨层执行时才显现的问题
+（端到端业务语义、性能塌陷、攻击链）归集成层。
+
+### 5.3 Oracle 绑定（层契约里规定的判定手段）
+
+| 层 | 每类问题绑定的 oracle（`layers.yaml` 权威） |
+|---|---|
+| function | mutation_test / property_based_test / static_analysis / benchmark |
+| file | static_analysis / order_permutation_experiment / mutation_test |
+| class | property_based_test / mutation_test / contract_test / static_analysis |
+| service | contract_test / schema_diff / chaos_experiment / authz_test / concurrency_test / load_test / trace_analysis |
+| integration | e2e_scenario / trace_reconstruction / e2e_load_test / attack_graph / threat_modeling / graph_correlation |
+
+绑不同 oracle 是为了**让不同 agent 用不同手段查同一片代码**，避免重复劳动与同源盲区。
+实际落地时每层选了一个可执行子集：
+
+| 层 | 实际用的判定手段 | 实现在 |
+|---|---|---|
+| 函数层 | 字节码声明 + JVM 直调实测 | `fn_static.py` / `fn_dynamic.py` |
+| 文件层 | 静态声明 + 整类实例化实测 | `file_static.py` / `file_dynamic.py` |
+| 服务层 | OpenAPI 声明 + 真实 HTTP 实测 | `contract_static.py` / `contract_dynamic.py` |
+| 类层 | DDL+实体声明 + DTO 反射契约 + DB 实况 + 数据库实测 | `class_contract.py` / `class_static.py` / `class_dynamic.py` |
+| 集成层 | 真实 HTTP + 真实 DB + **前端真实 mapper** + 攻击链 | `integration_reconcile.py` / `integration_chain.py` |
+
+### 5.4 出单与证据
+
+`layers.yaml` 定义了统一证据 schema（10 个必填字段）。**本轮已落地**（见 §6 的三个新脚本）：
+
+| 字段 | 函数层 | 文件层 | 服务层 | 类层 | 集成层 | 归一化后 |
+|---|---|---|---|---|---|---|
+| `id` / `severity` / `title` / `evidence` | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| `layer` | ✓ | ✓ | ✗ | ✓ | ✗ | ✓ 86/86 |
+| `cwe` | ✓ | ✓ | ✗ | ✗ | ✗ | ✓ 86/86（有值 57，空值合法） |
+| `category` | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ 86/86（9 条 UNMAPPED） |
+| `location`（file+line+symbol） | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ 86/86（文件 66 / 行号 43） |
+| `claim`（一句话怀疑什么） | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ 86/86 |
+| `evidence_refs` | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ 86/86 |
+| `repro_cmd` | 变体 `repro`/`endpoint` | ✗ | 变体 `repro` | ✗ | 变体 `repro` | ✓ 86/86（case 8 / endpoint 30 / layer 34 / reference 14） |
+| `confidence` | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ 86/86 |
+| `ground_truth` | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ 86/86 |
+
+落地的三个脚本（在 `pilot/`）：
+
+| 脚本 | 干什么 | 产物 |
+|---|---|---|
+| `findings_schema.py` | 从 `layers.yaml` **现场解析**每层允许的 category / escalation_to / out_of_scope，并校验归一化结果 | — |
+| `finding_meta.py` | 人工标注表：59 个 finding id → category / claim / owner / confidence / ground_truth / cwe / root_cause_key | — |
+| `normalize_findings.py` | 五层输出 → 一张符合 schema 的总表；退出码 1 = 结构性违规，2 = 契约缺口 | `all_findings.json` |
+| `aggregate_findings.py` | 根因归并 + 归属校验 + 覆盖度矩阵 | `root_causes.json` / `audit_report.md` |
+
+关键设计：**类别清单不硬编码**，从 `layers.yaml` 解析，契约改了矩阵自动跟着改。
+`finding_meta.py` 里的 `category` 是人工判定，不是脚本推断 —— 判不出来的写 `UNMAPPED`
+并给 `suggested_category`，把「契约装不下」显式暴露成缺口，而不是硬塞进一个勉强的类别。
+
+`fn_dynamic.py` 新增 `--case <id>`（可重复），使函数层的 `repro_cmd` 变成真能跑的命令：
+`python3 fn_dynamic.py --case RFP-05`。
+
+### 5.5 归属规则
+
+```
+owner = 能给出可复现证据的最低层（最接近根因）
+高层可以引用低层缺陷作佐证，但不得重复开单
+跨服务业务 / 性能 / 攻击链 → owner 归 integration
+```
+
+规则全文：`layers.yaml` 的 `attribution`；具体 pattern 表：`pilot/jiuyan-layer-manifest.yaml` 的 `attribution` 段（现有 25 条 pattern）。
+
+### 5.6 集权层 v2：为什么「声明 vs 声明」的对账不够
+
+v1 比的是两份声明（前端调的接口后端有没有、前端读的字段响应里有没有）—— 那不是对账。
+v2 要求**三个来源同时取值再逐字段比**：
+
+```
+1. 通过 API 写入哨兵值（每个可写字段填成可区分的确定值）
+2. API 读回响应体
+3. 直接查 DB 的真实行
+4. 前端 mapper 的消费口径（读哪些字段、怎么换算、拿不到时兜底成什么）
+```
+
+**第三个来源必须是前端线上同款 mapper，不能复刻。**
+`pilot/frontend_mapper.mjs` 由 Node 直接 import `/Users/june/jiuyan/src/api/banquetApi.js`；
+`fe_loader.mjs` 是 loader 钩子，把 `import.meta.env` 换成 `globalThis.__VITE_ENV__`，
+因此**不需要改前端源码**就能让 Vite 模块在 Node 里跑起来。
+
+对账结论 6 类：`ALIGNED` / `VALUE_MISMATCH` / `API_OMITS` / `DERIVED` / `FRONTEND_IGNORES` / `FRONTEND_MISSING`，
+外加语义级 `SEMANTIC_MISMATCH`（金额单位、时区、快照键、明细合计、兜底图、DB 直写绕过服务层）。
+
+### 5.7 攻击链：把「单点洞」升级成「串起来能干什么」
+
+低层各自证明「这一层有洞」，集成层要证明「这些洞串起来能干什么」。
+每条链是真实跑出来的步骤序列，每步留一条可复现证据；链级后果归集成层，低层根因只引用。
+现有 5 条（A 匿名读写他人订单并重写快照 / B 任意字节上传后匿名原样下载 / C 客户端控价三方一致接受 /
+D 三个价格并存且界面不显示明细合计 / E 无定金订单一步跳到 COMPLETED），全部 CONFIRMED。
+
+### 5.8 回归闭环（本轮新增）
+
+| 环节 | 机制 | 位置 |
+|---|---|---|
+| 声明层回归 | 对账结论钉成基线，回归即红（退出码 1） | `pilot/integration_gate.py` |
+| 行为层回归 | 闭合不变量写成真通过用例 | `tests/test_integration_alignment.py` |
+| 缺陷层回归 | 已知缺陷写成 `xfail(strict=True)`，修好即 XPASS 变红强制摘标记 | `tests/test_attack_chains.py` |
+
+### 5.9 规划 vs 实现（差距，写出来免得下一个人类 AI 误判）
+
+| `layers.yaml` 规划 | 当前实现 | 差距 |
+|---|---|---|
+| 9 个 agent 编排（function 1 / file 1 / class 2 / service 4 / integration 1），max 12，有 token 预算 | 22 个 Python 脚本串行跑，每层 = 静态 + 动态 + 差分 | 语义等价，但**没有 agent 化、没有并发、没有 token 预算控制**；类层的 2 个异质 agent、service 的 4 个分组 agent 都被压成单脚本 |
+| 统一证据 schema（10 字段） | 每层自定义字段，0/10 落地 | 见 §5.4 表格 |
+| `ground_truth`（verified / unverified / mutant_survivor） | 无 | 没有变异测试，缺陷无法判定「是否被变异体存活」 |
+| `confidence` 0~1 | 无 | 无法按置信度排序/过滤 |
+| `category` 按层分类 | 无 | 无法做「某类问题零覆盖」的自检 |
+
+---
+
+## 6. 脚本矩阵（层 → 脚本 → 产物）
+
+全部脚本在 `pilot/`，一律 `python3 <脚本>` 单跑，无参数。
+
+| 层 | 静态 | 动态实测 | 差分出单 | 产物 |
+|---|---|---|---|---|
+| 函数层 | `fn_static.py` | `fn_dynamic.py` | `fn_diff.py` | `fn_declaration.json` / `fn_observation.json` / `fn_findings.json` |
+| 文件层 | `file_static.py` | `file_dynamic.py` | `file_diff.py` | `file_declaration.json` / `file_observation.json` / `file_findings.json` |
+| 服务层 | `contract_static.py` | `contract_dynamic.py` | `contract_diff.py` | `declaration.json` / `observation.json` / **`findings.json`**（注意不叫 contract_findings.json） |
+| 类层 | `class_static.py` | `class_contract.py` | `class_dynamic.py` → `class_diff.py` | `class_declaration.json` / `class_contract.json` / `class_observation.json` / `class_findings.json` |
+| 集权层 | `integration_static.py` | `integration_dynamic.py` | `integration_reconcile.py` → `integration_chain.py` → `integration_diff.py` → `integration_gate.py` | `integration_declaration.json` / `integration_observation.json` / `integration_reconciliation.json` / `integration_chains.json` / `integration_findings.json` / `integration_gate_report.md` |
+
+其它：`openapi.json`（OpenAPI 快照，服务层输入）、`jiuyan-layer-manifest.yaml`（每层状态 / 归属 pattern / 回归资产台账）、`cleanup.sh` + `cleanup_uploads.py`（收尾）。
+
+### 6.1 跨层收口脚本（本轮新增，不属于任何一层）
+
+| 脚本 | 输入 | 输出 | 作用 |
+|---|---|---|---|
+| `findings_schema.py` | `../layers.yaml` | — | 解析契约 + schema 校验（不硬编码类别） |
+| `finding_meta.py` | 人工标注 | — | 59 个 id 的 category/claim/owner/confidence/ground_truth/cwe/root_cause_key |
+| `normalize_findings.py` | 五层 `*_findings.json` | `all_findings.json` | 统一 10 必填字段，退出码 1=结构性违规 2=契约缺口 |
+| `aggregate_findings.py` | `all_findings.json` | `root_causes.json`、`audit_report.md` | 根因归并（86→52）、归属/越界校验、覆盖度矩阵 |
+
+`aggregate_findings.py` 的判定口径（都写死在代码里，别改口径不改文档）：
+
+- **重复开单**：同层同一 `root_cause_key` 开多条 `own` → 归并提示（修一次即可，不是跨层违规）。
+- **跨层重复开单**：同一根因多层都声明 `own` → 硬违规。
+- **越界开单**：开单层的 category 落在自己的 `out_of_scope` 里 → 硬违规。
+- **归属冲突**：声明的 owner ≠ 能复现的最低层，且契约 `escalation_to` 不允许该上提 → 硬违规。
+- **合法上提**：owner 在上提链上 → 记为说明，不算违规。
+- **跨层佐证**：高层 `relation=cited` 引用低层根因（链级后果归高层）→ 合法。
+
+---
+
+## 7. 怎么跑
+
+```bash
+cd /Users/june/.cc-weixin/workspace/layered-audit/pilot
+
+bash run_pipeline.sh                    # 五层 → 清理 → 门禁；exit 0 = 全绿
+python3 integration_gate.py             # 只跑门禁（比对基线）
+python3 integration_gate.py --refresh   # 先重跑对账与攻击链，再比对
+python3 integration_gate.py --accept    # 门禁通过后接受新基线（改了前端/DTO 且确认是预期改动时用）
+python3 integration_gate.py --init      # 首次建立基线
+
+python3 normalize_findings.py           # 只跑归一化（exit 1 结构性违规 / 2 契约缺口）
+python3 aggregate_findings.py           # 只跑根因聚合 + 覆盖度矩阵
+python3 aggregate_findings.py --strict  # 有硬违规时退出码 1（CI 用）
+python3 fn_dynamic.py --case RFP-05     # 单用例重放（repro_cmd 用它）
+```
+
+门禁**判红**（退出码 1）三类：
+① 基线 ALIGNED 的对账项这次不是 ALIGNED；
+② 新增 `VALUE_MISMATCH` / `SEMANTIC_MISMATCH` / `FRONTEND_MISSING`；
+③ 攻击链由未确认转为 `CONFIRMED`。
+
+---
+
+## 8. 关键设计决策（接手别推翻）
+
+1. **第三个来源是前端线上同款 mapper，不是复刻。** 复刻前端逻辑的结论一律不作数。
+2. **门禁的键必须结构化。** 对账表 111 行里有 24 组「实体.字段」撞车（列级行 vs 语义级行、
+   `DERIVED` vs `FRONTEND_IGNORES`）。键形如 `实体.字段` / `实体.字段@semantic:用途` /
+   `实体.字段@derived|ignored|missing`。用朴素的「实体.字段」会让基线把 111 行折叠成 87 行，
+   回归直接被吃掉（已踩过）。
+3. **攻击链回归用例断言「应该发生什么」，不是「现在发生什么」。** 所以今天它们全部失败并标
+   `xfail(strict=True)`；缺陷修好后 XPASS 变红，逼人回来摘标记。
+4. **归属规则**：owner = 能给出可复现证据的最低层；高层只引用不重复开单。
+
+---
+
+## 9. 铁律（务必遵守）
+
+- **不许改 `/Users/june/jiuyan` 下任何文件**（含前端源码）。它只被读取。
+- 探针数据前缀 `ai_probe_`，写完即删；DB 直写探针必须包在 `BEGIN; ...; ROLLBACK;` 里。
+- 收尾清理：`bash pilot/cleanup.sh`（删 `ai_probe_` 前缀行 + 删未被引用的非种子上传文件）。
+- 不在代码 / 日志 / 报告里输出 API key、token、密码、JWT。
+- 提交前先展示 diff 等人确认，不自动 push。
+- 代码里不用 emoji。
+
+---
+
+## 10. 回归资产（另一个仓库 `/Users/june/tests/auto-api`，**尚未提交**）
+
+| 文件 | 行数 | 作用 |
+|---|---|---|
+| `tests/probe.py` | 198 | 三方取值（DB/API/前端 mapper）+ 前端契约静态抽取 + `ai_probe_` 清理 |
+| `tests/fe/fe_loader.mjs` `fe_register.mjs` `frontend_mapper.mjs` | 42 | 前端 mapper 运行时（与 pilot 同款） |
+| `tests/test_integration_alignment.py` | 215 | 7 条闭合不变量，**今天全绿**（前端必读字段齐全 / 金额单位 / 时区 / 快照键 / itemCount / 状态枚举 / 抽取器自检） |
+| `tests/test_attack_chains.py` | 207 | 7 条攻击链，`xfail(strict=True)` 钉住已知缺陷 |
+
+跑法：`cd /Users/june/tests/auto-api && python3 -m pytest -q` → 上次结果 **70 passed / 8 xfailed**。
+
+`tests/probe.py` 的前端契约是**静态抽取**的（从 `banquetApi.js` 现场解析 mapper 读了哪些字段），
+前端一改期望值自动跟着变，不会变成「拿旧期望值糊弄过去的假门禁」。
+
+---
+
+## 11. 剩余工作
+
+### A. 工程待办（已发现，可直接做）
+
+| # | 事项 | 现状 | 建议 |
+|---|---|---|---|
+| A0 | `layered-audit/` 版本控制 | ✅ **本轮完成**：`git init` + `.gitignore`（运行产物不入库），待确认后提交 | 首次提交后，`layers.yaml` 的契约变更才有地方提 |
+| A1 | 提交 harness 仓库的新增文件 | 4 新文件 + README 改动**仍未提交**（别人的仓库，先给 diff 再提交） | 提交，`test:` 前缀 |
+| A2 | 门禁挂 CI / pre-commit | 未做 | 做：让「改前端 mapper 或后端 DTO」必须过门禁再进主干 |
+| A3 | `owner` 字段补标 | ✅ **本轮完成**：86/86 条都有 `owner{layer,relation,basis}`，见 `all_findings.json` | — |
+| A4 | 服务层重复开单 | ✅ **本轮完成**：按 `root_cause_key` 归并，86 条发现 → **52 条根因**（25 条 `INTERNAL_LEAK` 收敛成 1 条） | — |
+| A5 | 性能类假设 | 类层实测索引不可用（差 591 倍），但**端到端延迟塌陷未复现** | 补端到端压测：数据量放大后 list 接口延迟曲线 |
+| A6 | 契约缺口的处置 | 9 条发现 `category=UNMAPPED`（file 层 6 / class 层 2 / integration 层 1），`normalize_findings.py` 退出码 2 | **要人决策**：要么修订 `layers.yaml`（file 层加「安全策略 / 可信输入」类别），要么把发现挪到真正该开的层 |
+
+### B. 项目层面待办（架构缺口，工作量大）
+
+| # | 事项 | 说明 | 建议顺序 |
+|---|---|---|---|
+| B1 | 证据 schema 落地 | ✅ **本轮完成**：`findings_schema.py` + `finding_meta.py` + `normalize_findings.py`，10 必填字段 86/86 结构齐备 | — |
+| B2 | 字段统一与聚合器 | ✅ **本轮完成**：`aggregate_findings.py` → `root_causes.json`（52 条根因）+ 硬违规判定 | — |
+| B3 | 覆盖度自检 | ✅ **本轮完成**：layer × category 命中矩阵，零覆盖即警报（当前 10 个类别零覆盖，见 §12.2） | — |
+| B4 | **9 agent 编排化** | 规划 9 个 agent、并发、token 预算；当前是 22 脚本串行 | 先做类层（2 agent）和服务层（4 agent）的拆分，验证编排收益再推广 |
+| B5 | **变异测试 / ground_truth** | `ground_truth`（verified / unverified / mutant_survivor）无实现 | 函数层最适合做（mutation_test 已在 oracle 里），是打通 schema 的试验田 |
+| B6 | **推广到第二个项目** | 现在一切硬编码 jiuyan（路径、端口、容器名、表名） | 抽成配置（`sut:` 段已在 manifest 里预留），至少让「换一个 Spring Boot 项目」能跑起来 |
+| B7 | **被测系统自身修复闭环** | 发现 6 条 CRITICAL，但没走「修复 → 门禁转绿 → 摘 xfail」流程 | 挑 1 条（推荐 `NO_AUTHZ`，收益最大）走完整闭环，验证回归资产真的能守住 |
+| B8 | **契约缺口的结构性修法** | 9 条发现装不进现有 category，靠 `UNMAPPED` 标记 | 不是加类别就完事：要能区分「类别表太窄」与「发现开错层」，后者靠 `out_of_scope` 校验自动判（已实现 1 例） |
+| B9 | **`repro_cmd` 从 reference 升级成可跑** | 86 条里 14 条是 `reference`（原始 repro 只是「见 observation.json 中 key=…」的指引） | 给 file / class 层的动态脚本加 `--case`（函数层已做），把 34 条 `layer` 级复现降维到用例级 |
+
+### C. 明确暂缓（别做）
+
+- 不要把 22 个脚本改写成通用框架 —— 现在只服务一个系统，过早抽象会拖慢。
+- 不要引入新测试框架 —— 仓库已用 pytest，回归资产留在 `auto-api` 仓库。
+- 不要动 `/Users/june/jiuyan` —— 被测系统只读。
+
+---
+
+## 12. 当前缺陷台账（速查；完整明细看各层 `*_findings.json`）
+
+| 层 | 条目 | 分布 | 通过项 | 产物 |
+|---|---|---|---|---|
+| 函数层 | 8 | 2C/2H/4M | 50 | `fn_findings.json` |
+| 文件层 | 18 | 2H/7M/3L/6I | — | `file_findings.json` |
+| 服务层 | 30 | 1C/2H/27M | — | `findings.json` |
+| 类层 | 16 | 3H/5M/4L/4I | — | `class_findings.json` |
+| 集权层 | 14 | 3C/5H/5M/1L | 31 | `integration_findings.json` |
+| **合计** | **86 → 根因 52** | 6C/14H/48M/8L/10I | | |
+
+### 6 条 CRITICAL
+
+| 归属 | ID | 一句话 |
+|---|---|---|
+| 函数层 | `FN-PRICE-CLIENT-CONTROLLED` | 成交价只做下界检查，不与套餐价比核对 |
+| 函数层 | `FN-UPLOAD-NO-CONTENT-SNIFF` | 上传只信自报 contentType，任意字节以 `.png` 落盘 |
+| 服务层 | `NO_AUTHZ` | 全系统零鉴权，无凭证可读写全部业务数据 |
+| 集成层 | `INT-ANON-WRITE-REWRITES-SNAPSHOT` | 匿名写入连带重写订单快照 |
+| 集成层 | `INT-UPLOAD-ANONYMOUS-READBACK` | 落盘字节匿名可原样下载 |
+| 集成层 | `PRICE_CLIENT_CONTROLLED_XL` | 同一订单并存 0.01 元与 468.00 元两个价 |
+
+### 12.1 根因视角（`root_causes.json` / `audit_report.md`）
+
+86 条发现按 `root_cause_key` 归并成 **52 条根因**，修复工作量按 52 计，不是 86。
+
+| 根因 | 严重度 | 归属层 | 归并条数 |
+|---|---|---|---|
+| `authz.no_authorization_layer` | CRITICAL | service | 3（service 1 + integration 2 条佐证） |
+| `price.final_price.upper_bound_unvalidated` | CRITICAL | function | 3（function 1 + integration 2 条佐证） |
+| `upload.content_type_not_sniffed` | CRITICAL | function | 2 |
+| `errhandler.internal_detail_leak` | MEDIUM | service | **25** |
+| `errhandler.client_error_mapped_to_500` | HIGH | service | 2 |
+| `jackson.lenient_type_coercion` | MEDIUM | service | 2 |
+| `order.item_quantity_unvalidated` | HIGH | function | 2 |
+| `order.snapshot.item_ownership_unchecked` | HIGH | function | 2 |
+| `column.default_declared_in_three_places` | LOW | class | 2 |
+
+### 12.2 覆盖度：10 个类别零命中
+
+| 层 | 零覆盖的 category |
+|---|---|
+| function | `complexity`、`numeric` |
+| file | —（3 类全有命中） |
+| class | `encapsulation_leak`、`inheritance_design` |
+| service | `resilience`、`data_consistency`、`resource_leak`、`service_latency` |
+| integration | `cross_service_performance`、`cross_layer_correlation` |
+
+零覆盖 ≠ 没问题，只代表**这个类别这一轮没人查**。契约里给这些类别配了 oracle
+（`chaos_experiment` / `concurrency_test` / `load_test` / `attack_graph` …），但对应的
+agent 还没写 —— 这是 §11-B4 编排化的优先级依据。
+
+### 12.3 硬违规 1 条 + 归并提示 4 条 + 契约缺口 9 条
+
+- **硬违规**：`index.idx_products_name_unusable` —— `service_latency` 明确在 class 层的
+  `out_of_scope` 里，这条应由 service 层开单（class→service 的归属上提本身合法，但开单位置越界）。
+- **归并提示**（不是违规，是「修一次即可」）：`errhandler.internal_detail_leak` ×25、
+  `errhandler.client_error_mapped_to_500` ×2、`jackson.lenient_type_coercion` ×2、
+  `column.default_declared_in_three_places` ×2。
+- **契约缺口** 9 条（`category=UNMAPPED`）：file 层 6（安全策略类：过宽 CORS / 信任 XFF /
+  客户端可控 traceId / 3 条相关正向结论）、class 层 2（默认值声明三处）、integration 层 1
+  （覆盖度记录缺口）。处置方案见 §11-A6，**需要人决策是否修订 `layers.yaml`**。
+
+### 集权层 v2 的三项结论
+
+- 对账 **111 项**：ALIGNED 52，其余为 API_OMITS / DERIVED / FRONTEND_IGNORES / FRONTEND_MISSING / VALUE_MISMATCH / SEMANTIC_MISMATCH。
+- **5 条攻击链全部 CONFIRMED**（见 §5.7）。
+- 已闭合的不变量：金额单位分→元、时区 +08:00→UTC→Asia/Shanghai、快照键 DB↔API↔前端一致、`itemCount` 与 DB 行数一致、状态枚举 3/3。
+
+---
+
+## 13. 不确定 / 未验证的（别当结论用）
+
+- 「端到端延迟随数据量塌陷」只到 `PARTIALLY_CONFIRMED`：索引在类层实测不可用，集成层未复现延迟塌陷。
+- `ProductController` **没有** `GET /api/products/{id}`（商品只能列表读），集成层对账因此走 `GET /api/products?keyword=`。
+- `packages.banquet_type` 无 DB 外键，但服务层会校验 `package_types`；`orders.banquet_type` 是自由文本。
+- `orders` 表无软删列；`products`/`packages`/`categories`/`package_types` 有。
+- 前端 `mapProduct.image = imageUrl || photo`，兜底图取的是**套餐**种子图（`/uploads/seed/packages/package-01.jpg`），属已知 MEDIUM 缺陷。
+
+---
+
+## 14. 最近一次验证记录（2026-11-07）
+
+**跨层收口层加入后重跑（最新）**
+
+- `bash pilot/run_pipeline.sh` → exit 0；门禁 GREEN（对齐 52→52，攻击链确认 5→5）。
+- `normalize_findings.py` → 86 条，10 必填字段结构齐备 86/86；结构性违规 **0**；
+  契约缺口 9 条（退出码 2，不阻断）。
+- `aggregate_findings.py` → 86 条发现归并为 **52 条根因**；硬违规 1 条；归并提示 4 条；
+  零覆盖类别 10 个。
+- `python3 fn_dynamic.py --case RFP-05 --case RFP-07` → 重放成立，两条断言均 FAIL
+  （证明 `repro_cmd` 是真能跑的命令，不是编的）。
+- 残留已归零：`ai_probe_` 订单 0；DB 回到种子基线（products 30 / packages 4 / orders 8 /
+  categories 8 / package_types 6 / package_items 40）；非种子上传文件 0（清理删掉 4 个孤儿上传）。
+- `/Users/june/jiuyan` 源码 0 审计改动（`git status` 里 9 个改动文件全是用户自己的 OTel/部署改动，
+  已逐项核对无审计痕迹）。
+- `layered-audit/` 已 `git init` + `.gitignore`（运行产物不入库），**首次提交待确认**。
+
+**加入跨层收口层之前（对照）**
+
+- harness `python3 -m pytest -q` → 70 passed / 8 xfailed。

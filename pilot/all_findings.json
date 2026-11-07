@@ -1,0 +1,4230 @@
+{
+  "generated_from": "normalize_findings.py",
+  "contract": "/Users/june/.cc-weixin/workspace/layered-audit/layers.yaml",
+  "counts": {
+    "total": 86,
+    "by_layer": {
+      "function": 8,
+      "file": 18,
+      "service": 30,
+      "class": 16,
+      "integration": 14
+    },
+    "by_kind": {
+      "defect": 75,
+      "positive": 9,
+      "observation": 2
+    }
+  },
+  "findings": [
+    {
+      "id": "FN-PRICE-CLIENT-CONTROLLED",
+      "uid": "function:FN-PRICE-CLIENT-CONTROLLED#0",
+      "layer": "function",
+      "category": "function.boundary",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/OrderService.java",
+        "line": 127,
+        "symbol": "OrderService.resolveFinalPrice",
+        "endpoint": ""
+      },
+      "claim": "成交价是否只有下界校验、完全没有上界约束？",
+      "evidence_refs": [
+        "fn_findings.json#FN-PRICE-CLIENT-CONTROLLED",
+        "fn_dynamic.py#case:RFP-05",
+        "fn_dynamic.py#case:RFP-06",
+        "fn_dynamic.py#case:RFP-07",
+        "fn_dynamic.py#case:APL-15"
+      ],
+      "repro_cmd": "python3 fn_dynamic.py --case RFP-05",
+      "repro_granularity": "case",
+      "confidence": 0.97,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-840"
+      ],
+      "owner": {
+        "layer": "function",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "price.final_price.upper_bound_unvalidated",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "CRITICAL",
+      "title": "成交价由客户端说了算：resolveFinalPrice 只做下界检查，完全不与套餐价比对",
+      "detail": "",
+      "related": [
+        {
+          "layer": "integration",
+          "id": "PRICE_CLIENT_CONTROLLED_XL",
+          "relation": "集成症状：本层是根因",
+          "already_filed_in_that_layer": true
+        },
+        {
+          "layer": "service",
+          "id": "test_create_order_use_final_price",
+          "relation": "既有测试把「保留客户端成交价」写成了断言——缺陷被固化成契约"
+        }
+      ],
+      "note": "属业务边界缺失而非纯入参边界，故归 boundary 而非 numeric",
+      "source": {
+        "file": "fn_findings.json",
+        "index": 0
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FN-UPLOAD-NO-CONTENT-SNIFF",
+      "uid": "function:FN-UPLOAD-NO-CONTENT-SNIFF#1",
+      "layer": "function",
+      "category": "function.boundary",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/UploadService.java",
+        "line": 35,
+        "symbol": "UploadService.uploadImage / extension",
+        "endpoint": ""
+      },
+      "claim": "上传内容类型是否只信客户端自报的扩展名与 contentType？",
+      "evidence_refs": [
+        "fn_findings.json#FN-UPLOAD-NO-CONTENT-SNIFF",
+        "fn_dynamic.py#case:UPL-04",
+        "fn_dynamic.py#case:UPL-07"
+      ],
+      "repro_cmd": "python3 fn_dynamic.py --case UPL-04",
+      "repro_granularity": "case",
+      "confidence": 0.95,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-434"
+      ],
+      "owner": {
+        "layer": "function",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "upload.content_type_not_sniffed",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "CRITICAL",
+      "title": "上传只信客户端自报的扩展名与 contentType：任意字节都以 .png 落盘",
+      "detail": "",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "fn_findings.json",
+        "index": 1
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FN-ORDER-NO-COLLISION",
+      "uid": "function:FN-ORDER-NO-COLLISION#2",
+      "layer": "function",
+      "category": "function.boundary",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/OrderService.java",
+        "line": 88,
+        "symbol": "OrderService.generateOrderNo",
+        "endpoint": ""
+      },
+      "claim": "订单号是否每秒只有 1000 个槽位、并发下单必然撞号？",
+      "evidence_refs": [
+        "fn_findings.json#FN-ORDER-NO-COLLISION",
+        "fn_dynamic.py#case:GON-02"
+      ],
+      "repro_cmd": "python3 fn_dynamic.py --case GON-02",
+      "repro_granularity": "case",
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-330",
+        "CWE-400"
+      ],
+      "owner": {
+        "layer": "function",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "order_no.no_collision_guarantee",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "HIGH",
+      "title": "订单号每秒只有 1000 个槽位，并发下单必然撞号（唯一键冲突 → 500）",
+      "detail": "",
+      "related": [],
+      "note": "容量上界问题；并发写库后果在 service 层，但唯一决策点在函数",
+      "source": {
+        "file": "fn_findings.json",
+        "index": 2
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FN-SNAPSHOT-SEMANTICS",
+      "uid": "function:FN-SNAPSHOT-SEMANTICS#3",
+      "layer": "function",
+      "category": "function.boundary",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/OrderService.java",
+        "line": 139,
+        "symbol": "OrderService.buildPackageSnapshot / normalizePackageItems",
+        "endpoint": ""
+      },
+      "claim": "明细归属是否未校验，空明细是否静默回退成套餐默认明细？",
+      "evidence_refs": [
+        "fn_findings.json#FN-SNAPSHOT-SEMANTICS",
+        "fn_dynamic.py#case:BPS-03",
+        "fn_dynamic.py#case:BPS-05",
+        "fn_dynamic.py#case:BPS-06",
+        "fn_dynamic.py#case:APL-17"
+      ],
+      "repro_cmd": "python3 fn_dynamic.py --case BPS-03",
+      "repro_granularity": "case",
+      "confidence": 0.94,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-20"
+      ],
+      "owner": {
+        "layer": "function",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "order.snapshot.item_ownership_unchecked",
+      "related_root_causes": [
+        "order.item_quantity_unvalidated"
+      ],
+      "kind": "defect",
+      "severity": "HIGH",
+      "title": "订单快照：明细归属不校验，空明细静默回退成套餐默认明细",
+      "detail": "",
+      "related": [
+        {
+          "layer": "integration",
+          "id": "PACKAGE_ITEM_NOT_VALIDATED",
+          "relation": "集成症状：本层是根因",
+          "already_filed_in_that_layer": true
+        },
+        {
+          "layer": "integration",
+          "id": "PACKAGE_QUANTITY_NOT_VALIDATED",
+          "relation": "集成症状：本层是根因",
+          "already_filed_in_that_layer": true
+        },
+        {
+          "layer": "integration",
+          "id": "UNKNOWN_FIELD_SILENT_DROP",
+          "relation": "集成症状：字段拼错 → 明细为空 → 落到本函数的回退分支",
+          "already_filed_in_that_layer": true
+        }
+      ],
+      "note": "",
+      "source": {
+        "file": "fn_findings.json",
+        "index": 3
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FN-APPLY-AMOUNT-INVARIANTS",
+      "uid": "function:FN-APPLY-AMOUNT-INVARIANTS#4",
+      "layer": "function",
+      "category": "function.boundary",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/OrderService.java",
+        "line": 89,
+        "symbol": "OrderService.apply",
+        "endpoint": ""
+      },
+      "claim": "金额与状态不变式是否只查了 >= 0，定金能否大于套餐总价？",
+      "evidence_refs": [
+        "fn_findings.json#FN-APPLY-AMOUNT-INVARIANTS",
+        "fn_dynamic.py#case:APL-12",
+        "fn_dynamic.py#case:APL-13",
+        "fn_dynamic.py#case:APL-14"
+      ],
+      "repro_cmd": "python3 fn_dynamic.py --case APL-12",
+      "repro_granularity": "case",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-840"
+      ],
+      "owner": {
+        "layer": "function",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "order.apply.amount_invariants_weak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "apply 的金额/状态不变量只查了 >= 0：定金可以大于套餐总价，状态与预订时间可为空",
+      "detail": "",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "fn_findings.json",
+        "index": 4
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FN-APPLY-NULL-CONTRACT",
+      "uid": "function:FN-APPLY-NULL-CONTRACT#5",
+      "layer": "function",
+      "category": "function.exception_path",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/OrderService.java",
+        "line": 89,
+        "symbol": "OrderService.apply / CategoryService.create",
+        "endpoint": ""
+      },
+      "claim": "空入参是否在 .trim() 处抛 NPE（500）而不是业务异常（422）？",
+      "evidence_refs": [
+        "fn_findings.json#FN-APPLY-NULL-CONTRACT",
+        "fn_dynamic.py#case:APL-02",
+        "fn_dynamic.py#case:APL-03",
+        "fn_dynamic.py#case:APL-04",
+        "fn_dynamic.py#case:APL-09",
+        "fn_dynamic.py#case:CTG-02"
+      ],
+      "repro_cmd": "python3 fn_dynamic.py --case APL-02",
+      "repro_granularity": "case",
+      "confidence": 0.93,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-20",
+        "CWE-755"
+      ],
+      "owner": {
+        "layer": "function",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "apply.null_input.npe_instead_of_422",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "apply 直接对入参 .trim()：空值触发 NPE（500）而不是业务异常（422）",
+      "detail": "",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "fn_findings.json",
+        "index": 5
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FN-ITEM-QUANTITY-NOVALIDATION",
+      "uid": "function:FN-ITEM-QUANTITY-NOVALIDATION#6",
+      "layer": "function",
+      "category": "function.boundary",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/OrderService.java",
+        "line": 172,
+        "symbol": "OrderService.normalizePackageItems / normalizeAddedItems",
+        "endpoint": ""
+      },
+      "claim": "明细归一化是否只查重复、不查 productId 与 quantity？",
+      "evidence_refs": [
+        "fn_findings.json#FN-ITEM-QUANTITY-NOVALIDATION",
+        "fn_dynamic.py#case:NPI-04",
+        "fn_dynamic.py#case:NPI-05",
+        "fn_dynamic.py#case:NPI-06",
+        "fn_dynamic.py#case:NPI-07",
+        "fn_dynamic.py#case:NAI-04",
+        "fn_dynamic.py#case:NAI-05",
+        "fn_dynamic.py#case:NAI-06",
+        "fn_dynamic.py#case:NAI-07"
+      ],
+      "repro_cmd": "python3 fn_dynamic.py --case NPI-04",
+      "repro_granularity": "case",
+      "confidence": 0.93,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-20"
+      ],
+      "owner": {
+        "layer": "function",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "order.item_quantity_unvalidated",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "明细归一化只查重复，不查 productId/quantity：数量可为空、为 0、为负",
+      "detail": "",
+      "related": [
+        {
+          "layer": "integration",
+          "id": "PACKAGE_QUANTITY_NOT_VALIDATED",
+          "relation": "集成症状：本层是根因",
+          "already_filed_in_that_layer": true
+        }
+      ],
+      "note": "",
+      "source": {
+        "file": "fn_findings.json",
+        "index": 6
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FN-UPLOAD-NO-SIZE-LIMIT",
+      "uid": "function:FN-UPLOAD-NO-SIZE-LIMIT#7",
+      "layer": "function",
+      "category": "function.boundary",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/UploadService.java",
+        "line": 35,
+        "symbol": "UploadService.uploadImage",
+        "endpoint": ""
+      },
+      "claim": "上传体积是否完全没有上限，单请求被完整写盘？",
+      "evidence_refs": [
+        "fn_findings.json#FN-UPLOAD-NO-SIZE-LIMIT",
+        "fn_dynamic.py#case:UPL-06"
+      ],
+      "repro_cmd": "python3 fn_dynamic.py --case UPL-06",
+      "repro_granularity": "case",
+      "confidence": 0.91,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-400"
+      ],
+      "owner": {
+        "layer": "function",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "upload.no_size_limit",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "上传无体积上限：单请求 20MB 被完整写盘（上传放大 DoS）",
+      "detail": "",
+      "related": [],
+      "note": "服务层还有一条 FILE-UPLOAD-LIMIT-SPLIT 是「上限写在哪」的问题，根因不同",
+      "source": {
+        "file": "fn_findings.json",
+        "index": 7
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FILE-CORS-INTRANET-WIDE",
+      "uid": "file:FILE-CORS-INTRANET-WIDE#0",
+      "layer": "file",
+      "category": "UNMAPPED",
+      "category_fit": "unmapped",
+      "suggested_category": "service.authz",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/WebConfig.java",
+        "line": 0,
+        "symbol": "config/WebConfig.java",
+        "endpoint": "",
+        "files": [
+          "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/WebConfig.java"
+        ]
+      },
+      "claim": "CORS 允许源是否覆盖整个内网与任意本地端口？",
+      "evidence_refs": [
+        "file_findings.json#FILE-CORS-INTRANET-WIDE"
+      ],
+      "repro_cmd": "python3 file_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.95,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-942"
+      ],
+      "owner": {
+        "layer": "file",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "cors.allowed_origin_patterns_too_broad",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "HIGH",
+      "title": "CORS 白名单等于「整个内网 + 所有本地端口」，且全是明文 http",
+      "detail": "WebConfig 的 allowedOriginPatterns 来自配置，默认为：\n  http://localhost:[*], http://127.0.0.1:[*], http://192.168.*.*:[*], http://10.*.*.*:[*], http://172.*.*.*:[*]\n其中 [*] 是任意端口。实测真实容器：请求 Origin: http://192.168.66.66:1234，响应头原样回显 Access-Control-Allow-Origin: http://192.168.66.66:1234 —— 内网任意主机的任意端口都是允许源。http://localhost:65535 同样被回显。\n为什么是 HIGH：这个系统的鉴权是零（服务层 NO_AUTHZ）。allowCredentials(false) 在这里不构成任何补偿控制 —— 本来就不需要凭证，任意网页都能读全部业务数据。允许源里的 localhost:[*] 尤其危险：任何能在用户本机起一个 http://localhost:端口 的进程（恶意 npm postinstall、被劫持的开发服务器、用户自己装的软件）都能让浏览器把整套业务数据读走；内网三条规则则把「内网里任意一台被攻陷的设备」也变成攻击面。\n正向结论：白名单不是通配全放 —— evil.example.com、https://evil.example.com、localhost.evil.com、null、[::1] 全部被拒，正则是精确匹配。",
+      "related": [
+        "NO_AUTHZ（服务层，CRITICAL）—— CORS 是它的放大器"
+      ],
+      "note": "file 层的类别表里没有「安全策略配置」这一类 —— 契约缺口",
+      "source": {
+        "file": "file_findings.json",
+        "index": 0
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FILE-XFF-CLIENT-IP-SPOOF",
+      "uid": "file:FILE-XFF-CLIENT-IP-SPOOF#1",
+      "layer": "file",
+      "category": "UNMAPPED",
+      "category_fit": "unmapped",
+      "suggested_category": "service.authz",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/TraceIdFilter.java",
+        "line": 0,
+        "symbol": "config/TraceIdFilter.java",
+        "endpoint": "",
+        "files": [
+          "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/TraceIdFilter.java"
+        ]
+      },
+      "claim": "审计日志里的 clientIp 是否完全由客户端伪造？",
+      "evidence_refs": [
+        "file_findings.json#FILE-XFF-CLIENT-IP-SPOOF"
+      ],
+      "repro_cmd": "python3 file_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.93,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-290",
+        "CWE-348"
+      ],
+      "owner": {
+        "layer": "file",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "audit.client_ip_trusted_from_header",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "HIGH",
+      "title": "审计日志里的 clientIp 完全由客户端伪造：X-Forwarded-For 首段直接采信",
+      "detail": "TraceIdFilter.clientIp 的实现是「有 X-Forwarded-For 就取第一段，没有才用 remoteAddr」，没有任何可信代理判定（不看 RemoteAddr 是否落在已知代理网段、不看是否有多跳链）。真实容器实测：请求带 X-Forwarded-For: 9.9.9.9 时，容器日志里写的是 clientIp=9.9.9.9，而对端真实地址是 127.0.0.1。\n影响：clientIp 是这套日志里唯一的来源标识，两条日志（start / end）都写它。任何人都能把审计日志里的来源 IP 改成任意值 —— 日志不再是「谁干的」的证据，排查、限流、风控都失去了输入。这条在函数层、服务层都没被覆盖：它既不是单个表达式的逻辑错，也不是 HTTP 契约问题，是这一个文件里「取哪个值」的编排决策。",
+      "related": [],
+      "note": "契约缺口：file 层无「可信输入判定」类别",
+      "source": {
+        "file": "file_findings.json",
+        "index": 1
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FILE-BADREQUEST-ECHO",
+      "uid": "file:FILE-BADREQUEST-ECHO#2",
+      "layer": "file",
+      "category": "file.error_handling_pattern",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/exception/GlobalExceptionHandler.java",
+        "line": 0,
+        "symbol": "exception/GlobalExceptionHandler.java",
+        "endpoint": "",
+        "files": [
+          "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/exception/GlobalExceptionHandler.java"
+        ]
+      },
+      "claim": "400 错误是否把原始请求体片段原样回显？",
+      "evidence_refs": [
+        "file_findings.json#FILE-BADREQUEST-ECHO"
+      ],
+      "repro_cmd": "python3 file_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "file",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.badrequest_echoes_body",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "400 错误把原始请求体片段原样回显",
+      "detail": "handleBadRequest 用 Map.of(\"message\", ex.getMessage()) 把 Jackson 的解析错误信息原样送出，而 Jackson 的解析错误里**带着请求体的原始片段**。\n实测：请求体 {\"password\":\"hunter2\"} 格式错误 → 400 响应体里原样出现 \"password\":\"hunter2\"。\n影响：客户端往任何接口发错一个 JSON，body 就被回显回来。响应体是最容易被中间层（网关、APM、前端埋点、错误上报 SDK）记录的地方 —— 密码、token、身份证号只要在出错的那次请求里，就会从「一个错误响应」变成「一条被长期留存的日志」。同一个 handleBadRequest 还把解析器内部细节（字符码、行列号）一起送出去了。",
+      "related": [
+        "INTERNAL_LEAK（服务层）-> 收敛为本条根因"
+      ],
+      "note": "",
+      "source": {
+        "file": "file_findings.json",
+        "index": 2
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FILE-DB-CONSTRAINT-LEAK",
+      "uid": "file:FILE-DB-CONSTRAINT-LEAK#3",
+      "layer": "file",
+      "category": "file.error_handling_pattern",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/exception/GlobalExceptionHandler.java",
+        "line": 0,
+        "symbol": "exception/GlobalExceptionHandler.java",
+        "endpoint": "",
+        "files": [
+          "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/exception/GlobalExceptionHandler.java"
+        ]
+      },
+      "claim": "DB 约束冲突原文是否被原样回给客户端？",
+      "evidence_refs": [
+        "file_findings.json#FILE-DB-CONSTRAINT-LEAK"
+      ],
+      "repro_cmd": "python3 file_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "file",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.db_constraint_text_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "DB 约束冲突的原始错误文本被原样回给客户端",
+      "detail": "handleDataIntegrity 把 ex.getMostSpecificCause().getMessage() 原样放进响应 details。实测：返回体里直接出现 PostgreSQL 的约束名 uk_orders_order_no、「could not execute statement [ERROR: duplicate key value violates unique constraint ...]」。\n归属说明：服务层把这一现象记成了 24 条 INTERNAL_LEAK（每个接口一条）。按 owner = 能给出可复现证据的最低层，根因就在这一个文件的一行代码上，所以开单收敛到这里；服务层的 24 条是同一根因在 24 个端点上的投影，不是 24 个独立缺陷。\n暴露面：约束名 → 表结构 → 唯一键语义 → 可枚举的订单号空间，对攻击者来说这就是一张可用的 schema 地图。",
+      "related": [
+        "INTERNAL_LEAK（服务层，24 条）-> 收敛为本条根因"
+      ],
+      "note": "",
+      "source": {
+        "file": "file_findings.json",
+        "index": 3
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FILE-PKG-MUTATE-BEFORE-VALIDATE",
+      "uid": "file:FILE-PKG-MUTATE-BEFORE-VALIDATE#4",
+      "layer": "file",
+      "category": "file.state_consistency",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java",
+        "line": 0,
+        "symbol": "service/PackageService.java",
+        "endpoint": "",
+        "files": [
+          "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java"
+        ]
+      },
+      "claim": "applyItems 是否先删后校验，出错时明细已被清空？",
+      "evidence_refs": [
+        "file_findings.json#FILE-PKG-MUTATE-BEFORE-VALIDATE"
+      ],
+      "repro_cmd": "python3 file_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.91,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-665"
+      ],
+      "owner": {
+        "layer": "file",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "package.applyItems.mutate_before_validate",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "PackageService.applyItems 先删后校验：明细被清空后才去查商品",
+      "detail": "applyItems 的编排顺序是「先把没被提交的明细从实体上摘掉，再去 DB 查每个商品是否存在」。商品查不到时抛 404，但实体已经被改过一轮 —— 内存里的套餐此刻是一条空明细的套餐。实测：2 条明细的套餐，用一个不存在的商品提交更新，异常抛出后实体的 items 变成 0 条。\n字节码层面是硬证据：applyItems 的指令序列里 java.util.List.removeIf 出现在 ProductRepository.findByIdAndIsDeletedFalse 之前。\n为什么不是 HIGH：update 方法带 @Transactional，实测真实 HTTP 链路里 404 之后 DB 的 package_items 与 packages.name 都没变（事务完整回滚）。所以这是「纵深防御缺口」而不是现网数据损坏 —— 但编排顺序本身就是错的：只要有人给 update 去掉 @Transactional、或未来改成内部自调用绕过代理，这个顺序立刻变成真实的明细丢失。校验应该在变更之前，不是之后。",
+      "related": [
+        "FN-APPLY-NULL-CONTRACT（函数层同构问题：入参未校验）"
+      ],
+      "note": "顺序依赖 —— state_consistency 的 desc 只提「文件内共享状态」，此处是持久化副作用顺序",
+      "source": {
+        "file": "file_findings.json",
+        "index": 4
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FILE-STATIC-ROOT-NO-TRAILING-SLASH",
+      "uid": "file:FILE-STATIC-ROOT-NO-TRAILING-SLASH#5",
+      "layer": "file",
+      "category": "file.state_consistency",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/WebConfig.java",
+        "line": 0,
+        "symbol": "config/WebConfig.java",
+        "endpoint": "",
+        "files": [
+          "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/WebConfig.java"
+        ]
+      },
+      "claim": "静态根目录的规范化是否依赖「目录在启动前就存在」这个环境偶然？",
+      "evidence_refs": [
+        "file_findings.json#FILE-STATIC-ROOT-NO-TRAILING-SLASH"
+      ],
+      "repro_cmd": "python3 file_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.72,
+      "ground_truth": "unverified",
+      "cwe": [],
+      "owner": {
+        "layer": "file",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "webconfig.static_root_normalization_env_dependent",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "静态资源根目录的规范化依赖「目录在启动前就存在」这个环境偶然",
+      "detail": "WebConfig.addResourceHandlers 用 Path.of(uploadDir).toAbsolutePath().normalize().toUri().toString() 生成静态映射根。Path.toUri() 只有在目录**已存在**时才补尾部斜杠 —— 目录不存在时它给的是 file:///app/uploads（无斜杠）。Spring 拼相对路径时会直接字符串拼接，于是 /uploads/seed/x.jpg 变成 /app/uploadseed/x.jpg，全部 404。\n实测：存在的目录 toUri() 以 / 结尾、相对路径拼接正确；不存在的目录不以 / 结尾、相对路径拼到上一级目录去了（relative_without_slash_ok=false）。\n现状：Dockerfile 里有 mkdir -p /app/uploads，目录在镜像层就存在，所以容器部署现在是好的。但这是环境替代码兜了底 —— 换卷、换基础镜像、目录被清理、或本地不用容器启动，上传能成功（UploadService 自己 createDirectories），静态映射却指到别处，表现为「传得上去、看不到」，且没有任何报错。\n同时证伪了 manifest 的假设：WebConfig 的静态根与 UploadService 的上传根是同一个配置值，同源。",
+      "related": [],
+      "note": "证据是路径推导，未在真实容器里观察到目录缺失导致的失败",
+      "source": {
+        "file": "file_findings.json",
+        "index": 5
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FILE-TRACEID-CLIENT-CONTROLLED",
+      "uid": "file:FILE-TRACEID-CLIENT-CONTROLLED#6",
+      "layer": "file",
+      "category": "UNMAPPED",
+      "category_fit": "unmapped",
+      "suggested_category": "service.interface_contract",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/TraceIdFilter.java",
+        "line": 0,
+        "symbol": "config/TraceIdFilter.java",
+        "endpoint": "",
+        "files": [
+          "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/TraceIdFilter.java"
+        ]
+      },
+      "claim": "X-Trace-Id 是否无格式与长度白名单就原样进日志与响应头？",
+      "evidence_refs": [
+        "file_findings.json#FILE-TRACEID-CLIENT-CONTROLLED"
+      ],
+      "repro_cmd": "python3 file_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.88,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-117"
+      ],
+      "owner": {
+        "layer": "file",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "traceid.client_controlled_no_validation",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "X-Trace-Id 完全由客户端指定，无格式与长度白名单，原样进日志与响应头",
+      "detail": "TraceIdFilter 对客户端传来的 X-Trace-Id 只做了一次 isBlank 判断，随后原样：\n  · 写入 MDC 与 ThreadLocal；\n  · 拼进两条日志的 traceId= 位置；\n  · 原样写回响应头 X-Trace-Id。\n实测边界行为：\n  · 含 CRLF 的 traceId（abc\\r\\nFORGED-LOG-LINE-9X）被 Tomcat 连接器拒绝，返回 400 —— 这个最经典的日志伪造向量在边界上已经被挡住了（假设被证伪，是好消息）；\n  · 但 U+2028（Unicode 行分隔符）不被拦：请求 200，伪造内容原样出现在容器日志里 —— 把日志行从中间切开。按行分隔解析日志的采集器（部分 filebeat/日志查看器）会把它当成新行，日志结构仍然可被污染；\n  · 没有长度上限，traceId 可以是任意长度 → 日志放大。\n与上一条同源：同一个文件里「客户端可控的值」被当成可信数据直接使用。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "file_findings.json",
+        "index": 6
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FILE-UPLOAD-LIMIT-SPLIT-ACROSS-THREE-FILES",
+      "uid": "file:FILE-UPLOAD-LIMIT-SPLIT-ACROSS-THREE-FILES#7",
+      "layer": "file",
+      "category": "file.cohesion",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/UploadService.java",
+        "line": 0,
+        "symbol": "service/UploadService.java",
+        "endpoint": "",
+        "files": [
+          "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/UploadService.java",
+          "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/resources/application.yml",
+          "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/exception/GlobalExceptionHandler.java"
+        ]
+      },
+      "claim": "上传体积上限这个数字是否散落三处，改一处另两处就开始说谎？",
+      "evidence_refs": [
+        "file_findings.json#FILE-UPLOAD-LIMIT-SPLIT-ACROSS-THREE-FILES"
+      ],
+      "repro_cmd": "python3 file_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.95,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "file",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "upload.limit_declared_in_three_places",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "上传体积上限 5MB 这个数字散落三处，改一处另两处就开始说谎",
+      "detail": "UploadService.java 这个文件里没有任何体积判断 —— 上限完全由配置文件 application.yml 的 spring.servlet.multipart.max-file-size 承担。而同一个数字 5MB 又以两种形式被复制到代码里：\n  · GlobalExceptionHandler.handleMaxUploadSize 的错误文案「图片不能超过 5MB」；\n  · UploadController @Operation 的接口文档「最大 5MB」。\n真实容器实测：1MB 通过、4MB 通过、6MB 被拒、20MB 被拒 —— 5MB 确实生效，函数层那条「无体积上限、20MB 被完整写盘」在 HTTP 边界被配置文件挡住了。但挡住它的是配置，不是代码：任何一次环境覆盖（SPRING_APPLICATION_JSON / 环境变量 / 配置中心 / 默认值回落）都会静默放开上传，而错误文案与接口文档仍然写着 5MB —— 限制放宽了，提示没变，用户按提示做的判断是错的。",
+      "related": [],
+      "note": "跨文件重复声明，不是单文件内 cohesion",
+      "source": {
+        "file": "file_findings.json",
+        "index": 7
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FILE-VALIDATION-STATUS-SPLIT",
+      "uid": "file:FILE-VALIDATION-STATUS-SPLIT#8",
+      "layer": "file",
+      "category": "file.error_handling_pattern",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/dto/PackageItemRequest.java",
+        "line": 0,
+        "symbol": "dto/PackageItemRequest.java",
+        "endpoint": "",
+        "files": [
+          "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/dto/PackageItemRequest.java",
+          "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java"
+        ]
+      },
+      "claim": "同一类「参数非法」是否返回两种状态码（400 / 422）？",
+      "evidence_refs": [
+        "file_findings.json#FILE-VALIDATION-STATUS-SPLIT"
+      ],
+      "repro_cmd": "python3 file_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.94,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "file",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "validation.status_code_split",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "同一类「参数非法」返回两种状态码：DTO 校验给 400，服务自校验给 422",
+      "detail": "参数校验被拆在两个文件里，两边各自选了不同的状态码：\n  · DTO 文件声明的约束（数量 @Min(1)、价格 @Min(0)）走 Bean Validation → MethodArgumentNotValidException → handleValidation → 400；\n  · 服务文件自己做的校验（明细为空、明细重复）抛 BusinessException → 422。\n实测同一个接口 PUT /api/packages/4：数量=0 → 400；明细为空 → 422。两者在语义上都是「请求参数不合法」，前端却要写两个分支才能区分，监控按状态码分类时也会把一类错误拆成两堆。\n根因不是某一处写错，而是校验责任分散在 DTO 与 service 两个文件、且没有统一的错误语义约定。",
+      "related": [
+        "UNHANDLED_HTTP_EXCEPTION（服务层）"
+      ],
+      "note": "",
+      "source": {
+        "file": "file_findings.json",
+        "index": 8
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FILE-DUPLICATE-HELPERS-ACROSS-SERVICES",
+      "uid": "file:FILE-DUPLICATE-HELPERS-ACROSS-SERVICES#9",
+      "layer": "file",
+      "category": "file.cohesion",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/OrderService.java",
+        "line": 0,
+        "symbol": "service/OrderService.java",
+        "endpoint": "",
+        "files": [
+          "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/OrderService.java",
+          "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java",
+          "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/ProductService.java"
+        ]
+      },
+      "claim": "分页归一化等方法是否在多个 service 文件里逐字复制？",
+      "evidence_refs": [
+        "file_findings.json#FILE-DUPLICATE-HELPERS-ACROSS-SERVICES"
+      ],
+      "repro_cmd": "python3 file_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.93,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "file",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "service.helpers.duplicated",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "LOW",
+      "title": "分页归一化等 4 组方法在 3 个 service 文件里逐字复制",
+      "detail": "字节码 body_hash 完全相同的方法体：\n  · normalizePage ×3（OrderService / PackageService / ProductService）\n  · normalizePageSize ×3（同上）\n  · OrderService#normalizePackageItems ≈ PackageService#normalizeItems（改名复制）\n  · OrderService#findProduct = PackageService#findProduct（同名复制）\n服务层假设「四个 service 的分页上限行为不一致」在当前代码上被证伪：\nnormalizePageSize 的三份字节码逐字相同，上限都是 100。所以现在没有行为差异，这是维护性风险而不是现网缺陷 —— 上限要改 3 处，漏一处就产生分页契约漂移。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "file_findings.json",
+        "index": 9
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FILE-ERROR-BODY-SHAPE-INCONSISTENT",
+      "uid": "file:FILE-ERROR-BODY-SHAPE-INCONSISTENT#10",
+      "layer": "file",
+      "category": "file.error_handling_pattern",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/exception/GlobalExceptionHandler.java",
+        "line": 0,
+        "symbol": "exception/GlobalExceptionHandler.java",
+        "endpoint": "",
+        "files": [
+          "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/exception/GlobalExceptionHandler.java"
+        ]
+      },
+      "claim": "同一个异常处理文件里是否并存三种响应形状？",
+      "evidence_refs": [
+        "file_findings.json#FILE-ERROR-BODY-SHAPE-INCONSISTENT"
+      ],
+      "repro_cmd": "python3 file_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "file",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.response_shape_inconsistent",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "LOW",
+      "title": "同一个异常处理文件里三种响应形状：信封 / 空体 / 未知",
+      "detail": "GlobalExceptionHandler 一个文件里，错误响应有三种形状：\n  · handleBusiness / handleValidation / handleBadRequest / handleDataIntegrity / handleUnknown → 标准信封 {success,code,message,details,...}；\n  · handleClientAbort → 499 + **空 body**（实测 body_is_null=true，没有任何信封字段）；\n  · handleMaxUploadSize → 信封，但 details=null 且文案写死。\n前端按信封统一解析，遇到 499 会拿到 null / 解析异常。实测 499 的 body 确实是空的。\n另有一条正向结论：handleUnknown 只回「系统异常，请稍后重试」，不泄露任何内部细节。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "file_findings.json",
+        "index": 10
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FILE-NULL-BODY-WRAPPED-AS-SUCCESS",
+      "uid": "file:FILE-NULL-BODY-WRAPPED-AS-SUCCESS#11",
+      "layer": "file",
+      "category": "file.error_handling_pattern",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/ApiResponseAdvice.java",
+        "line": 0,
+        "symbol": "config/ApiResponseAdvice.java",
+        "endpoint": "",
+        "files": [
+          "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/ApiResponseAdvice.java"
+        ]
+      },
+      "claim": "null 响应体是否也被包成 success=true 的信封？",
+      "evidence_refs": [
+        "file_findings.json#FILE-NULL-BODY-WRAPPED-AS-SUCCESS"
+      ],
+      "repro_cmd": "python3 file_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "file",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "apiresponse.null_body_wrapped_as_success",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "LOW",
+      "title": "null 响应体也被包成 success=true 的信封（data 字段缺失）",
+      "detail": "ApiResponseAdvice.beforeBodyWrite 对 body==null 也照样包一层，产出 {success:true, code:OK, message:成功, traceId, timestamp}，data 因为 NON_NULL 被省略。前端拿到 success=true 但没有 data 字段，只能靠「data 存不存在」判断有无结果，与其它接口「data 一定有值」的假设冲突。\n实际链路无害：499 那条走 ResponseEntity<Void>，协商不出 JSON content type，不会走到包装分支。所以这是 INFO 级的契约不一致，不是现网故障。\n顺带两条正向结论：supports() 对 ResponseEntity<ApiResponse<...>> 返回 false（声明类型是 ResponseEntity），但 beforeBodyWrite 的 instanceof ApiResponse 守卫仍然挡住了二次包装；已经包好的信封不会被改写（already_envelope_unchanged=true）。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "file_findings.json",
+        "index": 11
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FILE-CORS-NEGATIVE-PRECISION",
+      "uid": "file:FILE-CORS-NEGATIVE-PRECISION#12",
+      "layer": "file",
+      "category": "UNMAPPED",
+      "category_fit": "unmapped",
+      "suggested_category": "service.authz",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "",
+        "endpoint": "",
+        "files": []
+      },
+      "claim": "CORS 白名单是精确匹配、而不是通配全放？",
+      "evidence_refs": [
+        "file_findings.json#FILE-CORS-NEGATIVE-PRECISION"
+      ],
+      "repro_cmd": "python3 file_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "file",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "cors.negative_precision_proven",
+      "related_root_causes": [],
+      "kind": "positive",
+      "severity": "INFO",
+      "title": "CORS 白名单是精确匹配，不是通配全放",
+      "detail": "负向探针全部被拒：evil.example.com、https://evil.example.com、localhost.evil.com、null、http://[::1]:5173 都没有拿到 Access-Control-Allow-Origin。这条不修 CORS 的话没人会知道 —— 白名单本身没写错，错在范围太大。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "file_findings.json",
+        "index": 12
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FILE-NO-DEAD-PRIVATE-METHOD",
+      "uid": "file:FILE-NO-DEAD-PRIVATE-METHOD#13",
+      "layer": "file",
+      "category": "file.cohesion",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "",
+        "endpoint": "",
+        "files": []
+      },
+      "claim": "文件层是否真的没有无人调用的私有方法？",
+      "evidence_refs": [
+        "file_findings.json#FILE-NO-DEAD-PRIVATE-METHOD"
+      ],
+      "repro_cmd": "python3 file_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.88,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "file",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "dead_private_method.none",
+      "related_root_causes": [],
+      "kind": "positive",
+      "severity": "INFO",
+      "title": "没有真正无人调用的私有方法",
+      "detail": "私有方法可达性用「同类内部调用 + 方法引用（常量池里的 ::）」两条证据判定。全仓只有 2 个方法报不可达，都是枚举编译器生成的 $values（合成方法，非死代码）。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "file_findings.json",
+        "index": 13
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FILE-ROLLBACK-PROVEN",
+      "uid": "file:FILE-ROLLBACK-PROVEN#14",
+      "layer": "file",
+      "category": "file.error_handling_pattern",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "",
+        "endpoint": "",
+        "files": []
+      },
+      "claim": "事务边界是否实测有效、中途失败不留残局？",
+      "evidence_refs": [
+        "file_findings.json#FILE-ROLLBACK-PROVEN"
+      ],
+      "repro_cmd": "python3 file_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "file",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "txn.rollback_proven",
+      "related_root_causes": [],
+      "kind": "positive",
+      "severity": "INFO",
+      "title": "事务边界实测有效：中途失败不留残局",
+      "detail": "服务文件里存在「先删后校验」的编排缺陷，但真实 HTTP 链路下 404 之后 DB 的 package_items（10 条明细，逐条比对）与 packages.name 都完全没变。声明（有 @Transactional）与实测（真回滚）一致 —— 这条是正向结论，它同时也是上一条缺陷被降级为 MEDIUM 的依据。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "file_findings.json",
+        "index": 14
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FILE-STATIC-ORACLE-BLIND-SPOT",
+      "uid": "file:FILE-STATIC-ORACLE-BLIND-SPOT#15",
+      "layer": "file",
+      "category": "UNMAPPED",
+      "category_fit": "unmapped",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "",
+        "endpoint": "",
+        "files": []
+      },
+      "claim": "静态 oracle 是否存在编译期常量内联这类盲区？",
+      "evidence_refs": [
+        "file_findings.json#FILE-STATIC-ORACLE-BLIND-SPOT"
+      ],
+      "repro_cmd": "python3 file_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.8,
+      "ground_truth": "unverified",
+      "cwe": [],
+      "owner": {
+        "layer": "file",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "static_oracle.blind_spot_compile_time_constant",
+      "related_root_causes": [],
+      "kind": "observation",
+      "severity": "INFO",
+      "title": "静态 oracle 的一处已知盲区：编译期常量内联",
+      "detail": "字段使用矩阵把 TraceContext.TRACE_ID_HEADER / MDC_TRACE_ID 标成 unused，但它们确实在被用。原因是 javac 把 static final String 常量在编译期内联进了调用点，字节码里根本没有 getstatic 指令 —— 单看一个类的字节码，看不出跨文件的常量引用。\n记录在案：这一类结论（字段是否真的没人用）只能靠动态侧补，不能拿静态矩阵当定论。这也是分层审计的意义 —— 静态给方向，动态给定论。",
+      "related": [],
+      "note": "这是对工具盲区的记录，不是被测系统的性质",
+      "source": {
+        "file": "file_findings.json",
+        "index": 15
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FILE-STATIC-SAME-ROOT",
+      "uid": "file:FILE-STATIC-SAME-ROOT#16",
+      "layer": "file",
+      "category": "UNMAPPED",
+      "category_fit": "unmapped",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "",
+        "endpoint": "",
+        "files": []
+      },
+      "claim": "静态映射根与上传根是否同源？",
+      "evidence_refs": [
+        "file_findings.json#FILE-STATIC-SAME-ROOT"
+      ],
+      "repro_cmd": "python3 file_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.85,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "file",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "static_root.same_root",
+      "related_root_causes": [],
+      "kind": "positive",
+      "severity": "INFO",
+      "title": "静态映射根与上传根同源（manifest 假设被证伪）",
+      "detail": "WebConfig 的静态资源根与 UploadService 的上传根读的是同一个配置项 app.file-upload-dir，实测都是 /app/uploads。manifest 里「未做同源校验」的怀疑不成立 —— 问题不在根不同源，而在 toUri() 的尾部斜杠规范化。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "file_findings.json",
+        "index": 16
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FILE-TXN-BOUNDARY-COMPLETE",
+      "uid": "file:FILE-TXN-BOUNDARY-COMPLETE#17",
+      "layer": "file",
+      "category": "file.error_handling_pattern",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "",
+        "endpoint": "",
+        "files": []
+      },
+      "claim": "全仓写方法的事务边界是否一个不缺？",
+      "evidence_refs": [
+        "file_findings.json#FILE-TXN-BOUNDARY-COMPLETE"
+      ],
+      "repro_cmd": "python3 file_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "file",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "txn.boundary_complete",
+      "related_root_causes": [],
+      "kind": "positive",
+      "severity": "INFO",
+      "title": "全仓写方法的事务边界一个不缺",
+      "detail": "静态侧扫了 63 个文件 / 466 个方法：所有「写实体字段或调仓库写方法」的服务方法都带 @Transactional，缺失数为 0。这是静态差分给出的通过结论 —— 不是没查，是查过确实没有。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "file_findings.json",
+        "index": 17
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "NO_AUTHZ",
+      "uid": "service:NO_AUTHZ#0",
+      "layer": "service",
+      "category": "service.authz",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "ALL",
+        "endpoint": "ALL"
+      },
+      "claim": "全系统是否根本没有授权不变量，无凭证即可读写全部业务数据？",
+      "evidence_refs": [
+        "findings.json#NO_AUTHZ"
+      ],
+      "repro_cmd": "curl http://127.0.0.1:8081/api/orders   # 无任何凭证",
+      "repro_granularity": "endpoint",
+      "confidence": 0.98,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-306",
+        "CWE-862"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "authz.no_authorization_layer",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "CRITICAL",
+      "title": "全系统零鉴权：无凭证即可读写全部业务数据",
+      "detail": "源码无任何鉴权注解 (空)、classpath 无 spring-security；动态实测带伪造 Bearer token 仍可成功读取订单 /api/orders。这里不是实现漏了鉴权，而是授权不变量根本不存在。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "findings.json",
+        "index": 0
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "UNHANDLED_HTTP_EXCEPTION",
+      "uid": "service:UNHANDLED_HTTP_EXCEPTION#1",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "POST /api/uploads/package-image",
+        "endpoint": "POST /api/uploads/package-image"
+      },
+      "claim": "客户端错误是否被当成服务端错误返回 500？",
+      "evidence_refs": [
+        "findings.json#UNHANDLED_HTTP_EXCEPTION"
+      ],
+      "repro_cmd": "curl -X POST 见 observation.json 中 key=POST /api/uploads/package-image 的 missing_multipart_part 场景",
+      "repro_granularity": "endpoint",
+      "confidence": 0.94,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-755"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.client_error_mapped_to_500",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "HIGH",
+      "title": "客户端错误被当成服务端错误：返回 [500]",
+      "detail": "OpenAPI 只声明 200；畸形请求触发 500 INTERNAL_ERROR。GlobalExceptionHandler 没有为该异常类型注册 @ExceptionHandler，落到兜底 Exception 分支 —— 客户端错误被当成服务端故障，污染告警与 SLO。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "findings.json",
+        "index": 1
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "UNHANDLED_HTTP_EXCEPTION",
+      "uid": "service:UNHANDLED_HTTP_EXCEPTION#2",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "POST /api/uploads/product-image",
+        "endpoint": "POST /api/uploads/product-image"
+      },
+      "claim": "客户端错误是否被当成服务端错误返回 500？",
+      "evidence_refs": [
+        "findings.json#UNHANDLED_HTTP_EXCEPTION"
+      ],
+      "repro_cmd": "curl -X POST 见 observation.json 中 key=POST /api/uploads/product-image 的 missing_multipart_part 场景",
+      "repro_granularity": "endpoint",
+      "confidence": 0.94,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-755"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.client_error_mapped_to_500",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "HIGH",
+      "title": "客户端错误被当成服务端错误：返回 [500]",
+      "detail": "OpenAPI 只声明 200；畸形请求触发 500 INTERNAL_ERROR。GlobalExceptionHandler 没有为该异常类型注册 @ExceptionHandler，落到兜底 Exception 分支 —— 客户端错误被当成服务端故障，污染告警与 SLO。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "findings.json",
+        "index": 2
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "TYPE_COERCION",
+      "uid": "service:TYPE_COERCION#3",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/CategoryController.java",
+        "line": 35,
+        "symbol": "POST /api/categories",
+        "endpoint": "POST /api/categories"
+      },
+      "claim": "错误 JSON 类型是否被隐式转换后接受？",
+      "evidence_refs": [
+        "findings.json#TYPE_COERCION"
+      ],
+      "repro_cmd": "curl -X POST /api/categories -d {\"name\": 12345}",
+      "repro_granularity": "endpoint",
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-20"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "jackson.lenient_type_coercion",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误 JSON 类型被隐式转换后接受（字段 name）",
+      "detail": "OpenAPI 声明该字段为特定类型，实际发送错误类型仍被 200 接受——Jackson 隐式把数字转成字符串等。调用方拼错类型不会报错，只会静默变成脏数据。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "findings.json",
+        "index": 3
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "TYPE_COERCION",
+      "uid": "service:TYPE_COERCION#4",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageTypeController.java",
+        "line": 35,
+        "symbol": "POST /api/package-types",
+        "endpoint": "POST /api/package-types"
+      },
+      "claim": "错误 JSON 类型是否被隐式转换后接受？",
+      "evidence_refs": [
+        "findings.json#TYPE_COERCION"
+      ],
+      "repro_cmd": "curl -X POST /api/package-types -d {\"name\": 12345}",
+      "repro_granularity": "endpoint",
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-20"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "jackson.lenient_type_coercion",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误 JSON 类型被隐式转换后接受（字段 name）",
+      "detail": "OpenAPI 声明该字段为特定类型，实际发送错误类型仍被 200 接受——Jackson 隐式把数字转成字符串等。调用方拼错类型不会报错，只会静默变成脏数据。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "findings.json",
+        "index": 4
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#5",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/CategoryController.java",
+        "line": 41,
+        "symbol": "DELETE /api/categories/{id}",
+        "endpoint": "DELETE /api/categories/{id}"
+      },
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
+      "evidence_refs": [
+        "findings.json#INTERNAL_LEAK"
+      ],
+      "repro_cmd": "curl -X DELETE /api/categories/None",
+      "repro_granularity": "endpoint",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "related": [],
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
+      "source": {
+        "file": "findings.json",
+        "index": 5
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#6",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageTypeController.java",
+        "line": 41,
+        "symbol": "DELETE /api/package-types/{id}",
+        "endpoint": "DELETE /api/package-types/{id}"
+      },
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
+      "evidence_refs": [
+        "findings.json#INTERNAL_LEAK"
+      ],
+      "repro_cmd": "curl -X DELETE /api/package-types/None",
+      "repro_granularity": "endpoint",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "related": [],
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
+      "source": {
+        "file": "findings.json",
+        "index": 6
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#7",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageController.java",
+        "line": 71,
+        "symbol": "DELETE /api/packages/{id}",
+        "endpoint": "DELETE /api/packages/{id}"
+      },
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
+      "evidence_refs": [
+        "findings.json#INTERNAL_LEAK"
+      ],
+      "repro_cmd": "curl -X DELETE /api/packages/None",
+      "repro_granularity": "endpoint",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "related": [],
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
+      "source": {
+        "file": "findings.json",
+        "index": 7
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#8",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java",
+        "line": 65,
+        "symbol": "DELETE /api/products/{id}",
+        "endpoint": "DELETE /api/products/{id}"
+      },
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
+      "evidence_refs": [
+        "findings.json#INTERNAL_LEAK"
+      ],
+      "repro_cmd": "curl -X DELETE /api/products/None",
+      "repro_granularity": "endpoint",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "related": [],
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
+      "source": {
+        "file": "findings.json",
+        "index": 8
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#9",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
+        "line": 46,
+        "symbol": "GET /api/orders/{id}",
+        "endpoint": "GET /api/orders/{id}"
+      },
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
+      "evidence_refs": [
+        "findings.json#INTERNAL_LEAK"
+      ],
+      "repro_cmd": "curl -X GET /api/orders/None",
+      "repro_granularity": "endpoint",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "related": [],
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
+      "source": {
+        "file": "findings.json",
+        "index": 9
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#10",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageController.java",
+        "line": 47,
+        "symbol": "GET /api/packages/{id}",
+        "endpoint": "GET /api/packages/{id}"
+      },
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
+      "evidence_refs": [
+        "findings.json#INTERNAL_LEAK"
+      ],
+      "repro_cmd": "curl -X GET /api/packages/None",
+      "repro_granularity": "endpoint",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "related": [],
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
+      "source": {
+        "file": "findings.json",
+        "index": 10
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#11",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
+        "line": 64,
+        "symbol": "PATCH /api/orders/{id}/status",
+        "endpoint": "PATCH /api/orders/{id}/status"
+      },
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
+      "evidence_refs": [
+        "findings.json#INTERNAL_LEAK"
+      ],
+      "repro_cmd": "curl -X PATCH /api/orders/None/status",
+      "repro_granularity": "endpoint",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "related": [],
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
+      "source": {
+        "file": "findings.json",
+        "index": 11
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#12",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
+        "line": 64,
+        "symbol": "PATCH /api/orders/{id}/status",
+        "endpoint": "PATCH /api/orders/{id}/status"
+      },
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
+      "evidence_refs": [
+        "findings.json#INTERNAL_LEAK"
+      ],
+      "repro_cmd": "curl -X PATCH /api/orders/None/status",
+      "repro_granularity": "endpoint",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "related": [],
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
+      "source": {
+        "file": "findings.json",
+        "index": 12
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#13",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
+        "line": 64,
+        "symbol": "PATCH /api/orders/{id}/status",
+        "endpoint": "PATCH /api/orders/{id}/status"
+      },
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
+      "evidence_refs": [
+        "findings.json#INTERNAL_LEAK"
+      ],
+      "repro_cmd": "curl -X PATCH /api/orders/None/status",
+      "repro_granularity": "endpoint",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "related": [],
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
+      "source": {
+        "file": "findings.json",
+        "index": 13
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#14",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageController.java",
+        "line": 65,
+        "symbol": "PATCH /api/packages/{id}/status",
+        "endpoint": "PATCH /api/packages/{id}/status"
+      },
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
+      "evidence_refs": [
+        "findings.json#INTERNAL_LEAK"
+      ],
+      "repro_cmd": "curl -X PATCH /api/packages/None/status",
+      "repro_granularity": "endpoint",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "related": [],
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
+      "source": {
+        "file": "findings.json",
+        "index": 14
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#15",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageController.java",
+        "line": 65,
+        "symbol": "PATCH /api/packages/{id}/status",
+        "endpoint": "PATCH /api/packages/{id}/status"
+      },
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
+      "evidence_refs": [
+        "findings.json#INTERNAL_LEAK"
+      ],
+      "repro_cmd": "curl -X PATCH /api/packages/None/status",
+      "repro_granularity": "endpoint",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "related": [],
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
+      "source": {
+        "file": "findings.json",
+        "index": 15
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#16",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageController.java",
+        "line": 65,
+        "symbol": "PATCH /api/packages/{id}/status",
+        "endpoint": "PATCH /api/packages/{id}/status"
+      },
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
+      "evidence_refs": [
+        "findings.json#INTERNAL_LEAK"
+      ],
+      "repro_cmd": "curl -X PATCH /api/packages/None/status",
+      "repro_granularity": "endpoint",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "related": [],
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
+      "source": {
+        "file": "findings.json",
+        "index": 16
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#17",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java",
+        "line": 59,
+        "symbol": "PATCH /api/products/{id}/status",
+        "endpoint": "PATCH /api/products/{id}/status"
+      },
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
+      "evidence_refs": [
+        "findings.json#INTERNAL_LEAK"
+      ],
+      "repro_cmd": "curl -X PATCH /api/products/None/status",
+      "repro_granularity": "endpoint",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "related": [],
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
+      "source": {
+        "file": "findings.json",
+        "index": 17
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#18",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java",
+        "line": 59,
+        "symbol": "PATCH /api/products/{id}/status",
+        "endpoint": "PATCH /api/products/{id}/status"
+      },
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
+      "evidence_refs": [
+        "findings.json#INTERNAL_LEAK"
+      ],
+      "repro_cmd": "curl -X PATCH /api/products/None/status",
+      "repro_granularity": "endpoint",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "related": [],
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
+      "source": {
+        "file": "findings.json",
+        "index": 18
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#19",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java",
+        "line": 59,
+        "symbol": "PATCH /api/products/{id}/status",
+        "endpoint": "PATCH /api/products/{id}/status"
+      },
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
+      "evidence_refs": [
+        "findings.json#INTERNAL_LEAK"
+      ],
+      "repro_cmd": "curl -X PATCH /api/products/None/status",
+      "repro_granularity": "endpoint",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "related": [],
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
+      "source": {
+        "file": "findings.json",
+        "index": 19
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#20",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java",
+        "line": 47,
+        "symbol": "POST /api/products",
+        "endpoint": "POST /api/products"
+      },
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
+      "evidence_refs": [
+        "findings.json#INTERNAL_LEAK"
+      ],
+      "repro_cmd": "curl -X POST /api/products",
+      "repro_granularity": "endpoint",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（JSON parse error: Cannot deserialize value of type `java.lang.Long` from String ...），泄漏内部类名、框架类型与反序列化细节。",
+      "related": [],
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
+      "source": {
+        "file": "findings.json",
+        "index": 20
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#21",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
+        "line": 58,
+        "symbol": "PUT /api/orders/{id}",
+        "endpoint": "PUT /api/orders/{id}"
+      },
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
+      "evidence_refs": [
+        "findings.json#INTERNAL_LEAK"
+      ],
+      "repro_cmd": "curl -X PUT /api/orders/None",
+      "repro_granularity": "endpoint",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "related": [],
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
+      "source": {
+        "file": "findings.json",
+        "index": 21
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#22",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
+        "line": 58,
+        "symbol": "PUT /api/orders/{id}",
+        "endpoint": "PUT /api/orders/{id}"
+      },
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
+      "evidence_refs": [
+        "findings.json#INTERNAL_LEAK"
+      ],
+      "repro_cmd": "curl -X PUT /api/orders/None",
+      "repro_granularity": "endpoint",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "related": [],
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
+      "source": {
+        "file": "findings.json",
+        "index": 22
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#23",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
+        "line": 58,
+        "symbol": "PUT /api/orders/{id}",
+        "endpoint": "PUT /api/orders/{id}"
+      },
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
+      "evidence_refs": [
+        "findings.json#INTERNAL_LEAK"
+      ],
+      "repro_cmd": "curl -X PUT /api/orders/None",
+      "repro_granularity": "endpoint",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "related": [],
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
+      "source": {
+        "file": "findings.json",
+        "index": 23
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#24",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageController.java",
+        "line": 59,
+        "symbol": "PUT /api/packages/{id}",
+        "endpoint": "PUT /api/packages/{id}"
+      },
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
+      "evidence_refs": [
+        "findings.json#INTERNAL_LEAK"
+      ],
+      "repro_cmd": "curl -X PUT /api/packages/None",
+      "repro_granularity": "endpoint",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "related": [],
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
+      "source": {
+        "file": "findings.json",
+        "index": 24
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#25",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageController.java",
+        "line": 59,
+        "symbol": "PUT /api/packages/{id}",
+        "endpoint": "PUT /api/packages/{id}"
+      },
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
+      "evidence_refs": [
+        "findings.json#INTERNAL_LEAK"
+      ],
+      "repro_cmd": "curl -X PUT /api/packages/None",
+      "repro_granularity": "endpoint",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "related": [],
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
+      "source": {
+        "file": "findings.json",
+        "index": 25
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#26",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageController.java",
+        "line": 59,
+        "symbol": "PUT /api/packages/{id}",
+        "endpoint": "PUT /api/packages/{id}"
+      },
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
+      "evidence_refs": [
+        "findings.json#INTERNAL_LEAK"
+      ],
+      "repro_cmd": "curl -X PUT /api/packages/None",
+      "repro_granularity": "endpoint",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "related": [],
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
+      "source": {
+        "file": "findings.json",
+        "index": 26
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#27",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java",
+        "line": 53,
+        "symbol": "PUT /api/products/{id}",
+        "endpoint": "PUT /api/products/{id}"
+      },
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
+      "evidence_refs": [
+        "findings.json#INTERNAL_LEAK"
+      ],
+      "repro_cmd": "curl -X PUT /api/products/None",
+      "repro_granularity": "endpoint",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "related": [],
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
+      "source": {
+        "file": "findings.json",
+        "index": 27
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#28",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java",
+        "line": 53,
+        "symbol": "PUT /api/products/{id}",
+        "endpoint": "PUT /api/products/{id}"
+      },
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
+      "evidence_refs": [
+        "findings.json#INTERNAL_LEAK"
+      ],
+      "repro_cmd": "curl -X PUT /api/products/None",
+      "repro_granularity": "endpoint",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "related": [],
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
+      "source": {
+        "file": "findings.json",
+        "index": 28
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#29",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java",
+        "line": 53,
+        "symbol": "PUT /api/products/{id}",
+        "endpoint": "PUT /api/products/{id}"
+      },
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
+      "evidence_refs": [
+        "findings.json#INTERNAL_LEAK"
+      ],
+      "repro_cmd": "curl -X PUT /api/products/None",
+      "repro_granularity": "endpoint",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-209"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "related": [],
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
+      "source": {
+        "file": "findings.json",
+        "index": 29
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "NO_STATE_MACHINE",
+      "uid": "class:NO_STATE_MACHINE#0",
+      "layer": "class",
+      "category": "class.invariant",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/BanquetOrder.java",
+        "line": 0,
+        "symbol": "",
+        "endpoint": ""
+      },
+      "claim": "订单状态迁移是否没有任何约束，9/9 种迁移全被接受？",
+      "evidence_refs": [
+        "class_findings.json#NO_STATE_MACHINE"
+      ],
+      "repro_cmd": "python3 class_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.96,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-840"
+      ],
+      "owner": {
+        "layer": "class",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "order.status.transition_unconstrained",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "HIGH",
+      "title": "状态机缺失：9/9 种迁移全部被接受，含回退",
+      "detail": "DDL 只有取值白名单 CHECK (status IN (...))，没有任何迁移约束；实测 9 种迁移全部 200 成功。业务后果：已付款（DEPOSIT_PAID）/已完成（COMPLETED）的订单可以被改回 PENDING，押金与结算状态和现实不符，而且没有留下任何迁移记录。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "class_findings.json",
+        "index": 0
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "INDEX_UNUSABLE_FOR_QUERY_PATTERN",
+      "uid": "class:INDEX_UNUSABLE_FOR_QUERY_PATTERN#1",
+      "layer": "class",
+      "category": "service.service_latency",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/Product.java",
+        "line": 0,
+        "symbol": "",
+        "endpoint": ""
+      },
+      "claim": "DDL 声明的 idx_products_name 对服务层查询模式是否真的可用？",
+      "evidence_refs": [
+        "class_findings.json#INDEX_UNUSABLE_FOR_QUERY_PATTERN"
+      ],
+      "repro_cmd": "python3 class_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.88,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "index.idx_products_name_unusable",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "HIGH",
+      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.752ms vs 0.013ms，差 596 倍）",
+      "detail": "迁移文件建了 products(name) 索引，但服务层关键词搜索写的是 lower(name) LIKE '%kw%'：lower() 让索引无法用于定位，前导 % 让 btree 本来也用不上。EXPLAIN 显示走 Filter 全量过滤而非 Index Cond。类层把索引交给服务层，但服务层不知道该怎么用它 —— 声明没有传递下去。",
+      "related": [],
+      "note": "检测在 class 层（实体与 DDL 对齐），归属层是 service（查询模式在服务层）",
+      "source": {
+        "file": "class_findings.json",
+        "index": 1
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "CLASS-RULE-MISSING-IN-ALL-LAYERS",
+      "uid": "class:CLASS-RULE-MISSING-IN-ALL-LAYERS#2",
+      "layer": "class",
+      "category": "class.invariant",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "",
+        "endpoint": ""
+      },
+      "claim": "那 4 条业务不变量在 DB / DTO / 服务层是否全都不存在？",
+      "evidence_refs": [
+        "class_findings.json#CLASS-RULE-MISSING-IN-ALL-LAYERS"
+      ],
+      "repro_cmd": "python3 class_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.85,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-840"
+      ],
+      "owner": {
+        "layer": "class",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "rule.missing_in_db_dto_service",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "HIGH",
+      "title": "4 条业务不变量在 DB / DTO / 服务层三层全都不存在",
+      "detail": "这些不是「某一层写错了」，而是三层都没有表达过 —— 没有任何一层承担校验责任，实测 API 也全部放行并落库。订单的业务语义（定金不超过成交价、预订时间在未来、联系方式是手机号、完成必有定金）目前只存在于人的脑子里，不存在于任何一行代码或迁移文件里。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "class_findings.json",
+        "index": 2
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "SOFT_DELETE_RESURRECTS_ROW",
+      "uid": "class:SOFT_DELETE_RESURRECTS_ROW#3",
+      "layer": "class",
+      "category": "class.invariant",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "",
+        "endpoint": ""
+      },
+      "claim": "软删除的行被同名重建时是否会「复活」并沿用旧 id？",
+      "evidence_refs": [
+        "class_findings.json#SOFT_DELETE_RESURRECTS_ROW"
+      ],
+      "repro_cmd": "python3 class_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-840"
+      ],
+      "owner": {
+        "layer": "class",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "softdelete.resurrects_row",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "软删除的行会被同名重建「复活」，id 与 sort_order 沿用旧值",
+      "detail": "删除分类后用同名重建，命中的是同一条已软删记录（id 不变、sort_order 沿用旧的），而不是新建。DDL 的 UNIQUE(name) 与软删除语义冲突：删除不是删除，是可复活。id 复用会让历史引用（商品、订单快照）指向一个「看起来是新」的实体。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "class_findings.json",
+        "index": 3
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "NO_DATA_LIFECYCLE",
+      "uid": "class:NO_DATA_LIFECYCLE#4",
+      "layer": "class",
+      "category": "class.invariant",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/BanquetOrder.java",
+        "line": 0,
+        "symbol": "",
+        "endpoint": ""
+      },
+      "claim": "orders 表是否没有软删或归档、永久增长？",
+      "evidence_refs": [
+        "class_findings.json#NO_DATA_LIFECYCLE"
+      ],
+      "repro_cmd": "python3 class_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.8,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "class",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "orders.no_data_lifecycle",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "orders 表没有软删/归档，永久增长（当前 192 kB）",
+      "detail": "products/packages/categories 都有 is_deleted，orders 没有。订单是唯一不设生命周期的表，还带 2 个 jsonb 快照列和 6 个索引 —— 数据量上来后这张表会最先撑爆。",
+      "related": [],
+      "note": "类层无「生命周期」类别；资源上限语义更接近 service.resource_leak",
+      "source": {
+        "file": "class_findings.json",
+        "index": 4
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "CLASS-NOTNULL-BYPASSED-BY-EMPTY-STRING",
+      "uid": "class:CLASS-NOTNULL-BYPASSED-BY-EMPTY-STRING#5",
+      "layer": "class",
+      "category": "class.invariant",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/BanquetOrder.java",
+        "line": 0,
+        "symbol": "address",
+        "endpoint": ""
+      },
+      "claim": "NOT NULL 列是否可以用空串绕过？",
+      "evidence_refs": [
+        "class_findings.json#CLASS-NOTNULL-BYPASSED-BY-EMPTY-STRING"
+      ],
+      "repro_cmd": "python3 class_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-20"
+      ],
+      "owner": {
+        "layer": "class",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "db.notnull_bypassed_by_empty_string",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "orders.address 声明 NOT NULL，实际用空串绕过 —— 非空约束只挡了 NULL",
+      "detail": "三方声明：DB 列 address 为 NOT NULL，实体 @Column(nullable=false)，但 DTO 的 address 没有任何约束。实测：客户端不传 address，接口返回 200，库里落的是空串 ''。NOT NULL 只证明列不是 NULL，空串照样入库 —— 约束拦不住业务上的空。后果：订单地址为空，宴会执行单拿不到地址，且没有任何一层会报错。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "class_findings.json",
+        "index": 5
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "CLASS-REQUIRED-CHECKED-IN-SERVICE-LAYER",
+      "uid": "class:CLASS-REQUIRED-CHECKED-IN-SERVICE-LAYER#6",
+      "layer": "class",
+      "category": "class.contract_violation",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/BanquetOrder.java",
+        "line": 0,
+        "symbol": "final_price_cent",
+        "endpoint": ""
+      },
+      "claim": "必填性校验是否落在服务层、DTO 少一条 @NotNull？",
+      "evidence_refs": [
+        "class_findings.json#CLASS-REQUIRED-CHECKED-IN-SERVICE-LAYER"
+      ],
+      "repro_cmd": "python3 class_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.88,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "class",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "dto.required_check_missing",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "orders.finalPriceCent 必填性校验落在服务层，DTO 少一条 @NotNull",
+      "detail": "DB 与实体都声明 NOT NULL，DTO 只写了 @Min(0) 而没有 @NotNull —— 字段在传输层是可空的，靠服务层补一句判断拦住。实测：传 null 返回 422 / PRICE_INVALID，文案是「成交价不能小于 0」。后果一：责任错层，任何绕过服务层的写入方（脚本、数据修复）都会撞 DB 报错；后果二：报错文案说的是「小于 0」，真实原因是「不能为空」，客户端无法据此定位。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "class_findings.json",
+        "index": 6
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "CLASS-PUT-WIPES-UNSET-FIELD",
+      "uid": "class:CLASS-PUT-WIPES-UNSET-FIELD#7",
+      "layer": "class",
+      "category": "class.contract_violation",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/Product.java",
+        "line": 0,
+        "symbol": "",
+        "endpoint": ""
+      },
+      "claim": "PUT 全量覆盖是否会把不传的字段抹成 NULL？",
+      "evidence_refs": [
+        "class_findings.json#CLASS-PUT-WIPES-UNSET-FIELD"
+      ],
+      "repro_cmd": "python3 class_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.91,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-20"
+      ],
+      "owner": {
+        "layer": "class",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "api.put_full_overwrite",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "PUT 是全量覆盖：不传的 imageUrl 会被抹成 NULL",
+      "detail": "UpdateProductRequest.imageUrl 没有任何约束（可缺省），但 PUT 的语义是全量替换。实测：创建时带图片路径，随后一次不带 imageUrl 的 PUT 之后，image_url 变成 NULL。后果不是校验问题而是数据丢失 —— 磁盘上的图片文件还在，但数据库里的引用没了，文件成为孤儿，前端永远拿不到图。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "class_findings.json",
+        "index": 7
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES",
+      "uid": "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#8",
+      "layer": "class",
+      "category": "UNMAPPED",
+      "category_fit": "unmapped",
+      "suggested_category": "file.cohesion",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/Product.java",
+        "line": 0,
+        "symbol": "is_active",
+        "endpoint": ""
+      },
+      "claim": "同一列的默认值是否被声明了三遍？",
+      "evidence_refs": [
+        "class_findings.json#CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES"
+      ],
+      "repro_cmd": "python3 class_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.86,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "class",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "column.default_declared_in_three_places",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "LOW",
+      "title": "products.is_active 的默认值被声明了三遍",
+      "detail": "DB 列有 DEFAULT true，DTO 允许缺省，服务层再兜底成 true。实测：缺省时接口返回 200，落库 is_active=True。同一个默认值写三遍，改任何一处（比如把产品默认改成下架）另外两处不会跟着变，且不会有任何报错 —— 属于典型的静默漂移。",
+      "related": [],
+      "note": "缺陷跨三个文件（cohesion 信号），但 class 层的 escalation_to 只有 service，不能把归属上提到 file；owner 留在 class，与 manifest 的 attribution 一致",
+      "source": {
+        "file": "class_findings.json",
+        "index": 8
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES",
+      "uid": "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#9",
+      "layer": "class",
+      "category": "UNMAPPED",
+      "category_fit": "unmapped",
+      "suggested_category": "file.cohesion",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/BanquetPackage.java",
+        "line": 0,
+        "symbol": "is_active",
+        "endpoint": ""
+      },
+      "claim": "同一列的默认值是否被声明了三遍？",
+      "evidence_refs": [
+        "class_findings.json#CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES"
+      ],
+      "repro_cmd": "python3 class_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.86,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "class",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "column.default_declared_in_three_places",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "LOW",
+      "title": "packages.is_active 的默认值被声明了三遍",
+      "detail": "DB 列有 DEFAULT true，DTO 允许缺省，服务层再兜底成 true。实测：缺省时接口返回 200，落库 is_active=True。同一个默认值写三遍，改任何一处（比如把产品默认改成下架）另外两处不会跟着变，且不会有任何报错 —— 属于典型的静默漂移。",
+      "related": [],
+      "note": "缺陷跨三个文件（cohesion 信号），但 class 层的 escalation_to 只有 service，不能把归属上提到 file；owner 留在 class，与 manifest 的 attribution 一致",
+      "source": {
+        "file": "class_findings.json",
+        "index": 9
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "CLASS-ERROR-MESSAGE-MISMATCH",
+      "uid": "class:CLASS-ERROR-MESSAGE-MISMATCH#10",
+      "layer": "class",
+      "category": "class.contract_violation",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/BanquetOrder.java",
+        "line": 0,
+        "symbol": "",
+        "endpoint": ""
+      },
+      "claim": "报错文案是否与真实触发条件不一致？",
+      "evidence_refs": [
+        "class_findings.json#CLASS-ERROR-MESSAGE-MISMATCH"
+      ],
+      "repro_cmd": "python3 class_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.85,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "class",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "error.message_mismatch",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "LOW",
+      "title": "finalPriceCent=null 的报错文案说的是「小于 0」，真实原因是「不能为空」",
+      "detail": "null 触发的是必填缺失，却复用了一个数值区间的错误文案。客户端拿到 422 后按「价格太小」去提示用户，实际用户根本没填价格。这类错误文案漂移会让前端提示整体失真。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "class_findings.json",
+        "index": 10
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "CLASS-ENUM-CASE-SENSITIVE",
+      "uid": "class:CLASS-ENUM-CASE-SENSITIVE#11",
+      "layer": "class",
+      "category": "class.contract_violation",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/OrderStatus.java",
+        "line": 0,
+        "symbol": "",
+        "endpoint": ""
+      },
+      "claim": "状态枚举是否大小写敏感，小写 pending 直接 400？",
+      "evidence_refs": [
+        "class_findings.json#CLASS-ENUM-CASE-SENSITIVE"
+      ],
+      "repro_cmd": "python3 class_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.82,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "class",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "enum.case_sensitive",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "LOW",
+      "title": "订单状态枚举大小写敏感，小写 pending 直接 400",
+      "detail": "DTO 的 status 字段直接用 OrderStatus 枚举，Jackson 默认大小写敏感。实测传 'pending' 返回 400「订单状态不正确」。对外 API 的枚举值应当约定为大小写不敏感或明确写进 OpenAPI，否则每个新客户端都会踩一次。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "class_findings.json",
+        "index": 11
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "ENUM_CHECK_ALIGNED",
+      "uid": "class:ENUM_CHECK_ALIGNED#12",
+      "layer": "class",
+      "category": "class.contract_violation",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/OrderStatus.java",
+        "line": 0,
+        "symbol": "",
+        "endpoint": ""
+      },
+      "claim": "枚举与 DB CHECK 白名单是否完全一致？",
+      "evidence_refs": [
+        "class_findings.json#ENUM_CHECK_ALIGNED"
+      ],
+      "repro_cmd": "python3 class_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.95,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "class",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "enum.check_aligned",
+      "related_root_causes": [],
+      "kind": "positive",
+      "severity": "INFO",
+      "title": "OrderStatus 枚举与 DB CHECK 白名单完全一致（3/3）",
+      "detail": "这是一次「没有问题」的差分结论 —— 差分引擎既能报问题也能给出通过结论。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "class_findings.json",
+        "index": 12
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "CLASS-NULLABILITY-ALIGNED",
+      "uid": "class:CLASS-NULLABILITY-ALIGNED#13",
+      "layer": "class",
+      "category": "class.invariant",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "",
+        "endpoint": ""
+      },
+      "claim": "可空性是否三方一致？",
+      "evidence_refs": [
+        "class_findings.json#CLASS-NULLABILITY-ALIGNED"
+      ],
+      "repro_cmd": "python3 class_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.93,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "class",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "nullability.aligned",
+      "related_root_causes": [],
+      "kind": "positive",
+      "severity": "INFO",
+      "title": "可空性三方一致 27/31 列（同向设防 21 · DTO 更严 0 · 都可空 6）",
+      "detail": "这是差分引擎的通过结论：DTO 的非空声明要么与 DB 一致，要么比 DB 更严（DTO 先拦，留给 DB 兜底），方向正确。不成立的只有下面单列出来的那几列。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "class_findings.json",
+        "index": 13
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "CLASS-CHECK-DTO-ALIGNED",
+      "uid": "class:CLASS-CHECK-DTO-ALIGNED#14",
+      "layer": "class",
+      "category": "class.contract_violation",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "",
+        "endpoint": ""
+      },
+      "claim": "DB CHECK 是否在 DTO 层都有同义约束？",
+      "evidence_refs": [
+        "class_findings.json#CLASS-CHECK-DTO-ALIGNED"
+      ],
+      "repro_cmd": "python3 class_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "class",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "check.dto_aligned",
+      "related_root_causes": [],
+      "kind": "positive",
+      "severity": "INFO",
+      "title": "8/8 条 DB CHECK 在 DTO 层都有同义约束，防线链条闭合",
+      "detail": "DB 的 CHECK 不是孤岛：DTO 层有等价声明，两层同时设防。这类对齐决定了改一条业务规则要不要同时动三个文件。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "class_findings.json",
+        "index": 14
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "CLASS-PUT-REQUIRED-FK-GUARDED",
+      "uid": "class:CLASS-PUT-REQUIRED-FK-GUARDED#15",
+      "layer": "class",
+      "category": "class.contract_violation",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "",
+        "endpoint": ""
+      },
+      "claim": "PUT 缺省必填外键是否被 DTO 挡住？",
+      "evidence_refs": [
+        "class_findings.json#CLASS-PUT-REQUIRED-FK-GUARDED"
+      ],
+      "repro_cmd": "python3 class_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "class",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "put.required_fk_guarded",
+      "related_root_causes": [],
+      "kind": "positive",
+      "severity": "INFO",
+      "title": "PUT 缺省必填外键被 DTO 的 @NotNull 挡住（400，DB 无脏数据）",
+      "detail": "categoryId 在 DTO 上有 @NotNull，实测缺省时接口返回 400 且行未被改动。这是可空性差分里方向正确的一例：声明在最靠近输入的地方设防。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "class_findings.json",
+        "index": 15
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "INT-ANON-WRITE-REWRITES-SNAPSHOT",
+      "uid": "integration:INT-ANON-WRITE-REWRITES-SNAPSHOT#0",
+      "layer": "integration",
+      "category": "integration.cross_service_attack_chain",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "CHAIN-A",
+        "endpoint": "CHAIN-A"
+      },
+      "claim": "匿名写入是否连带重写订单快照、让历史快照失去证据效力？",
+      "evidence_refs": [
+        "integration_findings.json#INT-ANON-WRITE-REWRITES-SNAPSHOT",
+        "integration_chains.json#chain_steps"
+      ],
+      "repro_cmd": "无凭证 PUT /api/orders/{id}，改 packageItems → 查库 package_snapshot 已变",
+      "repro_granularity": "reference",
+      "confidence": 0.96,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-506",
+        "CWE-829"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "cited",
+        "basis": "根因归 service；本层拥有链级后果"
+      },
+      "root_cause_key": "authz.no_authorization_layer",
+      "related_root_causes": [
+        "order.snapshot.item_ownership_unchecked"
+      ],
+      "kind": "defect",
+      "severity": "CRITICAL",
+      "title": "匿名写入会连带重写订单快照：订单历史快照失去证据效力",
+      "detail": "PUT 走 apply() → buildPackageSnapshot()，匿名会话改明细后，订单快照被整体重建，原来记下的套餐明细不再可信。",
+      "related": [],
+      "note": "链级后果归集权在 integration 层，根因（零鉴权）归 service 层",
+      "source": {
+        "file": "integration_findings.json",
+        "index": 0
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "INT-UPLOAD-ANONYMOUS-READBACK",
+      "uid": "integration:INT-UPLOAD-ANONYMOUS-READBACK#1",
+      "layer": "integration",
+      "category": "integration.cross_service_attack_chain",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "CHAIN-B",
+        "endpoint": "CHAIN-B"
+      },
+      "claim": "上传内容是否匿名可读回、落盘字节与上传字节逐字节一致？",
+      "evidence_refs": [
+        "integration_findings.json#INT-UPLOAD-ANONYMOUS-READBACK",
+        "integration_chains.json#chain_steps"
+      ],
+      "repro_cmd": "POST /api/uploads/product-image（file=任意字节, image/png）→ GET 返回的 imageUrl",
+      "repro_granularity": "reference",
+      "confidence": 0.95,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-434",
+        "CWE-829"
+      ],
+      "owner": {
+        "layer": "function",
+        "relation": "cited",
+        "basis": "根因归 function；本层拥有链级后果"
+      },
+      "root_cause_key": "upload.content_type_not_sniffed",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "CRITICAL",
+      "title": "上传内容匿名可读回：落盘字节与上传字节逐字节一致",
+      "detail": "上传接口不校验内容（只信客户端声明），写盘路径又在 /uploads/** 公开映射下，任何人都能把任意字节放进站点并当作静态资源取回。",
+      "related": [],
+      "note": "链级后果归集成层，根因（不做内容嗅探）归函数层",
+      "source": {
+        "file": "integration_findings.json",
+        "index": 1
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "PRICE_CLIENT_CONTROLLED_XL",
+      "uid": "integration:PRICE_CLIENT_CONTROLLED_XL#2",
+      "layer": "integration",
+      "category": "integration.end_to_end_business",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
+        "line": 52,
+        "symbol": "POST /api/orders",
+        "endpoint": "POST /api/orders"
+      },
+      "claim": "同一订单里是否并存两个互相矛盾的价格？",
+      "evidence_refs": [
+        "integration_findings.json#PRICE_CLIENT_CONTROLLED_XL"
+      ],
+      "repro_cmd": "见 integration_observation.json scenarios[SC01_CLIENT_CONTROLLED_PRICE]",
+      "repro_granularity": "reference",
+      "confidence": 0.95,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-840"
+      ],
+      "owner": {
+        "layer": "function",
+        "relation": "cited",
+        "basis": "根因归 function；本层拥有链级后果"
+      },
+      "root_cause_key": "price.final_price.upper_bound_unvalidated",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "CRITICAL",
+      "title": "同一订单里并存两个互相矛盾的价格：成交价 0.01 元、套餐价 468.00 元",
+      "detail": "套餐标价 1 分，客户端报成交价 1 分，后端原样落库并返回 200。更糟的是集成症状：OrderResponse 同时返回 finalPriceCent=1 与 packageSnapshot.priceCent=46800，而前端 mapOrder 正好一个用来渲染金额、一个用来渲染套餐价 —— Pad 端同一张订单会同时显示 0.01 元和 468.00 元。服务端没有任何按套餐计价的能力，定价权完全在客户端手上。",
+      "related": [],
+      "note": "源数据把根因归 service 层；实测唯一决策点在 OrderService.resolveFinalPrice，函数层已给出可复现证据，故 owner 修正为 function",
+      "source": {
+        "file": "integration_findings.json",
+        "index": 2
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "INT-PII-MASKED-ONLY-IN-FRONTEND",
+      "uid": "integration:INT-PII-MASKED-ONLY-IN-FRONTEND#3",
+      "layer": "integration",
+      "category": "integration.end_to_end_business",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "CHAIN-A",
+        "endpoint": "CHAIN-A"
+      },
+      "claim": "手机号脱敏是否只做在渲染层，接口与库里都是明文？",
+      "evidence_refs": [
+        "integration_findings.json#INT-PII-MASKED-ONLY-IN-FRONTEND",
+        "integration_chains.json#chain_steps"
+      ],
+      "repro_cmd": "GET /api/orders?page=1&pageSize=100 → data[].customerPhone 是完整 11 位",
+      "repro_granularity": "reference",
+      "confidence": 0.95,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-359"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "cited",
+        "basis": "根因归 service；本层拥有链级后果"
+      },
+      "root_cause_key": "authz.no_authorization_layer",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "HIGH",
+      "title": "手机号脱敏只做在渲染层：接口与库里都是明文，匿名可批量拉取",
+      "detail": "订单详情抽屉把手机号显示成 138****9999，说明产品侧认定它是敏感字段；但 API 原样返回明文，库里也是明文。配合零鉴权，任何人可分页拉全量手机号。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "integration_findings.json",
+        "index": 3
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "INT-THREE-PRICES-NO-DETAIL-TOTAL",
+      "uid": "integration:INT-THREE-PRICES-NO-DETAIL-TOTAL#4",
+      "layer": "integration",
+      "category": "integration.end_to_end_business",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "CHAIN-D",
+        "endpoint": "CHAIN-D"
+      },
+      "claim": "同一订单是否并存三个互不相等的价格，界面只展示其中两个？",
+      "evidence_refs": [
+        "integration_findings.json#INT-THREE-PRICES-NO-DETAIL-TOTAL",
+        "integration_chains.json#chain_steps"
+      ],
+      "repro_cmd": "POST /api/orders(finalPriceCent=1) → PUT 改 packageItems.quantity=99 → 看订单详情",
+      "repro_granularity": "reference",
+      "confidence": 0.93,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-840"
+      ],
+      "owner": {
+        "layer": "function",
+        "relation": "cited",
+        "basis": "根因归 function；本层拥有链级后果"
+      },
+      "root_cause_key": "price.final_price.upper_bound_unvalidated",
+      "related_root_causes": [
+        "frontend.detail_total_not_surfaced"
+      ],
+      "kind": "defect",
+      "severity": "HIGH",
+      "title": "同一订单并存三个互不相等的价格，界面只展示其中两个，明细合计从不显示",
+      "detail": "客户端可把成交价改成 0.01 元，同时把明细数量改成 99；订单详情抽屉渲染了订单金额和套餐名，却没有渲染明细合计，业务侧没有任何一处能看出这两个数字对不上。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "integration_findings.json",
+        "index": 4
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "LIST_TRUNCATED_AT_100",
+      "uid": "integration:LIST_TRUNCATED_AT_100#5",
+      "layer": "integration",
+      "category": "integration.end_to_end_business",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java",
+        "line": 35,
+        "symbol": "GET /api/products, GET /api/packages, GET /api/orders",
+        "endpoint": "GET /api/products, GET /api/packages, GET /api/orders"
+      },
+      "claim": "前端列表是否固定只取前 100 条并丢弃 total？",
+      "evidence_refs": [
+        "integration_findings.json#LIST_TRUNCATED_AT_100"
+      ],
+      "repro_cmd": "见 integration_observation.json scenarios[SC05_LIST_TRUNCATION]",
+      "repro_granularity": "reference",
+      "confidence": 0.95,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "integration",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "frontend.list_hardcoded_limit_100",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "HIGH",
+      "title": "前端列表固定只取前 100 条并丢弃 total，超出的数据永远不可见",
+      "detail": "后端返回 total=137，实际 items 只有 100 条。前端三个列表接口都写死 page=1&pageSize=100，且拿到响应后只做 data.items.map(...)，PageResponse.total / totalPages 被整个丢弃 —— 用户看不到「还有 35 条」，也没有任何翻页入口。商品/套餐/订单一旦超过 100 条，数据库里多出来的记录在 Pad 端凭空消失。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "integration_findings.json",
+        "index": 5
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "PACKAGE_ITEM_NOT_VALIDATED",
+      "uid": "integration:PACKAGE_ITEM_NOT_VALIDATED#6",
+      "layer": "integration",
+      "category": "integration.end_to_end_business",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
+        "line": 52,
+        "symbol": "POST /api/orders",
+        "endpoint": "POST /api/orders"
+      },
+      "claim": "能否把不属于该套餐的商品写进套餐明细？",
+      "evidence_refs": [
+        "integration_findings.json#PACKAGE_ITEM_NOT_VALIDATED"
+      ],
+      "repro_cmd": "见 integration_observation.json scenarios[SC02_FOREIGN_ITEM_IN_PACKAGE]",
+      "repro_granularity": "reference",
+      "confidence": 0.93,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-20"
+      ],
+      "owner": {
+        "layer": "function",
+        "relation": "cited",
+        "basis": "根因归 function；本层拥有链级后果"
+      },
+      "root_cause_key": "order.snapshot.item_ownership_unchecked",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "HIGH",
+      "title": "可以把不属于该套餐的商品写进套餐明细，后端照单全收",
+      "detail": "下单时 packageItems 里塞进套餐外的商品（['ai_probe_prod_92c422']），后端只校验商品存在、不校验归属，200 通过并写进订单快照。订单快照里的「套餐明细」因此不代表真实套餐，后续对账无据可查。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "integration_findings.json",
+        "index": 6
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "PACKAGE_QUANTITY_NOT_VALIDATED",
+      "uid": "integration:PACKAGE_QUANTITY_NOT_VALIDATED#7",
+      "layer": "integration",
+      "category": "integration.end_to_end_business",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
+        "line": 52,
+        "symbol": "POST /api/orders",
+        "endpoint": "POST /api/orders"
+      },
+      "claim": "明细数量能否改成 99 而价格仍按套餐原价结算？",
+      "evidence_refs": [
+        "integration_findings.json#PACKAGE_QUANTITY_NOT_VALIDATED"
+      ],
+      "repro_cmd": "见 integration_observation.json scenarios[SC03_QUANTITY_OVERRIDE]",
+      "repro_granularity": "reference",
+      "confidence": 0.93,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-20"
+      ],
+      "owner": {
+        "layer": "function",
+        "relation": "cited",
+        "basis": "根因归 function；本层拥有链级后果"
+      },
+      "root_cause_key": "order.item_quantity_unvalidated",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "HIGH",
+      "title": "明细数量可以改成 99，价格仍按套餐原价结算（加量不加价）",
+      "detail": "下单时把套餐内商品数量改成 99 份，planTotalCent/finalPriceCent 仍是套餐原价 1 分 —— 后端不重算、不拒绝。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "integration_findings.json",
+        "index": 7
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "INT-PACKAGE-COUNT-INCONSISTENT",
+      "uid": "integration:INT-PACKAGE-COUNT-INCONSISTENT#8",
+      "layer": "integration",
+      "category": "integration.end_to_end_business",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "packages.item_count",
+        "endpoint": "packages.item_count"
+      },
+      "claim": "同一个套餐的界面上是否有两个互不相同的「商品数」？",
+      "evidence_refs": [
+        "integration_findings.json#INT-PACKAGE-COUNT-INCONSISTENT"
+      ],
+      "repro_cmd": "造一个套餐，明细含一个 is_active=false 的商品 → 对比卡片与弹层的数字",
+      "repro_granularity": "reference",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "integration",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "frontend.item_count_semantics_divergent",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "同一个套餐，界面上有两个互不相同的「商品数」",
+      "detail": "套餐卡片用 mapPackage.dishes（= API 的 itemCount，含已下架商品），选套餐弹层用 App.jsx 的 visibleItemCount（只数在架商品）。只要套餐里有下架商品，两个地方显示的数字就不一样，而且都不等于实际可下单明细数。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "integration_findings.json",
+        "index": 8
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "INT-PRODUCT-IMAGE-DOMAIN-FALLBACK",
+      "uid": "integration:INT-PRODUCT-IMAGE-DOMAIN-FALLBACK#9",
+      "layer": "integration",
+      "category": "integration.end_to_end_business",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "products.image_url",
+        "endpoint": "products.image_url"
+      },
+      "claim": "商品缺图时前端兜底是否兜成了套餐种子图？",
+      "evidence_refs": [
+        "integration_findings.json#INT-PRODUCT-IMAGE-DOMAIN-FALLBACK"
+      ],
+      "repro_cmd": "POST /api/products（imageUrl 留空）→ 前端 mapProduct → image 字段等于套餐种子图路径",
+      "repro_granularity": "reference",
+      "confidence": 0.88,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "integration",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "frontend.image_fallback_cross_domain",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "商品缺图时前端兜底成了套餐种子图",
+      "detail": "mapProduct 的兜底常量写的是套餐目录下的种子图（/uploads/seed/packages/...），商品位没有自己的兜底图。结果：任何没配图的商品，界面上都会显示一张宴会套餐照片。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "integration_findings.json",
+        "index": 9
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "RECORDING_COVERAGE_GAP",
+      "uid": "integration:RECORDING_COVERAGE_GAP#10",
+      "layer": "integration",
+      "category": "UNMAPPED",
+      "category_fit": "unmapped",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageController.java",
+        "line": 65,
+        "symbol": "PATCH /api/packages/{id}/status",
+        "endpoint": "PATCH /api/packages/{id}/status"
+      },
+      "claim": "是否有一批接口既无真实流量样本、前端也不调用？",
+      "evidence_refs": [
+        "integration_findings.json#RECORDING_COVERAGE_GAP"
+      ],
+      "repro_cmd": "见 /Users/june/tests/auto-api/recordings/jiuyan_readonly.jsonl",
+      "repro_granularity": "reference",
+      "confidence": 0.85,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "integration",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "tooling.coverage_recording_gap",
+      "related_root_causes": [],
+      "kind": "observation",
+      "severity": "MEDIUM",
+      "title": "1/25 个接口既无真实流量样本、前端也不调用；17 个写接口的真实流量样本为 0",
+      "detail": "录制流量只有 22 条、9 个路径，且 100% 是 GET 只读流量；下单、改价、改状态、删除、上传这些写路径一条真实样本都没有。上面几条集成缺陷之所以只能靠构造流量才发现，就是因为真实流量从来没覆盖过这些路径。",
+      "related": [],
+      "note": "覆盖度缺口，不是被测系统的缺陷；契约的 integration 类别里没有这一类",
+      "source": {
+        "file": "integration_findings.json",
+        "index": 10
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "SNAPSHOT_CONTRACT_UNDECLARED",
+      "uid": "integration:SNAPSHOT_CONTRACT_UNDECLARED#11",
+      "layer": "integration",
+      "category": "integration.end_to_end_business",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
+        "line": 34,
+        "symbol": "GET/POST/PUT /api/orders",
+        "endpoint": "GET/POST/PUT /api/orders"
+      },
+      "claim": "前端依赖的订单快照内部结构是否在 API 契约里零声明？",
+      "evidence_refs": [
+        "integration_findings.json#SNAPSHOT_CONTRACT_UNDECLARED"
+      ],
+      "repro_cmd": "grep -n 'packageSnapshot' backend/src/main/java/com/jiuyan/banquet/dto/OrderResponse.java",
+      "repro_granularity": "reference",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "integration",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "api.snapshot_structure_undeclared",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "前端依赖的订单快照内部结构，在 API 契约里零声明",
+      "detail": "OrderResponse 把 packageSnapshot / addedItemsSnapshot 声明成 JsonNode（自由 JSON），OpenAPI 与 DTO 都没有描述内部字段。前端 mapOrder 读取的 ['banquetType', 'items', 'packageId', 'packageName', 'priceCent', 'productId', 'productName', 'quantity'] 只靠「OrderService 里那段拼 JSON 的代码」维持约定 —— 任何人改动那段拼装逻辑，前端不会报错，只会显示 undefined。这是集权层专属的契约缺口：服务层自洽、类层自洽，只有两端拼在一起才看得见。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "integration_findings.json",
+        "index": 11
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "UNKNOWN_FIELD_SILENT_DROP",
+      "uid": "integration:UNKNOWN_FIELD_SILENT_DROP#12",
+      "layer": "integration",
+      "category": "integration.end_to_end_business",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
+        "line": 52,
+        "symbol": "POST /api/orders",
+        "endpoint": "POST /api/orders"
+      },
+      "claim": "字段名拼错是否被静默吞掉并被套餐默认明细顶替？",
+      "evidence_refs": [
+        "integration_findings.json#UNKNOWN_FIELD_SILENT_DROP"
+      ],
+      "repro_cmd": "见 integration_observation.json scenarios[SC04_UNKNOWN_FIELD_SILENT_DROP]",
+      "repro_granularity": "reference",
+      "confidence": 0.93,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-20"
+      ],
+      "owner": {
+        "layer": "integration",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "dto.unknown_field_silent_drop",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "字段名拼错会被静默吞掉，并被「套餐默认明细」悄悄顶替",
+      "detail": "把 packageItems 写成 packageItem 后端不报错（Jackson 默认忽略未知字段），而 OrderService 在明细为空时会回退到套餐自身的默认 items —— 于是用户明明选了 3 道菜并改了数量，订单快照里躺的是套餐出厂明细。前端界面显示的是用户的选择，库里存的是别的东西，两边永远对不上，也没有任何报错。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "integration_findings.json",
+        "index": 12
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "DEAD_BACKEND_ENDPOINT",
+      "uid": "integration:DEAD_BACKEND_ENDPOINT#13",
+      "layer": "integration",
+      "category": "integration.end_to_end_business",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/HealthController.java",
+        "line": 15,
+        "symbol": "GET /api/health, GET /api/orders/{id}, GET /api/packages/{id}, PATCH /api/packages/{id}/status",
+        "endpoint": "GET /api/health, GET /api/orders/{id}, GET /api/packages/{id}, PATCH /api/packages/{id}/status"
+      },
+      "claim": "后端是否有前端从不调用的接口？",
+      "evidence_refs": [
+        "integration_findings.json#DEAD_BACKEND_ENDPOINT"
+      ],
+      "repro_cmd": "grep -n 'api/' /Users/june/jiuyan/src/api/banquetApi.js",
+      "repro_granularity": "reference",
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "integration",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "api.dead_endpoints",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "LOW",
+      "title": "后端 4 个接口前端从不调用",
+      "detail": "这些路由在前端 banquetApi.js 里没有任何调用点。GET /api/orders/{id} 与 GET /api/packages/{id} 属于详情接口冗余；真正值得看的是 PATCH /api/packages/{id}/status —— 它是唯一的状态机式接口，Pad 端却从不调用，套餐上下架只能整单 PUT 全量覆盖（连同 items 一起重传），绕开了最小变更路径。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "integration_findings.json",
+        "index": 13
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,264 @@
+{
+  "generated_at": "2026-11-07T18:32:46.206103",
+  "base_url": "http://127.0.0.1:8081",
+  "chains": [
+    {
+      "id": "CHAIN-A",
+      "title": "匿名会话可读可写他人订单，且写入会连带重写订单快照",
+      "hypothesis": "订单接口零鉴权，跨连接读写成功；写入路径会重建快照",
+      "severity": "CRITICAL",
+      "owner": "service（引用 NO_AUTHZ，链级后果归集成层）",
+      "cites": [
+        "NO_AUTHZ",
+        "FN-SNAPSHOT-SEMANTICS"
+      ],
+      "verdict": "CONFIRMED",
+      "steps": [
+        {
+          "n": 1,
+          "method": "POST",
+          "path": "/api/orders",
+          "status": 200,
+          "evidence": "订单主人创建订单 id=499（请求里没有任何凭证头）"
+        },
+        {
+          "n": 2,
+          "method": "GET",
+          "path": "/api/orders/499",
+          "status": 200,
+          "evidence": "全新连接（无 Cookie / Token）读到 4 个 PII 字段：['customerName', 'customerPhone', 'address', 'remark']"
+        },
+        {
+          "n": 3,
+          "method": "前端",
+          "path": "App.jsx 订单详情抽屉",
+          "status": null,
+          "evidence": "接口返回手机号明文 13800000999，前端渲染时才脱敏成 138****0999 —— 脱敏只发生在展示层，接口与库里都是明文"
+        },
+        {
+          "n": 4,
+          "method": "PATCH",
+          "path": "/api/orders/499/status",
+          "status": 200,
+          "evidence": "匿名改状态 → DEPOSIT_PAID"
+        },
+        {
+          "n": 5,
+          "method": "PUT",
+          "path": "/api/orders/499",
+          "status": 200,
+          "evidence": "匿名全量覆盖订单：改电话 + 把明细数量改成 99"
+        },
+        {
+          "n": 6,
+          "method": "DB",
+          "path": "SELECT ... WHERE id=499",
+          "status": 200,
+          "evidence": "库里的快照已被重写：明细数量=99，电话=13900000000，状态=PENDING"
+        }
+      ],
+      "findings": [
+        {
+          "id": "INT-ANON-WRITE-REWRITES-SNAPSHOT",
+          "severity": "CRITICAL",
+          "title": "匿名写入会连带重写订单快照：订单历史快照失去证据效力",
+          "detail": "PUT 走 apply() → buildPackageSnapshot()，匿名会话改明细后，订单快照被整体重建，原来记下的套餐明细不再可信。",
+          "repro": "无凭证 PUT /api/orders/{id}，改 packageItems → 查库 package_snapshot 已变",
+          "evidence": "库内快照明细数量=99，电话=13900000000",
+          "owner": "集成层（链级后果；越权本身归服务层 NO_AUTHZ）"
+        },
+        {
+          "id": "INT-PII-MASKED-ONLY-IN-FRONTEND",
+          "severity": "HIGH",
+          "title": "手机号脱敏只做在渲染层：接口与库里都是明文，匿名可批量拉取",
+          "detail": "订单详情抽屉把手机号显示成 138****9999，说明产品侧认定它是敏感字段；但 API 原样返回明文，库里也是明文。配合零鉴权，任何人可分页拉全量手机号。",
+          "repro": "GET /api/orders?page=1&pageSize=100 → data[].customerPhone 是完整 11 位",
+          "evidence": "接口返回 customerPhone=13800000999，前端渲染脱敏为 138****0999",
+          "owner": "集成层（链级后果；零鉴权归服务层 NO_AUTHZ）"
+        }
+      ],
+      "note": "匿名会话完成了读 / 改状态 / 全量覆盖，且覆盖动作重写了订单快照"
+    },
+    {
+      "id": "CHAIN-B",
+      "title": "任意字节以图片名落盘，且落盘后匿名可原样下载",
+      "hypothesis": "上传只信客户端声明的内容类型，静态映射又对所有人开放",
+      "severity": "CRITICAL",
+      "owner": "service（引用 FN-UPLOAD-NO-CONTENT-SNIFF，链级后果归集成层）",
+      "cites": [
+        "FN-UPLOAD-NO-CONTENT-SNIFF",
+        "FILE-STATIC-ROOT-NO-TRAILING-SLASH"
+      ],
+      "verdict": "CONFIRMED",
+      "steps": [
+        {
+          "n": 1,
+          "method": "POST",
+          "path": "/api/uploads/product-image",
+          "status": 200,
+          "evidence": "上传非图片字节 55 字节，自报 image/png、文件名 probe.png → imageUrl=/uploads/products/7d218b1f-1440-4cb0-a557-d8619b79c794.png"
+        },
+        {
+          "n": 2,
+          "method": "GET",
+          "path": "/uploads/products/7d218b1f-1440-4cb0-a557-d8619b79c794.png",
+          "status": 200,
+          "evidence": "匿名连接（无凭证）下载 → 200，字节完全一致=True，Content-Type=image/png"
+        },
+        {
+          "n": 3,
+          "method": "FS",
+          "path": "/app/uploads/products/7d218b1f-1440-4cb0-a557-d8619b79c794.png",
+          "status": 200,
+          "evidence": "-rw-r--r-- 1 root root 55 Nov  7 10:32 /app/uploads/products/7d218b1f-1440-4cb0-a557-d8619b79c794.png"
+        }
+      ],
+      "findings": [
+        {
+          "id": "INT-UPLOAD-ANONYMOUS-READBACK",
+          "severity": "CRITICAL",
+          "title": "上传内容匿名可读回：落盘字节与上传字节逐字节一致",
+          "detail": "上传接口不校验内容（只信客户端声明），写盘路径又在 /uploads/** 公开映射下，任何人都能把任意字节放进站点并当作静态资源取回。",
+          "repro": "POST /api/uploads/product-image（file=任意字节, image/png）→ GET 返回的 imageUrl",
+          "evidence": "下载字节与上传字节一致=True，Content-Type 由服务端按扩展名给出",
+          "owner": "集成层（链级后果；内容不嗅探归函数层 FN-UPLOAD-NO-CONTENT-SNIFF）"
+        }
+      ],
+      "note": "非图片字节以 .png 落盘，并可被匿名无凭证原样下载"
+    },
+    {
+      "id": "CHAIN-C",
+      "title": "成交价由客户端说了算：DB、API、前端视图模型同时认下同一个假数字",
+      "hypothesis": "finalPriceCent 无上界，与套餐价、明细合计没有任何算术关系",
+      "severity": "CRITICAL",
+      "owner": "function（引用 FN-PRICE-CLIENT-CONTROLLED）",
+      "cites": [
+        "FN-PRICE-CLIENT-CONTROLLED",
+        "CLASS-RULE-MISSING-IN-ALL-LAYERS"
+      ],
+      "verdict": "CONFIRMED",
+      "steps": [
+        {
+          "n": 1,
+          "method": "POST",
+          "path": "/api/orders",
+          "status": 200,
+          "evidence": "下单时 finalPriceCent=1（1 分），明细 3 件 × 5000 分 = 15000 分"
+        },
+        {
+          "n": 2,
+          "method": "DB",
+          "path": "SELECT final_price_cent FROM orders WHERE id=500",
+          "status": 200,
+          "evidence": "库里的成交价 = 1 分"
+        },
+        {
+          "n": 3,
+          "method": "GET",
+          "path": "/api/orders/500",
+          "status": 200,
+          "evidence": "API 回读成交价 = 1 分"
+        },
+        {
+          "n": 4,
+          "method": "前端",
+          "path": "mapOrder（前端真实 mapper）",
+          "status": 200,
+          "evidence": "前端渲染订单金额 = 0.01 元；它自己看到的明细合计 = 150.0 元"
+        }
+      ],
+      "findings": [],
+      "note": "成交价 0.01 元被三方一致接受，而明细合计是 150.0 元，差 14999 分（150.0 元）；服务端没有任何一处核对"
+    },
+    {
+      "id": "CHAIN-D",
+      "title": "明细被改成 99 件后，订单里同时存在三个互不相等的价格，而明细合计从不显示",
+      "hypothesis": "明细数量与成交价、套餐价三者无约束，且订单详情不展示明细合计",
+      "severity": "HIGH",
+      "owner": "integration（链级后果；明细归属归函数层，快照语义归函数层）",
+      "cites": [
+        "FN-SNAPSHOT-SEMANTICS",
+        "CLASS-RULE-MISSING-IN-ALL-LAYERS",
+        "PACKAGE_QUANTITY_NOT_VALIDATED"
+      ],
+      "verdict": "CONFIRMED",
+      "steps": [
+        {
+          "n": 1,
+          "method": "PUT",
+          "path": "/api/orders/501",
+          "status": 200,
+          "evidence": "匿名把明细数量改成 99，成交价保持 1 分"
+        },
+        {
+          "n": 2,
+          "method": "GET",
+          "path": "/api/orders/501",
+          "status": 200,
+          "evidence": "订单金额 0.01 元 / 明细合计 4950.0 元 / 套餐标价 88.88 元 —— 三个数字互不相等"
+        },
+        {
+          "n": 3,
+          "method": "前端",
+          "path": "App.jsx 订单详情抽屉",
+          "status": null,
+          "evidence": "抽屉只渲染 已选套餐 / 加购商品 / 订单金额 / 定金，明细单价与明细合计一律不渲染，员工在界面上无法核对订单金额的构成"
+        }
+      ],
+      "findings": [
+        {
+          "id": "INT-THREE-PRICES-NO-DETAIL-TOTAL",
+          "severity": "HIGH",
+          "title": "同一订单并存三个互不相等的价格，界面只展示其中两个，明细合计从不显示",
+          "detail": "客户端可把成交价改成 0.01 元，同时把明细数量改成 99；订单详情抽屉渲染了订单金额和套餐名，却没有渲染明细合计，业务侧没有任何一处能看出这两个数字对不上。",
+          "repro": "POST /api/orders(finalPriceCent=1) → PUT 改 packageItems.quantity=99 → 看订单详情",
+          "evidence": "订单金额 0.01 元 vs 明细合计 4950.0 元 vs 套餐标价 88.88 元",
+          "owner": "集成层（链级后果；控价根因归函数层 FN-PRICE-CLIENT-CONTROLLED）"
+        }
+      ],
+      "note": "订单金额 0.01 元、明细合计 4950.00 元、套餐标价 88.88 元三者并存，而界面不展示明细合计 —— 客户端控价的后果在业务侧不可见"
+    },
+    {
+      "id": "CHAIN-E",
+      "title": "订单可以被直接推进到「已完成」，定金 0 元、金额 0.01 元",
+      "hypothesis": "状态机没有任何约束，PENDING 可一步跳到 COMPLETED",
+      "severity": "HIGH",
+      "owner": "class（引用 NO_STATE_MACHINE）",
+      "cites": [
+        "NO_STATE_MACHINE",
+        "CLASS-RULE-MISSING-IN-ALL-LAYERS"
+      ],
+      "verdict": "CONFIRMED",
+      "steps": [
+        {
+          "n": 1,
+          "method": "POST",
+          "path": "/api/orders",
+          "status": 200,
+          "evidence": "建单 id=502：PENDING、定金 0、成交价 1 分"
+        },
+        {
+          "n": 2,
+          "method": "PATCH",
+          "path": "/api/orders/502/status",
+          "status": 200,
+          "evidence": "匿名 PENDING → COMPLETED 一次成功；前端渲染状态 = 已完成，定金 = 0 元，订单金额 = 0.01 元"
+        },
+        {
+          "n": 3,
+          "method": "DB",
+          "path": "SELECT status, deposit_cent FROM orders WHERE id=502",
+          "status": 200,
+          "evidence": "库里的状态 = COMPLETED，定金 = 0 分"
+        }
+      ],
+      "findings": [],
+      "note": "0 元定金、0.01 元金额的订单被推成「已完成」，业务侧看到的是一张已交付订单"
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "confirmed": 5,
+    "new_findings": 4
+  }
+}

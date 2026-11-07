@@ -1,0 +1,1939 @@
+{
+  "generated_from": "aggregate_findings.py",
+  "summary": {
+    "findings": 86,
+    "root_causes": 52,
+    "collapsed": 34,
+    "violations": 1
+  },
+  "root_causes": [
+    {
+      "root_cause_key": "authz.no_authorization_layer",
+      "title": "全系统零鉴权：无凭证即可读写全部业务数据",
+      "severity": "CRITICAL",
+      "owner_layer": "service",
+      "categories": [
+        "integration.cross_service_attack_chain",
+        "integration.end_to_end_business",
+        "service.authz"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 3,
+      "finding_uids": [
+        "service:NO_AUTHZ#0",
+        "integration:INT-ANON-WRITE-REWRITES-SNAPSHOT#0",
+        "integration:INT-PII-MASKED-ONLY-IN-FRONTEND#3"
+      ],
+      "layers_own": [
+        "service"
+      ],
+      "layers_all": [
+        "service",
+        "integration"
+      ],
+      "cited_from": [
+        "integration"
+      ],
+      "cwe": [
+        "CWE-306",
+        "CWE-359",
+        "CWE-506",
+        "CWE-829",
+        "CWE-862"
+      ],
+      "confidence": 0.98,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "GET /api/orders?page=1&pageSize=100 → data[].customerPhone 是完整 11 位",
+        "curl http://127.0.0.1:8081/api/orders   # 无任何凭证",
+        "无凭证 PUT /api/orders/{id}，改 packageItems → 查库 package_snapshot 已变"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "price.final_price.upper_bound_unvalidated",
+      "title": "成交价由客户端说了算：resolveFinalPrice 只做下界检查，完全不与套餐价比对",
+      "severity": "CRITICAL",
+      "owner_layer": "function",
+      "categories": [
+        "function.boundary",
+        "integration.end_to_end_business"
+      ],
+      "category_fit": [
+        "exact",
+        "stretched"
+      ],
+      "finding_count": 3,
+      "finding_uids": [
+        "function:FN-PRICE-CLIENT-CONTROLLED#0",
+        "integration:PRICE_CLIENT_CONTROLLED_XL#2",
+        "integration:INT-THREE-PRICES-NO-DETAIL-TOTAL#4"
+      ],
+      "layers_own": [
+        "function"
+      ],
+      "layers_all": [
+        "function",
+        "integration"
+      ],
+      "cited_from": [
+        "integration"
+      ],
+      "cwe": [
+        "CWE-840"
+      ],
+      "confidence": 0.97,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "POST /api/orders(finalPriceCent=1) → PUT 改 packageItems.quantity=99 → 看订单详情",
+        "python3 fn_dynamic.py --case RFP-05",
+        "见 integration_observation.json scenarios[SC01_CLIENT_CONTROLLED_PRICE]"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "upload.content_type_not_sniffed",
+      "title": "上传只信客户端自报的扩展名与 contentType：任意字节都以 .png 落盘",
+      "severity": "CRITICAL",
+      "owner_layer": "function",
+      "categories": [
+        "function.boundary",
+        "integration.cross_service_attack_chain"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 2,
+      "finding_uids": [
+        "function:FN-UPLOAD-NO-CONTENT-SNIFF#1",
+        "integration:INT-UPLOAD-ANONYMOUS-READBACK#1"
+      ],
+      "layers_own": [
+        "function"
+      ],
+      "layers_all": [
+        "function",
+        "integration"
+      ],
+      "cited_from": [
+        "integration"
+      ],
+      "cwe": [
+        "CWE-434",
+        "CWE-829"
+      ],
+      "confidence": 0.95,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "POST /api/uploads/product-image（file=任意字节, image/png）→ GET 返回的 imageUrl",
+        "python3 fn_dynamic.py --case UPL-04"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "errhandler.client_error_mapped_to_500",
+      "title": "客户端错误被当成服务端错误：返回 [500]",
+      "severity": "HIGH",
+      "owner_layer": "service",
+      "categories": [
+        "service.interface_contract"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 2,
+      "finding_uids": [
+        "service:UNHANDLED_HTTP_EXCEPTION#1",
+        "service:UNHANDLED_HTTP_EXCEPTION#2"
+      ],
+      "layers_own": [
+        "service"
+      ],
+      "layers_all": [
+        "service"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-755"
+      ],
+      "confidence": 0.94,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "curl -X POST 见 observation.json 中 key=POST /api/uploads/package-image 的 missing_multipart_part 场景",
+        "curl -X POST 见 observation.json 中 key=POST /api/uploads/product-image 的 missing_multipart_part 场景"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [
+        "service 层同一根因开了 2 条 own，可归并为 1 条根因"
+      ]
+    },
+    {
+      "root_cause_key": "order.item_quantity_unvalidated",
+      "title": "明细归一化只查重复，不查 productId/quantity：数量可为空、为 0、为负",
+      "severity": "HIGH",
+      "owner_layer": "function",
+      "categories": [
+        "function.boundary",
+        "integration.end_to_end_business"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 2,
+      "finding_uids": [
+        "function:FN-ITEM-QUANTITY-NOVALIDATION#6",
+        "integration:PACKAGE_QUANTITY_NOT_VALIDATED#7"
+      ],
+      "layers_own": [
+        "function"
+      ],
+      "layers_all": [
+        "function",
+        "integration"
+      ],
+      "cited_from": [
+        "integration"
+      ],
+      "cwe": [
+        "CWE-20"
+      ],
+      "confidence": 0.93,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 fn_dynamic.py --case NPI-04",
+        "见 integration_observation.json scenarios[SC03_QUANTITY_OVERRIDE]"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "order.snapshot.item_ownership_unchecked",
+      "title": "订单快照：明细归属不校验，空明细静默回退成套餐默认明细",
+      "severity": "HIGH",
+      "owner_layer": "function",
+      "categories": [
+        "function.boundary",
+        "integration.end_to_end_business"
+      ],
+      "category_fit": [
+        "exact",
+        "stretched"
+      ],
+      "finding_count": 2,
+      "finding_uids": [
+        "function:FN-SNAPSHOT-SEMANTICS#3",
+        "integration:PACKAGE_ITEM_NOT_VALIDATED#6"
+      ],
+      "layers_own": [
+        "function"
+      ],
+      "layers_all": [
+        "function",
+        "integration"
+      ],
+      "cited_from": [
+        "integration"
+      ],
+      "cwe": [
+        "CWE-20"
+      ],
+      "confidence": 0.94,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 fn_dynamic.py --case BPS-03",
+        "见 integration_observation.json scenarios[SC02_FOREIGN_ITEM_IN_PACKAGE]"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "audit.client_ip_trusted_from_header",
+      "title": "审计日志里的 clientIp 完全由客户端伪造：X-Forwarded-For 首段直接采信",
+      "severity": "HIGH",
+      "owner_layer": "file",
+      "categories": [],
+      "category_fit": [
+        "unmapped"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "file:FILE-XFF-CLIENT-IP-SPOOF#1"
+      ],
+      "layers_own": [
+        "file"
+      ],
+      "layers_all": [
+        "file"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-290",
+        "CWE-348"
+      ],
+      "confidence": 0.93,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 file_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "cors.allowed_origin_patterns_too_broad",
+      "title": "CORS 白名单等于「整个内网 + 所有本地端口」，且全是明文 http",
+      "severity": "HIGH",
+      "owner_layer": "file",
+      "categories": [],
+      "category_fit": [
+        "unmapped"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "file:FILE-CORS-INTRANET-WIDE#0"
+      ],
+      "layers_own": [
+        "file"
+      ],
+      "layers_all": [
+        "file"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-942"
+      ],
+      "confidence": 0.95,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 file_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "frontend.list_hardcoded_limit_100",
+      "title": "前端列表固定只取前 100 条并丢弃 total，超出的数据永远不可见",
+      "severity": "HIGH",
+      "owner_layer": "integration",
+      "categories": [
+        "integration.end_to_end_business"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "integration:LIST_TRUNCATED_AT_100#5"
+      ],
+      "layers_own": [
+        "integration"
+      ],
+      "layers_all": [
+        "integration"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.95,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "见 integration_observation.json scenarios[SC05_LIST_TRUNCATION]"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "index.idx_products_name_unusable",
+      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.752ms vs 0.013ms，差 596 倍）",
+      "severity": "HIGH",
+      "owner_layer": "service",
+      "categories": [
+        "service.service_latency"
+      ],
+      "category_fit": [
+        "stretched"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:INDEX_UNUSABLE_FOR_QUERY_PATTERN#1"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.88,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 class_dynamic.py"
+      ],
+      "violations": [
+        "越界开单：class 层的 out_of_scope 明确含 service_latency，该条应由 service 层开单"
+      ],
+      "notes": [
+        "合法上提：开单层 ['class'] → owner service（契约 escalation_to 允许）"
+      ],
+      "merges": []
+    },
+    {
+      "root_cause_key": "order.status.transition_unconstrained",
+      "title": "状态机缺失：9/9 种迁移全部被接受，含回退",
+      "severity": "HIGH",
+      "owner_layer": "class",
+      "categories": [
+        "class.invariant"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:NO_STATE_MACHINE#0"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-840"
+      ],
+      "confidence": 0.96,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 class_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "order_no.no_collision_guarantee",
+      "title": "订单号每秒只有 1000 个槽位，并发下单必然撞号（唯一键冲突 → 500）",
+      "severity": "HIGH",
+      "owner_layer": "function",
+      "categories": [
+        "function.boundary"
+      ],
+      "category_fit": [
+        "stretched"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "function:FN-ORDER-NO-COLLISION#2"
+      ],
+      "layers_own": [
+        "function"
+      ],
+      "layers_all": [
+        "function"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-330",
+        "CWE-400"
+      ],
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 fn_dynamic.py --case GON-02"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "rule.missing_in_db_dto_service",
+      "title": "4 条业务不变量在 DB / DTO / 服务层三层全都不存在",
+      "severity": "HIGH",
+      "owner_layer": "class",
+      "categories": [
+        "class.invariant"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:CLASS-RULE-MISSING-IN-ALL-LAYERS#2"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-840"
+      ],
+      "confidence": 0.85,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 class_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "errhandler.internal_detail_leak",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "severity": "MEDIUM",
+      "owner_layer": "service",
+      "categories": [
+        "service.interface_contract"
+      ],
+      "category_fit": [
+        "stretched"
+      ],
+      "finding_count": 25,
+      "finding_uids": [
+        "service:INTERNAL_LEAK#5",
+        "service:INTERNAL_LEAK#6",
+        "service:INTERNAL_LEAK#7",
+        "service:INTERNAL_LEAK#8",
+        "service:INTERNAL_LEAK#9",
+        "service:INTERNAL_LEAK#10",
+        "service:INTERNAL_LEAK#11",
+        "service:INTERNAL_LEAK#12",
+        "service:INTERNAL_LEAK#13",
+        "service:INTERNAL_LEAK#14",
+        "service:INTERNAL_LEAK#15",
+        "service:INTERNAL_LEAK#16",
+        "service:INTERNAL_LEAK#17",
+        "service:INTERNAL_LEAK#18",
+        "service:INTERNAL_LEAK#19",
+        "service:INTERNAL_LEAK#20",
+        "service:INTERNAL_LEAK#21",
+        "service:INTERNAL_LEAK#22",
+        "service:INTERNAL_LEAK#23",
+        "service:INTERNAL_LEAK#24",
+        "service:INTERNAL_LEAK#25",
+        "service:INTERNAL_LEAK#26",
+        "service:INTERNAL_LEAK#27",
+        "service:INTERNAL_LEAK#28",
+        "service:INTERNAL_LEAK#29"
+      ],
+      "layers_own": [
+        "service"
+      ],
+      "layers_all": [
+        "service"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-209"
+      ],
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "curl -X DELETE /api/categories/None",
+        "curl -X DELETE /api/package-types/None",
+        "curl -X DELETE /api/packages/None",
+        "curl -X DELETE /api/products/None",
+        "curl -X GET /api/orders/None",
+        "curl -X GET /api/packages/None",
+        "curl -X PATCH /api/orders/None/status",
+        "curl -X PATCH /api/packages/None/status",
+        "curl -X PATCH /api/products/None/status",
+        "curl -X POST /api/products",
+        "curl -X PUT /api/orders/None",
+        "curl -X PUT /api/packages/None",
+        "curl -X PUT /api/products/None"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [
+        "service 层同一根因开了 25 条 own，可归并为 1 条根因"
+      ]
+    },
+    {
+      "root_cause_key": "jackson.lenient_type_coercion",
+      "title": "错误 JSON 类型被隐式转换后接受（字段 name）",
+      "severity": "MEDIUM",
+      "owner_layer": "service",
+      "categories": [
+        "service.interface_contract"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 2,
+      "finding_uids": [
+        "service:TYPE_COERCION#3",
+        "service:TYPE_COERCION#4"
+      ],
+      "layers_own": [
+        "service"
+      ],
+      "layers_all": [
+        "service"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-20"
+      ],
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "curl -X POST /api/categories -d {\"name\": 12345}",
+        "curl -X POST /api/package-types -d {\"name\": 12345}"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [
+        "service 层同一根因开了 2 条 own，可归并为 1 条根因"
+      ]
+    },
+    {
+      "root_cause_key": "api.put_full_overwrite",
+      "title": "PUT 是全量覆盖：不传的 imageUrl 会被抹成 NULL",
+      "severity": "MEDIUM",
+      "owner_layer": "class",
+      "categories": [
+        "class.contract_violation"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:CLASS-PUT-WIPES-UNSET-FIELD#7"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-20"
+      ],
+      "confidence": 0.91,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 class_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "api.snapshot_structure_undeclared",
+      "title": "前端依赖的订单快照内部结构，在 API 契约里零声明",
+      "severity": "MEDIUM",
+      "owner_layer": "integration",
+      "categories": [
+        "integration.end_to_end_business"
+      ],
+      "category_fit": [
+        "stretched"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "integration:SNAPSHOT_CONTRACT_UNDECLARED#11"
+      ],
+      "layers_own": [
+        "integration"
+      ],
+      "layers_all": [
+        "integration"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "grep -n 'packageSnapshot' backend/src/main/java/com/jiuyan/banquet/dto/OrderResponse.java"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "apply.null_input.npe_instead_of_422",
+      "title": "apply 直接对入参 .trim()：空值触发 NPE（500）而不是业务异常（422）",
+      "severity": "MEDIUM",
+      "owner_layer": "function",
+      "categories": [
+        "function.exception_path"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "function:FN-APPLY-NULL-CONTRACT#5"
+      ],
+      "layers_own": [
+        "function"
+      ],
+      "layers_all": [
+        "function"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-20",
+        "CWE-755"
+      ],
+      "confidence": 0.93,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 fn_dynamic.py --case APL-02"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "db.notnull_bypassed_by_empty_string",
+      "title": "orders.address 声明 NOT NULL，实际用空串绕过 —— 非空约束只挡了 NULL",
+      "severity": "MEDIUM",
+      "owner_layer": "class",
+      "categories": [
+        "class.invariant"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:CLASS-NOTNULL-BYPASSED-BY-EMPTY-STRING#5"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-20"
+      ],
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 class_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "dto.required_check_missing",
+      "title": "orders.finalPriceCent 必填性校验落在服务层，DTO 少一条 @NotNull",
+      "severity": "MEDIUM",
+      "owner_layer": "class",
+      "categories": [
+        "class.contract_violation"
+      ],
+      "category_fit": [
+        "stretched"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:CLASS-REQUIRED-CHECKED-IN-SERVICE-LAYER#6"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.88,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 class_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "dto.unknown_field_silent_drop",
+      "title": "字段名拼错会被静默吞掉，并被「套餐默认明细」悄悄顶替",
+      "severity": "MEDIUM",
+      "owner_layer": "integration",
+      "categories": [
+        "integration.end_to_end_business"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "integration:UNKNOWN_FIELD_SILENT_DROP#12"
+      ],
+      "layers_own": [
+        "integration"
+      ],
+      "layers_all": [
+        "integration"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-20"
+      ],
+      "confidence": 0.93,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "见 integration_observation.json scenarios[SC04_UNKNOWN_FIELD_SILENT_DROP]"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "errhandler.badrequest_echoes_body",
+      "title": "400 错误把原始请求体片段原样回显",
+      "severity": "MEDIUM",
+      "owner_layer": "file",
+      "categories": [
+        "file.error_handling_pattern"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "file:FILE-BADREQUEST-ECHO#2"
+      ],
+      "layers_own": [
+        "file"
+      ],
+      "layers_all": [
+        "file"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-209"
+      ],
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 file_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "errhandler.db_constraint_text_leak",
+      "title": "DB 约束冲突的原始错误文本被原样回给客户端",
+      "severity": "MEDIUM",
+      "owner_layer": "file",
+      "categories": [
+        "file.error_handling_pattern"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "file:FILE-DB-CONSTRAINT-LEAK#3"
+      ],
+      "layers_own": [
+        "file"
+      ],
+      "layers_all": [
+        "file"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-209"
+      ],
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 file_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "frontend.image_fallback_cross_domain",
+      "title": "商品缺图时前端兜底成了套餐种子图",
+      "severity": "MEDIUM",
+      "owner_layer": "integration",
+      "categories": [
+        "integration.end_to_end_business"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "integration:INT-PRODUCT-IMAGE-DOMAIN-FALLBACK#9"
+      ],
+      "layers_own": [
+        "integration"
+      ],
+      "layers_all": [
+        "integration"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.88,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "POST /api/products（imageUrl 留空）→ 前端 mapProduct → image 字段等于套餐种子图路径"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "frontend.item_count_semantics_divergent",
+      "title": "同一个套餐，界面上有两个互不相同的「商品数」",
+      "severity": "MEDIUM",
+      "owner_layer": "integration",
+      "categories": [
+        "integration.end_to_end_business"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "integration:INT-PACKAGE-COUNT-INCONSISTENT#8"
+      ],
+      "layers_own": [
+        "integration"
+      ],
+      "layers_all": [
+        "integration"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "造一个套餐，明细含一个 is_active=false 的商品 → 对比卡片与弹层的数字"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "order.apply.amount_invariants_weak",
+      "title": "apply 的金额/状态不变量只查了 >= 0：定金可以大于套餐总价，状态与预订时间可为空",
+      "severity": "MEDIUM",
+      "owner_layer": "function",
+      "categories": [
+        "function.boundary"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "function:FN-APPLY-AMOUNT-INVARIANTS#4"
+      ],
+      "layers_own": [
+        "function"
+      ],
+      "layers_all": [
+        "function"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-840"
+      ],
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 fn_dynamic.py --case APL-12"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "orders.no_data_lifecycle",
+      "title": "orders 表没有软删/归档，永久增长（当前 192 kB）",
+      "severity": "MEDIUM",
+      "owner_layer": "class",
+      "categories": [
+        "class.invariant"
+      ],
+      "category_fit": [
+        "stretched"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:NO_DATA_LIFECYCLE#4"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.8,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 class_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "package.applyItems.mutate_before_validate",
+      "title": "PackageService.applyItems 先删后校验：明细被清空后才去查商品",
+      "severity": "MEDIUM",
+      "owner_layer": "file",
+      "categories": [
+        "file.state_consistency"
+      ],
+      "category_fit": [
+        "stretched"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "file:FILE-PKG-MUTATE-BEFORE-VALIDATE#4"
+      ],
+      "layers_own": [
+        "file"
+      ],
+      "layers_all": [
+        "file"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-665"
+      ],
+      "confidence": 0.91,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 file_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "softdelete.resurrects_row",
+      "title": "软删除的行会被同名重建「复活」，id 与 sort_order 沿用旧值",
+      "severity": "MEDIUM",
+      "owner_layer": "class",
+      "categories": [
+        "class.invariant"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:SOFT_DELETE_RESURRECTS_ROW#3"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-840"
+      ],
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 class_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "tooling.coverage_recording_gap",
+      "title": "1/25 个接口既无真实流量样本、前端也不调用；17 个写接口的真实流量样本为 0",
+      "severity": "MEDIUM",
+      "owner_layer": "integration",
+      "categories": [],
+      "category_fit": [
+        "unmapped"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "integration:RECORDING_COVERAGE_GAP#10"
+      ],
+      "layers_own": [
+        "integration"
+      ],
+      "layers_all": [
+        "integration"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.85,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "见 /Users/june/tests/auto-api/recordings/jiuyan_readonly.jsonl"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "traceid.client_controlled_no_validation",
+      "title": "X-Trace-Id 完全由客户端指定，无格式与长度白名单，原样进日志与响应头",
+      "severity": "MEDIUM",
+      "owner_layer": "file",
+      "categories": [],
+      "category_fit": [
+        "unmapped"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "file:FILE-TRACEID-CLIENT-CONTROLLED#6"
+      ],
+      "layers_own": [
+        "file"
+      ],
+      "layers_all": [
+        "file"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-117"
+      ],
+      "confidence": 0.88,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 file_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "upload.limit_declared_in_three_places",
+      "title": "上传体积上限 5MB 这个数字散落三处，改一处另两处就开始说谎",
+      "severity": "MEDIUM",
+      "owner_layer": "file",
+      "categories": [
+        "file.cohesion"
+      ],
+      "category_fit": [
+        "stretched"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "file:FILE-UPLOAD-LIMIT-SPLIT-ACROSS-THREE-FILES#7"
+      ],
+      "layers_own": [
+        "file"
+      ],
+      "layers_all": [
+        "file"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.95,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 file_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "upload.no_size_limit",
+      "title": "上传无体积上限：单请求 20MB 被完整写盘（上传放大 DoS）",
+      "severity": "MEDIUM",
+      "owner_layer": "function",
+      "categories": [
+        "function.boundary"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "function:FN-UPLOAD-NO-SIZE-LIMIT#7"
+      ],
+      "layers_own": [
+        "function"
+      ],
+      "layers_all": [
+        "function"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-400"
+      ],
+      "confidence": 0.91,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 fn_dynamic.py --case UPL-06"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "validation.status_code_split",
+      "title": "同一类「参数非法」返回两种状态码：DTO 校验给 400，服务自校验给 422",
+      "severity": "MEDIUM",
+      "owner_layer": "file",
+      "categories": [
+        "file.error_handling_pattern"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "file:FILE-VALIDATION-STATUS-SPLIT#8"
+      ],
+      "layers_own": [
+        "file"
+      ],
+      "layers_all": [
+        "file"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.94,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 file_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "webconfig.static_root_normalization_env_dependent",
+      "title": "静态资源根目录的规范化依赖「目录在启动前就存在」这个环境偶然",
+      "severity": "MEDIUM",
+      "owner_layer": "file",
+      "categories": [
+        "file.state_consistency"
+      ],
+      "category_fit": [
+        "stretched"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "file:FILE-STATIC-ROOT-NO-TRAILING-SLASH#5"
+      ],
+      "layers_own": [
+        "file"
+      ],
+      "layers_all": [
+        "file"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.72,
+      "ground_truth": "unverified",
+      "repro_cmds": [
+        "python3 file_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "column.default_declared_in_three_places",
+      "title": "products.is_active 的默认值被声明了三遍",
+      "severity": "LOW",
+      "owner_layer": "class",
+      "categories": [],
+      "category_fit": [
+        "unmapped"
+      ],
+      "finding_count": 2,
+      "finding_uids": [
+        "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#8",
+        "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#9"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.86,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 class_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [
+        "class 层同一根因开了 2 条 own，可归并为 1 条根因"
+      ]
+    },
+    {
+      "root_cause_key": "api.dead_endpoints",
+      "title": "后端 4 个接口前端从不调用",
+      "severity": "LOW",
+      "owner_layer": "integration",
+      "categories": [
+        "integration.end_to_end_business"
+      ],
+      "category_fit": [
+        "stretched"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "integration:DEAD_BACKEND_ENDPOINT#13"
+      ],
+      "layers_own": [
+        "integration"
+      ],
+      "layers_all": [
+        "integration"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "grep -n 'api/' /Users/june/jiuyan/src/api/banquetApi.js"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "apiresponse.null_body_wrapped_as_success",
+      "title": "null 响应体也被包成 success=true 的信封（data 字段缺失）",
+      "severity": "LOW",
+      "owner_layer": "file",
+      "categories": [
+        "file.error_handling_pattern"
+      ],
+      "category_fit": [
+        "stretched"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "file:FILE-NULL-BODY-WRAPPED-AS-SUCCESS#11"
+      ],
+      "layers_own": [
+        "file"
+      ],
+      "layers_all": [
+        "file"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 file_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "enum.case_sensitive",
+      "title": "订单状态枚举大小写敏感，小写 pending 直接 400",
+      "severity": "LOW",
+      "owner_layer": "class",
+      "categories": [
+        "class.contract_violation"
+      ],
+      "category_fit": [
+        "stretched"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:CLASS-ENUM-CASE-SENSITIVE#11"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.82,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 class_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "errhandler.response_shape_inconsistent",
+      "title": "同一个异常处理文件里三种响应形状：信封 / 空体 / 未知",
+      "severity": "LOW",
+      "owner_layer": "file",
+      "categories": [
+        "file.error_handling_pattern"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "file:FILE-ERROR-BODY-SHAPE-INCONSISTENT#10"
+      ],
+      "layers_own": [
+        "file"
+      ],
+      "layers_all": [
+        "file"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 file_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "error.message_mismatch",
+      "title": "finalPriceCent=null 的报错文案说的是「小于 0」，真实原因是「不能为空」",
+      "severity": "LOW",
+      "owner_layer": "class",
+      "categories": [
+        "class.contract_violation"
+      ],
+      "category_fit": [
+        "stretched"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:CLASS-ERROR-MESSAGE-MISMATCH#10"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.85,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 class_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "service.helpers.duplicated",
+      "title": "分页归一化等 4 组方法在 3 个 service 文件里逐字复制",
+      "severity": "LOW",
+      "owner_layer": "file",
+      "categories": [
+        "file.cohesion"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "file:FILE-DUPLICATE-HELPERS-ACROSS-SERVICES#9"
+      ],
+      "layers_own": [
+        "file"
+      ],
+      "layers_all": [
+        "file"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.93,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 file_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "check.dto_aligned",
+      "title": "8/8 条 DB CHECK 在 DTO 层都有同义约束，防线链条闭合",
+      "severity": "INFO",
+      "owner_layer": "class",
+      "categories": [
+        "class.contract_violation"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:CLASS-CHECK-DTO-ALIGNED#14"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 class_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "cors.negative_precision_proven",
+      "title": "CORS 白名单是精确匹配，不是通配全放",
+      "severity": "INFO",
+      "owner_layer": "file",
+      "categories": [],
+      "category_fit": [
+        "unmapped"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "file:FILE-CORS-NEGATIVE-PRECISION#12"
+      ],
+      "layers_own": [
+        "file"
+      ],
+      "layers_all": [
+        "file"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 file_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "dead_private_method.none",
+      "title": "没有真正无人调用的私有方法",
+      "severity": "INFO",
+      "owner_layer": "file",
+      "categories": [
+        "file.cohesion"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "file:FILE-NO-DEAD-PRIVATE-METHOD#13"
+      ],
+      "layers_own": [
+        "file"
+      ],
+      "layers_all": [
+        "file"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.88,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 file_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "enum.check_aligned",
+      "title": "OrderStatus 枚举与 DB CHECK 白名单完全一致（3/3）",
+      "severity": "INFO",
+      "owner_layer": "class",
+      "categories": [
+        "class.contract_violation"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:ENUM_CHECK_ALIGNED#12"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.95,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 class_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "nullability.aligned",
+      "title": "可空性三方一致 27/31 列（同向设防 21 · DTO 更严 0 · 都可空 6）",
+      "severity": "INFO",
+      "owner_layer": "class",
+      "categories": [
+        "class.invariant"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:CLASS-NULLABILITY-ALIGNED#13"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.93,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 class_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "put.required_fk_guarded",
+      "title": "PUT 缺省必填外键被 DTO 的 @NotNull 挡住（400，DB 无脏数据）",
+      "severity": "INFO",
+      "owner_layer": "class",
+      "categories": [
+        "class.contract_violation"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:CLASS-PUT-REQUIRED-FK-GUARDED#15"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 class_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "static_oracle.blind_spot_compile_time_constant",
+      "title": "静态 oracle 的一处已知盲区：编译期常量内联",
+      "severity": "INFO",
+      "owner_layer": "file",
+      "categories": [],
+      "category_fit": [
+        "unmapped"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "file:FILE-STATIC-ORACLE-BLIND-SPOT#15"
+      ],
+      "layers_own": [
+        "file"
+      ],
+      "layers_all": [
+        "file"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.8,
+      "ground_truth": "unverified",
+      "repro_cmds": [
+        "python3 file_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "static_root.same_root",
+      "title": "静态映射根与上传根同源（manifest 假设被证伪）",
+      "severity": "INFO",
+      "owner_layer": "file",
+      "categories": [],
+      "category_fit": [
+        "unmapped"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "file:FILE-STATIC-SAME-ROOT#16"
+      ],
+      "layers_own": [
+        "file"
+      ],
+      "layers_all": [
+        "file"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.85,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 file_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "txn.boundary_complete",
+      "title": "全仓写方法的事务边界一个不缺",
+      "severity": "INFO",
+      "owner_layer": "file",
+      "categories": [
+        "file.error_handling_pattern"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "file:FILE-TXN-BOUNDARY-COMPLETE#17"
+      ],
+      "layers_own": [
+        "file"
+      ],
+      "layers_all": [
+        "file"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 file_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    },
+    {
+      "root_cause_key": "txn.rollback_proven",
+      "title": "事务边界实测有效：中途失败不留残局",
+      "severity": "INFO",
+      "owner_layer": "file",
+      "categories": [
+        "file.error_handling_pattern"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "file:FILE-ROLLBACK-PROVEN#14"
+      ],
+      "layers_own": [
+        "file"
+      ],
+      "layers_all": [
+        "file"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 file_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": []
+    }
+  ],
+  "coverage": {
+    "matrix": {
+      "function": {
+        "boundary": 7,
+        "complexity": 0,
+        "exception_path": 1,
+        "numeric": 0
+      },
+      "file": {
+        "state_consistency": 2,
+        "error_handling_pattern": 7,
+        "cohesion": 3
+      },
+      "class": {
+        "encapsulation_leak": 0,
+        "invariant": 6,
+        "contract_violation": 7,
+        "inheritance_design": 0
+      },
+      "service": {
+        "interface_contract": 29,
+        "resilience": 0,
+        "authz": 1,
+        "data_consistency": 0,
+        "resource_leak": 0,
+        "service_latency": 0
+      },
+      "integration": {
+        "end_to_end_business": 11,
+        "cross_service_performance": 0,
+        "cross_service_attack_chain": 2,
+        "cross_layer_correlation": 0
+      }
+    },
+    "zero_coverage_categories": [
+      "function.complexity",
+      "function.numeric",
+      "class.encapsulation_leak",
+      "class.inheritance_design",
+      "service.resilience",
+      "service.data_consistency",
+      "service.resource_leak",
+      "service.service_latency",
+      "integration.cross_service_performance",
+      "integration.cross_layer_correlation"
+    ],
+    "unmapped_uids": [
+      "file:FILE-CORS-INTRANET-WIDE#0",
+      "file:FILE-XFF-CLIENT-IP-SPOOF#1",
+      "file:FILE-TRACEID-CLIENT-CONTROLLED#6",
+      "file:FILE-CORS-NEGATIVE-PRECISION#12",
+      "file:FILE-STATIC-ORACLE-BLIND-SPOT#15",
+      "file:FILE-STATIC-SAME-ROOT#16",
+      "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#8",
+      "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#9",
+      "integration:RECORDING_COVERAGE_GAP#10"
+    ],
+    "unmapped_by_layer": {
+      "file": 6,
+      "class": 2,
+      "integration": 1
+    },
+    "files_with_multiple_root_causes": {
+      "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/OrderService.java": [
+        "apply.null_input.npe_instead_of_422",
+        "order.apply.amount_invariants_weak",
+        "order.item_quantity_unvalidated",
+        "order.snapshot.item_ownership_unchecked",
+        "order_no.no_collision_guarantee",
+        "price.final_price.upper_bound_unvalidated",
+        "service.helpers.duplicated"
+      ],
+      "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/UploadService.java": [
+        "upload.content_type_not_sniffed",
+        "upload.limit_declared_in_three_places",
+        "upload.no_size_limit"
+      ],
+      "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/WebConfig.java": [
+        "cors.allowed_origin_patterns_too_broad",
+        "webconfig.static_root_normalization_env_dependent"
+      ],
+      "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/TraceIdFilter.java": [
+        "audit.client_ip_trusted_from_header",
+        "traceid.client_controlled_no_validation"
+      ],
+      "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/exception/GlobalExceptionHandler.java": [
+        "errhandler.badrequest_echoes_body",
+        "errhandler.db_constraint_text_leak",
+        "errhandler.response_shape_inconsistent"
+      ],
+      "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/CategoryController.java": [
+        "errhandler.internal_detail_leak",
+        "jackson.lenient_type_coercion"
+      ],
+      "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageTypeController.java": [
+        "errhandler.internal_detail_leak",
+        "jackson.lenient_type_coercion"
+      ],
+      "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageController.java": [
+        "errhandler.internal_detail_leak",
+        "tooling.coverage_recording_gap"
+      ],
+      "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java": [
+        "errhandler.internal_detail_leak",
+        "frontend.list_hardcoded_limit_100"
+      ],
+      "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java": [
+        "api.snapshot_structure_undeclared",
+        "dto.unknown_field_silent_drop",
+        "errhandler.internal_detail_leak",
+        "order.item_quantity_unvalidated",
+        "order.snapshot.item_ownership_unchecked",
+        "price.final_price.upper_bound_unvalidated"
+      ],
+      "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/BanquetOrder.java": [
+        "db.notnull_bypassed_by_empty_string",
+        "dto.required_check_missing",
+        "error.message_mismatch",
+        "order.status.transition_unconstrained",
+        "orders.no_data_lifecycle"
+      ],
+      "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/Product.java": [
+        "api.put_full_overwrite",
+        "column.default_declared_in_three_places",
+        "index.idx_products_name_unusable"
+      ],
+      "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/OrderStatus.java": [
+        "enum.case_sensitive",
+        "enum.check_aligned"
+      ]
+    },
+    "root_cause_count": 52,
+    "finding_count": 86
+  }
+}
