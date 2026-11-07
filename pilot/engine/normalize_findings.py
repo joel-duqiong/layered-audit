@@ -123,7 +123,10 @@ def _fn_location(rec: dict[str, Any]) -> dict[str, Any]:
     symbol = fn_field
     java_path: Path | None = None
     method = ""
-    for ev in rec.get("evidence", []):
+    evidence = rec.get("evidence")
+    if isinstance(evidence, dict):
+        evidence = [evidence]
+    for ev in evidence or []:
         fqn = ev.get("function") or ""
         if "#" in fqn:
             cls_fqn, _, meth = fqn.partition("#")
@@ -241,7 +244,10 @@ def _endpoint_location(rec: dict[str, Any]) -> dict[str, Any]:
 # ------------------------------------------------------------------ repro / evidence
 
 def _fn_repro(rec: dict[str, Any]) -> tuple[str, list[str]]:
-    cases = [ev.get("case_id") for ev in rec.get("evidence", []) if ev.get("case_id")]
+    evidence = rec.get("evidence")
+    if isinstance(evidence, dict):
+        evidence = [evidence]
+    cases = [ev.get("case_id") for ev in (evidence or []) if ev.get("case_id")]
     if not cases:
         return "", []
     return f"python3 fn_dynamic.py --case {cases[0]}", [f"fn_dynamic.py#case:{c}" for c in cases]
@@ -290,30 +296,42 @@ def _build(layer: str, rec: dict[str, Any], index: int, source_file: str) -> dic
             root_cause_key=f"unannotated.{layer}.{fid}",
         )
 
+    # 复现命令与证据引用：按层决定
     if layer == "function":
-        location = _fn_location(rec)
         repro_cmd, extra_refs = _fn_repro(rec)
-        base_refs = [f"fn_findings.json#{fid}"]
+        base_refs = [f"{source_file}#{fid}"]
     elif layer == "file":
-        location = _file_location(rec)
         repro_cmd = LAYER_REPLAY["file"]
-        base_refs = [f"file_findings.json#{fid}"]
-        extra_refs: list[str] = []
+        base_refs = [f"{source_file}#{fid}"]
+        extra_refs = []
     elif layer == "service":
-        location = _endpoint_location(rec)
         repro_cmd = rec.get("repro") or ""
-        base_refs = [f"findings.json#{fid}"]
+        base_refs = [f"{source_file}#{fid}"]
         extra_refs = []
     elif layer == "class":
-        location = _class_location(rec)
         repro_cmd = LAYER_REPLAY["class"]
-        base_refs = [f"class_findings.json#{fid}"]
+        base_refs = [f"{source_file}#{fid}"]
         extra_refs = []
     else:
-        location = _endpoint_location(rec)
         repro_cmd = rec.get("repro") or ""
-        base_refs = [f"integration_findings.json#{fid}"]
+        base_refs = [f"{source_file}#{fid}"]
         extra_refs = []
+
+    # 定位：发现自带 location 时采信，否则按层推导
+    own_location = rec.get("location")
+    if isinstance(own_location, dict):
+        location = {"file": own_location.get("file", ""),
+                    "line": own_location.get("line", UNKNOWN_LINE),
+                    "symbol": own_location.get("symbol", ""),
+                    "endpoint": own_location.get("endpoint", "")}
+    elif layer == "function":
+        location = _fn_location(rec)
+    elif layer == "file":
+        location = _file_location(rec)
+    elif layer == "class":
+        location = _class_location(rec)
+    else:
+        location = _endpoint_location(rec)
         if location.get("endpoint", "").startswith("CHAIN-"):
             extra_refs.append("integration_chains.json#chain_steps")
 

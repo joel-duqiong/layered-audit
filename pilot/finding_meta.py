@@ -81,6 +81,27 @@ FUNCTION: dict[str, Meta] = {
         "明细归一化是否只查重复、不查 productId 与 quantity？",
         "function", 0.93, "defect", ("CWE-20",),
         "order.item_quantity_unvalidated"),
+    "FN-NUMERIC-MONEY-INPUT-SILENT-MUTATION": _m(
+        "function.numeric", "exact",
+        "金额输入规范化是否静默改变了用户输入的数值？",
+        "function", 0.95, "defect", (),
+        "money_input.normalization_silently_mutates_value",
+        note="负号被吞（金额方向反转）+ 超过 2 位小数被截断（少 1 分）；"
+             "作用于成交价 / 定金 / 套餐价 / 商品价共 6 处金额输入框"),
+    "FN-NUMERIC-FE-MONEY-ROUNDTRIP-EXACT": _m(
+        "function.numeric", "exact",
+        "前端金额换算在合理量级内是否精确闭合？",
+        "function", 0.90, "positive", (),
+        "money_conversion.roundtrip_exact",
+        note="三条确定性随机性质各 2000 例全过（种子 20261107）：分→元→分往返闭合 / "
+             "显示精度 / 元→分"),
+    "FN-NUMERIC-BIGINT-PRECISION-LOSS": _m(
+        "function.numeric", "exact",
+        "金额超过 2^53 分时，前端显示的金额是否与库里存的一致？",
+        "function", 0.85, "defect", (),
+        "price.final_price.upper_bound_unvalidated",
+        relation="cited",
+        note="根因是「金额没有上界」（函数层已开单），这里只量化前端侧后果，不重复开单"),
     "FN-UPLOAD-NO-SIZE-LIMIT": _m(
         "function.boundary", "exact",
         "上传体积是否完全没有上限，单请求被完整写盘？",

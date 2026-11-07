@@ -39,6 +39,8 @@ echo "=== 负载实测（端到端延迟曲线 + 分页 total 开销）==="
 python3 perf_load.py --scales "${PERF_SCALES:-0,2000,10000,50000}" --rounds "${PERF_ROUNDS:-10}"
 echo "=== 清理 ==="
 ./cleanup.sh
+echo "=== 函数层 numeric 性质探针（property_based_test）==="
+python3 numeric_props.py
 echo "=== 引擎自检（通用引擎不许写回项目专属的东西 + 换绑定可跑）==="
 python3 engine/check_engine_purity.py
 ./test_portability.sh
