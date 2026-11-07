@@ -14,6 +14,7 @@
   python3 integration_gate.py --accept    比对通过后把当前结果写成新基线
 """
 from __future__ import annotations
+import project
 
 import datetime
 import json
@@ -22,7 +23,7 @@ import subprocess
 import sys
 from typing import Any
 
-D = os.path.dirname(os.path.abspath(__file__))
+D = str(project.artifact_dir())
 RECON = os.path.join(D, "integration_reconciliation.json")
 CHAINS = os.path.join(D, "integration_chains.json")
 BASELINE = os.path.join(D, "integration_baseline.json")

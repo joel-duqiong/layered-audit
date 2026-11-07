@@ -10,6 +10,7 @@
 产出 file_observation.json。
 """
 from __future__ import annotations
+import project
 
 import json
 import re
@@ -20,11 +21,12 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-BACKEND = Path("/Users/june/jiuyan/backend")
-PILOT = Path(__file__).parent
-WORK = Path("/tmp/jiuyan_file")
+
+BACKEND = project.backend_root()
+PILOT = project.artifact_dir()
+WORK = project.work_dir() / "file"
 HARNESS = WORK / "harness"
-CLASSES = Path("/tmp/jiuyan_fn/classes")
+CLASSES = project.work_dir() / "classes"
 DEPS = PILOT / "file_deps.txt"
 BASE_URL = "http://127.0.0.1:8080"
 CONTAINER = "jiuyan-backend"

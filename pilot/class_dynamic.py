@@ -1,9 +1,10 @@
 """类层动态实测：类的真实行为从 DB 里读（持久化后的对象状态）。
 三个执行器：状态迁移矩阵 / 索引可用性 / 软删与唯一约束。
 """
+import project
 import json, os, subprocess, uuid, datetime, requests
 
-D = os.path.dirname(os.path.abspath(__file__))
+D = str(project.artifact_dir())
 BASE = os.environ.get("JIUYAN_BASE_URL", "http://127.0.0.1:8081")
 S = requests.Session()
 MARK = "ai_probe_"

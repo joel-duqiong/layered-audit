@@ -7,6 +7,7 @@
 用来验证那些本来就成立的不变式（正面结论）。
 """
 from __future__ import annotations
+import project
 
 import copy
 import json
@@ -17,7 +18,7 @@ from engine.invariants import evaluate_all
 from integration_chain import BASE, call, cleanup, data_of, order_body, owner_session
 from integration_reconcile import PFX, psql_rows
 
-HERE = Path(__file__).resolve().parent
+HERE = project.artifact_dir()
 INVARIANTS_FILE = HERE / "invariants.json"
 OUT = HERE / "business_findings.json"
 TAG = "inv"

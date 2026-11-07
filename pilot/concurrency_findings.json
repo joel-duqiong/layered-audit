@@ -5,13 +5,13 @@
       "severity": "MEDIUM",
       "endpoint": "PUT /api/orders/{id}",
       "title": "并发编辑同一订单会静默丢掉对方的修改：没有版本号、没有冲突检测",
-      "detail": "订单编辑走 PUT /api/orders/{id}，服务层在事务里整行覆盖，没有乐观锁（无 version / ETag / If-Match），也没有任何冲突检测。\n两个客户端同时编辑同一订单、各改一个字段时，后提交的那个用自己那份完整快照覆盖了整行，先提交的人的修改直接消失 —— 没有报错、没有冲突提示，两边都以为自己改成功了。\n实测：{\"property\": \"两个并发 PUT 分别改 customerPhone 与 address，最终行必须同时含两个新值\", \"ok\": false, \"order_id\": 952, \"http_status\": {\"B\": 200, \"A\": 200}, \"final_row\": {\"remark\": \"ai_probe_conc_dc1_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc1_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13900000001\", \"final_price_cent\": 1}, \"phone_applied\": true, \"address_applied\": false, \"lost_update\": true}\n谈单场景下的具体后果：销售 A 改了成交价、销售 B 同时改了电话，A 的改价凭空消失，订单金额回到旧值，而 A 的界面显示他改成功了。",
+      "detail": "订单编辑走 PUT /api/orders/{id}，服务层在事务里整行覆盖，没有乐观锁（无 version / ETag / If-Match），也没有任何冲突检测。\n两个客户端同时编辑同一订单、各改一个字段时，后提交的那个用自己那份完整快照覆盖了整行，先提交的人的修改直接消失 —— 没有报错、没有冲突提示，两边都以为自己改成功了。\n实测：{\"property\": \"两个并发 PUT 分别改 customerPhone 与 address，最终行必须同时含两个新值\", \"ok\": false, \"order_id\": 993, \"http_status\": {\"B\": 200, \"A\": 200}, \"final_row\": {\"remark\": \"ai_probe_conc_dc1_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc1_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13900000001\", \"final_price_cent\": 1}, \"phone_applied\": true, \"address_applied\": false, \"lost_update\": true}\n谈单场景下的具体后果：销售 A 改了成交价、销售 B 同时改了电话，A 的改价凭空消失，订单金额回到旧值，而 A 的界面显示他改成功了。",
       "repro": "python3 concurrency_props.py",
       "evidence": {
         "probe": {
           "property": "两个并发 PUT 分别改 customerPhone 与 address，最终行必须同时含两个新值",
           "ok": false,
-          "order_id": 952,
+          "order_id": 993,
           "http_status": {
             "B": 200,
             "A": 200
@@ -35,13 +35,13 @@
       "severity": "INFO",
       "endpoint": "PUT /api/orders/{id}",
       "title": "被拒的写请求不会在订单行留下部分写入（事务边界有效）",
-      "detail": "同一个 PUT 里塞一个非法字段（tableCount=0，@Min(1) 拒绝）和一个合法字段的改动，服务返回 4xx 后，订单行与请求前逐字段一致 —— 没有出现「校验失败但另一部分已经写进去」的半截状态。\n实测：{\"property\": \"被拒的 PUT 不能在订单行留下任何部分写入\", \"ok\": true, \"order_id\": 953, \"http_status\": 400, \"before\": {\"remark\": \"ai_probe_conc_dc2_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc2_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"after\": {\"remark\": \"ai_probe_conc_dc2_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc2_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"partial_write\": false}",
+      "detail": "同一个 PUT 里塞一个非法字段（tableCount=0，@Min(1) 拒绝）和一个合法字段的改动，服务返回 4xx 后，订单行与请求前逐字段一致 —— 没有出现「校验失败但另一部分已经写进去」的半截状态。\n实测：{\"property\": \"被拒的 PUT 不能在订单行留下任何部分写入\", \"ok\": true, \"order_id\": 994, \"http_status\": 400, \"before\": {\"remark\": \"ai_probe_conc_dc2_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc2_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"after\": {\"remark\": \"ai_probe_conc_dc2_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc2_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"partial_write\": false}",
       "repro": "python3 concurrency_props.py",
       "evidence": {
         "probe": {
           "property": "被拒的 PUT 不能在订单行留下任何部分写入",
           "ok": true,
-          "order_id": 953,
+          "order_id": 994,
           "http_status": 400,
           "before": {
             "remark": "ai_probe_conc_dc2_remark",
@@ -68,7 +68,7 @@
       "severity": "MEDIUM",
       "endpoint": "POST /api/orders",
       "title": "下单接口没有幂等：同一个请求重发一次就产生两个订单",
-      "detail": "POST /api/orders 不接受也不返回幂等键，没有按业务键去重，也没有唯一约束能挡住重复。客户端在超时后重试（这是所有 HTTP 客户端的标准行为），就会多出一张订单。\n实测：{\"property\": \"同一个 POST 重发两次，只能有一个订单落库（POST 必须幂等或带幂等键）\", \"ok\": false, \"http_status\": [200, 200], \"first_order_id\": 954, \"second_order_id\": 955, \"orders_in_db\": 2, \"same_id\": false}\n在零鉴权的前提下，这个接口同时也是「随便重发就能灌订单」的放大器。",
+      "detail": "POST /api/orders 不接受也不返回幂等键，没有按业务键去重，也没有唯一约束能挡住重复。客户端在超时后重试（这是所有 HTTP 客户端的标准行为），就会多出一张订单。\n实测：{\"property\": \"同一个 POST 重发两次，只能有一个订单落库（POST 必须幂等或带幂等键）\", \"ok\": false, \"http_status\": [200, 200], \"first_order_id\": 995, \"second_order_id\": 996, \"orders_in_db\": 2, \"same_id\": false}\n在零鉴权的前提下，这个接口同时也是「随便重发就能灌订单」的放大器。",
       "repro": "python3 concurrency_props.py",
       "evidence": {
         "probe": {
@@ -78,8 +78,8 @@
             200,
             200
           ],
-          "first_order_id": 954,
-          "second_order_id": 955,
+          "first_order_id": 995,
+          "second_order_id": 996,
           "orders_in_db": 2,
           "same_id": false
         }
@@ -90,7 +90,7 @@
     "dc1": {
       "property": "两个并发 PUT 分别改 customerPhone 与 address，最终行必须同时含两个新值",
       "ok": false,
-      "order_id": 952,
+      "order_id": 993,
       "http_status": {
         "B": 200,
         "A": 200
@@ -110,7 +110,7 @@
     "dc2": {
       "property": "被拒的 PUT 不能在订单行留下任何部分写入",
       "ok": true,
-      "order_id": 953,
+      "order_id": 994,
       "http_status": 400,
       "before": {
         "remark": "ai_probe_conc_dc2_remark",
@@ -137,8 +137,8 @@
         200,
         200
       ],
-      "first_order_id": 954,
-      "second_order_id": 955,
+      "first_order_id": 995,
+      "second_order_id": 996,
       "orders_in_db": 2,
       "same_id": false
     }

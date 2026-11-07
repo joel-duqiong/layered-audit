@@ -16,6 +16,7 @@ Spring 容器，代理不参与，所以「事务边界」在低层完全观察�
 产出 transaction_findings.json（service 层），进总表与覆盖度矩阵。
 """
 from __future__ import annotations
+import project
 
 import json
 import re
@@ -30,7 +31,7 @@ from integration_chain import BASE, order_body
 from integration_reconcile import psql_rows
 from probe_instance import ProbeInstance
 
-HERE = Path(__file__).resolve().parent
+HERE = project.artifact_dir()
 OUT = HERE / "transaction_findings.json"
 TRACE_RE = re.compile(r"Getting transaction for \[(?P<cls>[\w.$]+)\.(?P<method>\w+)\]")
 TRACE_LEVEL = "-Dlogging.level.org.springframework.transaction.interceptor=TRACE"

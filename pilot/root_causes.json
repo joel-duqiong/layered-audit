@@ -518,7 +518,7 @@
     },
     {
       "root_cause_key": "index.idx_products_name_unusable",
-      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.959ms vs 0.015ms，差 531 倍）",
+      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.76ms vs 0.013ms，差 597 倍）",
       "severity": "HIGH",
       "owner_layer": "service",
       "categories": [

@@ -1,0 +1,55 @@
+{
+  "target": "demo-shop",
+  "description": "演示目标：刻意包含 jiuyan 没有的 Java/Spring 特性（复杂继承、@Profile 条件装配、缓存、定时任务、跨仓库调用、真实涌现缺陷）",
+  "contract": "../../layers.yaml",
+  "annotation_table": "finding_meta.py",
+  "paths": {
+    "backend": "/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/backend",
+    "frontend": "",
+    "java_package": "com/demo/shop",
+    "controller_dir": "com/demo/shop/controller",
+    "entity_dir": "com/demo/shop/entity",
+    "migration_dir": "src/main/resources/db/migration",
+    "app_container": "demo-shop-backend",
+    "base_url": "http://127.0.0.1:8090",
+    "work_dir": "/tmp/demo_shop_work",
+    "recordings": "",
+    "artifacts_dir": "/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/artifacts"
+  },
+  "source_roots": {
+    "java": "/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/backend/src/main/java",
+    "java_package": "com/demo/shop"
+  },
+  "layer_carriers": {
+    "function": "function.jvm_reflection",
+    "file": "file.jvm_whole_class",
+    "class": "class.dto_db_contract",
+    "service": "service.http_contract",
+    "integration": "integration.e2e_three_source"
+  },
+  "obligation_templates": {
+    "function.boundary": "边界输入（空/极值/越界）必须被明确拒绝或被正确处理",
+    "function.complexity": "该函数的复杂度不得使其在输入规模增大时退化到不可用",
+    "function.exception_path": "所有异常路径必须被显式处理或转成业务异常",
+    "function.numeric": "数量、金额、时间不得发生溢出、截断或单位换算错误",
+    "file.state_consistency": "同文件内的共享状态读写必须顺序无关且一致",
+    "file.error_handling_pattern": "同一文件内的异常处理风格必须统一",
+    "file.cohesion": "同一文件不得承担多处不相关的职责",
+    "class.encapsulation_leak": "不得把可变内部状态或实体暴露给外部调用方",
+    "class.invariant": "该类的不变式必须在所有公开方法上被强制",
+    "class.contract_violation": "方法契约必须与调用方假设一致；子类覆写不得收紧父类承诺",
+    "class.inheritance_design": "继承层次必须保持行为一致，不得违反里氏替换",
+    "service.interface_contract": "请求/响应形状与错误码语义必须与调用方假设一致",
+    "service.resilience": "必须具备幂等、超时可控与可降级的行为",
+    "service.authz": "必须有明确的鉴权与越权防护",
+    "service.data_consistency": "并发写、事务边界与缓存必须保持数据自洽",
+    "service.resource_leak": "不得泄漏连接、线程、文件或内存",
+    "service.service_latency": "响应时间必须随数据量保持可接受的增长",
+    "integration.end_to_end_business": "端到端业务流程的语义必须自洽",
+    "integration.cross_service_performance": "跨服务的端到端延迟必须满足预算",
+    "integration.cross_service_attack_chain": "跨服务的调用不得形成可被利用的攻击链",
+    "integration.cross_layer_correlation": "同一根因在多层同时显现时必须被归并"
+  },
+  "evidence_sources": [],
+  "unit_sources": {}
+}

@@ -8,6 +8,7 @@
 三条链共享同一套造数/清理机制：哨兵数据全部带 ai_probe_ 前缀，写完即删，零残留。
 """
 from __future__ import annotations
+import project
 
 import argparse
 import datetime
@@ -21,7 +22,7 @@ import requests
 
 from integration_reconcile import PFX, frontend_map, psql_rows
 
-D = os.path.dirname(os.path.abspath(__file__))
+D = str(project.artifact_dir())
 BASE = os.environ.get("JIUYAN_BASE_URL", "http://127.0.0.1:8081")
 OUT = os.path.join(D, "integration_chains.json")
 OUT_REPLAY = os.path.join(D, "integration_chains_replay.json")

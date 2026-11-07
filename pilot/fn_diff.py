@@ -9,11 +9,12 @@
 产出 fn_findings.json / fn_findings.md。
 """
 from __future__ import annotations
+import project
 
 import json
 from pathlib import Path
 
-HERE = Path(__file__).parent
+HERE = project.artifact_dir()
 
 # 每条缺陷的元数据：根因函数、边界是否已挡、HTTP 可达性、关联的高层单
 GROUPS: dict[str, dict] = {

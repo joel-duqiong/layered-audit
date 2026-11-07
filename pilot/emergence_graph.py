@@ -18,13 +18,14 @@
   A3 枢纽 top-5 集合固定（防止中心性实现写错）
 """
 from __future__ import annotations
+import project
 
 import json
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
-HERE = Path(__file__).resolve().parent
+HERE = project.artifact_dir()
 OUT = HERE / "emergence_graph.json"
 SEED = 20261107
 

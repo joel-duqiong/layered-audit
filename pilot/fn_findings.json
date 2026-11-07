@@ -91,14 +91,14 @@
           "case_id": "UPL-04",
           "function": "com.jiuyan.banquet.service.UploadService#uploadProductImage",
           "invariant": "文件内容不是图片时不得落盘（内容必须嗅探，不能只看客户端自报的 contentType）",
-          "actual": "落盘文件: [{'name': 'products/6c66e7fc-e245-4ff8-91d3-a04ca98742c8.png', 'size': 27, 'first_bytes_hex': '4d5a900003000000', 'magic_ascii': 'MZ......'}] | 落盘 products/6c66e7fc-e245-4ff8-91d3-a04ca98742c8.png size=27 head=MZ......",
+          "actual": "落盘文件: [{'name': 'products/d553f577-37c5-41b7-8ee3-173a8af8ed25.png', 'size': 27, 'first_bytes_hex': '4d5a900003000000', 'magic_ascii': 'MZ......'}] | 落盘 products/d553f577-37c5-41b7-8ee3-173a8af8ed25.png size=27 head=MZ......",
           "exception": null
         },
         {
           "case_id": "UPL-07",
           "function": "com.jiuyan.banquet.service.UploadService#uploadProductImage",
           "invariant": "任意字节不得以图片扩展名落盘",
-          "actual": "落盘文件: [{'name': 'products/01e1c950-afc2-41c2-a592-1504cf0ab6c1.png', 'size': 40, 'first_bytes_hex': '6a75737420706c61', 'magic_ascii': 'just pla'}] | 落盘 products/01e1c950-afc2-41c2-a592-1504cf0ab6c1.png size=40 head=just pla",
+          "actual": "落盘文件: [{'name': 'products/3557ed33-bbe4-477b-9e20-e138aad20f63.png', 'size': 40, 'first_bytes_hex': '6a75737420706c61', 'magic_ascii': 'just pla'}] | 落盘 products/3557ed33-bbe4-477b-9e20-e138aad20f63.png size=40 head=just pla",
           "exception": null
         }
       ],
@@ -122,7 +122,7 @@
           "case_id": "GON-02",
           "function": "#",
           "invariant": "同一秒内生成的订单号必须互不相同（唯一槽位只有 1000 个/秒）",
-          "actual": "并发生成 3000 个订单号，重复 2049 个 | generated=3000 distinct=951 elapsed=17ms",
+          "actual": "并发生成 3000 个订单号，重复 1452 个 | generated=3000 distinct=1548 elapsed=17ms",
           "exception": null
         }
       ],
@@ -380,7 +380,7 @@
           "case_id": "UPL-06",
           "function": "com.jiuyan.banquet.service.UploadService#uploadProductImage",
           "invariant": "上传体积必须有上限（防止上传放大 DoS）",
-          "actual": "落盘文件: [{'name': 'products/816d236f-339b-4d41-b9c1-c1fab1df010f.png', 'size': 20971520, 'first_bytes_hex': '4141414141414141', 'magic_ascii': 'AAAAAAAA'}] | 落盘 products/816d236f-339b-4d41-b9c1-c1fab1df010f.png size=20971520 head=AAAAAAAA",
+          "actual": "落盘文件: [{'name': 'products/30125396-9510-4294-bf48-15a0e48fa711.png', 'size': 20971520, 'first_bytes_hex': '4141414141414141', 'magic_ascii': 'AAAAAAAA'}] | 落盘 products/30125396-9510-4294-bf48-15a0e48fa711.png size=20971520 head=AAAAAAAA",
           "exception": null
         }
       ],
@@ -500,7 +500,7 @@
       "case_id": "GON-01",
       "function": "com.jiuyan.banquet.service.OrderService#generateOrderNo",
       "invariant": "订单号格式必须是 DD + yyyyMMddHHmmss + 3 位随机",
-      "actual": "期望匹配 ^DD\\d{17}$，实际 'DD20261107231151581'"
+      "actual": "期望匹配 ^DD\\d{17}$，实际 'DD20261107235918214'"
     },
     {
       "case_id": "GON-03",
@@ -566,7 +566,7 @@
       "case_id": "UPL-05",
       "function": "com.jiuyan.banquet.service.UploadService#uploadProductImage",
       "invariant": "文件名带路径穿越时，落盘路径必须仍在上传目录内",
-      "actual": "落盘文件: [{'name': 'products/6bf8e25c-0724-4d4f-ac7c-3bf65acd10aa.png', 'size': 8, 'first_bytes_hex': '89504e470d0a1a0a', 'magic_ascii': '.PNG....'}]"
+      "actual": "落盘文件: [{'name': 'products/5b218132-e3d5-4041-bae4-cead97638481.png', 'size': 8, 'first_bytes_hex': '89504e470d0a1a0a', 'magic_ascii': '.PNG....'}]"
     },
     {
       "case_id": "EXT-01",

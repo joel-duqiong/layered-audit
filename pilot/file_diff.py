@@ -13,11 +13,12 @@
   O3 资源边界同源性（文件持有的资源/根目录/日志/线程局部状态是否可信）
 """
 from __future__ import annotations
+import project
 
 import json
 from pathlib import Path
 
-D = Path(__file__).parent
+D = project.artifact_dir()
 decl = json.loads((D / "file_declaration.json").read_text())
 obs = json.loads((D / "file_observation.json").read_text())
 

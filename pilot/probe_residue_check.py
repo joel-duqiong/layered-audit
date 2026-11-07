@@ -9,13 +9,14 @@
 所以这个检查失败就是失败，不是警告。
 """
 from __future__ import annotations
+import project
 
 import json
 import subprocess
 import sys
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent
+HERE = project.artifact_dir()
 OUT = HERE / "residue_check.json"
 PROBE_CONTAINER_PATTERNS = ("jiuyan-tx-probe", "jiuyan-cfg-", "jiuyan-orm-", "jiuyan-stats-",
                             "jiuyan-feat-", "jiuyan-lazy", "jiuyan-portal")

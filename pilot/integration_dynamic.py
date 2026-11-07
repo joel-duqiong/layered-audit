@@ -8,6 +8,7 @@
 所有写操作一律带 ai_probe_ 前缀，由 cleanup.sh 回收；绝不碰种子数据。
 """
 from __future__ import annotations
+import project
 
 import base64
 import argparse
@@ -18,7 +19,7 @@ import time
 
 import requests
 
-D = os.path.dirname(os.path.abspath(__file__))
+D = str(project.artifact_dir())
 BASE = os.environ.get("JIUYAN_BASE_URL", "http://127.0.0.1:8081")
 PFX = "ai_probe_"
 DECL = os.path.join(D, "integration_declaration.json")

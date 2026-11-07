@@ -9,6 +9,7 @@
 产出 numeric_findings.json（function 层），直接进总表与覆盖度矩阵。
 """
 from __future__ import annotations
+import project
 
 import json
 import os
@@ -16,7 +17,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-HERE = Path(__file__).resolve().parent
+HERE = project.artifact_dir()
 PROBE = HERE / "numeric_probe.mjs"
 OUT = HERE / "numeric_findings.json"
 REGISTER = HERE / "fe_register.mjs"

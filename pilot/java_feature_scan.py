@@ -10,14 +10,16 @@
 这些结论进 feature_findings.json（走总表），盲区部分进 feature_coverage 矩阵。
 """
 from __future__ import annotations
+import project
 
 import json
 import re
 from pathlib import Path
 from typing import Any
 
-HERE = Path(__file__).resolve().parent
-JAVA_ROOT = Path("/Users/june/jiuyan/backend/src/main/java")
+HERE = project.artifact_dir()
+
+JAVA_ROOT = project.java_source_root()
 PKG = "com/jiuyan/banquet"
 OUT = HERE / "feature_findings.json"
 

@@ -1,11 +1,13 @@
 """类层静态声明：从 Flyway DDL 抽「表级契约」，从 JPA 实体抽「Java 级契约」。
 两份声明互为参照 —— 它们的差分本身就是一类缺陷。
 """
+import project
 import json, os, re, glob, datetime
 
-D = os.path.dirname(os.path.abspath(__file__))
-MIG = "/Users/june/jiuyan/backend/src/main/resources/db/migration"
-ENT = "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity"
+D = str(project.artifact_dir())
+
+MIG = str(project.migration_dir())
+ENT = str(project.entity_dir())
 OUT = os.path.join(D, "class_declaration.json")
 
 CREATE = re.compile(r"CREATE TABLE\s+(\w+)\s*\((.*?)\n\);", re.S | re.I)
@@ -51,6 +53,15 @@ def parse_ddl():
             indexes.append({"name": m.group(1), "table": m.group(2), "cols": m.group(3).strip()})
     return tables, indexes
 
+def default_table_name(cls: str) -> str:
+    """Spring Boot 默认命名策略：CamelCase → snake_case。
+
+    没写 @Table(name=...) 的实体（多数项目如此）表名是推出来的，
+    只认显式 @Table 会把这类实体的表映射整个丢掉。
+    """
+    return re.sub(r"(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])", "_", cls).lower()
+
+
 def parse_entities():
     out = {}
     for f in sorted(glob.glob(os.path.join(ENT, "*.java"))):
@@ -72,7 +83,9 @@ def parse_entities():
                                     if re.search(r"length\s*=\s*(\d+)", args) else None),
                          "enum": "Enumerated" in src.split(field)[0].split("@Column")[0][-120:]})
         base = "BaseEntity" in src
-        out[cls.group(1)] = {"file": os.path.basename(f), "table": tbl.group(1) if tbl else None,
+        out[cls.group(1)] = {"file": os.path.basename(f),
+                             "table": tbl.group(1) if tbl else default_table_name(cls.group(1)),
+                             "table_explicit": bool(tbl),
                              "columns": cols, "extends_base_entity": base}
     return out
 

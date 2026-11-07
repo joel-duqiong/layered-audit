@@ -1,9 +1,10 @@
 """动态层：真实执行每个 endpoint 的多种场景，记录实测行为。
 所有写操作都只作用在 ai_probe_ 前缀的临时实体上，跑完即清理，不碰种子数据。
 """
+import project
 import json, os, time, uuid, datetime, requests, copy
 
-D = os.path.dirname(os.path.abspath(__file__))
+D = str(project.artifact_dir())
 BASE = os.environ.get("JIUYAN_BASE_URL", "http://127.0.0.1:8081")
 S = requests.Session()
 MARK = "ai_probe_"

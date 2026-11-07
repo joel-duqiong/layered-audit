@@ -8,6 +8,7 @@
 **这三份声明彼此之间对不上的地方在哪里** —— 那才是只有集成才会暴露的缺陷。
 """
 from __future__ import annotations
+import project
 
 import collections
 import datetime
@@ -16,10 +17,11 @@ import json
 import os
 import re
 
-D = os.path.dirname(os.path.abspath(__file__))
-FE = "/Users/june/jiuyan/src"
-BE = "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet"
-REC = "/Users/june/tests/auto-api/recordings"
+D = str(project.artifact_dir())
+
+FE = str(project.frontend_root())
+BE = str(project.backend_package_dir())
+REC = str(project.recordings_dir())
 CLASS_DECL = os.path.join(D, "class_declaration.json")
 OUT = os.path.join(D, "integration_declaration.json")
 

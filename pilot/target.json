@@ -279,5 +279,17 @@
     "repo": "/Users/june/jiuyan",
     "git_base": "dcc9b06",
     "impact_depth": 3
+  },
+  "paths": {
+    "backend": "/Users/june/jiuyan/backend",
+    "frontend": "/Users/june/jiuyan/src",
+    "java_package": "com/jiuyan/banquet",
+    "controller_dir": "com/jiuyan/banquet/controller",
+    "entity_dir": "com/jiuyan/banquet/entity",
+    "migration_dir": "src/main/resources/db/migration",
+    "app_container": "jiuyan-backend",
+    "base_url": "http://127.0.0.1:8081",
+    "work_dir": "/tmp/jiuyan_fn",
+    "recordings": "/Users/june/tests/auto-api/recordings"
   }
 }

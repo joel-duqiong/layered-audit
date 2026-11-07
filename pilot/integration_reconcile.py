@@ -19,6 +19,7 @@
 哨兵数据全部带 ai_probe_ 前缀，写完即删，DB 与磁盘零残留。
 """
 from __future__ import annotations
+import project
 
 import datetime
 import json
@@ -30,9 +31,9 @@ from typing import Any
 
 import requests
 
-D = os.path.dirname(os.path.abspath(__file__))
+D = str(project.artifact_dir())
 BASE = os.environ.get("JIUYAN_BASE_URL", "http://127.0.0.1:8081")
-FE = "/Users/june/jiuyan/src"
+FE = str(project.frontend_root())
 PFX = "ai_probe_"
 DECL = os.path.join(D, "integration_declaration.json")
 OUT = os.path.join(D, "integration_reconciliation.json")

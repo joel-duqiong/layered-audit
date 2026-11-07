@@ -10,6 +10,7 @@
 而这正是本层要比对的东西（DTO 到底声明了什么约束）。
 """
 from __future__ import annotations
+import project
 
 import json
 import subprocess
@@ -17,8 +18,8 @@ from pathlib import Path
 
 from fn_static import BACKEND, CLASSES, PKG, ensure_compiled, run
 
-D = Path(__file__).parent
-WORK = Path("/tmp/jiuyan_class")
+D = project.artifact_dir()
+WORK = project.work_dir() / "class"
 HARNESS = WORK / "harness"
 DEPS_FILE = D / "file_deps.txt"
 OUT = D / "class_contract.json"

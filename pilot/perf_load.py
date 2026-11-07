@@ -14,6 +14,7 @@
 - 端到端延迟取 p50（不是均值）：偶发 GC / 连接池抖动不该主导结论。
 """
 from __future__ import annotations
+import project
 
 import argparse
 import json
@@ -27,7 +28,7 @@ from typing import Any
 
 import requests
 
-HERE = Path(__file__).resolve().parent
+HERE = project.artifact_dir()
 PFX = "ai_probe_perf_"
 BASE = os.environ.get("JIUYAN_BASE_URL", "http://127.0.0.1:8081")
 PG_CONTAINER = "jiuyan-postgres"

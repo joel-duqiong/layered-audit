@@ -17,6 +17,7 @@
 产出 mutation_findings.json（function 层），进总表与覆盖度矩阵。
 """
 from __future__ import annotations
+import project
 
 import json
 import os
@@ -27,12 +28,12 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-HERE = Path(__file__).resolve().parent
+HERE = project.artifact_dir()
 sys.path.insert(0, str(HERE))
 import fn_dynamic as fd  # noqa: E402
 import fn_static  # noqa: E402
 
-WORK = Path("/tmp/jiuyan_fn")
+WORK = project.work_dir()
 OUT = HERE / "mutation_findings.json"
 
 ORDER_SERVICE = "com/jiuyan/banquet/service/OrderService.java"

@@ -11,6 +11,7 @@ N 就是这次请求发的 SQL 条数 —— 精确值，不是估的。
 类别：service.service_latency（慢路径）。oracle：trace_analysis。
 """
 from __future__ import annotations
+import project
 
 import json
 import re
@@ -25,7 +26,7 @@ import requests
 from integration_chain import BASE, call, cleanup, data_of, order_body, owner_session
 from integration_reconcile import PFX, psql_rows
 
-HERE = Path(__file__).resolve().parent
+HERE = project.artifact_dir()
 OUT = HERE / "orm_findings.json"
 SRC_CONTAINER = "jiuyan-backend"
 PROBE_CONTAINER = "jiuyan-orm-stats-probe"

@@ -12,6 +12,7 @@
 探针数据带 ai_probe_conc_ 前缀，写完即删，零残留。
 """
 from __future__ import annotations
+import project
 
 import copy
 import json
@@ -24,7 +25,7 @@ import requests
 from integration_chain import BASE, call, cleanup, data_of, order_body, owner_session
 from integration_reconcile import PFX, psql_rows
 
-HERE = Path(__file__).resolve().parent
+HERE = project.artifact_dir()
 OUT = HERE / "concurrency_findings.json"
 TAG = "conc"
 

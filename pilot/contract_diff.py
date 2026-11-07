@@ -1,10 +1,11 @@
 """差分引擎：静态声明 vs 动态实测 -> 缺陷清单。
 每条 finding 都带复现信息（哪个 endpoint、哪个场景、实测到什么）。
 """
+import project
 import json, os, statistics
 from collections import defaultdict
 
-D = os.path.dirname(os.path.abspath(__file__))
+D = str(project.artifact_dir())
 decl = json.load(open(os.path.join(D, "declaration.json")))
 obs = json.load(open(os.path.join(D, "observation.json")))
 g = decl["global"]

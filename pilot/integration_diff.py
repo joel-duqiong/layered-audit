@@ -7,12 +7,14 @@
   * 与服务层/类层已报缺陷重复的，本层只补「集成症状」，不重复计一条根因。
 """
 from __future__ import annotations
+import project
 
 import json
+
 import os
 import re
 
-D = os.path.dirname(os.path.abspath(__file__))
+D = str(project.artifact_dir())
 DECL = json.load(open(os.path.join(D, "integration_declaration.json"), encoding="utf-8"))
 OBS = json.load(open(os.path.join(D, "integration_observation.json"), encoding="utf-8"))
 OUT_JSON = os.path.join(D, "integration_findings.json")
@@ -63,7 +65,7 @@ if unused:
         "GET /api/packages/{id} 属于详情接口冗余；真正值得看的是 PATCH /api/packages/{id}/status —— "
         "它是唯一的状态机式接口，Pad 端却从不调用，套餐上下架只能整单 PUT 全量覆盖"
         "（连同 items 一起重传），绕开了最小变更路径。",
-        "grep -n 'api/' /Users/june/jiuyan/src/api/banquetApi.js",
+        f"grep -n 'api/' {project.frontend_root()}/api/banquetApi.js",
         {"unused_endpoints": unused,
          "note": "GET /api/health 属运维探针，不算缺陷"})
 
@@ -281,7 +283,7 @@ if uncovered:
         "录制流量只有 22 条、9 个路径，且 100% 是 GET 只读流量；下单、改价、改状态、删除、"
         "上传这些写路径一条真实样本都没有。上面几条集成缺陷之所以只能靠构造流量才发现，"
         "就是因为真实流量从来没覆盖过这些路径。",
-        "见 /Users/june/tests/auto-api/recordings/jiuyan_readonly.jsonl",
+        f"见 {project.recordings_dir()}/jiuyan_readonly.jsonl",
         {"uncovered_endpoints": uncovered, "recorded_rows": len(replay),
          "write_endpoints_without_real_traffic": sorted(write_ops),
          "recorded_paths": sorted(recorded_paths)})

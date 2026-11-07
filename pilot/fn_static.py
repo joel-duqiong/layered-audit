@@ -6,6 +6,7 @@
 产出 fn_declaration.json：每个函数的「声明侧」事实。
 """
 from __future__ import annotations
+import project
 
 import json
 import re
@@ -14,14 +15,15 @@ import subprocess
 import zipfile
 from pathlib import Path
 
-BACKEND = Path("/Users/june/jiuyan/backend")
-WORK = Path("/tmp/jiuyan_fn")
+
+BACKEND = project.backend_root()
+WORK = project.work_dir()
 CLASSES = WORK / "classes"
 DEPLOYED = WORK / "deployed_classes"
 DEPS_FILE = WORK / "deps.txt"
 JAR_COPY = WORK / "app.jar"
 
-PKG = "com.jiuyan.banquet"
+PKG = project.java_package()
 
 METHOD_RE = re.compile(
     r"^  (?P<ret>[\w.$\[\]<>, ?]+?)\s(?P<name>[A-Za-z_$][\w$]*)\((?P<params>.*)\);\s*$")
@@ -63,7 +65,7 @@ def ensure_compiled() -> None:
 def ensure_deployed_classes() -> bool:
     """取部署产物（容器里跑的 app.jar）的 class，比对源码与线上是否漂移。"""
     if not JAR_COPY.exists():
-        rc = subprocess.run(["docker", "cp", "jiuyan-backend:/app/app.jar", str(JAR_COPY)],
+        rc = subprocess.run(["docker", "cp", f"{project.app_container()}:/app/app.jar", str(JAR_COPY)],
                             capture_output=True, text=True)
         if rc.returncode != 0:
             return False
@@ -224,7 +226,7 @@ def main() -> None:
         },
         "functions": functions,
     }
-    out = Path(__file__).with_name("fn_declaration.json")
+    out = project.artifact_dir() / "fn_declaration.json"
     out.write_text(json.dumps(payload, ensure_ascii=False, indent=2))
     pure = sum(1 for f in functions if f["is_pure"])
     print(f"函数层静态 -> {out}")

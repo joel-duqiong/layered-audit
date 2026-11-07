@@ -7,6 +7,7 @@ ObjectMapper 用真实实例，UploadService 落在临时目录——被测系�
 产出 fn_observation.json：每个用例的实测行为 + 判定。
 """
 from __future__ import annotations
+import project
 
 import argparse
 import base64
@@ -19,8 +20,8 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-HERE = Path(__file__).parent
-WORK = Path("/tmp/jiuyan_fn")
+HERE = project.artifact_dir()
+WORK = project.work_dir()
 CLASSES = WORK / "classes"
 HARNESS_CLASSES = WORK / "harness"
 CASES_FILE = WORK / "cases.json"

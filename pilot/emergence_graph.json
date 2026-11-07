@@ -2390,7 +2390,7 @@
       "entity": "BaseEntity",
       "field": "createdAt",
       "column": "created_at",
-      "table": null
+      "table": "base_entity"
     },
     "field:BaseEntity.updatedAt": {
       "id": "field:BaseEntity.updatedAt",
@@ -2398,7 +2398,7 @@
       "entity": "BaseEntity",
       "field": "updatedAt",
       "column": "updated_at",
-      "table": null
+      "table": "base_entity"
     },
     "field:Category.name": {
       "id": "field:Category.name",

@@ -2,11 +2,13 @@
 声明来源 = OpenAPI(注解生成) + 控制器源码扫描 + 全局配置事实。
 纯静态，不发任何请求。
 """
+import project
 import json, os, re, sys, glob, datetime
 
-ROOT = "/Users/june/jiuyan/backend"
-CTRL = os.path.join(ROOT, "src/main/java/com/jiuyan/banquet/controller")
-OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "declaration.json")
+
+ROOT = str(project.backend_root())
+CTRL = str(project.controller_dir())
+OUT = str(project.artifact_dir() / "declaration.json")
 
 MAP_ANN = re.compile(r'@(Get|Post|Put|Delete|Patch)Mapping(?:\(\s*(?:value\s*=\s*)?"([^"]*)"[^)]*\))?')
 CLASS_MAP = re.compile(r'@RequestMapping\(\s*"([^"]*)"')
@@ -15,7 +17,14 @@ AUTH_ANN = re.compile(r'@(PreAuthorize|Secured|RolesAllowed)\b')
 
 def scan_controllers():
     ops = {}
-    for f in sorted(glob.glob(os.path.join(CTRL, "*.java"))):
+    # 控制器按注解发现，不靠固定目录 —— 真实项目的包名五花八门
+    # （controller / web / api / rest / interfaces…），写死一个目录就只支持一种习惯。
+    ctrl_files = []
+    for f in glob.glob(os.path.join(str(project.java_source_root()), "**", "*.java"), recursive=True):
+        head = open(f, encoding="utf-8", errors="replace").read(4000)
+        if "@RestController" in head or "@Controller" in head:
+            ctrl_files.append(f)
+    for f in sorted(ctrl_files):
         src = open(f).read()
         lines = src.splitlines()
         cls = CLASS_MAP.search(src)
@@ -55,7 +64,14 @@ def op_schema(op, schemas):
     return None, None, None
 
 def main():
-    api = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "openapi.json")))
+    api_path = project.artifact_dir() / "openapi.json"
+    if not api_path.exists():
+        # 没有 OpenAPI 快照（目标没开 springdoc，或没抓过）→ 只做 controller 声明抽取，
+        # 跳过 schema 比对部分。**不静默**：报告里会显式标注这一段没跑。
+        print("  提示：没有 openapi.json，跳过响应 schema 比对部分")
+        api = {"paths": {}}
+    else:
+        api = json.load(open(api_path))
     schemas = api.get("components", {}).get("schemas", {})
     ctrl = scan_controllers()
 
@@ -99,6 +115,25 @@ def main():
                 "has_valid": c.get("has_valid", False),
                 "authz": {"declared": bool(c.get("authz_in_file")), "mechanism": None},
             })
+
+    if not operations and ctrl:
+        # 没有 OpenAPI 快照（目标没开 springdoc）→ 用控制器扫描结果兜底，
+        # 至少保住「有哪些接口、从哪个 handler 进、收不收 @Valid」这些事实。
+        for (http, path), c in sorted(ctrl.items()):
+            operations.append({
+                "key": f"{http} {path}",
+                "method": http, "path": path,
+                "source": {"file": c.get("file"), "line": c.get("line"),
+                           "handler": c.get("handler")},
+                "declared_status": [],
+                "request_schema": None, "request_required": [],
+                "response_schema": None, "response_props": [],
+                "params": [],
+                "has_valid": c.get("has_valid", False),
+                "authz": {"declared": bool(c.get("authz_in_file")), "mechanism": None},
+                "openapi_missing": True,
+            })
+        print(f"  已用控制器扫描兜底，产出 {len(operations)} 个 operation（缺响应 schema）")
 
     decl = {
         "generated_at": datetime.datetime.now().isoformat(),

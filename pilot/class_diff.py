@@ -3,11 +3,12 @@
 v2 增加了第三方视角（DTO 契约）与实体字段生命周期，
 差分逻辑拆到 class_contract_diff.py，这里只做汇总、排序与落盘。
 """
+import project
 import json, os
 
 import class_contract_diff
 
-D = os.path.dirname(os.path.abspath(__file__))
+D = str(project.artifact_dir())
 decl = json.load(open(os.path.join(D, "class_declaration.json")))
 obs = json.load(open(os.path.join(D, "class_observation.json")))
 findings = []
@@ -53,7 +54,8 @@ for cls, e in jpa.items():
 
 # D2b 枚举取值 ↔ DDL CHECK 白名单
 import re
-enum_src = open("/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/OrderStatus.java").read()
+
+enum_src = open(project.entity_dir() / "OrderStatus.java").read()
 enum_vals = re.findall(r"^\s*([A-Z_]+)\s*[,;]?\s*$", enum_src, re.M)
 enum_vals = [v for v in enum_vals if v and v not in ("public", "enum")]
 orders_check = [v for v in ddl["orders"]["constraints"].values()

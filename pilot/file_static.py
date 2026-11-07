@@ -12,6 +12,7 @@
 产出 file_declaration.json。
 """
 from __future__ import annotations
+import project
 
 import hashlib
 import json
@@ -246,7 +247,7 @@ def analyse_file(fqcn: str) -> dict:
 def main() -> None:
     ensure_compiled()
     deps = ensure_test_deps()
-    (Path(__file__).parent / "file_deps.txt").write_text(deps)
+    (project.artifact_dir() / "file_deps.txt").write_text(deps)
 
     classes = []
     for path in sorted(CLASSES.glob(f"{PKG.replace('.', '/')}/**/*.class")):

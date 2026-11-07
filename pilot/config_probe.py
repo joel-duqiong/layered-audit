@@ -9,6 +9,7 @@
 类别：service.interface_contract / service.authz。oracle：chaos_experiment。
 """
 from __future__ import annotations
+import project
 
 import json
 import subprocess
@@ -19,7 +20,7 @@ import requests
 
 from probe_instance import ProbeInstance
 
-HERE = Path(__file__).resolve().parent
+HERE = project.artifact_dir()
 OUT = HERE / "config_findings.json"
 
 
