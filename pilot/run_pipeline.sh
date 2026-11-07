@@ -23,7 +23,7 @@ python3 file_dynamic.py
 python3 file_diff.py
 echo "=== 服务层（静态声明 / 动态实测 / 差分）==="
 python3 contract_static.py
-python3 contract_dynamic.py
+python3 contract_probe.py    # 通用版：场景配置在 service_scenarios.json
 python3 contract_diff.py
 echo "=== 类层（DDL+实体声明 / DTO反射契约+DB实况 / 数据库实测 / 差分）==="
 python3 class_contract.py

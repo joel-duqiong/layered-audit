@@ -1,0 +1,92 @@
+{
+  "note": "服务层场景配置（项目侧）。探针的通用骨架在 contract_probe.py，这里只声明项目特定的东西：造什么临时实体、哪些字段是探针字段、{id} 从哪来。",
+  "probe_prefix": "ai_probe_",
+  "probe_fields": [
+    "customerName",
+    "customerPhone",
+    "banquetName"
+  ],
+  "envelope": [
+    "success",
+    "code",
+    "message"
+  ],
+  "fixtures": [
+    {
+      "name": "categoryId",
+      "method": "POST",
+      "path": "/api/categories",
+      "body": {
+        "name": "{{prefix}}cat_{{rand6}}"
+      },
+      "id_field": "id"
+    },
+    {
+      "name": "packageTypeId",
+      "method": "POST",
+      "path": "/api/package-types",
+      "body": {
+        "name": "{{prefix}}pt_{{rand6}}"
+      },
+      "id_field": "id"
+    },
+    {
+      "name": "productId",
+      "method": "POST",
+      "path": "/api/products",
+      "body": {
+        "categoryId": "{{categoryId}}",
+        "name": "{{prefix}}prod_{{rand6}}",
+        "priceCent": 1,
+        "unit": "份"
+      },
+      "id_field": "id"
+    },
+    {
+      "name": "packageId",
+      "method": "POST",
+      "path": "/api/packages",
+      "body": {
+        "name": "{{prefix}}pkg_{{rand6}}",
+        "banquetType": "婚宴",
+        "priceCent": 1,
+        "items": [
+          {
+            "productId": "{{productId}}",
+            "quantity": 1
+          }
+        ]
+      },
+      "id_field": "id"
+    },
+    {
+      "name": "orderId",
+      "method": "POST",
+      "path": "/api/orders",
+      "body": {
+        "customerName": "{{prefix}}probe",
+        "customerPhone": "13800000001",
+        "banquetName": "{{prefix}}probe",
+        "banquetType": "婚宴",
+        "reservationTime": "{{plus30d}}",
+        "tableCount": 1,
+        "packageId": "{{packageId}}",
+        "planTotalCent": 1,
+        "useFinalPrice": true,
+        "finalPriceCent": 1,
+        "depositCent": 0,
+        "status": "PENDING"
+      },
+      "id_field": "id"
+    }
+  ],
+  "id_sources": {
+    "orders": "orderId",
+    "products": "productId",
+    "packages": "packageId",
+    "categories": "categoryId",
+    "package-types": "packageTypeId"
+  },
+  "prefix_field": "name",
+  "type_probe_field": "priceCent"
+}

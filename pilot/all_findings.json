@@ -3,16 +3,16 @@
   "contract": "/Users/june/.cc-weixin/workspace/layered-audit/layers.yaml",
   "target": "/Users/june/.cc-weixin/workspace/layered-audit/pilot/target.json",
   "counts": {
-    "total": 111,
+    "total": 91,
     "by_layer": {
       "function": 13,
       "file": 18,
-      "service": 47,
+      "service": 27,
       "class": 18,
       "integration": 15
     },
     "by_kind": {
-      "defect": 93,
+      "defect": 73,
       "positive": 16,
       "observation": 2
     }
@@ -1525,43 +1525,43 @@
       }
     },
     {
-      "id": "TYPE_COERCION",
-      "uid": "service:TYPE_COERCION#3",
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#3",
       "layer": "service",
       "category": "service.interface_contract",
-      "category_fit": "exact",
+      "category_fit": "stretched",
       "suggested_category": "",
       "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/CategoryController.java",
-        "line": 35,
-        "symbol": "POST /api/categories",
-        "endpoint": "POST /api/categories"
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
+        "line": 64,
+        "symbol": "PATCH /api/orders/{id}/status",
+        "endpoint": "PATCH /api/orders/{id}/status"
       },
-      "claim": "错误 JSON 类型是否被隐式转换后接受？",
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
       "evidence_refs": [
-        "findings.json#TYPE_COERCION"
+        "findings.json#INTERNAL_LEAK"
       ],
-      "repro_cmd": "curl -X POST /api/categories -d {\"name\": 12345}",
+      "repro_cmd": "curl -X PATCH /api/orders/1200/status",
       "repro_granularity": "request",
-      "confidence": 0.9,
+      "confidence": 0.92,
       "ground_truth": "verified",
       "cwe": [
-        "CWE-20"
+        "CWE-209"
       ],
       "owner": {
         "layer": "service",
         "relation": "own",
         "basis": "attribution.rule：能给出可复现证据的最低层"
       },
-      "root_cause_key": "jackson.lenient_type_coercion",
+      "root_cause_key": "errhandler.internal_detail_leak",
       "related_root_causes": [],
       "kind": "defect",
       "runtime_fidelity": "container",
       "severity": "MEDIUM",
-      "title": "错误 JSON 类型被隐式转换后接受（字段 name）",
-      "detail": "OpenAPI 声明该字段为特定类型，实际发送错误类型仍被 200 接受——Jackson 隐式把数字转成字符串等。调用方拼错类型不会报错，只会静默变成脏数据。",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（JSON parse error: Cannot deserialize value of type `com.jiuyan.banquet.entity.Or...），泄漏内部类名、框架类型与反序列化细节。",
       "related": [],
-      "note": "",
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
       "source": {
         "file": "findings.json",
         "index": 3
@@ -1574,43 +1574,43 @@
       }
     },
     {
-      "id": "TYPE_COERCION",
-      "uid": "service:TYPE_COERCION#4",
+      "id": "INTERNAL_LEAK",
+      "uid": "service:INTERNAL_LEAK#4",
       "layer": "service",
       "category": "service.interface_contract",
-      "category_fit": "exact",
+      "category_fit": "stretched",
       "suggested_category": "",
       "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageTypeController.java",
-        "line": 35,
-        "symbol": "POST /api/package-types",
-        "endpoint": "POST /api/package-types"
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageController.java",
+        "line": 65,
+        "symbol": "PATCH /api/packages/{id}/status",
+        "endpoint": "PATCH /api/packages/{id}/status"
       },
-      "claim": "错误 JSON 类型是否被隐式转换后接受？",
+      "claim": "错误响应是否把内部实现细节返回给客户端？",
       "evidence_refs": [
-        "findings.json#TYPE_COERCION"
+        "findings.json#INTERNAL_LEAK"
       ],
-      "repro_cmd": "curl -X POST /api/package-types -d {\"name\": 12345}",
+      "repro_cmd": "curl -X PATCH /api/packages/277/status",
       "repro_granularity": "request",
-      "confidence": 0.9,
+      "confidence": 0.92,
       "ground_truth": "verified",
       "cwe": [
-        "CWE-20"
+        "CWE-209"
       ],
       "owner": {
         "layer": "service",
         "relation": "own",
         "basis": "attribution.rule：能给出可复现证据的最低层"
       },
-      "root_cause_key": "jackson.lenient_type_coercion",
+      "root_cause_key": "errhandler.internal_detail_leak",
       "related_root_causes": [],
       "kind": "defect",
       "runtime_fidelity": "container",
       "severity": "MEDIUM",
-      "title": "错误 JSON 类型被隐式转换后接受（字段 name）",
-      "detail": "OpenAPI 声明该字段为特定类型，实际发送错误类型仍被 200 接受——Jackson 隐式把数字转成字符串等。调用方拼错类型不会报错，只会静默变成脏数据。",
+      "title": "错误响应把内部实现细节返回给客户端",
+      "detail": "details.message 直接透传框架异常原文（JSON parse error: Cannot deserialize value of type `java.lang.Boolean` from Stri...），泄漏内部类名、框架类型与反序列化细节。",
       "related": [],
-      "note": "",
+      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
       "source": {
         "file": "findings.json",
         "index": 4
@@ -1630,16 +1630,16 @@
       "category_fit": "stretched",
       "suggested_category": "",
       "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/CategoryController.java",
-        "line": 41,
-        "symbol": "DELETE /api/categories/{id}",
-        "endpoint": "DELETE /api/categories/{id}"
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java",
+        "line": 59,
+        "symbol": "PATCH /api/products/{id}/status",
+        "endpoint": "PATCH /api/products/{id}/status"
       },
       "claim": "错误响应是否把内部实现细节返回给客户端？",
       "evidence_refs": [
         "findings.json#INTERNAL_LEAK"
       ],
-      "repro_cmd": "curl -X DELETE /api/categories/None",
+      "repro_cmd": "curl -X PATCH /api/products/2704239/status",
       "repro_granularity": "request",
       "confidence": 0.92,
       "ground_truth": "verified",
@@ -1657,7 +1657,7 @@
       "runtime_fidelity": "container",
       "severity": "MEDIUM",
       "title": "错误响应把内部实现细节返回给客户端",
-      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "detail": "details.message 直接透传框架异常原文（JSON parse error: Cannot deserialize value of type `java.lang.Boolean` from Stri...），泄漏内部类名、框架类型与反序列化细节。",
       "related": [],
       "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
       "source": {
@@ -1679,16 +1679,16 @@
       "category_fit": "stretched",
       "suggested_category": "",
       "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageTypeController.java",
-        "line": 41,
-        "symbol": "DELETE /api/package-types/{id}",
-        "endpoint": "DELETE /api/package-types/{id}"
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageController.java",
+        "line": 53,
+        "symbol": "POST /api/packages",
+        "endpoint": "POST /api/packages"
       },
       "claim": "错误响应是否把内部实现细节返回给客户端？",
       "evidence_refs": [
         "findings.json#INTERNAL_LEAK"
       ],
-      "repro_cmd": "curl -X DELETE /api/package-types/None",
+      "repro_cmd": "curl -X POST /api/packages",
       "repro_granularity": "request",
       "confidence": 0.92,
       "ground_truth": "verified",
@@ -1706,7 +1706,7 @@
       "runtime_fidelity": "container",
       "severity": "MEDIUM",
       "title": "错误响应把内部实现细节返回给客户端",
-      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "detail": "details.message 直接透传框架异常原文（JSON parse error: Cannot deserialize value of type `java.lang.Long` from String ...），泄漏内部类名、框架类型与反序列化细节。",
       "related": [],
       "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
       "source": {
@@ -1723,643 +1723,6 @@
     {
       "id": "INTERNAL_LEAK",
       "uid": "service:INTERNAL_LEAK#7",
-      "layer": "service",
-      "category": "service.interface_contract",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageController.java",
-        "line": 71,
-        "symbol": "DELETE /api/packages/{id}",
-        "endpoint": "DELETE /api/packages/{id}"
-      },
-      "claim": "错误响应是否把内部实现细节返回给客户端？",
-      "evidence_refs": [
-        "findings.json#INTERNAL_LEAK"
-      ],
-      "repro_cmd": "curl -X DELETE /api/packages/None",
-      "repro_granularity": "request",
-      "confidence": 0.92,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-209"
-      ],
-      "owner": {
-        "layer": "service",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "errhandler.internal_detail_leak",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "container",
-      "severity": "MEDIUM",
-      "title": "错误响应把内部实现细节返回给客户端",
-      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
-      "related": [],
-      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
-      "source": {
-        "file": "findings.json",
-        "index": 7
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": true
-      }
-    },
-    {
-      "id": "INTERNAL_LEAK",
-      "uid": "service:INTERNAL_LEAK#8",
-      "layer": "service",
-      "category": "service.interface_contract",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java",
-        "line": 65,
-        "symbol": "DELETE /api/products/{id}",
-        "endpoint": "DELETE /api/products/{id}"
-      },
-      "claim": "错误响应是否把内部实现细节返回给客户端？",
-      "evidence_refs": [
-        "findings.json#INTERNAL_LEAK"
-      ],
-      "repro_cmd": "curl -X DELETE /api/products/None",
-      "repro_granularity": "request",
-      "confidence": 0.92,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-209"
-      ],
-      "owner": {
-        "layer": "service",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "errhandler.internal_detail_leak",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "container",
-      "severity": "MEDIUM",
-      "title": "错误响应把内部实现细节返回给客户端",
-      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
-      "related": [],
-      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
-      "source": {
-        "file": "findings.json",
-        "index": 8
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": true
-      }
-    },
-    {
-      "id": "INTERNAL_LEAK",
-      "uid": "service:INTERNAL_LEAK#9",
-      "layer": "service",
-      "category": "service.interface_contract",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
-        "line": 46,
-        "symbol": "GET /api/orders/{id}",
-        "endpoint": "GET /api/orders/{id}"
-      },
-      "claim": "错误响应是否把内部实现细节返回给客户端？",
-      "evidence_refs": [
-        "findings.json#INTERNAL_LEAK"
-      ],
-      "repro_cmd": "curl -X GET /api/orders/None",
-      "repro_granularity": "request",
-      "confidence": 0.92,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-209"
-      ],
-      "owner": {
-        "layer": "service",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "errhandler.internal_detail_leak",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "container",
-      "severity": "MEDIUM",
-      "title": "错误响应把内部实现细节返回给客户端",
-      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
-      "related": [],
-      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
-      "source": {
-        "file": "findings.json",
-        "index": 9
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": true
-      }
-    },
-    {
-      "id": "INTERNAL_LEAK",
-      "uid": "service:INTERNAL_LEAK#10",
-      "layer": "service",
-      "category": "service.interface_contract",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageController.java",
-        "line": 47,
-        "symbol": "GET /api/packages/{id}",
-        "endpoint": "GET /api/packages/{id}"
-      },
-      "claim": "错误响应是否把内部实现细节返回给客户端？",
-      "evidence_refs": [
-        "findings.json#INTERNAL_LEAK"
-      ],
-      "repro_cmd": "curl -X GET /api/packages/None",
-      "repro_granularity": "request",
-      "confidence": 0.92,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-209"
-      ],
-      "owner": {
-        "layer": "service",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "errhandler.internal_detail_leak",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "container",
-      "severity": "MEDIUM",
-      "title": "错误响应把内部实现细节返回给客户端",
-      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
-      "related": [],
-      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
-      "source": {
-        "file": "findings.json",
-        "index": 10
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": true
-      }
-    },
-    {
-      "id": "INTERNAL_LEAK",
-      "uid": "service:INTERNAL_LEAK#11",
-      "layer": "service",
-      "category": "service.interface_contract",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
-        "line": 64,
-        "symbol": "PATCH /api/orders/{id}/status",
-        "endpoint": "PATCH /api/orders/{id}/status"
-      },
-      "claim": "错误响应是否把内部实现细节返回给客户端？",
-      "evidence_refs": [
-        "findings.json#INTERNAL_LEAK"
-      ],
-      "repro_cmd": "curl -X PATCH /api/orders/None/status",
-      "repro_granularity": "request",
-      "confidence": 0.92,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-209"
-      ],
-      "owner": {
-        "layer": "service",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "errhandler.internal_detail_leak",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "container",
-      "severity": "MEDIUM",
-      "title": "错误响应把内部实现细节返回给客户端",
-      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
-      "related": [],
-      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
-      "source": {
-        "file": "findings.json",
-        "index": 11
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": true
-      }
-    },
-    {
-      "id": "INTERNAL_LEAK",
-      "uid": "service:INTERNAL_LEAK#12",
-      "layer": "service",
-      "category": "service.interface_contract",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
-        "line": 64,
-        "symbol": "PATCH /api/orders/{id}/status",
-        "endpoint": "PATCH /api/orders/{id}/status"
-      },
-      "claim": "错误响应是否把内部实现细节返回给客户端？",
-      "evidence_refs": [
-        "findings.json#INTERNAL_LEAK"
-      ],
-      "repro_cmd": "curl -X PATCH /api/orders/None/status",
-      "repro_granularity": "request",
-      "confidence": 0.92,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-209"
-      ],
-      "owner": {
-        "layer": "service",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "errhandler.internal_detail_leak",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "container",
-      "severity": "MEDIUM",
-      "title": "错误响应把内部实现细节返回给客户端",
-      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
-      "related": [],
-      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
-      "source": {
-        "file": "findings.json",
-        "index": 12
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": true
-      }
-    },
-    {
-      "id": "INTERNAL_LEAK",
-      "uid": "service:INTERNAL_LEAK#13",
-      "layer": "service",
-      "category": "service.interface_contract",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
-        "line": 64,
-        "symbol": "PATCH /api/orders/{id}/status",
-        "endpoint": "PATCH /api/orders/{id}/status"
-      },
-      "claim": "错误响应是否把内部实现细节返回给客户端？",
-      "evidence_refs": [
-        "findings.json#INTERNAL_LEAK"
-      ],
-      "repro_cmd": "curl -X PATCH /api/orders/None/status",
-      "repro_granularity": "request",
-      "confidence": 0.92,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-209"
-      ],
-      "owner": {
-        "layer": "service",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "errhandler.internal_detail_leak",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "container",
-      "severity": "MEDIUM",
-      "title": "错误响应把内部实现细节返回给客户端",
-      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
-      "related": [],
-      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
-      "source": {
-        "file": "findings.json",
-        "index": 13
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": true
-      }
-    },
-    {
-      "id": "INTERNAL_LEAK",
-      "uid": "service:INTERNAL_LEAK#14",
-      "layer": "service",
-      "category": "service.interface_contract",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageController.java",
-        "line": 65,
-        "symbol": "PATCH /api/packages/{id}/status",
-        "endpoint": "PATCH /api/packages/{id}/status"
-      },
-      "claim": "错误响应是否把内部实现细节返回给客户端？",
-      "evidence_refs": [
-        "findings.json#INTERNAL_LEAK"
-      ],
-      "repro_cmd": "curl -X PATCH /api/packages/None/status",
-      "repro_granularity": "request",
-      "confidence": 0.92,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-209"
-      ],
-      "owner": {
-        "layer": "service",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "errhandler.internal_detail_leak",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "container",
-      "severity": "MEDIUM",
-      "title": "错误响应把内部实现细节返回给客户端",
-      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
-      "related": [],
-      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
-      "source": {
-        "file": "findings.json",
-        "index": 14
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": true
-      }
-    },
-    {
-      "id": "INTERNAL_LEAK",
-      "uid": "service:INTERNAL_LEAK#15",
-      "layer": "service",
-      "category": "service.interface_contract",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageController.java",
-        "line": 65,
-        "symbol": "PATCH /api/packages/{id}/status",
-        "endpoint": "PATCH /api/packages/{id}/status"
-      },
-      "claim": "错误响应是否把内部实现细节返回给客户端？",
-      "evidence_refs": [
-        "findings.json#INTERNAL_LEAK"
-      ],
-      "repro_cmd": "curl -X PATCH /api/packages/None/status",
-      "repro_granularity": "request",
-      "confidence": 0.92,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-209"
-      ],
-      "owner": {
-        "layer": "service",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "errhandler.internal_detail_leak",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "container",
-      "severity": "MEDIUM",
-      "title": "错误响应把内部实现细节返回给客户端",
-      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
-      "related": [],
-      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
-      "source": {
-        "file": "findings.json",
-        "index": 15
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": true
-      }
-    },
-    {
-      "id": "INTERNAL_LEAK",
-      "uid": "service:INTERNAL_LEAK#16",
-      "layer": "service",
-      "category": "service.interface_contract",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageController.java",
-        "line": 65,
-        "symbol": "PATCH /api/packages/{id}/status",
-        "endpoint": "PATCH /api/packages/{id}/status"
-      },
-      "claim": "错误响应是否把内部实现细节返回给客户端？",
-      "evidence_refs": [
-        "findings.json#INTERNAL_LEAK"
-      ],
-      "repro_cmd": "curl -X PATCH /api/packages/None/status",
-      "repro_granularity": "request",
-      "confidence": 0.92,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-209"
-      ],
-      "owner": {
-        "layer": "service",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "errhandler.internal_detail_leak",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "container",
-      "severity": "MEDIUM",
-      "title": "错误响应把内部实现细节返回给客户端",
-      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
-      "related": [],
-      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
-      "source": {
-        "file": "findings.json",
-        "index": 16
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": true
-      }
-    },
-    {
-      "id": "INTERNAL_LEAK",
-      "uid": "service:INTERNAL_LEAK#17",
-      "layer": "service",
-      "category": "service.interface_contract",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java",
-        "line": 59,
-        "symbol": "PATCH /api/products/{id}/status",
-        "endpoint": "PATCH /api/products/{id}/status"
-      },
-      "claim": "错误响应是否把内部实现细节返回给客户端？",
-      "evidence_refs": [
-        "findings.json#INTERNAL_LEAK"
-      ],
-      "repro_cmd": "curl -X PATCH /api/products/None/status",
-      "repro_granularity": "request",
-      "confidence": 0.92,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-209"
-      ],
-      "owner": {
-        "layer": "service",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "errhandler.internal_detail_leak",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "container",
-      "severity": "MEDIUM",
-      "title": "错误响应把内部实现细节返回给客户端",
-      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
-      "related": [],
-      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
-      "source": {
-        "file": "findings.json",
-        "index": 17
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": true
-      }
-    },
-    {
-      "id": "INTERNAL_LEAK",
-      "uid": "service:INTERNAL_LEAK#18",
-      "layer": "service",
-      "category": "service.interface_contract",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java",
-        "line": 59,
-        "symbol": "PATCH /api/products/{id}/status",
-        "endpoint": "PATCH /api/products/{id}/status"
-      },
-      "claim": "错误响应是否把内部实现细节返回给客户端？",
-      "evidence_refs": [
-        "findings.json#INTERNAL_LEAK"
-      ],
-      "repro_cmd": "curl -X PATCH /api/products/None/status",
-      "repro_granularity": "request",
-      "confidence": 0.92,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-209"
-      ],
-      "owner": {
-        "layer": "service",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "errhandler.internal_detail_leak",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "container",
-      "severity": "MEDIUM",
-      "title": "错误响应把内部实现细节返回给客户端",
-      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
-      "related": [],
-      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
-      "source": {
-        "file": "findings.json",
-        "index": 18
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": true
-      }
-    },
-    {
-      "id": "INTERNAL_LEAK",
-      "uid": "service:INTERNAL_LEAK#19",
-      "layer": "service",
-      "category": "service.interface_contract",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java",
-        "line": 59,
-        "symbol": "PATCH /api/products/{id}/status",
-        "endpoint": "PATCH /api/products/{id}/status"
-      },
-      "claim": "错误响应是否把内部实现细节返回给客户端？",
-      "evidence_refs": [
-        "findings.json#INTERNAL_LEAK"
-      ],
-      "repro_cmd": "curl -X PATCH /api/products/None/status",
-      "repro_granularity": "request",
-      "confidence": 0.92,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-209"
-      ],
-      "owner": {
-        "layer": "service",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "errhandler.internal_detail_leak",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "container",
-      "severity": "MEDIUM",
-      "title": "错误响应把内部实现细节返回给客户端",
-      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
-      "related": [],
-      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
-      "source": {
-        "file": "findings.json",
-        "index": 19
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": true
-      }
-    },
-    {
-      "id": "INTERNAL_LEAK",
-      "uid": "service:INTERNAL_LEAK#20",
       "layer": "service",
       "category": "service.interface_contract",
       "category_fit": "stretched",
@@ -2397,7 +1760,7 @@
       "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
       "source": {
         "file": "findings.json",
-        "index": 20
+        "index": 7
       },
       "meta": {
         "inferred_fields": [],
@@ -2408,154 +1771,7 @@
     },
     {
       "id": "INTERNAL_LEAK",
-      "uid": "service:INTERNAL_LEAK#21",
-      "layer": "service",
-      "category": "service.interface_contract",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
-        "line": 58,
-        "symbol": "PUT /api/orders/{id}",
-        "endpoint": "PUT /api/orders/{id}"
-      },
-      "claim": "错误响应是否把内部实现细节返回给客户端？",
-      "evidence_refs": [
-        "findings.json#INTERNAL_LEAK"
-      ],
-      "repro_cmd": "curl -X PUT /api/orders/None",
-      "repro_granularity": "request",
-      "confidence": 0.92,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-209"
-      ],
-      "owner": {
-        "layer": "service",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "errhandler.internal_detail_leak",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "container",
-      "severity": "MEDIUM",
-      "title": "错误响应把内部实现细节返回给客户端",
-      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
-      "related": [],
-      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
-      "source": {
-        "file": "findings.json",
-        "index": 21
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": true
-      }
-    },
-    {
-      "id": "INTERNAL_LEAK",
-      "uid": "service:INTERNAL_LEAK#22",
-      "layer": "service",
-      "category": "service.interface_contract",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
-        "line": 58,
-        "symbol": "PUT /api/orders/{id}",
-        "endpoint": "PUT /api/orders/{id}"
-      },
-      "claim": "错误响应是否把内部实现细节返回给客户端？",
-      "evidence_refs": [
-        "findings.json#INTERNAL_LEAK"
-      ],
-      "repro_cmd": "curl -X PUT /api/orders/None",
-      "repro_granularity": "request",
-      "confidence": 0.92,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-209"
-      ],
-      "owner": {
-        "layer": "service",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "errhandler.internal_detail_leak",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "container",
-      "severity": "MEDIUM",
-      "title": "错误响应把内部实现细节返回给客户端",
-      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
-      "related": [],
-      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
-      "source": {
-        "file": "findings.json",
-        "index": 22
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": true
-      }
-    },
-    {
-      "id": "INTERNAL_LEAK",
-      "uid": "service:INTERNAL_LEAK#23",
-      "layer": "service",
-      "category": "service.interface_contract",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
-        "line": 58,
-        "symbol": "PUT /api/orders/{id}",
-        "endpoint": "PUT /api/orders/{id}"
-      },
-      "claim": "错误响应是否把内部实现细节返回给客户端？",
-      "evidence_refs": [
-        "findings.json#INTERNAL_LEAK"
-      ],
-      "repro_cmd": "curl -X PUT /api/orders/None",
-      "repro_granularity": "request",
-      "confidence": 0.92,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-209"
-      ],
-      "owner": {
-        "layer": "service",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "errhandler.internal_detail_leak",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "container",
-      "severity": "MEDIUM",
-      "title": "错误响应把内部实现细节返回给客户端",
-      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
-      "related": [],
-      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
-      "source": {
-        "file": "findings.json",
-        "index": 23
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": true
-      }
-    },
-    {
-      "id": "INTERNAL_LEAK",
-      "uid": "service:INTERNAL_LEAK#24",
+      "uid": "service:INTERNAL_LEAK#8",
       "layer": "service",
       "category": "service.interface_contract",
       "category_fit": "stretched",
@@ -2570,7 +1786,7 @@
       "evidence_refs": [
         "findings.json#INTERNAL_LEAK"
       ],
-      "repro_cmd": "curl -X PUT /api/packages/None",
+      "repro_cmd": "curl -X PUT /api/packages/277",
       "repro_granularity": "request",
       "confidence": 0.92,
       "ground_truth": "verified",
@@ -2588,12 +1804,12 @@
       "runtime_fidelity": "container",
       "severity": "MEDIUM",
       "title": "错误响应把内部实现细节返回给客户端",
-      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "detail": "details.message 直接透传框架异常原文（JSON parse error: Cannot deserialize value of type `java.lang.Long` from String ...），泄漏内部类名、框架类型与反序列化细节。",
       "related": [],
       "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
       "source": {
         "file": "findings.json",
-        "index": 24
+        "index": 8
       },
       "meta": {
         "inferred_fields": [],
@@ -2604,105 +1820,7 @@
     },
     {
       "id": "INTERNAL_LEAK",
-      "uid": "service:INTERNAL_LEAK#25",
-      "layer": "service",
-      "category": "service.interface_contract",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageController.java",
-        "line": 59,
-        "symbol": "PUT /api/packages/{id}",
-        "endpoint": "PUT /api/packages/{id}"
-      },
-      "claim": "错误响应是否把内部实现细节返回给客户端？",
-      "evidence_refs": [
-        "findings.json#INTERNAL_LEAK"
-      ],
-      "repro_cmd": "curl -X PUT /api/packages/None",
-      "repro_granularity": "request",
-      "confidence": 0.92,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-209"
-      ],
-      "owner": {
-        "layer": "service",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "errhandler.internal_detail_leak",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "container",
-      "severity": "MEDIUM",
-      "title": "错误响应把内部实现细节返回给客户端",
-      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
-      "related": [],
-      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
-      "source": {
-        "file": "findings.json",
-        "index": 25
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": true
-      }
-    },
-    {
-      "id": "INTERNAL_LEAK",
-      "uid": "service:INTERNAL_LEAK#26",
-      "layer": "service",
-      "category": "service.interface_contract",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageController.java",
-        "line": 59,
-        "symbol": "PUT /api/packages/{id}",
-        "endpoint": "PUT /api/packages/{id}"
-      },
-      "claim": "错误响应是否把内部实现细节返回给客户端？",
-      "evidence_refs": [
-        "findings.json#INTERNAL_LEAK"
-      ],
-      "repro_cmd": "curl -X PUT /api/packages/None",
-      "repro_granularity": "request",
-      "confidence": 0.92,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-209"
-      ],
-      "owner": {
-        "layer": "service",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "errhandler.internal_detail_leak",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "container",
-      "severity": "MEDIUM",
-      "title": "错误响应把内部实现细节返回给客户端",
-      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
-      "related": [],
-      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
-      "source": {
-        "file": "findings.json",
-        "index": 26
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": true
-      }
-    },
-    {
-      "id": "INTERNAL_LEAK",
-      "uid": "service:INTERNAL_LEAK#27",
+      "uid": "service:INTERNAL_LEAK#9",
       "layer": "service",
       "category": "service.interface_contract",
       "category_fit": "stretched",
@@ -2717,7 +1835,7 @@
       "evidence_refs": [
         "findings.json#INTERNAL_LEAK"
       ],
-      "repro_cmd": "curl -X PUT /api/products/None",
+      "repro_cmd": "curl -X PUT /api/products/2704239",
       "repro_granularity": "request",
       "confidence": 0.92,
       "ground_truth": "verified",
@@ -2735,110 +1853,12 @@
       "runtime_fidelity": "container",
       "severity": "MEDIUM",
       "title": "错误响应把内部实现细节返回给客户端",
-      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
+      "detail": "details.message 直接透传框架异常原文（JSON parse error: Cannot deserialize value of type `java.lang.Long` from String ...），泄漏内部类名、框架类型与反序列化细节。",
       "related": [],
       "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
       "source": {
         "file": "findings.json",
-        "index": 27
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": true
-      }
-    },
-    {
-      "id": "INTERNAL_LEAK",
-      "uid": "service:INTERNAL_LEAK#28",
-      "layer": "service",
-      "category": "service.interface_contract",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java",
-        "line": 53,
-        "symbol": "PUT /api/products/{id}",
-        "endpoint": "PUT /api/products/{id}"
-      },
-      "claim": "错误响应是否把内部实现细节返回给客户端？",
-      "evidence_refs": [
-        "findings.json#INTERNAL_LEAK"
-      ],
-      "repro_cmd": "curl -X PUT /api/products/None",
-      "repro_granularity": "request",
-      "confidence": 0.92,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-209"
-      ],
-      "owner": {
-        "layer": "service",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "errhandler.internal_detail_leak",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "container",
-      "severity": "MEDIUM",
-      "title": "错误响应把内部实现细节返回给客户端",
-      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
-      "related": [],
-      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
-      "source": {
-        "file": "findings.json",
-        "index": 28
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": true
-      }
-    },
-    {
-      "id": "INTERNAL_LEAK",
-      "uid": "service:INTERNAL_LEAK#29",
-      "layer": "service",
-      "category": "service.interface_contract",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java",
-        "line": 53,
-        "symbol": "PUT /api/products/{id}",
-        "endpoint": "PUT /api/products/{id}"
-      },
-      "claim": "错误响应是否把内部实现细节返回给客户端？",
-      "evidence_refs": [
-        "findings.json#INTERNAL_LEAK"
-      ],
-      "repro_cmd": "curl -X PUT /api/products/None",
-      "repro_granularity": "request",
-      "confidence": 0.92,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-209"
-      ],
-      "owner": {
-        "layer": "service",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "errhandler.internal_detail_leak",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "container",
-      "severity": "MEDIUM",
-      "title": "错误响应把内部实现细节返回给客户端",
-      "detail": "details.message 直接透传框架异常原文（Method parameter 'id': Failed to convert value of type 'java.lang.String' to req...），泄漏内部类名、框架类型与反序列化细节。",
-      "related": [],
-      "note": "25 条同根因；类别取 interface_contract（错误响应形状属接口契约），非 authz",
-      "source": {
-        "file": "findings.json",
-        "index": 29
+        "index": 9
       },
       "meta": {
         "inferred_fields": [],
@@ -2928,7 +1948,7 @@
       "kind": "defect",
       "runtime_fidelity": "hybrid",
       "severity": "HIGH",
-      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.547ms vs 0.013ms，差 581 倍）",
+      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.625ms vs 0.011ms，差 693 倍）",
       "detail": "迁移文件建了 products(name) 索引，但服务层关键词搜索写的是 lower(name) LIKE '%kw%'：lower() 让索引无法用于定位，前导 % 让 btree 本来也用不上。EXPLAIN 显示走 Filter 全量过滤而非 Index Cond。类层把索引交给服务层，但服务层不知道该怎么用它 —— 声明没有传递下去。",
       "related": [],
       "note": "检测在 class 层（实体与 DDL 对齐），归属层是 service（查询模式在服务层）",
@@ -3748,7 +2768,7 @@
       "runtime_fidelity": "container",
       "severity": "CRITICAL",
       "title": "同一订单里并存两个互相矛盾的价格：成交价 0.01 元、套餐价 468.00 元",
-      "detail": "套餐标价 1 分，客户端报成交价 1 分，后端原样落库并返回 200。更糟的是集成症状：OrderResponse 同时返回 finalPriceCent=1 与 packageSnapshot.priceCent=46800，而前端 mapOrder 正好一个用来渲染金额、一个用来渲染套餐价 —— Pad 端同一张订单会同时显示 0.01 元和 468.00 元。服务端没有任何按套餐计价的能力，定价权完全在客户端手上。",
+      "detail": "套餐标价 46800 分，客户端报成交价 1 分，后端原样落库并返回 200。更糟的是集成症状：OrderResponse 同时返回 finalPriceCent=1 与 packageSnapshot.priceCent=46800，而前端 mapOrder 正好一个用来渲染金额、一个用来渲染套餐价 —— Pad 端同一张订单会同时显示 0.01 元和 468.00 元。服务端没有任何按套餐计价的能力，定价权完全在客户端手上。",
       "related": [],
       "note": "源数据把根因归 service 层；实测唯一决策点在 OrderService.resolveFinalPrice，函数层已给出可复现证据，故 owner 修正为 function",
       "source": {
@@ -3897,7 +2917,7 @@
       "runtime_fidelity": "container",
       "severity": "HIGH",
       "title": "前端列表固定只取前 100 条并丢弃 total，超出的数据永远不可见",
-      "detail": "后端返回 total=137，实际 items 只有 100 条。前端三个列表接口都写死 page=1&pageSize=100，且拿到响应后只做 data.items.map(...)，PageResponse.total / totalPages 被整个丢弃 —— 用户看不到「还有 35 条」，也没有任何翻页入口。商品/套餐/订单一旦超过 100 条，数据库里多出来的记录在 Pad 端凭空消失。",
+      "detail": "后端返回 total=136，实际 items 只有 100 条。前端三个列表接口都写死 page=1&pageSize=100，且拿到响应后只做 data.items.map(...)，PageResponse.total / totalPages 被整个丢弃 —— 用户看不到「还有 35 条」，也没有任何翻页入口。商品/套餐/订单一旦超过 100 条，数据库里多出来的记录在 Pad 端凭空消失。",
       "related": [],
       "note": "",
       "source": {
@@ -3946,7 +2966,7 @@
       "runtime_fidelity": "container",
       "severity": "HIGH",
       "title": "可以把不属于该套餐的商品写进套餐明细，后端照单全收",
-      "detail": "下单时 packageItems 里塞进套餐外的商品（['ai_probe_prod_f43be0']），后端只校验商品存在、不校验归属，200 通过并写进订单快照。订单快照里的「套餐明细」因此不代表真实套餐，后续对账无据可查。",
+      "detail": "下单时 packageItems 里塞进套餐外的商品（['喜糖果盘']），后端只校验商品存在、不校验归属，200 通过并写进订单快照。订单快照里的「套餐明细」因此不代表真实套餐，后续对账无据可查。",
       "related": [],
       "note": "",
       "source": {
@@ -3995,7 +3015,7 @@
       "runtime_fidelity": "container",
       "severity": "HIGH",
       "title": "明细数量可以改成 99，价格仍按套餐原价结算（加量不加价）",
-      "detail": "下单时把套餐内商品数量改成 99 份，planTotalCent/finalPriceCent 仍是套餐原价 1 分 —— 后端不重算、不拒绝。",
+      "detail": "下单时把套餐内商品数量改成 99 份，planTotalCent/finalPriceCent 仍是套餐原价 46800 分 —— 后端不重算、不拒绝。",
       "related": [],
       "note": "",
       "source": {
@@ -4328,7 +3348,7 @@
       "runtime_fidelity": "container",
       "severity": "MEDIUM",
       "title": "分页 total 是纯开销：后端每次列表请求都跑 count(*) 全表扫描，前端从不读这个数",
-      "detail": "每个列表接口都带分页参数，后端对每次请求额外跑一条 count(*) 全表扫描（Seq Scan，因为 idx_products_name 对 lower(name) LIKE '%…%' 不可用）。实测数据量阶梯：30 行 → 5.59ms；2030 行 → 12.11ms；10030 行 → 20.06ms；50030 行 → 36.03ms。\n在 50030 行时，count(*) 单条耗时 15.662ms，占带 keyword 列表接口端到端延迟的 43.5%，占不带 keyword 接口的 46.0%。\n而前端 banquetApi.js 的 listProducts / listPackages / listOrders 三个函数一律只取 data.items.map(...)，total 从未被读取 —— 这份开销 100% 浪费。\n本轮判定「端到端延迟随数据量塌陷」为 PARTIALLY_CONFIRMED：延迟确实随数据量线性增长，但 50030 行时端到端仅 36.03ms，按每行 0.000720ms 折算，要到约 1388565 行才触及 1 秒预算。\n结论：结构性 O(N) 成立，但当前规模下后果未兑现 —— 真正该修的不是「加索引」，而是别让后端算一个没人要的数。",
+      "detail": "每个列表接口都带分页参数，后端对每次请求额外跑一条 count(*) 全表扫描（Seq Scan，因为 idx_products_name 对 lower(name) LIKE '%…%' 不可用）。实测数据量阶梯：30 行 → 5.14ms；2030 行 → 10.11ms；10030 行 → 18.84ms；50030 行 → 35.9ms。\n在 50030 行时，count(*) 单条耗时 13.104ms，占带 keyword 列表接口端到端延迟的 36.5%，占不带 keyword 接口的 43.3%。\n而前端 banquetApi.js 的 listProducts / listPackages / listOrders 三个函数一律只取 data.items.map(...)，total 从未被读取 —— 这份开销 100% 浪费。\n本轮判定「端到端延迟随数据量塌陷」为 PARTIALLY_CONFIRMED：延迟确实随数据量线性增长，但 50030 行时端到端仅 35.9ms，按每行 0.000718ms 折算，要到约 1393593 行才触及 1 秒预算。\n结论：结构性 O(N) 成立，但当前规模下后果未兑现 —— 真正该修的不是「加索引」，而是别让后端算一个没人要的数。",
       "related": [],
       "note": "实测 5 万行时 count(*) 占端到端 31%（带 keyword）/ 40%（不带 keyword）；前端 listProducts/listPackages/listOrders 三个函数都只取 items，total 从未被读",
       "source": {
@@ -4375,7 +3395,7 @@
       "runtime_fidelity": "container",
       "severity": "MEDIUM",
       "title": "三个列表接口每次都为前端丢弃的 total 付一次全表扫描",
-      "detail": "三个列表接口（GET /api/products、/api/packages、/api/orders）在集权层实测中，每次请求的 count(*) 部分占端到端延迟的 43.5%~46.0%，而这个 total 前端从头到尾没读过。\n也就是说：用户每翻一次列表，后端就多付一次全表扫描的钱，收益为零。同时前端把 page 固定成 1、pageSize 固定成 100，超出部分永远不可见 —— 分页机制在这条链路上同时是「成本」和「不可用」。",
+      "detail": "三个列表接口（GET /api/products、/api/packages、/api/orders）在集权层实测中，每次请求的 count(*) 部分占端到端延迟的 36.5%~43.3%，而这个 total 前端从头到尾没读过。\n也就是说：用户每翻一次列表，后端就多付一次全表扫描的钱，收益为零。同时前端把 page 固定成 1、pageSize 固定成 100，超出部分永远不可见 —— 分页机制在这条链路上同时是「成本」和「不可用」。",
       "related": [],
       "note": "链级后果归集成层，根因（后端白算一次 count）归服务层",
       "source": {
@@ -4565,7 +3585,7 @@
       "runtime_fidelity": "container",
       "severity": "MEDIUM",
       "title": "并发编辑同一订单会静默丢掉对方的修改：没有版本号、没有冲突检测",
-      "detail": "订单编辑走 PUT /api/orders/{id}，服务层在事务里整行覆盖，没有乐观锁（无 version / ETag / If-Match），也没有任何冲突检测。\n两个客户端同时编辑同一订单、各改一个字段时，后提交的那个用自己那份完整快照覆盖了整行，先提交的人的修改直接消失 —— 没有报错、没有冲突提示，两边都以为自己改成功了。\n实测：{\"property\": \"两个并发 PUT 分别改 customerPhone 与 address，最终行必须同时含两个新值\", \"ok\": false, \"order_id\": 1143, \"http_status\": {\"B\": 200, \"A\": 200}, \"final_row\": {\"remark\": \"ai_probe_conc_dc1_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc1_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13900000001\", \"final_price_cent\": 1}, \"phone_applied\": true, \"address_applied\": false, \"lost_update\": true}\n谈单场景下的具体后果：销售 A 改了成交价、销售 B 同时改了电话，A 的改价凭空消失，订单金额回到旧值，而 A 的界面显示他改成功了。",
+      "detail": "订单编辑走 PUT /api/orders/{id}，服务层在事务里整行覆盖，没有乐观锁（无 version / ETag / If-Match），也没有任何冲突检测。\n两个客户端同时编辑同一订单、各改一个字段时，后提交的那个用自己那份完整快照覆盖了整行，先提交的人的修改直接消失 —— 没有报错、没有冲突提示，两边都以为自己改成功了。\n实测：{\"property\": \"两个并发 PUT 分别改 customerPhone 与 address，最终行必须同时含两个新值\", \"ok\": false, \"order_id\": 1234, \"http_status\": {\"A\": 200, \"B\": 200}, \"final_row\": {\"remark\": \"ai_probe_conc_dc1_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_addr_concurrent\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"phone_applied\": false, \"address_applied\": true, \"lost_update\": true}\n谈单场景下的具体后果：销售 A 改了成交价、销售 B 同时改了电话，A 的改价凭空消失，订单金额回到旧值，而 A 的界面显示他改成功了。",
       "related": [],
       "note": "两个并发 PUT 各改一个字段，都返回 200，但最终行只含后写者的完整快照 —— 先写者的修改凭空消失，两边都以为自己成功了，没有任何冲突提示",
       "source": {
@@ -4612,7 +3632,7 @@
       "runtime_fidelity": "container",
       "severity": "INFO",
       "title": "被拒的写请求不会在订单行留下部分写入（事务边界有效）",
-      "detail": "同一个 PUT 里塞一个非法字段（tableCount=0，@Min(1) 拒绝）和一个合法字段的改动，服务返回 4xx 后，订单行与请求前逐字段一致 —— 没有出现「校验失败但另一部分已经写进去」的半截状态。\n实测：{\"property\": \"被拒的 PUT 不能在订单行留下任何部分写入\", \"ok\": true, \"order_id\": 1144, \"http_status\": 400, \"before\": {\"remark\": \"ai_probe_conc_dc2_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc2_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"after\": {\"remark\": \"ai_probe_conc_dc2_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc2_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"partial_write\": false}",
+      "detail": "同一个 PUT 里塞一个非法字段（tableCount=0，@Min(1) 拒绝）和一个合法字段的改动，服务返回 4xx 后，订单行与请求前逐字段一致 —— 没有出现「校验失败但另一部分已经写进去」的半截状态。\n实测：{\"property\": \"被拒的 PUT 不能在订单行留下任何部分写入\", \"ok\": true, \"order_id\": 1235, \"http_status\": 400, \"before\": {\"remark\": \"ai_probe_conc_dc2_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc2_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"after\": {\"remark\": \"ai_probe_conc_dc2_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc2_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"partial_write\": false}",
       "related": [],
       "note": "正面结论：校验失败后订单行与请求前逐字段一致，没有半截写入",
       "source": {
@@ -4661,7 +3681,7 @@
       "runtime_fidelity": "container",
       "severity": "MEDIUM",
       "title": "下单接口没有幂等：同一个请求重发一次就产生两个订单",
-      "detail": "POST /api/orders 不接受也不返回幂等键，没有按业务键去重，也没有唯一约束能挡住重复。客户端在超时后重试（这是所有 HTTP 客户端的标准行为），就会多出一张订单。\n实测：{\"property\": \"同一个 POST 重发两次，只能有一个订单落库（POST 必须幂等或带幂等键）\", \"ok\": false, \"http_status\": [200, 200], \"first_order_id\": 1145, \"second_order_id\": 1146, \"orders_in_db\": 2, \"same_id\": false}\n在零鉴权的前提下，这个接口同时也是「随便重发就能灌订单」的放大器。",
+      "detail": "POST /api/orders 不接受也不返回幂等键，没有按业务键去重，也没有唯一约束能挡住重复。客户端在超时后重试（这是所有 HTTP 客户端的标准行为），就会多出一张订单。\n实测：{\"property\": \"同一个 POST 重发两次，只能有一个订单落库（POST 必须幂等或带幂等键）\", \"ok\": false, \"http_status\": [200, 200], \"first_order_id\": 1236, \"second_order_id\": 1237, \"orders_in_db\": 2, \"same_id\": false}\n在零鉴权的前提下，这个接口同时也是「随便重发就能灌订单」的放大器。",
       "related": [],
       "note": "同一个 POST 发两次 → 两个订单 id、库里 2 行；没有幂等键，也没有业务键去重",
       "source": {
@@ -4804,7 +3824,7 @@
       "runtime_fidelity": "container",
       "severity": "HIGH",
       "title": "订单定金是否不得超过订单本身的金额？",
-      "detail": "定金是订单金额里的一部分。定金大于订单金额，业务上不可能成立 —— 系统没有任何折扣或溢价模型能解释它。\n不变式：BI-DEPOSIT-LTE-FINAL-AMOUNT　判定原语：field_lte_field\n实测 6 个订单场景，违反 1 次：\n[\n  {\n    \"row_id\": 1138,\n    \"type\": \"field_lte_field\",\n    \"left\": 999999,\n    \"right\": 1,\n    \"ok\": false,\n    \"scenario\": \"deposit_over\"\n  }\n]",
+      "detail": "定金是订单金额里的一部分。定金大于订单金额，业务上不可能成立 —— 系统没有任何折扣或溢价模型能解释它。\n不变式：BI-DEPOSIT-LTE-FINAL-AMOUNT　判定原语：field_lte_field\n实测 6 个订单场景，违反 1 次：\n[\n  {\n    \"row_id\": 1229,\n    \"type\": \"field_lte_field\",\n    \"left\": 999999,\n    \"right\": 1,\n    \"ok\": false,\n    \"scenario\": \"deposit_over\"\n  }\n]",
       "related": [],
       "note": "根因已由函数层 FN-APPLY-AMOUNT-INVARIANTS 开单，这里用不变式给出可判定的证据",
       "source": {
@@ -4853,7 +3873,7 @@
       "runtime_fidelity": "container",
       "severity": "HIGH",
       "title": "订单金额是否不超过所选套餐的标价？",
-      "detail": "套餐价是系统里唯一的商品价格基准。订单金额高于套餐标价，等于凭空多收钱。\n不变式：BI-FINAL-AMOUNT-LTE-PACKAGE-PRICE　判定原语：field_lte_field\n实测 6 个订单场景，违反 1 次：\n[\n  {\n    \"row_id\": 1140,\n    \"type\": \"field_lte_field\",\n    \"left\": 999999999,\n    \"right\": 46800,\n    \"ok\": false,\n    \"scenario\": \"over_pkg_price\"\n  }\n]",
+      "detail": "套餐价是系统里唯一的商品价格基准。订单金额高于套餐标价，等于凭空多收钱。\n不变式：BI-FINAL-AMOUNT-LTE-PACKAGE-PRICE　判定原语：field_lte_field\n实测 6 个订单场景，违反 1 次：\n[\n  {\n    \"row_id\": 1231,\n    \"type\": \"field_lte_field\",\n    \"left\": 999999999,\n    \"right\": 46800,\n    \"ok\": false,\n    \"scenario\": \"over_pkg_price\"\n  }\n]",
       "related": [],
       "note": "根因已由函数层 FN-PRICE-CLIENT-CONTROLLED 开单，这里用不变式给出可判定的证据",
       "source": {
@@ -4900,7 +3920,7 @@
       "runtime_fidelity": "container",
       "severity": "MEDIUM",
       "title": "订单的宴会类型是否与所选套餐的宴会类型一致？",
-      "detail": "套餐带 banquetType（婚宴 / 满月酒 / 寿宴这类分类），订单也带 banquetType。两者指向同一场宴席就必须一致 —— 不一致就是数据自相矛盾（订单说婚宴、套餐说寿宴）。\n不变式：BI-BANQUET-TYPE-MATCH-PACKAGE　判定原语：field_eq_field\n实测 6 个订单场景，违反 1 次：\n[\n  {\n    \"row_id\": 1141,\n    \"type\": \"field_eq_field\",\n    \"left\": \"寿宴\",\n    \"right\": \"升学宴\",\n    \"ok\": false,\n    \"scenario\": \"wrong_btype\"\n  }\n]",
+      "detail": "套餐带 banquetType（婚宴 / 满月酒 / 寿宴这类分类），订单也带 banquetType。两者指向同一场宴席就必须一致 —— 不一致就是数据自相矛盾（订单说婚宴、套餐说寿宴）。\n不变式：BI-BANQUET-TYPE-MATCH-PACKAGE　判定原语：field_eq_field\n实测 6 个订单场景，违反 1 次：\n[\n  {\n    \"row_id\": 1232,\n    \"type\": \"field_eq_field\",\n    \"left\": \"寿宴\",\n    \"right\": \"升学宴\",\n    \"ok\": false,\n    \"scenario\": \"wrong_btype\"\n  }\n]",
       "related": [],
       "note": "订单 banquetType 直接取客户端值，服务层从不与所选套餐的 banquetType 比对；宴会类型是同一场宴席的分类，不一致就是数据自相矛盾（订单说婚宴、套餐说寿宴）",
       "source": {
@@ -4949,7 +3969,7 @@
       "runtime_fidelity": "container",
       "severity": "HIGH",
       "title": "订单快照里的明细是否都属于所选套餐？",
-      "detail": "快照是订单金额与交付内容的凭据。混进不属于该套餐的商品，快照就不再代表这份套餐。\n不变式：BI-SNAPSHOT-ITEMS-SUBSET-OF-PACKAGE　判定原语：jsonb_subset_of\n实测 6 个订单场景，违反 1 次：\n[\n  {\n    \"row_id\": 1142,\n    \"type\": \"jsonb_subset_of\",\n    \"item_ids\": [\n      30\n    ],\n    \"ref_ids\": [\n      1,\n      4,\n      7,\n      10,\n      11,\n      13,\n      19,\n      21,\n      25,\n      26\n    ],\n    \"outside_ref\": [\n      30\n    ],\n    \"ok\": false,\n    \"scenario\": \"foreign_item\"\n  }\n]",
+      "detail": "快照是订单金额与交付内容的凭据。混进不属于该套餐的商品，快照就不再代表这份套餐。\n不变式：BI-SNAPSHOT-ITEMS-SUBSET-OF-PACKAGE　判定原语：jsonb_subset_of\n实测 6 个订单场景，违反 1 次：\n[\n  {\n    \"row_id\": 1233,\n    \"type\": \"jsonb_subset_of\",\n    \"item_ids\": [\n      30\n    ],\n    \"ref_ids\": [\n      1,\n      4,\n      7,\n      10,\n      11,\n      13,\n      19,\n      21,\n      25,\n      26\n    ],\n    \"outside_ref\": [\n      30\n    ],\n    \"ok\": false,\n    \"scenario\": \"foreign_item\"\n  }\n]",
       "related": [],
       "note": "根因已由函数层 FN-SNAPSHOT-SEMANTICS 开单，这里用不变式给出可判定的证据",
       "source": {
@@ -5329,7 +4349,7 @@
       "runtime_fidelity": "container",
       "severity": "INFO",
       "title": "上传失败时错误响应不泄露服务器文件系统路径",
-      "detail": "把上传目录破坏掉（products 目录换成一个普通文件，Files.createDirectories 必然失败）后，接口返回的是固定的业务错误，响应体里没有任何路径片段：\n{\"success\": false, \"code\": \"IMAGE_UPLOAD_FAILED\", \"message\": \"图片上传失败\", \"traceId\": \"42b6666d-731c-47ab-8790-72b81bedab61\", \"timestamp\": \"2026-11-08T00:53:46.779885593+08:00\"}\n扫描的片段：[]（空 = 没泄露）。\n对照：文件层已开的 INTERNAL_LEAK（25 处）是**其它**接口把框架异常原文透传，上传这条是干净的。",
+      "detail": "把上传目录破坏掉（products 目录换成一个普通文件，Files.createDirectories 必然失败）后，接口返回的是固定的业务错误，响应体里没有任何路径片段：\n{\"success\": false, \"code\": \"IMAGE_UPLOAD_FAILED\", \"message\": \"图片上传失败\", \"traceId\": \"f1eebe6c-11ba-4614-9769-255275712831\", \"timestamp\": \"2026-11-08T01:10:25.68342525+08:00\"}\n扫描的片段：[]（空 = 没泄露）。\n对照：文件层已开的 INTERNAL_LEAK（25 处）是**其它**接口把框架异常原文透传，上传这条是干净的。",
       "related": [],
       "note": "正面结论：把上传目录破坏掉后，响应是固定业务错误，扫不到任何路径片段",
       "source": {

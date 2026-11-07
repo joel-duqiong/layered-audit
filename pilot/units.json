@@ -158,6 +158,12 @@
     }
   ],
   "layer_roles": {
+    "class": [
+      "class.contract_violation",
+      "class.encapsulation_leak",
+      "class.inheritance_design",
+      "class.invariant"
+    ],
     "service": [
       "service.authz",
       "service.data_consistency",
@@ -172,23 +178,17 @@
       "function.exception_path",
       "function.numeric"
     ],
+    "file": [
+      "file.cohesion",
+      "file.error_handling_pattern",
+      "file.state_consistency"
+    ],
     "integration": [
       "integration.cross_layer_correlation",
       "integration.cross_service_attack_chain",
       "integration.cross_service_performance",
       "integration.emergent_masking",
       "integration.end_to_end_business"
-    ],
-    "class": [
-      "class.contract_violation",
-      "class.encapsulation_leak",
-      "class.inheritance_design",
-      "class.invariant"
-    ],
-    "file": [
-      "file.cohesion",
-      "file.error_handling_pattern",
-      "file.state_consistency"
     ]
   },
   "counts": {

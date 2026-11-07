@@ -63,6 +63,7 @@
 | **函数层载体通用化** | ✅ **通用反射 harness**：目标类、依赖、打桩、用例、类型别名全部来自用例文件，harness 里零项目字面量。jiuyan 92 条用例判定 **0 条不同**（64/28 与原版一致）；demo-shop 6 条全过 | `pilot/fn_harness/GenericHarness.java`、`pilot/fn_cases.json`、`demos/shop/fn_cases.json` |
 | **涌现裁决器** | ✅ 七种裁决落成可执行引擎。**demo-shop 真跑判出 `EMERGENT_CONJUNCTIVE`**：F(∅)=0、F({A})=0、F({B})=0、F({A,B})=1，偏离 90000 分；35 项自证断言全过 | `pilot/engine/emergence.py`、`demos/shop/EMERGENCE_RESULT.md` |
 | **分片存储 + 增量重跑** | ✅ 「改一处只动受影响的那几个」的第一个可用增量：第 2 次跑 **0 重跑 / 92 复用 / 1.5 秒**；删 1 个分片只重跑 1 条；改工具版本全失效 | `pilot/engine/store.py`、`pilot/fn_dynamic.py --incremental` |
+| **服务层载体通用化** | ✅ 场景配置搬到 `service_scenarios.json`；**顺带挖出原版一个真 bug**：解析 `{id}` 时用复数资源名查单数键 → 24 条请求打的是 `/api/xxx/None` → 所有带路径参数的接口「合法请求」场景**从来没真正测过**。通用版修好后，那 20 条假缺陷消失 | `pilot/contract_probe.py`、`pilot/service_scenarios.json` |
 | **变更影响分析** | ✅ git diff → 类名匹配 → 沿入边传播（深度 3）→ 受影响 Agent 集合；区分「解析出的」与「保守上界」 | `pilot/engine/change_impact.py` → `change_impact.json` |
 | **盲区地图** | ✅ 按中心性排序的「最该先验的单元」 | `pilot/engine/agent_coverage.py` → `agent_coverage.json` |
 | **变异测试** | ✅ `ground_truth=mutant_survivor` 从没人实现过 → 现在有真实数据 | `pilot/mutation_test.py` → `mutation_findings.json` |

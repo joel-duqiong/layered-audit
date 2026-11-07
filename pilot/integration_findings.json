@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-08T00:53:04.160955",
+  "generated_at": "2026-11-08T01:09:44.345361",
   "findings": [
     {
       "id": "INT-ANON-WRITE-REWRITES-SNAPSHOT",
@@ -15,12 +15,12 @@
             "method": "POST",
             "path": "/api/orders",
             "status": 200,
-            "evidence": "订单主人创建订单 id=1132（请求里没有任何凭证头）"
+            "evidence": "订单主人创建订单 id=1223（请求里没有任何凭证头）"
           },
           {
             "n": 2,
             "method": "GET",
-            "path": "/api/orders/1132",
+            "path": "/api/orders/1223",
             "status": 200,
             "evidence": "全新连接（无 Cookie / Token）读到 4 个 PII 字段：['customerName', 'customerPhone', 'address', 'remark']"
           },
@@ -34,21 +34,21 @@
           {
             "n": 4,
             "method": "PATCH",
-            "path": "/api/orders/1132/status",
+            "path": "/api/orders/1223/status",
             "status": 200,
             "evidence": "匿名改状态 → DEPOSIT_PAID"
           },
           {
             "n": 5,
             "method": "PUT",
-            "path": "/api/orders/1132",
+            "path": "/api/orders/1223",
             "status": 200,
             "evidence": "匿名全量覆盖订单：改电话 + 把明细数量改成 99"
           },
           {
             "n": 6,
             "method": "DB",
-            "path": "SELECT ... WHERE id=1132",
+            "path": "SELECT ... WHERE id=1223",
             "status": 200,
             "evidence": "库里的快照已被重写：明细数量=99，电话=13900000000，状态=PENDING"
           }
@@ -71,21 +71,21 @@
             "method": "POST",
             "path": "/api/uploads/product-image",
             "status": 200,
-            "evidence": "上传非图片字节 55 字节，自报 image/png、文件名 probe.png → imageUrl=/uploads/products/c9a9cc86-d230-4773-a35d-90b005ada42d.png"
+            "evidence": "上传非图片字节 55 字节，自报 image/png、文件名 probe.png → imageUrl=/uploads/products/526a49ab-5421-4d1f-aaee-efd16e83e195.png"
           },
           {
             "n": 2,
             "method": "GET",
-            "path": "/uploads/products/c9a9cc86-d230-4773-a35d-90b005ada42d.png",
+            "path": "/uploads/products/526a49ab-5421-4d1f-aaee-efd16e83e195.png",
             "status": 200,
             "evidence": "匿名连接（无凭证）下载 → 200，字节完全一致=True，Content-Type=image/png"
           },
           {
             "n": 3,
             "method": "FS",
-            "path": "/app/uploads/products/c9a9cc86-d230-4773-a35d-90b005ada42d.png",
+            "path": "/app/uploads/products/526a49ab-5421-4d1f-aaee-efd16e83e195.png",
             "status": 200,
-            "evidence": "-rw-r--r-- 1 root root 55 Nov  7 16:53 /app/uploads/products/c9a9cc86-d230-4773-a35d-90b005ada42d.png"
+            "evidence": "-rw-r--r-- 1 root root 55 Nov  7 17:09 /app/uploads/products/526a49ab-5421-4d1f-aaee-efd16e83e195.png"
           }
         ],
         "evidence": "下载字节与上传字节一致=True，Content-Type 由服务端按扩展名给出"
@@ -97,12 +97,12 @@
       "severity": "CRITICAL",
       "endpoint": "POST /api/orders",
       "title": "同一订单里并存两个互相矛盾的价格：成交价 0.01 元、套餐价 468.00 元",
-      "detail": "套餐标价 1 分，客户端报成交价 1 分，后端原样落库并返回 200。更糟的是集成症状：OrderResponse 同时返回 finalPriceCent=1 与 packageSnapshot.priceCent=46800，而前端 mapOrder 正好一个用来渲染金额、一个用来渲染套餐价 —— Pad 端同一张订单会同时显示 0.01 元和 468.00 元。服务端没有任何按套餐计价的能力，定价权完全在客户端手上。",
+      "detail": "套餐标价 46800 分，客户端报成交价 1 分，后端原样落库并返回 200。更糟的是集成症状：OrderResponse 同时返回 finalPriceCent=1 与 packageSnapshot.priceCent=46800，而前端 mapOrder 正好一个用来渲染金额、一个用来渲染套餐价 —— Pad 端同一张订单会同时显示 0.01 元和 468.00 元。服务端没有任何按套餐计价的能力，定价权完全在客户端手上。",
       "repro": "python3 integration_dynamic.py --scenario SC01_CLIENT_CONTROLLED_PRICE",
       "evidence": {
         "final_price_cent": 1,
-        "snapshot_price_cent": 1,
-        "order_id": 1127,
+        "snapshot_price_cent": 46800,
+        "order_id": 1218,
         "root_cause": "OrderService.resolveFinalPrice 直接采纳客户端 finalPriceCent",
         "related_lower_layer": "服务层 test_price_is_not_client_controlled 已报根因，本条只补集成症状"
       },
@@ -122,12 +122,12 @@
             "method": "POST",
             "path": "/api/orders",
             "status": 200,
-            "evidence": "订单主人创建订单 id=1132（请求里没有任何凭证头）"
+            "evidence": "订单主人创建订单 id=1223（请求里没有任何凭证头）"
           },
           {
             "n": 2,
             "method": "GET",
-            "path": "/api/orders/1132",
+            "path": "/api/orders/1223",
             "status": 200,
             "evidence": "全新连接（无 Cookie / Token）读到 4 个 PII 字段：['customerName', 'customerPhone', 'address', 'remark']"
           },
@@ -141,21 +141,21 @@
           {
             "n": 4,
             "method": "PATCH",
-            "path": "/api/orders/1132/status",
+            "path": "/api/orders/1223/status",
             "status": 200,
             "evidence": "匿名改状态 → DEPOSIT_PAID"
           },
           {
             "n": 5,
             "method": "PUT",
-            "path": "/api/orders/1132",
+            "path": "/api/orders/1223",
             "status": 200,
             "evidence": "匿名全量覆盖订单：改电话 + 把明细数量改成 99"
           },
           {
             "n": 6,
             "method": "DB",
-            "path": "SELECT ... WHERE id=1132",
+            "path": "SELECT ... WHERE id=1223",
             "status": 200,
             "evidence": "库里的快照已被重写：明细数量=99，电话=13900000000，状态=PENDING"
           }
@@ -176,14 +176,14 @@
           {
             "n": 1,
             "method": "PUT",
-            "path": "/api/orders/1134",
+            "path": "/api/orders/1225",
             "status": 200,
             "evidence": "匿名把明细数量改成 99，成交价保持 1 分"
           },
           {
             "n": 2,
             "method": "GET",
-            "path": "/api/orders/1134",
+            "path": "/api/orders/1225",
             "status": 200,
             "evidence": "订单金额 0.01 元 / 明细合计 4950.0 元 / 套餐标价 88.88 元 —— 三个数字互不相等"
           },
@@ -204,10 +204,10 @@
       "severity": "HIGH",
       "endpoint": "GET /api/products, GET /api/packages, GET /api/orders",
       "title": "前端列表固定只取前 100 条并丢弃 total，超出的数据永远不可见",
-      "detail": "后端返回 total=137，实际 items 只有 100 条。前端三个列表接口都写死 page=1&pageSize=100，且拿到响应后只做 data.items.map(...)，PageResponse.total / totalPages 被整个丢弃 —— 用户看不到「还有 35 条」，也没有任何翻页入口。商品/套餐/订单一旦超过 100 条，数据库里多出来的记录在 Pad 端凭空消失。",
+      "detail": "后端返回 total=136，实际 items 只有 100 条。前端三个列表接口都写死 page=1&pageSize=100，且拿到响应后只做 data.items.map(...)，PageResponse.total / totalPages 被整个丢弃 —— 用户看不到「还有 35 条」，也没有任何翻页入口。商品/套餐/订单一旦超过 100 条，数据库里多出来的记录在 Pad 端凭空消失。",
       "repro": "python3 integration_dynamic.py --scenario SC05_LIST_TRUNCATION",
       "evidence": {
-        "total": 137,
+        "total": 136,
         "items_count": 100,
         "frontend_code": "GET /api/products${toQuery({ page: 1, pageSize: 100, ...params })} -> data.items.map(mapProduct)",
         "root_cause": "前端硬编码 pageSize=100 + 未读取 total/totalPages"
@@ -219,21 +219,21 @@
       "severity": "HIGH",
       "endpoint": "POST /api/orders",
       "title": "可以把不属于该套餐的商品写进套餐明细，后端照单全收",
-      "detail": "下单时 packageItems 里塞进套餐外的商品（['ai_probe_prod_f43be0']），后端只校验商品存在、不校验归属，200 通过并写进订单快照。订单快照里的「套餐明细」因此不代表真实套餐，后续对账无据可查。",
+      "detail": "下单时 packageItems 里塞进套餐外的商品（['喜糖果盘']），后端只校验商品存在、不校验归属，200 通过并写进订单快照。订单快照里的「套餐明细」因此不代表真实套餐，后续对账无据可查。",
       "repro": "python3 integration_dynamic.py --scenario SC02_FOREIGN_ITEM_IN_PACKAGE",
       "evidence": {
         "snapshot_items": [
           {
-            "productId": 2503997,
-            "productName": "ai_probe_prod_f43be0",
-            "priceCent": 1,
+            "productId": 30,
+            "productName": "喜糖果盘",
+            "priceCent": 4200,
             "quantity": 1,
             "unit": "份",
-            "imageUrl": null,
-            "categoryName": "ai_probe_cat_b110d8"
+            "imageUrl": "/uploads/seed/products/product-30.jpg",
+            "categoryName": "凉菜"
           }
         ],
-        "order_id": 1128,
+        "order_id": 1219,
         "root_cause": "OrderService.apply 未校验 packageItems 与 packageId 的归属关系"
       },
       "owner": "集权层"
@@ -243,21 +243,21 @@
       "severity": "HIGH",
       "endpoint": "POST /api/orders",
       "title": "明细数量可以改成 99，价格仍按套餐原价结算（加量不加价）",
-      "detail": "下单时把套餐内商品数量改成 99 份，planTotalCent/finalPriceCent 仍是套餐原价 1 分 —— 后端不重算、不拒绝。",
+      "detail": "下单时把套餐内商品数量改成 99 份，planTotalCent/finalPriceCent 仍是套餐原价 46800 分 —— 后端不重算、不拒绝。",
       "repro": "python3 integration_dynamic.py --scenario SC03_QUANTITY_OVERRIDE",
       "evidence": {
         "snapshot_items": [
           {
-            "productId": 2503997,
-            "productName": "ai_probe_prod_f43be0",
-            "priceCent": 1,
+            "productId": 1,
+            "productName": "五香卤牛肉",
+            "priceCent": 5800,
             "quantity": 99,
             "unit": "份",
-            "imageUrl": null,
-            "categoryName": "ai_probe_cat_b110d8"
+            "imageUrl": "/uploads/seed/products/product-01.jpg",
+            "categoryName": "凉菜"
           }
         ],
-        "final_price_cent": 1,
+        "final_price_cent": 46800,
         "root_cause": "OrderService.apply 不依据明细重算金额"
       },
       "owner": "集权层"
@@ -394,13 +394,94 @@
       "evidence": {
         "snapshot_items": [
           {
-            "productId": 2503997,
-            "productName": "ai_probe_prod_f43be0",
-            "priceCent": 1,
+            "productId": 1,
+            "productName": "五香卤牛肉",
+            "priceCent": 5800,
             "quantity": 1,
             "unit": "份",
-            "imageUrl": null,
-            "categoryName": "ai_probe_cat_b110d8"
+            "imageUrl": "/uploads/seed/products/product-01.jpg",
+            "categoryName": "凉菜"
+          },
+          {
+            "productId": 4,
+            "productName": "拍黄瓜",
+            "priceCent": 1500,
+            "quantity": 1,
+            "unit": "份",
+            "imageUrl": "/uploads/seed/products/product-04.jpg",
+            "categoryName": "凉菜"
+          },
+          {
+            "productId": 7,
+            "productName": "土鸡烧香菇",
+            "priceCent": 9600,
+            "quantity": 1,
+            "unit": "份",
+            "imageUrl": "/uploads/seed/products/product-07.jpg",
+            "categoryName": "热菜"
+          },
+          {
+            "productId": 10,
+            "productName": "蒜蓉粉丝虾",
+            "priceCent": 11800,
+            "quantity": 1,
+            "unit": "份",
+            "imageUrl": "/uploads/seed/products/product-10.jpg",
+            "categoryName": "热菜"
+          },
+          {
+            "productId": 11,
+            "productName": "清炒时蔬",
+            "priceCent": 2800,
+            "quantity": 1,
+            "unit": "份",
+            "imageUrl": "/uploads/seed/products/product-11.jpg",
+            "categoryName": "热菜"
+          },
+          {
+            "productId": 13,
+            "productName": "毛血旺",
+            "priceCent": 7600,
+            "quantity": 1,
+            "unit": "份",
+            "imageUrl": "/uploads/seed/products/product-13.jpg",
+            "categoryName": "热菜"
+          },
+          {
+            "productId": 19,
+            "productName": "八宝糯米饭",
+            "priceCent": 3600,
+            "quantity": 1,
+            "unit": "份",
+            "imageUrl": "/uploads/seed/products/product-19.jpg",
+            "categoryName": "主食"
+          },
+          {
+            "productId": 21,
+            "productName": "扬州炒饭",
+            "priceCent": 3800,
+            "quantity": 1,
+            "unit": "份",
+            "imageUrl": "/uploads/seed/products/product-21.jpg",
+            "categoryName": "主食"
+          },
+          {
+            "productId": 25,
+            "productName": "酸辣汤",
+            "priceCent": 2400,
+            "quantity": 1,
+            "unit": "份",
+            "imageUrl": "/uploads/seed/products/product-25.jpg",
+            "categoryName": "汤品"
+          },
+          {
+            "productId": 26,
+            "productName": "上门灶台服务",
+            "priceCent": 30000,
+            "quantity": 1,
+            "unit": "场",
+            "imageUrl": "/uploads/seed/products/product-26.jpg",
+            "categoryName": "服务项"
           }
         ],
         "root_cause": "spring.jackson 未开 fail-on-unknown-properties + buildPackageSnapshot 空明细回退"
@@ -626,7 +707,7 @@
       "result": "PASS",
       "desc": "package_items.id 是内部主键，接口刻意不外露（前端也用不到）",
       "evidence": {
-        "db_value": 370
+        "db_value": 403
       }
     },
     {
@@ -634,7 +715,7 @@
       "result": "PASS",
       "desc": "package_items.package_id 是内部主键，接口刻意不外露（前端也用不到）",
       "evidence": {
-        "db_value": 261
+        "db_value": 281
       }
     },
     {
@@ -828,14 +909,14 @@
           {
             "n": 2,
             "method": "DB",
-            "path": "SELECT final_price_cent FROM orders WHERE id=1133",
+            "path": "SELECT final_price_cent FROM orders WHERE id=1224",
             "status": 200,
             "evidence": "库里的成交价 = 1 分"
           },
           {
             "n": 3,
             "method": "GET",
-            "path": "/api/orders/1133",
+            "path": "/api/orders/1224",
             "status": 200,
             "evidence": "API 回读成交价 = 1 分"
           },
@@ -864,19 +945,19 @@
             "method": "POST",
             "path": "/api/orders",
             "status": 200,
-            "evidence": "建单 id=1135：PENDING、定金 0、成交价 1 分"
+            "evidence": "建单 id=1226：PENDING、定金 0、成交价 1 分"
           },
           {
             "n": 2,
             "method": "PATCH",
-            "path": "/api/orders/1135/status",
+            "path": "/api/orders/1226/status",
             "status": 200,
             "evidence": "匿名 PENDING → COMPLETED 一次成功；前端渲染状态 = 已完成，定金 = 0 元，订单金额 = 0.01 元"
           },
           {
             "n": 3,
             "method": "DB",
-            "path": "SELECT status, deposit_cent FROM orders WHERE id=1135",
+            "path": "SELECT status, deposit_cent FROM orders WHERE id=1226",
             "status": 200,
             "evidence": "库里的状态 = COMPLETED，定金 = 0 分"
           }

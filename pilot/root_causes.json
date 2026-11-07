@@ -1,9 +1,9 @@
 {
   "generated_from": "aggregate_findings.py",
   "summary": {
-    "findings": 111,
-    "root_causes": 71,
-    "collapsed": 40,
+    "findings": 91,
+    "root_causes": 70,
+    "collapsed": 21,
     "violations": 1
   },
   "root_causes": [
@@ -518,7 +518,7 @@
     },
     {
       "root_cause_key": "index.idx_products_name_unusable",
-      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.547ms vs 0.013ms，差 581 倍）",
+      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.625ms vs 0.011ms，差 693 倍）",
       "severity": "HIGH",
       "owner_layer": "service",
       "categories": [
@@ -686,33 +686,15 @@
       "category_fit": [
         "stretched"
       ],
-      "finding_count": 25,
+      "finding_count": 7,
       "finding_uids": [
+        "service:INTERNAL_LEAK#3",
+        "service:INTERNAL_LEAK#4",
         "service:INTERNAL_LEAK#5",
         "service:INTERNAL_LEAK#6",
         "service:INTERNAL_LEAK#7",
         "service:INTERNAL_LEAK#8",
-        "service:INTERNAL_LEAK#9",
-        "service:INTERNAL_LEAK#10",
-        "service:INTERNAL_LEAK#11",
-        "service:INTERNAL_LEAK#12",
-        "service:INTERNAL_LEAK#13",
-        "service:INTERNAL_LEAK#14",
-        "service:INTERNAL_LEAK#15",
-        "service:INTERNAL_LEAK#16",
-        "service:INTERNAL_LEAK#17",
-        "service:INTERNAL_LEAK#18",
-        "service:INTERNAL_LEAK#19",
-        "service:INTERNAL_LEAK#20",
-        "service:INTERNAL_LEAK#21",
-        "service:INTERNAL_LEAK#22",
-        "service:INTERNAL_LEAK#23",
-        "service:INTERNAL_LEAK#24",
-        "service:INTERNAL_LEAK#25",
-        "service:INTERNAL_LEAK#26",
-        "service:INTERNAL_LEAK#27",
-        "service:INTERNAL_LEAK#28",
-        "service:INTERNAL_LEAK#29"
+        "service:INTERNAL_LEAK#9"
       ],
       "layers_own": [
         "service"
@@ -727,71 +709,22 @@
       "confidence": 0.92,
       "ground_truth": "verified",
       "repro_cmds": [
-        "curl -X DELETE /api/categories/None",
-        "curl -X DELETE /api/package-types/None",
-        "curl -X DELETE /api/packages/None",
-        "curl -X DELETE /api/products/None",
-        "curl -X GET /api/orders/None",
-        "curl -X GET /api/packages/None",
-        "curl -X PATCH /api/orders/None/status",
-        "curl -X PATCH /api/packages/None/status",
-        "curl -X PATCH /api/products/None/status",
+        "curl -X PATCH /api/orders/1200/status",
+        "curl -X PATCH /api/packages/277/status",
+        "curl -X PATCH /api/products/2704239/status",
+        "curl -X POST /api/packages",
         "curl -X POST /api/products",
-        "curl -X PUT /api/orders/None",
-        "curl -X PUT /api/packages/None",
-        "curl -X PUT /api/products/None"
+        "curl -X PUT /api/packages/277",
+        "curl -X PUT /api/products/2704239"
       ],
       "violations": [],
       "notes": [],
       "merges": [
-        "service 层同一根因开了 25 条 own，可归并为 1 条根因"
+        "service 层同一根因开了 7 条 own，可归并为 1 条根因"
       ],
       "evidence_fidelity": "container",
       "fidelity_breakdown": {
-        "container": 25
-      },
-      "related_root_causes": []
-    },
-    {
-      "root_cause_key": "jackson.lenient_type_coercion",
-      "title": "错误 JSON 类型被隐式转换后接受（字段 name）",
-      "severity": "MEDIUM",
-      "owner_layer": "service",
-      "categories": [
-        "service.interface_contract"
-      ],
-      "category_fit": [
-        "exact"
-      ],
-      "finding_count": 2,
-      "finding_uids": [
-        "service:TYPE_COERCION#3",
-        "service:TYPE_COERCION#4"
-      ],
-      "layers_own": [
-        "service"
-      ],
-      "layers_all": [
-        "service"
-      ],
-      "cited_from": [],
-      "cwe": [
-        "CWE-20"
-      ],
-      "confidence": 0.9,
-      "ground_truth": "verified",
-      "repro_cmds": [
-        "curl -X POST /api/categories -d {\"name\": 12345}",
-        "curl -X POST /api/package-types -d {\"name\": 12345}"
-      ],
-      "violations": [],
-      "notes": [],
-      "merges": [
-        "service 层同一根因开了 2 条 own，可归并为 1 条根因"
-      ],
-      "evidence_fidelity": "container",
-      "fidelity_breakdown": {
-        "container": 2
+        "container": 7
       },
       "related_root_causes": []
     },
@@ -2837,7 +2770,7 @@
         "inheritance_design": 0
       },
       "service": {
-        "interface_contract": 30,
+        "interface_contract": 10,
         "resilience": 2,
         "authz": 3,
         "data_consistency": 9,
@@ -2908,24 +2841,6 @@
         "service.public_api_returns_jpa_entity",
         "spring.self_invocation_bypasses_proxy"
       ],
-      "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/CategoryController.java": [
-        "errhandler.internal_detail_leak",
-        "jackson.lenient_type_coercion"
-      ],
-      "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageTypeController.java": [
-        "errhandler.internal_detail_leak",
-        "jackson.lenient_type_coercion"
-      ],
-      "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageController.java": [
-        "errhandler.internal_detail_leak",
-        "package.list.n_plus_one_per_package",
-        "tooling.coverage_recording_gap"
-      ],
-      "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java": [
-        "errhandler.internal_detail_leak",
-        "frontend.list_hardcoded_limit_100",
-        "pagination.count_total_computed_but_discarded"
-      ],
       "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java": [
         "api.snapshot_structure_undeclared",
         "dto.unknown_field_silent_drop",
@@ -2941,6 +2856,16 @@
         "order.update.no_concurrency_control",
         "order.update.transaction_boundary_holds",
         "price.final_price.upper_bound_unvalidated"
+      ],
+      "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageController.java": [
+        "errhandler.internal_detail_leak",
+        "package.list.n_plus_one_per_package",
+        "tooling.coverage_recording_gap"
+      ],
+      "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java": [
+        "errhandler.internal_detail_leak",
+        "frontend.list_hardcoded_limit_100",
+        "pagination.count_total_computed_but_discarded"
       ],
       "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/BanquetOrder.java": [
         "db.notnull_bypassed_by_empty_string",
@@ -2963,7 +2888,7 @@
         "price.final_price.upper_bound_unvalidated"
       ]
     },
-    "root_cause_count": 71,
-    "finding_count": 111
+    "root_cause_count": 70,
+    "finding_count": 91
   }
 }
