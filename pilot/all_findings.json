@@ -3,17 +3,17 @@
   "contract": "/Users/june/.cc-weixin/workspace/layered-audit/layers.yaml",
   "target": "/Users/june/.cc-weixin/workspace/layered-audit/pilot/target.json",
   "counts": {
-    "total": 88,
+    "total": 94,
     "by_layer": {
-      "function": 8,
+      "function": 11,
       "file": 18,
-      "service": 31,
+      "service": 34,
       "class": 16,
       "integration": 15
     },
     "by_kind": {
-      "defect": 77,
-      "positive": 9,
+      "defect": 81,
+      "positive": 11,
       "observation": 2
     }
   },
@@ -2890,7 +2890,7 @@
       "related_root_causes": [],
       "kind": "defect",
       "severity": "HIGH",
-      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（8.042ms vs 0.016ms，差 503 倍）",
+      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.603ms vs 0.012ms，差 634 倍）",
       "detail": "迁移文件建了 products(name) 索引，但服务层关键词搜索写的是 lower(name) LIKE '%kw%'：lower() 让索引无法用于定位，前导 % 让 btree 本来也用不上。EXPLAIN 显示走 Filter 全量过滤而非 Index Cond。类层把索引交给服务层，但服务层不知道该怎么用它 —— 声明没有传递下去。",
       "related": [],
       "note": "检测在 class 层（实体与 DDL 对齐），归属层是 service（查询模式在服务层）",
@@ -3032,7 +3032,7 @@
       "related_root_causes": [],
       "kind": "defect",
       "severity": "MEDIUM",
-      "title": "orders 表没有软删/归档，永久增长（当前 200 kB）",
+      "title": "orders 表没有软删/归档，永久增长（当前 184 kB）",
       "detail": "products/packages/categories 都有 is_deleted，orders 没有。订单是唯一不设生命周期的表，还带 2 个 jsonb 快照列和 6 个索引 —— 数据量上来后这张表会最先撑爆。",
       "related": [],
       "note": "类层无「生命周期」类别；资源上限语义更接近 service.resource_leak",
@@ -3887,7 +3887,7 @@
       "kind": "defect",
       "severity": "HIGH",
       "title": "可以把不属于该套餐的商品写进套餐明细，后端照单全收",
-      "detail": "下单时 packageItems 里塞进套餐外的商品（['ai_probe_prod_c46c74']），后端只校验商品存在、不校验归属，200 通过并写进订单快照。订单快照里的「套餐明细」因此不代表真实套餐，后续对账无据可查。",
+      "detail": "下单时 packageItems 里塞进套餐外的商品（['ai_probe_prod_97abfe']），后端只校验商品存在、不校验归属，200 通过并写进订单快照。订单快照里的「套餐明细」因此不代表真实套餐，后续对账无据可查。",
       "related": [],
       "note": "",
       "source": {
@@ -4242,7 +4242,7 @@
       },
       "claim": "分页 count(*) 是否每次列表请求都全表扫描，而前端根本不看 total？",
       "evidence_refs": [
-        "findings.json#SVC-PAGINATION-COUNT-DISCARDED"
+        "perf_findings.json#SVC-PAGINATION-COUNT-DISCARDED"
       ],
       "repro_cmd": "python3 perf_load.py --scales 0,2000,10000,50000",
       "repro_granularity": "layer",
@@ -4261,7 +4261,7 @@
       "kind": "defect",
       "severity": "MEDIUM",
       "title": "分页 total 是纯开销：后端每次列表请求都跑 count(*) 全表扫描，前端从不读这个数",
-      "detail": "每个列表接口都带分页参数，后端对每次请求额外跑一条 count(*) 全表扫描（Seq Scan，因为 idx_products_name 对 lower(name) LIKE '%…%' 不可用）。实测数据量阶梯：30 行 → 7.67ms；2030 行 → 10.53ms；10030 行 → 18.73ms；50030 行 → 37.02ms。\n在 50030 行时，count(*) 单条耗时 13.354ms，占带 keyword 列表接口端到端延迟的 36.1%，占不带 keyword 接口的 46.8%。\n而前端 banquetApi.js 的 listProducts / listPackages / listOrders 三个函数一律只取 data.items.map(...)，total 从未被读取 —— 这份开销 100% 浪费。\n本轮判定「端到端延迟随数据量塌陷」为 PARTIALLY_CONFIRMED：延迟确实随数据量线性增长，但 50030 行时端到端仅 37.02ms，按每行 0.000740ms 折算，要到约 1351431 行才触及 1 秒预算。\n结论：结构性 O(N) 成立，但当前规模下后果未兑现 —— 真正该修的不是「加索引」，而是别让后端算一个没人要的数。",
+      "detail": "每个列表接口都带分页参数，后端对每次请求额外跑一条 count(*) 全表扫描（Seq Scan，因为 idx_products_name 对 lower(name) LIKE '%…%' 不可用）。实测数据量阶梯：30 行 → 5.82ms；2030 行 → 10.08ms；10030 行 → 17.65ms；50030 行 → 36.41ms。\n在 50030 行时，count(*) 单条耗时 15.675ms，占带 keyword 列表接口端到端延迟的 43.1%，占不带 keyword 接口的 44.2%。\n而前端 banquetApi.js 的 listProducts / listPackages / listOrders 三个函数一律只取 data.items.map(...)，total 从未被读取 —— 这份开销 100% 浪费。\n本轮判定「端到端延迟随数据量塌陷」为 PARTIALLY_CONFIRMED：延迟确实随数据量线性增长，但 50030 行时端到端仅 36.41ms，按每行 0.000728ms 折算，要到约 1374073 行才触及 1 秒预算。\n结论：结构性 O(N) 成立，但当前规模下后果未兑现 —— 真正该修的不是「加索引」，而是别让后端算一个没人要的数。",
       "related": [],
       "note": "实测 5 万行时 count(*) 占端到端 31%（带 keyword）/ 40%（不带 keyword）；前端 listProducts/listPackages/listOrders 三个函数都只取 items，total 从未被读",
       "source": {
@@ -4290,7 +4290,7 @@
       },
       "claim": "三个列表接口是否每次都为前端丢弃的 total 付一次全表扫描？",
       "evidence_refs": [
-        "integration_findings.json#INT-LIST-COUNT-END-TO-END-WASTE"
+        "perf_findings.json#INT-LIST-COUNT-END-TO-END-WASTE"
       ],
       "repro_cmd": "python3 perf_load.py --scales 0,2000,10000,50000",
       "repro_granularity": "layer",
@@ -4307,12 +4307,292 @@
       "kind": "defect",
       "severity": "MEDIUM",
       "title": "三个列表接口每次都为前端丢弃的 total 付一次全表扫描",
-      "detail": "三个列表接口（GET /api/products、/api/packages、/api/orders）在集权层实测中，每次请求的 count(*) 部分占端到端延迟的 36.1%~46.8%，而这个 total 前端从头到尾没读过。\n也就是说：用户每翻一次列表，后端就多付一次全表扫描的钱，收益为零。同时前端把 page 固定成 1、pageSize 固定成 100，超出部分永远不可见 —— 分页机制在这条链路上同时是「成本」和「不可用」。",
+      "detail": "三个列表接口（GET /api/products、/api/packages、/api/orders）在集权层实测中，每次请求的 count(*) 部分占端到端延迟的 43.1%~44.2%，而这个 total 前端从头到尾没读过。\n也就是说：用户每翻一次列表，后端就多付一次全表扫描的钱，收益为零。同时前端把 page 固定成 1、pageSize 固定成 100，超出部分永远不可见 —— 分页机制在这条链路上同时是「成本」和「不可用」。",
       "related": [],
       "note": "链级后果归集成层，根因（后端白算一次 count）归服务层",
       "source": {
         "file": "perf_findings.json",
         "index": 0
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FN-NUMERIC-MONEY-INPUT-SILENT-MUTATION",
+      "uid": "function:FN-NUMERIC-MONEY-INPUT-SILENT-MUTATION#0",
+      "layer": "function",
+      "category": "function.numeric",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/src/App.jsx",
+        "line": 129,
+        "symbol": "normalizeMoneyInput",
+        "endpoint": ""
+      },
+      "claim": "金额输入规范化是否静默改变了用户输入的数值？",
+      "evidence_refs": [
+        "numeric_findings.json#FN-NUMERIC-MONEY-INPUT-SILENT-MUTATION"
+      ],
+      "repro_cmd": "",
+      "repro_granularity": "none",
+      "confidence": 0.95,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "function",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "money_input.normalization_silently_mutates_value",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "LOW",
+      "title": "金额输入框静默改变用户输入的数值：负号被吞、超过 2 位小数被截断",
+      "detail": "normalizeMoneyInput 是所有金额输入框的唯一入口（成交价 / 定金 / 套餐价 / 商品价共 6 处调用）。它把非数字字符全删掉、把小数截到 2 位，两处都**静默**：用户看到输入框里显示的就是规范化后的值，没有任何提示说原来的输入被改过。\n负号被吞：[{\"input\": \"-19.99\", \"normalized\": \"19.99\"}, {\"input\": \"-0.01\", \"normalized\": \"0.01\"}, {\"input\": \"-100\", \"normalized\": \"100\"}]\n  → 输入 -19.99，框里变成 19.99，存进库也是 +19.99。金额方向被反转。\n截断：[{\"input\": \"19.995\", \"normalized\": \"19.99\", \"want_cent\": 2000, \"got_cent\": 1999, \"lost_cent\": 1}, {\"input\": \"0.005\", \"normalized\": \"0.00\", \"want_cent\": 1, \"got_cent\": 0, \"lost_cent\": 1}, {\"input\": \"19.999\", \"normalized\": \"19.99\", \"want_cent\": 2000, \"got_cent\": 1999, \"lost_cent\": 1}]\n  → 输入 19.995，四舍五入应是 2000 分，系统存 1999 分；输入 0.005 变成 0.00，半分钱直接归零。\n性质：不是「显示与存储不一致」（框里显示多少就存多少），而是「存储值与用户输入不一致，且无任何反馈」。",
+      "related": [],
+      "note": "负号被吞（金额方向反转）+ 超过 2 位小数被截断（少 1 分）；作用于成交价 / 定金 / 套餐价 / 商品价共 6 处金额输入框",
+      "source": {
+        "file": "numeric_findings.json",
+        "index": 0
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FN-NUMERIC-FE-MONEY-ROUNDTRIP-EXACT",
+      "uid": "function:FN-NUMERIC-FE-MONEY-ROUNDTRIP-EXACT#1",
+      "layer": "function",
+      "category": "function.numeric",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/src/api/banquetApi.js",
+        "line": 27,
+        "symbol": "yuanToCent / centToYuan",
+        "endpoint": ""
+      },
+      "claim": "前端金额换算在合理量级内是否精确闭合？",
+      "evidence_refs": [
+        "numeric_findings.json#FN-NUMERIC-FE-MONEY-ROUNDTRIP-EXACT"
+      ],
+      "repro_cmd": "",
+      "repro_granularity": "none",
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "function",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "money_conversion.roundtrip_exact",
+      "related_root_causes": [],
+      "kind": "positive",
+      "severity": "INFO",
+      "title": "前端金额换算在合理量级内精确闭合（分→元→分、元→分、显示精度三条性质全过）",
+      "detail": "确定性随机性质测试，种子固定，每次同一批输入：[\"FP1_roundtrip\", \"FP2_display_precision\", \"FP3_yuan_to_cent\"] 各 2000 例全过。\n· FP1 分→元→分往返闭合：yuanToCent(centToYuan(x)) === x\n· FP2 显示精度：centToYuan(x).toFixed(2) 等于 x 分的精确十进制展开\n· FP3 元→分：yuanToCent(y) === Math.round(y * 100)\n这条是正面结论：金额换算本身没有精度 bug，问题不在换算，在输入规范化（见 FN-NUMERIC-MONEY-INPUT-SILENT-MUTATION）与金额上界缺失。",
+      "related": [],
+      "note": "三条确定性随机性质各 2000 例全过（种子 20261107）：分→元→分往返闭合 / 显示精度 / 元→分",
+      "source": {
+        "file": "numeric_findings.json",
+        "index": 1
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FN-NUMERIC-BIGINT-PRECISION-LOSS",
+      "uid": "function:FN-NUMERIC-BIGINT-PRECISION-LOSS#2",
+      "layer": "function",
+      "category": "function.numeric",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/src/api/banquetApi.js",
+        "line": 27,
+        "symbol": "centToYuan",
+        "endpoint": ""
+      },
+      "claim": "金额超过 2^53 分时，前端显示的金额是否与库里存的一致？",
+      "evidence_refs": [
+        "numeric_findings.json#FN-NUMERIC-BIGINT-PRECISION-LOSS"
+      ],
+      "repro_cmd": "",
+      "repro_granularity": "none",
+      "confidence": 0.85,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "function",
+        "relation": "cited",
+        "basis": "根因归 function；本层拥有链级后果"
+      },
+      "root_cause_key": "price.final_price.upper_bound_unvalidated",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "LOW",
+      "title": "金额超过 2^53 分时，前端显示的金额与库里存的不一致（后端金额无上界是前提）",
+      "detail": "后端对金额只查下界（@Min(0) + CHECK >= 0），没有上界，BIGINT 能存到 9.22e18 分。前端用 JS Number 装分值，超过 2^53（约 9007 万亿元）后就装不下每一个整数。\n{\"cent_exact\": \"9007199254740993\", \"number_holds\": false, \"yuan_displayed\": 90071992547409.92, \"cent_after_display\": \"9007199254740992\", \"lost_cent\": \"1\"}\n{\"cent_exact\": \"9223372036854775807\", \"number_holds\": false, \"yuan_displayed\": 92233720368547760, \"cent_after_display\": \"9223372036854775808\", \"lost_cent\": \"-1\"}\n后端能存进去，前端显示的是另一个数 —— 库里和界面上的金额对不上。\n归属：根因是「金额没有上界」（与 price.final_price.upper_bound_unvalidated 同一根因），这里只量化后果，不重复开单。",
+      "related": [],
+      "note": "根因是「金额没有上界」（函数层已开单），这里只量化前端侧后果，不重复开单",
+      "source": {
+        "file": "numeric_findings.json",
+        "index": 2
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "SVC-CONCURRENT-WRITE-LOST-UPDATE",
+      "uid": "service:SVC-CONCURRENT-WRITE-LOST-UPDATE#0",
+      "layer": "service",
+      "category": "service.data_consistency",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
+        "line": 58,
+        "symbol": "PUT /api/orders/{id}",
+        "endpoint": "PUT /api/orders/{id}"
+      },
+      "claim": "并发编辑同一订单是否会静默丢掉对方的修改？",
+      "evidence_refs": [
+        "concurrency_findings.json#SVC-CONCURRENT-WRITE-LOST-UPDATE"
+      ],
+      "repro_cmd": "python3 concurrency_props.py",
+      "repro_granularity": "layer",
+      "confidence": 0.95,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-362"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "order.update.no_concurrency_control",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "并发编辑同一订单会静默丢掉对方的修改：没有版本号、没有冲突检测",
+      "detail": "订单编辑走 PUT /api/orders/{id}，服务层在事务里整行覆盖，没有乐观锁（无 version / ETag / If-Match），也没有任何冲突检测。\n两个客户端同时编辑同一订单、各改一个字段时，后提交的那个用自己那份完整快照覆盖了整行，先提交的人的修改直接消失 —— 没有报错、没有冲突提示，两边都以为自己改成功了。\n实测：{\"property\": \"两个并发 PUT 分别改 customerPhone 与 address，最终行必须同时含两个新值\", \"ok\": false, \"order_id\": 668, \"http_status\": {\"A\": 200, \"B\": 200}, \"final_row\": {\"remark\": \"ai_probe_conc_dc1_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_addr_concurrent\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"phone_applied\": false, \"address_applied\": true, \"lost_update\": true}\n谈单场景下的具体后果：销售 A 改了成交价、销售 B 同时改了电话，A 的改价凭空消失，订单金额回到旧值，而 A 的界面显示他改成功了。",
+      "related": [],
+      "note": "两个并发 PUT 各改一个字段，都返回 200，但最终行只含后写者的完整快照 —— 先写者的修改凭空消失，两边都以为自己成功了，没有任何冲突提示",
+      "source": {
+        "file": "concurrency_findings.json",
+        "index": 0
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "SVC-FAILED-WRITE-LEAVES-NO-PARTIAL-STATE",
+      "uid": "service:SVC-FAILED-WRITE-LEAVES-NO-PARTIAL-STATE#1",
+      "layer": "service",
+      "category": "service.data_consistency",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
+        "line": 58,
+        "symbol": "PUT /api/orders/{id}",
+        "endpoint": "PUT /api/orders/{id}"
+      },
+      "claim": "被拒的写请求会不会在订单行留下部分写入？",
+      "evidence_refs": [
+        "concurrency_findings.json#SVC-FAILED-WRITE-LEAVES-NO-PARTIAL-STATE"
+      ],
+      "repro_cmd": "python3 concurrency_props.py",
+      "repro_granularity": "layer",
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "order.update.transaction_boundary_holds",
+      "related_root_causes": [],
+      "kind": "positive",
+      "severity": "INFO",
+      "title": "被拒的写请求不会在订单行留下部分写入（事务边界有效）",
+      "detail": "同一个 PUT 里塞一个非法字段（tableCount=0，@Min(1) 拒绝）和一个合法字段的改动，服务返回 4xx 后，订单行与请求前逐字段一致 —— 没有出现「校验失败但另一部分已经写进去」的半截状态。\n实测：{\"property\": \"被拒的 PUT 不能在订单行留下任何部分写入\", \"ok\": true, \"order_id\": 669, \"http_status\": 400, \"before\": {\"remark\": \"ai_probe_conc_dc2_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc2_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"after\": {\"remark\": \"ai_probe_conc_dc2_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc2_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"partial_write\": false}",
+      "related": [],
+      "note": "正面结论：校验失败后订单行与请求前逐字段一致，没有半截写入",
+      "source": {
+        "file": "concurrency_findings.json",
+        "index": 1
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "SVC-POST-NOT-IDEMPOTENT",
+      "uid": "service:SVC-POST-NOT-IDEMPOTENT#2",
+      "layer": "service",
+      "category": "service.resilience",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
+        "line": 52,
+        "symbol": "POST /api/orders",
+        "endpoint": "POST /api/orders"
+      },
+      "claim": "下单接口在客户端重试时会不会产生重复订单？",
+      "evidence_refs": [
+        "concurrency_findings.json#SVC-POST-NOT-IDEMPOTENT"
+      ],
+      "repro_cmd": "python3 concurrency_props.py",
+      "repro_granularity": "layer",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-799"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "order.create.not_idempotent",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "下单接口没有幂等：同一个请求重发一次就产生两个订单",
+      "detail": "POST /api/orders 不接受也不返回幂等键，没有按业务键去重，也没有唯一约束能挡住重复。客户端在超时后重试（这是所有 HTTP 客户端的标准行为），就会多出一张订单。\n实测：{\"property\": \"同一个 POST 重发两次，只能有一个订单落库（POST 必须幂等或带幂等键）\", \"ok\": false, \"http_status\": [200, 200], \"first_order_id\": 670, \"second_order_id\": 671, \"orders_in_db\": 2, \"same_id\": false}\n在零鉴权的前提下，这个接口同时也是「随便重发就能灌订单」的放大器。",
+      "related": [],
+      "note": "同一个 POST 发两次 → 两个订单 id、库里 2 行；没有幂等键，也没有业务键去重",
+      "source": {
+        "file": "concurrency_findings.json",
+        "index": 2
       },
       "meta": {
         "inferred_fields": [],

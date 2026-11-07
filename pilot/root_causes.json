@@ -1,12 +1,61 @@
 {
   "generated_from": "aggregate_findings.py",
   "summary": {
-    "findings": 88,
-    "root_causes": 53,
-    "collapsed": 35,
+    "findings": 94,
+    "root_causes": 58,
+    "collapsed": 36,
     "violations": 1
   },
   "root_causes": [
+    {
+      "root_cause_key": "price.final_price.upper_bound_unvalidated",
+      "title": "成交价由客户端说了算：resolveFinalPrice 只做下界检查，完全不与套餐价比对",
+      "severity": "CRITICAL",
+      "owner_layer": "function",
+      "categories": [
+        "function.boundary",
+        "function.numeric",
+        "integration.end_to_end_business"
+      ],
+      "category_fit": [
+        "exact",
+        "stretched"
+      ],
+      "finding_count": 4,
+      "finding_uids": [
+        "function:FN-PRICE-CLIENT-CONTROLLED#0",
+        "integration:PRICE_CLIENT_CONTROLLED_XL#2",
+        "integration:INT-THREE-PRICES-NO-DETAIL-TOTAL#4",
+        "function:FN-NUMERIC-BIGINT-PRECISION-LOSS#2"
+      ],
+      "layers_own": [
+        "function"
+      ],
+      "layers_all": [
+        "function",
+        "integration"
+      ],
+      "cited_from": [
+        "function",
+        "integration"
+      ],
+      "cwe": [
+        "CWE-840"
+      ],
+      "confidence": 0.97,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 fn_dynamic.py --case RFP-05",
+        "python3 integration_chain.py --chain CHAIN-D",
+        "python3 integration_dynamic.py --scenario SC01_CLIENT_CONTROLLED_PRICE"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "related_root_causes": [
+        "frontend.detail_total_not_surfaced"
+      ]
+    },
     {
       "root_cause_key": "authz.no_authorization_layer",
       "title": "全系统零鉴权：无凭证即可读写全部业务数据",
@@ -54,52 +103,6 @@
       "merges": [],
       "related_root_causes": [
         "order.snapshot.item_ownership_unchecked"
-      ]
-    },
-    {
-      "root_cause_key": "price.final_price.upper_bound_unvalidated",
-      "title": "成交价由客户端说了算：resolveFinalPrice 只做下界检查，完全不与套餐价比对",
-      "severity": "CRITICAL",
-      "owner_layer": "function",
-      "categories": [
-        "function.boundary",
-        "integration.end_to_end_business"
-      ],
-      "category_fit": [
-        "exact",
-        "stretched"
-      ],
-      "finding_count": 3,
-      "finding_uids": [
-        "function:FN-PRICE-CLIENT-CONTROLLED#0",
-        "integration:PRICE_CLIENT_CONTROLLED_XL#2",
-        "integration:INT-THREE-PRICES-NO-DETAIL-TOTAL#4"
-      ],
-      "layers_own": [
-        "function"
-      ],
-      "layers_all": [
-        "function",
-        "integration"
-      ],
-      "cited_from": [
-        "integration"
-      ],
-      "cwe": [
-        "CWE-840"
-      ],
-      "confidence": 0.97,
-      "ground_truth": "verified",
-      "repro_cmds": [
-        "python3 fn_dynamic.py --case RFP-05",
-        "python3 integration_chain.py --chain CHAIN-D",
-        "python3 integration_dynamic.py --scenario SC01_CLIENT_CONTROLLED_PRICE"
-      ],
-      "violations": [],
-      "notes": [],
-      "merges": [],
-      "related_root_causes": [
-        "frontend.detail_total_not_surfaced"
       ]
     },
     {
@@ -370,7 +373,7 @@
     },
     {
       "root_cause_key": "index.idx_products_name_unusable",
-      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（8.042ms vs 0.016ms，差 503 倍）",
+      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.603ms vs 0.012ms，差 634 倍）",
       "severity": "HIGH",
       "owner_layer": "service",
       "categories": [
@@ -1042,8 +1045,78 @@
       "related_root_causes": []
     },
     {
+      "root_cause_key": "order.create.not_idempotent",
+      "title": "下单接口没有幂等：同一个请求重发一次就产生两个订单",
+      "severity": "MEDIUM",
+      "owner_layer": "service",
+      "categories": [
+        "service.resilience"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "service:SVC-POST-NOT-IDEMPOTENT#2"
+      ],
+      "layers_own": [
+        "service"
+      ],
+      "layers_all": [
+        "service"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-799"
+      ],
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 concurrency_props.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "related_root_causes": []
+    },
+    {
+      "root_cause_key": "order.update.no_concurrency_control",
+      "title": "并发编辑同一订单会静默丢掉对方的修改：没有版本号、没有冲突检测",
+      "severity": "MEDIUM",
+      "owner_layer": "service",
+      "categories": [
+        "service.data_consistency"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "service:SVC-CONCURRENT-WRITE-LOST-UPDATE#0"
+      ],
+      "layers_own": [
+        "service"
+      ],
+      "layers_all": [
+        "service"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-362"
+      ],
+      "confidence": 0.95,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 concurrency_props.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "related_root_causes": []
+    },
+    {
       "root_cause_key": "orders.no_data_lifecycle",
-      "title": "orders 表没有软删/归档，永久增长（当前 200 kB）",
+      "title": "orders 表没有软删/归档，永久增长（当前 184 kB）",
       "severity": "MEDIUM",
       "owner_layer": "class",
       "categories": [
@@ -1542,6 +1615,37 @@
       "related_root_causes": []
     },
     {
+      "root_cause_key": "money_input.normalization_silently_mutates_value",
+      "title": "金额输入框静默改变用户输入的数值：负号被吞、超过 2 位小数被截断",
+      "severity": "LOW",
+      "owner_layer": "function",
+      "categories": [
+        "function.numeric"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "function:FN-NUMERIC-MONEY-INPUT-SILENT-MUTATION#0"
+      ],
+      "layers_own": [
+        "function"
+      ],
+      "layers_all": [
+        "function"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.95,
+      "ground_truth": "verified",
+      "repro_cmds": [],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "related_root_causes": []
+    },
+    {
       "root_cause_key": "service.helpers.duplicated",
       "title": "分页归一化等 4 组方法在 3 个 service 文件里逐字复制",
       "severity": "LOW",
@@ -1705,6 +1809,37 @@
       "related_root_causes": []
     },
     {
+      "root_cause_key": "money_conversion.roundtrip_exact",
+      "title": "前端金额换算在合理量级内精确闭合（分→元→分、元→分、显示精度三条性质全过）",
+      "severity": "INFO",
+      "owner_layer": "function",
+      "categories": [
+        "function.numeric"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "function:FN-NUMERIC-FE-MONEY-ROUNDTRIP-EXACT#1"
+      ],
+      "layers_own": [
+        "function"
+      ],
+      "layers_all": [
+        "function"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "repro_cmds": [],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "related_root_causes": []
+    },
+    {
       "root_cause_key": "nullability.aligned",
       "title": "可空性三方一致 27/31 列（同向设防 21 · DTO 更严 0 · 都可空 6）",
       "severity": "INFO",
@@ -1731,6 +1866,39 @@
       "ground_truth": "verified",
       "repro_cmds": [
         "python3 class_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "related_root_causes": []
+    },
+    {
+      "root_cause_key": "order.update.transaction_boundary_holds",
+      "title": "被拒的写请求不会在订单行留下部分写入（事务边界有效）",
+      "severity": "INFO",
+      "owner_layer": "service",
+      "categories": [
+        "service.data_consistency"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "service:SVC-FAILED-WRITE-LEAVES-NO-PARTIAL-STATE#1"
+      ],
+      "layers_own": [
+        "service"
+      ],
+      "layers_all": [
+        "service"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 concurrency_props.py"
       ],
       "violations": [],
       "notes": [],
@@ -1905,7 +2073,7 @@
         "boundary": 7,
         "complexity": 0,
         "exception_path": 1,
-        "numeric": 0
+        "numeric": 3
       },
       "file": {
         "state_consistency": 2,
@@ -1920,9 +2088,9 @@
       },
       "service": {
         "interface_contract": 29,
-        "resilience": 0,
+        "resilience": 1,
         "authz": 1,
-        "data_consistency": 0,
+        "data_consistency": 2,
         "resource_leak": 0,
         "service_latency": 1
       },
@@ -1935,11 +2103,8 @@
     },
     "zero_coverage_categories": [
       "function.complexity",
-      "function.numeric",
       "class.encapsulation_leak",
       "class.inheritance_design",
-      "service.resilience",
-      "service.data_consistency",
       "service.resource_leak",
       "integration.cross_layer_correlation"
     ],
@@ -2008,8 +2173,11 @@
         "api.snapshot_structure_undeclared",
         "dto.unknown_field_silent_drop",
         "errhandler.internal_detail_leak",
+        "order.create.not_idempotent",
         "order.item_quantity_unvalidated",
         "order.snapshot.item_ownership_unchecked",
+        "order.update.no_concurrency_control",
+        "order.update.transaction_boundary_holds",
         "price.final_price.upper_bound_unvalidated"
       ],
       "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/BanquetOrder.java": [
@@ -2027,9 +2195,13 @@
       "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/OrderStatus.java": [
         "enum.case_sensitive",
         "enum.check_aligned"
+      ],
+      "/Users/june/jiuyan/src/api/banquetApi.js": [
+        "money_conversion.roundtrip_exact",
+        "price.final_price.upper_bound_unvalidated"
       ]
     },
-    "root_cause_count": 53,
-    "finding_count": 88
+    "root_cause_count": 58,
+    "finding_count": 94
   }
 }

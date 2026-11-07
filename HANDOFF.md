@@ -262,6 +262,58 @@ D 三个价格并存且界面不显示明细合计 / E 无定金订单一步跳�
 这个链级后果。这条把集成层已有的 `LIST_TRUNCATED_AT_100`（前端只取前 100 条）
 从「可见性缺陷」升级成了「可见性缺陷 + 纯成本」两罪并罚。
 
+### 5.13 补零覆盖类别：property_based_test 与 concurrency_test 怎么落地
+
+覆盖度矩阵暴露「某个 category 一条都没查到」之后，补法不能是「写个 finding 把格子填满」——
+那只是自欺。补法是**把那个类别对应的 oracle 真的跑起来**，让性质成立与否由实测决定。
+
+#### function.numeric —— `numeric_props.py`
+
+载体是前端**线上同款**模块的钱相关函数（Node 直接 import `src/api/banquetApi.js`），
+外加 `App.jsx` 里那个金额输入规范化函数（**从 shipped 源码抽出来直接执行**，不是复刻；
+抽不出来就报错，不静默跳过）。随机数用固定种子的 LCG → 每次同一批输入 → 可复现。
+
+性质与结果：
+
+| 性质 | 结果 |
+|---|---|
+| FP1 分→元→分往返闭合（2000 例） | ✅ 全过 |
+| FP2 显示精度 = 精确十进制展开（2000 例） | ✅ 全过 |
+| FP3 元→分 = round(y×100)（2000 例） | ✅ 全过 |
+| NP1 金额输入不得静默改变方向 | ❌ **挂** —— `-19.99` 被规范成 `19.99` |
+| NP2 金额输入不得静默截断 | ❌ **挂** —— `19.995` 存成 1999 分（少 1 分） |
+| FP4 超 2^53 分的前后端一致性 | ❌ **挂** —— 后端无上界，前端 Number 装不下 |
+
+两条真缺陷：
+- `FN-NUMERIC-MONEY-INPUT-SILENT-MUTATION`（LOW，新根因）：`normalizeMoneyInput` 是
+  **6 个金额输入框的唯一入口**（成交价 / 定金 / 套餐价 / 商品价），它把非数字字符全删、
+  把小数截到 2 位，两处都静默。注意性质：**不是「显示与存储不一致」，而是「存储值与用户
+  输入不一致且无任何反馈」**。
+- `FN-NUMERIC-BIGINT-PRECISION-LOSS`（LOW，**引用**已有根因）：金额无上界 →
+  前端显示的金额与库里存的对不上。根因已由函数层开单，这里只量化后果，不重复开单。
+
+外加一条正面结论 `FN-NUMERIC-FE-MONEY-ROUNDTRIP-EXACT`（INFO）：金额换算本身没有精度 bug，
+问题不在换算，在输入规范化与上界缺失。
+
+#### service.data_consistency / service.resilience —— `concurrency_props.py`
+
+真实容器 + 真实 DB，三个性质：
+
+| 性质 | 结果 |
+|---|---|
+| DC1 两个并发 PUT 改不同字段，最终行必须同时含两个新值 | ❌ **挂** |
+| DC2 被拒的写请求不能留下部分写入 | ✅ 全过（正面结论） |
+| RS1 同一个 POST 重发两次只能产生一个订单 | ❌ **挂** |
+
+两条真缺陷：
+- `SVC-CONCURRENT-WRITE-LOST-UPDATE`（MEDIUM，新根因）：订单编辑走 PUT 全量覆盖，
+  **没有乐观锁（version / ETag / If-Match），没有冲突检测**。实测两个 PUT **都返回 200**，
+  最终行只含后写者的完整快照 —— 先写者的修改凭空消失，两边都以为自己成功了。
+  谈单场景：销售 A 改成交价、销售 B 同时改电话，A 的改价消失，金额回到旧值。
+- `SVC-POST-NOT-IDEMPOTENT`（MEDIUM，新根因）：`POST /api/orders` 没有幂等键、
+  也没有业务键去重。实测同一个 body 发两次 → 两个订单 id、库里 2 行。
+  客户端超时后重试（所有 HTTP 客户端的标准行为）就会多出一张订单；零鉴权下更是放大器。
+
 ### 5.12 通用 / 配置 / 实现 三层切分（这套系统怎么才算「通用」）
 
 **切错边界是最大的浪费**：把 agent 也做成通用 → 变成通用扫描器（本项目明确不要）；
@@ -511,16 +563,24 @@ python3 perf_load.py                    # 负载实测（延迟曲线 + 分页 t
 | `order.snapshot.item_ownership_unchecked` | HIGH | function | 2 |
 | `column.default_declared_in_three_places` | LOW | class | 2 |
 
-### 12.2 覆盖度：8 个类别零命中
+### 12.2 覆盖度：5 个类别零命中
 
 | 层 | 零覆盖的 category | 契约给的 oracle | 状态 |
 |---|---|---|---|
-| function | `complexity`、`numeric` | `static_analysis` / `benchmark` / `property_based_test` | 未做 |
+| function | `complexity` | `static_analysis` / `benchmark` | 未做 |
 | class | `encapsulation_leak`、`inheritance_design` | `mutation_test` / `property_based_test` | 未做 |
-| service | `resilience`、`data_consistency`、`resource_leak` | `chaos_experiment` / `concurrency_test` / `load_test` | 未做 |
-| integration | `cross_layer_correlation` | `graph_correlation` | 未做 |
-| ~~service~~ | ~~`service_latency`~~ | `load_test` | ✅ **本轮补上**（`perf_load.py`） |
-| ~~integration~~ | ~~`cross_service_performance`~~ | `e2e_load_test` | ✅ **本轮补上** |
+| service | `resource_leak` | `load_test` | 未做 |
+| integration | `cross_layer_correlation` | `graph_correlation` | 未做（机制已在聚合器里，见下） |
+| ~~function~~ | ~~`numeric`~~ | `property_based_test` | ✅ 补上（`numeric_props.py`，3 条） |
+| ~~service~~ | ~~`data_consistency`~~ | `concurrency_test` | ✅ 补上（`concurrency_props.py`，2 条） |
+| ~~service~~ | ~~`resilience`~~ | `chaos_experiment` | ✅ 补上（幂等性，1 条） |
+| ~~service~~ | ~~`service_latency`~~ | `load_test` | ✅ 补上（`perf_load.py`，1 条） |
+| ~~integration~~ | ~~`cross_service_performance`~~ | `e2e_load_test` | ✅ 补上（1 条） |
+
+关于 `integration.cross_layer_correlation`：机制**已经实现**（聚合器会归并同源根因、
+报告 5 处跨层佐证、`audit_report.md` 有「跨根因关联」段）。它没命中不是「没人查」，
+而是那 5 处跨层同源**同时都有端到端后果**，按契约该归 `end_to_end_business` /
+`cross_service_attack_chain`。**不为了把矩阵填绿而单开一条 finding** —— 那是自欺。
 
 零覆盖 ≠ 没问题，只代表**这个类别这一轮没人查**。契约里给这些类别配了 oracle
 （`chaos_experiment` / `concurrency_test` / `attack_graph` …），但对应的
@@ -586,6 +646,9 @@ agent 还没写 —— 这是 §11-B4 编排化的优先级依据。
 - `aggregate_findings.py` → 88 条发现归并为 **53 条根因**；硬违规 1 条；归并提示 4 条；
   零覆盖类别从 10 降到 **8**（`service.service_latency` 与
   `integration.cross_service_performance` 本轮补上）。
+- 补两个零覆盖类别：`numeric_props.py`（property_based_test，3 条，其中 1 条正面结论）、
+  `concurrency_props.py`（concurrency_test / chaos_experiment，3 条，其中 1 条正面结论）；
+  零覆盖类别 8 → **5**。发现 91 → 94 条、根因 55 → 58 条。
 - 引擎自检：`engine/check_engine_purity.py` 通过（3 个文件零项目耦合）；
   `test_portability.sh` 通过（换绑定跑出 30 条、产物落在合成目标目录、不碰原产物）。
 - `repro_cmd` 不可直接执行的从 **14 条降到 3 条**（case 8 / scenario 9 / request 30 /
