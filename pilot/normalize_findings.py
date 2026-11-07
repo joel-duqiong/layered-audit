@@ -239,22 +239,34 @@ def _fn_repro(rec: dict[str, Any]) -> tuple[str, list[str]]:
     return f"python3 fn_dynamic.py --case {cases[0]}", [f"fn_dynamic.py#case:{c}" for c in cases]
 
 
-def _granularity(layer: str, repro_cmd: str) -> str:
-    """复现命令的粒度：case / endpoint / layer / reference / none。
+COMMAND_BINARIES = ("grep", "awk", "sed", "cat", "jq", "docker", "psql", "find", "ls", "rg")
 
-    reference = 原始 repro 只是一句指引（如「见 observation.json 中 key=…」），
-    不是可直接粘贴执行的命令 —— 不许把它伪装成可跑命令。
+
+def _granularity(repro_cmd: str) -> str:
+    """复现命令的粒度。
+
+    case      单个单元用例（fn_dynamic.py --case）
+    scenario  单个缺陷场景（integration_dynamic.py --scenario / integration_chain.py --chain）
+    request   一个 HTTP 请求（curl …）
+    command   其它可直接执行的 shell 命令（grep / docker / psql …）
+    layer     整层脚本，无更细粒度
+    reference 只是一句指引（如「见 observation.json 中 key=…」），不是命令 —— 不许伪装成可跑命令
+    none      没有复现信息
     """
     if not repro_cmd:
         return "none"
-    if layer == "function":
+    head = repro_cmd.strip()
+    if head.startswith("python3 fn_dynamic.py --case"):
         return "case"
-    if layer in ("service", "integration"):
-        head = repro_cmd.strip()
-        if head.startswith(("curl", "http", "bash ", "python3 ", "node ")):
-            return "endpoint"
-        return "reference"
-    return "layer"
+    if "--scenario" in head or "--chain" in head:
+        return "scenario"
+    if head.startswith(("curl", "http", "bash ")):
+        return "request"
+    if head.startswith("python3"):
+        return "layer"
+    if re.match(rf"({'|'.join(COMMAND_BINARIES)})\b", head):
+        return "command"
+    return "reference"
 
 
 def _build(layer: str, rec: dict[str, Any], index: int, source_file: str) -> dict[str, Any]:
@@ -311,7 +323,7 @@ def _build(layer: str, rec: dict[str, Any], index: int, source_file: str) -> dic
         "claim": meta.claim,
         "evidence_refs": base_refs + extra_refs,
         "repro_cmd": repro_cmd,
-        "repro_granularity": _granularity(layer, repro_cmd),
+        "repro_granularity": _granularity(repro_cmd),
         "confidence": meta.confidence,
         "ground_truth": meta.ground_truth,
         "cwe": cwe,

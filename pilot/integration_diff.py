@@ -298,7 +298,7 @@ if sc01 and sc01["verdict"] == "FAIL":
         "packageSnapshot.priceCent=46800，而前端 mapOrder 正好一个用来渲染金额、一个用来渲染套餐价 —— "
         "Pad 端同一张订单会同时显示 0.01 元和 468.00 元。服务端没有任何按套餐计价的能力，"
         "定价权完全在客户端手上。",
-        "见 integration_observation.json scenarios[SC01_CLIENT_CONTROLLED_PRICE]",
+        "python3 integration_dynamic.py --scenario SC01_CLIENT_CONTROLLED_PRICE",
         {"final_price_cent": sc01["actual_final_price_cent"],
          "snapshot_price_cent": sc01["snapshot_price_cent"],
          "order_id": sc01["evidence"].get("order_id"),
@@ -314,7 +314,7 @@ if sc02 and sc02["verdict"] == "FAIL":
         f"下单时 packageItems 里塞进套餐外的商品（{[i.get('productName') for i in items]}），"
         "后端只校验商品存在、不校验归属，200 通过并写进订单快照。"
         "订单快照里的「套餐明细」因此不代表真实套餐，后续对账无据可查。",
-        "见 integration_observation.json scenarios[SC02_FOREIGN_ITEM_IN_PACKAGE]",
+        "python3 integration_dynamic.py --scenario SC02_FOREIGN_ITEM_IN_PACKAGE",
         {"snapshot_items": items, "order_id": sc02["evidence"].get("order_id"),
          "root_cause": "OrderService.apply 未校验 packageItems 与 packageId 的归属关系"})
 
@@ -326,7 +326,7 @@ if sc03 and sc03["verdict"] == "FAIL":
         f"下单时把套餐内商品数量改成 {items[0].get('quantity') if items else '?'} 份，"
         f"planTotalCent/finalPriceCent 仍是套餐原价 {sc03.get('final_price_cent')} 分 —— "
         "后端不重算、不拒绝。",
-        "见 integration_observation.json scenarios[SC03_QUANTITY_OVERRIDE]",
+        "python3 integration_dynamic.py --scenario SC03_QUANTITY_OVERRIDE",
         {"snapshot_items": items, "final_price_cent": sc03.get("final_price_cent"),
          "root_cause": "OrderService.apply 不依据明细重算金额"})
 
@@ -338,7 +338,7 @@ if sc04 and sc04["verdict"] == "FAIL":
         "而 OrderService 在明细为空时会回退到套餐自身的默认 items —— "
         "于是用户明明选了 3 道菜并改了数量，订单快照里躺的是套餐出厂明细。"
         "前端界面显示的是用户的选择，库里存的是别的东西，两边永远对不上，也没有任何报错。",
-        "见 integration_observation.json scenarios[SC04_UNKNOWN_FIELD_SILENT_DROP]",
+        "python3 integration_dynamic.py --scenario SC04_UNKNOWN_FIELD_SILENT_DROP",
         {"snapshot_items": sc04.get("snapshot_items"),
          "root_cause": "spring.jackson 未开 fail-on-unknown-properties + buildPackageSnapshot 空明细回退"})
 
@@ -350,7 +350,7 @@ if sc05 and sc05["verdict"] == "FAIL":
         "前端三个列表接口都写死 page=1&pageSize=100，且拿到响应后只做 data.items.map(...)，"
         "PageResponse.total / totalPages 被整个丢弃 —— 用户看不到「还有 35 条」，"
         "也没有任何翻页入口。商品/套餐/订单一旦超过 100 条，数据库里多出来的记录在 Pad 端凭空消失。",
-        "见 integration_observation.json scenarios[SC05_LIST_TRUNCATION]",
+        "python3 integration_dynamic.py --scenario SC05_LIST_TRUNCATION",
         {"total": sc05.get("total"), "items_count": sc05.get("items_count"),
          "frontend_code": "GET /api/products${toQuery({ page: 1, pageSize: 100, ...params })} -> data.items.map(mapProduct)",
          "root_cause": "前端硬编码 pageSize=100 + 未读取 total/totalPages"})

@@ -3,6 +3,7 @@ pilot/observation.json
 pilot/declaration.json
 pilot/*_observation.json
 pilot/*_observation_replay.json
+pilot/*_replay.json
 pilot/*_declaration.json
 pilot/*_diff.json
 pilot/*_contract.json

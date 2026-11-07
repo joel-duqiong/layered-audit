@@ -9,6 +9,7 @@
 """
 from __future__ import annotations
 
+import argparse
 import datetime
 import json
 import os
@@ -23,6 +24,7 @@ from integration_reconcile import PFX, frontend_map, psql_rows
 D = os.path.dirname(os.path.abspath(__file__))
 BASE = os.environ.get("JIUYAN_BASE_URL", "http://127.0.0.1:8081")
 OUT = os.path.join(D, "integration_chains.json")
+OUT_REPLAY = os.path.join(D, "integration_chains_replay.json")
 
 # 两个互不相干的连接：一个「订单主人」，一个「匿名攻击者」
 owner_session = requests.Session()
@@ -177,7 +179,7 @@ def chain_a(pid: int, kid: int) -> Chain:
         "title": "匿名写入会连带重写订单快照：订单历史快照失去证据效力",
         "detail": "PUT 走 apply() → buildPackageSnapshot()，匿名会话改明细后，"
                   "订单快照被整体重建，原来记下的套餐明细不再可信。",
-        "repro": "无凭证 PUT /api/orders/{id}，改 packageItems → 查库 package_snapshot 已变",
+        "repro": "python3 integration_chain.py --chain CHAIN-A",
         "evidence": f"库内快照明细数量={qty}，电话={db.get('customer_phone')}",
         "owner": "集成层（链级后果；越权本身归服务层 NO_AUTHZ）",
     }, {
@@ -186,7 +188,7 @@ def chain_a(pid: int, kid: int) -> Chain:
         "title": "手机号脱敏只做在渲染层：接口与库里都是明文，匿名可批量拉取",
         "detail": "订单详情抽屉把手机号显示成 138****9999，说明产品侧认定它是敏感字段；"
                   "但 API 原样返回明文，库里也是明文。配合零鉴权，任何人可分页拉全量手机号。",
-        "repro": "GET /api/orders?page=1&pageSize=100 → data[].customerPhone 是完整 11 位",
+        "repro": "python3 integration_chain.py --chain CHAIN-A",
         "evidence": f"接口返回 customerPhone={row.get('customerPhone')}，前端渲染脱敏为 {masked}",
         "owner": "集成层（链级后果；零鉴权归服务层 NO_AUTHZ）",
     }])
@@ -232,7 +234,7 @@ def chain_b() -> Chain:
         "title": "上传内容匿名可读回：落盘字节与上传字节逐字节一致",
         "detail": "上传接口不校验内容（只信客户端声明），写盘路径又在 /uploads/** 公开映射下，"
                   "任何人都能把任意字节放进站点并当作静态资源取回。",
-        "repro": "POST /api/uploads/product-image（file=任意字节, image/png）→ GET 返回的 imageUrl",
+        "repro": "python3 integration_chain.py --chain CHAIN-B",
         "evidence": f"下载字节与上传字节一致={ok}，Content-Type 由服务端按扩展名给出",
         "owner": "集成层（链级后果；内容不嗅探归函数层 FN-UPLOAD-NO-CONTENT-SNIFF）",
     }])
@@ -314,7 +316,7 @@ def chain_d(pid: int, kid: int) -> Chain:
         "title": "同一订单并存三个互不相等的价格，界面只展示其中两个，明细合计从不显示",
         "detail": "客户端可把成交价改成 0.01 元，同时把明细数量改成 99；订单详情抽屉渲染了"
                   "订单金额和套餐名，却没有渲染明细合计，业务侧没有任何一处能看出这两个数字对不上。",
-        "repro": "POST /api/orders(finalPriceCent=1) → PUT 改 packageItems.quantity=99 → 看订单详情",
+        "repro": "python3 integration_chain.py --chain CHAIN-D",
         "evidence": f"订单金额 {view.get('amount')} 元 vs 明细合计 {implied / 100} 元 vs "
                     f"套餐标价 {pkg_view.get('price')} 元",
         "owner": "集成层（链级后果；控价根因归函数层 FN-PRICE-CLIENT-CONTROLLED）",
@@ -357,14 +359,29 @@ def chain_e(pid: int, kid: int) -> Chain:
 # 入口
 # --------------------------------------------------------------------------
 def main() -> None:
+    parser = argparse.ArgumentParser(description="集权层：攻击链合成")
+    parser.add_argument("--chain", action="append", default=[], metavar="CHAIN_ID",
+                        help="只跑指定攻击链 id，可重复（如 CHAIN-A）")
+    args = parser.parse_args()
+    known = {"CHAIN-A", "CHAIN-B", "CHAIN-C", "CHAIN-D", "CHAIN-E"}
+    unknown = sorted(set(args.chain) - known)
+    if unknown:
+        raise SystemExit(f"未知攻击链 id: {unknown}；可用: {sorted(known)}")
+    wanted = set(args.chain)
+
     chains: list[Chain] = []
     try:
         pid, kid = seed_product_and_package()
-        chains.append(chain_a(pid, kid))
-        chains.append(chain_b())
-        chains.append(chain_c(pid, kid))
-        chains.append(chain_d(pid, kid))
-        chains.append(chain_e(pid, kid))
+        builders = [
+            ("CHAIN-A", lambda: chain_a(pid, kid)),
+            ("CHAIN-B", chain_b),
+            ("CHAIN-C", lambda: chain_c(pid, kid)),
+            ("CHAIN-D", lambda: chain_d(pid, kid)),
+            ("CHAIN-E", lambda: chain_e(pid, kid)),
+        ]
+        for cid, build in builders:
+            if not wanted or cid in wanted:
+                chains.append(build())
     finally:
         cleanup()
 
@@ -377,9 +394,11 @@ def main() -> None:
         "summary": {"total": len(data), "confirmed": confirmed,
                     "new_findings": sum(len(d.get("findings") or []) for d in data)},
     }
-    json.dump(res, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+    # 单链重放不覆盖全量产物
+    out = OUT_REPLAY if args.chain else OUT
+    json.dump(res, open(out, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
 
-    print(f"攻击链 -> {OUT}")
+    print(f"攻击链 -> {out}")
     for d in data:
         print(f"  {d['id']} [{d['verdict']}] {d['title']}")
         for st in d["steps"]:

@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import base64
+import argparse
 import datetime
 import json
 import os
@@ -22,6 +23,7 @@ BASE = os.environ.get("JIUYAN_BASE_URL", "http://127.0.0.1:8081")
 PFX = "ai_probe_"
 DECL = os.path.join(D, "integration_declaration.json")
 OUT = os.path.join(D, "integration_observation.json")
+OUT_REPLAY = os.path.join(D, "integration_observation_replay.json")
 
 PNG_1PX = base64.b64decode(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
@@ -266,14 +268,12 @@ def order_payload(ctx, **over):
     return body
 
 
-def run_scenarios(ctx):
-    sc = []
-
-    # SC01 客户端自定价：套餐 128000 分，客户端报 1 分
+def _sc01(ctx) -> dict:
+    """客户端自定价：套餐 128000 分，客户端报 1 分"""
     body = order_payload(ctx, planTotalCent=1, useFinalPrice=True, finalPriceCent=1)
     status, latency, payload, _ = call("POST", "/api/orders", body=body)
     d = data_of(payload)
-    sc.append({
+    return {
         "id": "SC01_CLIENT_CONTROLLED_PRICE",
         "title": "客户端自报成交价：套餐 1280.00 元，客户端报 0.01 元",
         "expectation": "服务端应按套餐价自行计算，最少应拒绝明显偏离的成交价（4xx）",
@@ -284,14 +284,16 @@ def run_scenarios(ctx):
         "latency_ms": latency,
         "verdict": "FAIL" if status == 200 else "PASS",
         "evidence": {"order_id": d.get("id") if isinstance(d, dict) else None},
-    })
+    }
 
-    # SC02 套餐外商品混入明细
+
+def _sc02(ctx) -> dict:
+    """套餐外商品混入明细"""
     body = order_payload(ctx, packageItems=[{"productId": ctx["other_product_id"], "quantity": 1}])
     status, latency, payload, _ = call("POST", "/api/orders", body=body)
     d = data_of(payload)
     snap = d.get("packageSnapshot") if isinstance(d, dict) else None
-    sc.append({
+    return {
         "id": "SC02_FOREIGN_ITEM_IN_PACKAGE",
         "title": "把不属于该套餐的商品写进套餐明细",
         "expectation": "明细必须属于所选套餐，否则应 4xx",
@@ -300,15 +302,17 @@ def run_scenarios(ctx):
         "latency_ms": latency,
         "verdict": "FAIL" if status == 200 else "PASS",
         "evidence": {"order_id": d.get("id") if isinstance(d, dict) else None},
-    })
+    }
 
-    # SC03 明细数量与套餐不符（加量不加价）
+
+def _sc03(ctx) -> dict:
+    """明细数量与套餐不符（加量不加价）"""
     body = order_payload(ctx, packageItems=[{"productId": ctx["package_item_product_id"], "quantity": 99}])
     status, latency, payload, _ = call("POST", "/api/orders", body=body)
     d = data_of(payload)
     snap = d.get("packageSnapshot") if isinstance(d, dict) else None
     items = (snap or {}).get("items") if isinstance(snap, dict) else None
-    sc.append({
+    return {
         "id": "SC03_QUANTITY_OVERRIDE",
         "title": "明细数量改成 99，价格仍是套餐原价",
         "expectation": "数量被改后价格应随之重算，或应拒绝",
@@ -318,15 +322,17 @@ def run_scenarios(ctx):
         "latency_ms": latency,
         "verdict": "FAIL" if status == 200 else "PASS",
         "evidence": {"order_id": d.get("id") if isinstance(d, dict) else None},
-    })
+    }
 
-    # SC04 字段名写错 -> 静默丢弃 -> 明细回退成套餐默认
+
+def _sc04(ctx) -> dict:
+    """字段名写错 -> 静默丢弃 -> 明细回退成套餐默认"""
     body = order_payload(ctx)
     body["packageItem"] = body.pop("packageItems")
     status, latency, payload, _ = call("POST", "/api/orders", body=body)
     d = data_of(payload)
     snap = d.get("packageSnapshot") if isinstance(d, dict) else None
-    sc.append({
+    return {
         "id": "SC04_UNKNOWN_FIELD_SILENT_DROP",
         "title": "packageItems 写成 packageItem：后端静默忽略并回退套餐默认明细",
         "expectation": "未知字段应报错（fail-on-unknown-properties），否则前端拼错字段无任何反馈",
@@ -335,10 +341,11 @@ def run_scenarios(ctx):
         "latency_ms": latency,
         "verdict": "FAIL" if status == 200 else "PASS",
         "evidence": {"order_id": d.get("id") if isinstance(d, dict) else None},
-    })
+    }
 
-    # SC05 前端列表截断：前端固定 pageSize=100 且丢弃 total
-    trunc_total = None
+
+def _sc05(ctx) -> dict:
+    """前端列表截断：前端固定 pageSize=100 且丢弃 total"""
     for i in range(105):
         call("POST", "/api/products", body={
             "name": f"{PFX}trunc_{i:03d}", "categoryId": ctx["category_id"], "priceCent": 100,
@@ -346,7 +353,7 @@ def run_scenarios(ctx):
     status, latency, payload, _ = call("GET", "/api/products", params={"page": 1, "pageSize": 100})
     shape = shape_of(payload)
     trunc_total = shape.get("total")
-    sc.append({
+    return {
         "id": "SC05_LIST_TRUNCATION",
         "title": "前端列表固定 pageSize=100 且丢弃 total：超出部分永远不可见",
         "expectation": "列表要么分页、要么前端读 total 提示截断",
@@ -357,16 +364,18 @@ def run_scenarios(ctx):
         "verdict": "FAIL" if (trunc_total or 0) > (shape.get("items_count") or 0) else "PASS",
         "evidence": {"frontend_call": "GET /api/products?page=1&pageSize=100",
                      "frontend_code": "return data.items.map(mapProduct);  // total 未被读取"},
-    })
+    }
 
-    # SC06 枚举越界
+
+def _sc06(ctx) -> dict:
+    """枚举越界"""
     enum_probe = []
     for value in ctx["status_enum_values"] + ctx["date_scope_values"]:
         st, _, pl, _ = call("GET", "/api/orders", params={"status": value} if value in ctx["status_enum_values"]
                              else {"dateScope": value})
         enum_probe.append({"value": value, "status": st})
     unknown_status = call("GET", "/api/orders", params={"status": "待确认"})[0]
-    sc.append({
+    return {
         "id": "SC06_ENUM_RANGE",
         "title": "订单状态 / 日期范围枚举：前端取值 vs 后端取值 vs DB CHECK",
         "expectation": "前端枚举的每个取值后端都必须认",
@@ -375,9 +384,23 @@ def run_scenarios(ctx):
         "chinese_status_status_code": unknown_status,
         "verdict": "PASS" if all(p["status"] == 200 for p in enum_probe) else "FAIL",
         "evidence": {},
-    })
+    }
 
-    return sc
+
+SCENARIOS = {
+    "SC01_CLIENT_CONTROLLED_PRICE": _sc01,
+    "SC02_FOREIGN_ITEM_IN_PACKAGE": _sc02,
+    "SC03_QUANTITY_OVERRIDE": _sc03,
+    "SC04_UNKNOWN_FIELD_SILENT_DROP": _sc04,
+    "SC05_LIST_TRUNCATION": _sc05,
+    "SC06_ENUM_RANGE": _sc06,
+}
+
+
+def run_scenarios(ctx, only=None):
+    """跑业务场景。only 为 None 时跑全部；给了场景 id 就只跑那几条 —— 复现单条缺陷用。"""
+    wanted = [sid for sid in SCENARIOS if only is None or sid in only]
+    return [SCENARIOS[sid](ctx) for sid in wanted]
 
 
 # --------------------------------------------------------------------------
@@ -410,6 +433,15 @@ def check_response_fields(decl, calls):
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="集权层动态侧：真实容器 + 前端 mapper + 业务场景")
+    parser.add_argument("--scenario", action="append", default=[], metavar="SCENARIO_ID",
+                        help="只跑指定场景 id，可重复（如 SC01_CLIENT_CONTROLLED_PRICE）")
+    args = parser.parse_args()
+    known = set(SCENARIOS)
+    unknown = sorted(set(args.scenario) - known)
+    if unknown:
+        raise SystemExit(f"未知场景 id: {unknown}；可用: {sorted(known)}")
+
     decl = json.load(open(DECL, encoding="utf-8"))
     ts = datetime.datetime.now().strftime("%H%M%S")
 
@@ -442,7 +474,7 @@ def main() -> None:
         ctx["package_item_product_id"] = ctx["product_id"]
 
     calls, created, upload_url = run_frontend_calls(ctx)
-    sc = run_scenarios(ctx)
+    sc = run_scenarios(ctx, set(args.scenario) or None)
     replay = replay_recordings(decl["recordings"]["raw"])
     field_check = check_response_fields(decl, calls)
 
@@ -456,9 +488,11 @@ def main() -> None:
         "response_field_check": field_check,
         "created_upload_files": [upload_url] if upload_url else [],
     }
-    json.dump(obs, open(OUT, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+    # 单场景重放不覆盖全量观测文件，避免把完整证据面打掉
+    out = OUT_REPLAY if args.scenario else OUT
+    json.dump(obs, open(out, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
 
-    print(f"集权层实测 -> {OUT}")
+    print(f"集权层实测 -> {out}")
     print(f"  前端端点实调 {len(calls)} 次")
     for c in calls:
         flag = "" if c["status"] < 400 else f"  <-- {c['status']}"
