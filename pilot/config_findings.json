@@ -1,0 +1,182 @@
+{
+  "service": [
+    {
+      "id": "CFG-CORS-EMPTY-ALLOWS-ANY-ORIGIN",
+      "severity": "HIGH",
+      "endpoint": "GET /api/**",
+      "title": "CORS 白名单配成空值时反而允许任意来源跨域（fail-open）",
+      "detail": "这是本轮最反直觉的一条：**把白名单清空，跨域不是被收紧，而是被放开。**\n机制：WebConfig 把 app.cors-allowed-origins 拆开、滤掉空项，得到一个**空数组**，传给 allowedOriginPatterns(...)；而 Spring 的 CorsRegistration 默认先 applyPermitDefaultValues()（allowedOrigins 变成 单个星号），空数组并没有把它清掉 → 最终任何来源都放行。\n实测（Origin: http://evil.example.com）：Access-Control-Allow-Origin = '*'。\n运维的直觉是「清空白名单 = 关掉跨域」，实际拿到的是「对全世界开放跨域」。叠加零鉴权：任何网页都能读全部业务数据。\n对照：白名单配成 * 时 Spring 回显请求的 Origin（实测 'http://evil.example.com'），同样是任意来源放行 —— 但那是显式配置，属于配置者自己的选择；空值这条是**踩空即中招**。\n实测全集：\n{\n  \"cors_empty\": {\n    \"status\": 200,\n    \"allow_origin\": \"*\",\n    \"vary\": \"Origin, Access-Control-Request-Method, Access-Control-Request-Headers\"\n  },\n  \"cors_star\": {\n    \"status\": 200,\n    \"allow_origin\": \"http://evil.example.com\",\n    \"vary\": \"Origin, Access-Control-Request-Method, Access-Control-Request-Headers\"\n  },\n  \"upload_dir_bad\": {\n    \"started\": false,\n    \"error\": \"探针实例 jiuyan-cfg-bad-upload-dir 没起来\"\n  },\n  \"upload_dir_broken\": {\n    \"status\": 500,\n    \"body\": {\n      \"success\": false,\n      \"code\": \"IMAGE_UPLOAD_FAILED\",\n      \"message\": \"图片上传失败\",\n      \"traceId\": \"78ef9cb4-a6a4-4465-bbdf-9f3e1b20ee4b\",\n      \"timestamp\": \"2026-11-07T20:17:55.533731751+08:00\"\n    },\n    \"path_leaks\": []\n  },\n  \"upload_relative\": {\n    \"status\": 200,\n    \"body\": {\n      \"success\": true,\n      \"code\": \"OK\",\n      \"message\": \"成功\",\n      \"data\": {\n        \"imageUrl\": \"/uploads/products/43d91f8a-8659-4a02-b848-76b064eefc05.png\"\n      },\n      \"traceId\": \"54142c34-4084-4d18-8ff4-27c4f2043628\",\n      \"timestamp\": \"2026-11-07T20:18:00.062105128+08:00\"\n    },\n    \"path_leaks\": []\n  }\n}",
+      "repro": "python3 config_probe.py",
+      "evidence": {
+        "probes": {
+          "cors_empty": {
+            "status": 200,
+            "allow_origin": "*",
+            "vary": "Origin, Access-Control-Request-Method, Access-Control-Request-Headers"
+          },
+          "cors_star": {
+            "status": 200,
+            "allow_origin": "http://evil.example.com",
+            "vary": "Origin, Access-Control-Request-Method, Access-Control-Request-Headers"
+          },
+          "upload_dir_bad": {
+            "started": false,
+            "error": "探针实例 jiuyan-cfg-bad-upload-dir 没起来"
+          },
+          "upload_dir_broken": {
+            "status": 500,
+            "body": {
+              "success": false,
+              "code": "IMAGE_UPLOAD_FAILED",
+              "message": "图片上传失败",
+              "traceId": "78ef9cb4-a6a4-4465-bbdf-9f3e1b20ee4b",
+              "timestamp": "2026-11-07T20:17:55.533731751+08:00"
+            },
+            "path_leaks": []
+          },
+          "upload_relative": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "code": "OK",
+              "message": "成功",
+              "data": {
+                "imageUrl": "/uploads/products/43d91f8a-8659-4a02-b848-76b064eefc05.png"
+              },
+              "traceId": "54142c34-4084-4d18-8ff4-27c4f2043628",
+              "timestamp": "2026-11-07T20:18:00.062105128+08:00"
+            },
+            "path_leaks": []
+          }
+        }
+      }
+    },
+    {
+      "id": "CFG-CORS-STAR-ALLOWS-ANY-ORIGIN",
+      "severity": "HIGH",
+      "endpoint": "GET /api/**",
+      "title": "CORS 白名单配成 * 时，任何网页都能读全部业务数据",
+      "detail": "WebConfig 把 app.cors-allowed-origins 原样拆开交给 allowedOriginPatterns(...)。配成 * 时 Spring 按模式语义回显请求的 Origin，实测 Access-Control-Allow-Origin: 'http://evil.example.com'。\n配合 allowCredentials(false)：本系统本来就没有凭证要带（零鉴权），所以「不带凭证也能读」= 任何网页都能读全部业务数据。\n这条与文件层已开的 FILE-CORS-INTRANET-WIDE 是同一根因（CORS 允许源范围过大）的更严重形态，不重复开单。",
+      "repro": "python3 config_probe.py",
+      "evidence": {
+        "probes": {
+          "cors_empty": {
+            "status": 200,
+            "allow_origin": "*",
+            "vary": "Origin, Access-Control-Request-Method, Access-Control-Request-Headers"
+          },
+          "cors_star": {
+            "status": 200,
+            "allow_origin": "http://evil.example.com",
+            "vary": "Origin, Access-Control-Request-Method, Access-Control-Request-Headers"
+          },
+          "upload_dir_bad": {
+            "started": false,
+            "error": "探针实例 jiuyan-cfg-bad-upload-dir 没起来"
+          },
+          "upload_dir_broken": {
+            "status": 500,
+            "body": {
+              "success": false,
+              "code": "IMAGE_UPLOAD_FAILED",
+              "message": "图片上传失败",
+              "traceId": "78ef9cb4-a6a4-4465-bbdf-9f3e1b20ee4b",
+              "timestamp": "2026-11-07T20:17:55.533731751+08:00"
+            },
+            "path_leaks": []
+          },
+          "upload_relative": {
+            "status": 200,
+            "body": {
+              "success": true,
+              "code": "OK",
+              "message": "成功",
+              "data": {
+                "imageUrl": "/uploads/products/43d91f8a-8659-4a02-b848-76b064eefc05.png"
+              },
+              "traceId": "54142c34-4084-4d18-8ff4-27c4f2043628",
+              "timestamp": "2026-11-07T20:18:00.062105128+08:00"
+            },
+            "path_leaks": []
+          }
+        }
+      }
+    },
+    {
+      "id": "CFG-UPLOAD-DIR-BAD-KILLS-APP",
+      "severity": "LOW",
+      "endpoint": "（启动期）",
+      "title": "上传目录配错会让整个后端起不来，而不是降级运行",
+      "detail": "app.file-upload-dir 指向一个不可用的路径时，SeedAssetInitializer （ApplicationRunner）在启动期抛异常，Spring 上下文起不来 → 容器退出。\n失败方向本身是对的（fail-fast 比带着坏配置跑着强），但错误完全来自底层 IO，运维看到的是「应用启动失败」而不是「上传目录配错了」。\n实测：{\"started\": false, \"error\": \"探针实例 jiuyan-cfg-bad-upload-dir 没起来\"}",
+      "repro": "python3 config_probe.py",
+      "evidence": {
+        "probe": {
+          "started": false,
+          "error": "探针实例 jiuyan-cfg-bad-upload-dir 没起来"
+        }
+      }
+    },
+    {
+      "id": "CFG-UPLOAD-ERROR-NO-PATH-LEAK",
+      "severity": "INFO",
+      "endpoint": "POST /api/uploads/product-image",
+      "title": "上传失败时错误响应不泄露服务器文件系统路径",
+      "detail": "把上传目录破坏掉（products 目录换成一个普通文件，Files.createDirectories 必然失败）后，接口返回的是固定的业务错误，响应体里没有任何路径片段：\n{\"success\": false, \"code\": \"IMAGE_UPLOAD_FAILED\", \"message\": \"图片上传失败\", \"traceId\": \"78ef9cb4-a6a4-4465-bbdf-9f3e1b20ee4b\", \"timestamp\": \"2026-11-07T20:17:55.533731751+08:00\"}\n扫描的片段：[]（空 = 没泄露）。\n对照：文件层已开的 INTERNAL_LEAK（25 处）是**其它**接口把框架异常原文透传，上传这条是干净的。",
+      "repro": "python3 config_probe.py",
+      "evidence": {
+        "probe": {
+          "status": 500,
+          "body": {
+            "success": false,
+            "code": "IMAGE_UPLOAD_FAILED",
+            "message": "图片上传失败",
+            "traceId": "78ef9cb4-a6a4-4465-bbdf-9f3e1b20ee4b",
+            "timestamp": "2026-11-07T20:17:55.533731751+08:00"
+          },
+          "path_leaks": []
+        }
+      }
+    }
+  ],
+  "probes": {
+    "cors_empty": {
+      "status": 200,
+      "allow_origin": "*",
+      "vary": "Origin, Access-Control-Request-Method, Access-Control-Request-Headers"
+    },
+    "cors_star": {
+      "status": 200,
+      "allow_origin": "http://evil.example.com",
+      "vary": "Origin, Access-Control-Request-Method, Access-Control-Request-Headers"
+    },
+    "upload_dir_bad": {
+      "started": false,
+      "error": "探针实例 jiuyan-cfg-bad-upload-dir 没起来"
+    },
+    "upload_dir_broken": {
+      "status": 500,
+      "body": {
+        "success": false,
+        "code": "IMAGE_UPLOAD_FAILED",
+        "message": "图片上传失败",
+        "traceId": "78ef9cb4-a6a4-4465-bbdf-9f3e1b20ee4b",
+        "timestamp": "2026-11-07T20:17:55.533731751+08:00"
+      },
+      "path_leaks": []
+    },
+    "upload_relative": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "code": "OK",
+        "message": "成功",
+        "data": {
+          "imageUrl": "/uploads/products/43d91f8a-8659-4a02-b848-76b064eefc05.png"
+        },
+        "traceId": "54142c34-4084-4d18-8ff4-27c4f2043628",
+        "timestamp": "2026-11-07T20:18:00.062105128+08:00"
+      },
+      "path_leaks": []
+    }
+  }
+}

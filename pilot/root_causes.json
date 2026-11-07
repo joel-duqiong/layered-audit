@@ -1,9 +1,9 @@
 {
   "generated_from": "aggregate_findings.py",
   "summary": {
-    "findings": 96,
-    "root_causes": 60,
-    "collapsed": 36,
+    "findings": 108,
+    "root_causes": 68,
+    "collapsed": 40,
     "violations": 1
   },
   "root_causes": [
@@ -15,29 +15,33 @@
       "categories": [
         "function.boundary",
         "function.numeric",
-        "integration.end_to_end_business"
+        "integration.end_to_end_business",
+        "service.data_consistency"
       ],
       "category_fit": [
         "exact",
         "stretched"
       ],
-      "finding_count": 4,
+      "finding_count": 5,
       "finding_uids": [
         "function:FN-PRICE-CLIENT-CONTROLLED#0",
         "integration:PRICE_CLIENT_CONTROLLED_XL#2",
         "integration:INT-THREE-PRICES-NO-DETAIL-TOTAL#4",
-        "function:FN-NUMERIC-BIGINT-PRECISION-LOSS#2"
+        "function:FN-NUMERIC-BIGINT-PRECISION-LOSS#2",
+        "service:BI-FINAL-AMOUNT-LTE-PACKAGE-PRICE#1"
       ],
       "layers_own": [
         "function"
       ],
       "layers_all": [
         "function",
+        "service",
         "integration"
       ],
       "cited_from": [
         "function",
-        "integration"
+        "integration",
+        "service"
       ],
       "cwe": [
         "CWE-840"
@@ -45,6 +49,7 @@
       "confidence": 0.97,
       "ground_truth": "verified",
       "repro_cmds": [
+        "python3 business_probe.py",
         "python3 fn_dynamic.py --case RFP-05",
         "python3 integration_chain.py --chain CHAIN-D",
         "python3 integration_dynamic.py --scenario SC01_CLIENT_CONTROLLED_PRICE",
@@ -149,6 +154,96 @@
       "related_root_causes": []
     },
     {
+      "root_cause_key": "order.snapshot.item_ownership_unchecked",
+      "title": "订单快照：明细归属不校验，空明细静默回退成套餐默认明细",
+      "severity": "HIGH",
+      "owner_layer": "function",
+      "categories": [
+        "function.boundary",
+        "integration.end_to_end_business",
+        "service.data_consistency"
+      ],
+      "category_fit": [
+        "exact",
+        "stretched"
+      ],
+      "finding_count": 3,
+      "finding_uids": [
+        "function:FN-SNAPSHOT-SEMANTICS#3",
+        "integration:PACKAGE_ITEM_NOT_VALIDATED#6",
+        "service:BI-SNAPSHOT-ITEMS-SUBSET-OF-PACKAGE#3"
+      ],
+      "layers_own": [
+        "function"
+      ],
+      "layers_all": [
+        "function",
+        "service",
+        "integration"
+      ],
+      "cited_from": [
+        "integration",
+        "service"
+      ],
+      "cwe": [
+        "CWE-20"
+      ],
+      "confidence": 0.94,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 business_probe.py",
+        "python3 fn_dynamic.py --case BPS-03",
+        "python3 integration_dynamic.py --scenario SC02_FOREIGN_ITEM_IN_PACKAGE"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "related_root_causes": [
+        "order.item_quantity_unvalidated"
+      ]
+    },
+    {
+      "root_cause_key": "cors.allowed_origin_patterns_too_broad",
+      "title": "CORS 白名单等于「整个内网 + 所有本地端口」，且全是明文 http",
+      "severity": "HIGH",
+      "owner_layer": "file",
+      "categories": [
+        "service.authz"
+      ],
+      "category_fit": [
+        "exact",
+        "unmapped"
+      ],
+      "finding_count": 2,
+      "finding_uids": [
+        "file:FILE-CORS-INTRANET-WIDE#0",
+        "service:CFG-CORS-STAR-ALLOWS-ANY-ORIGIN#1"
+      ],
+      "layers_own": [
+        "file"
+      ],
+      "layers_all": [
+        "file",
+        "service"
+      ],
+      "cited_from": [
+        "service"
+      ],
+      "cwe": [
+        "CWE-942"
+      ],
+      "confidence": 0.95,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 config_probe.py",
+        "python3 file_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "related_root_causes": []
+    },
+    {
       "root_cause_key": "errhandler.client_error_mapped_to_500",
       "title": "客户端错误被当成服务端错误：返回 [500]",
       "severity": "HIGH",
@@ -185,6 +280,47 @@
       "merges": [
         "service 层同一根因开了 2 条 own，可归并为 1 条根因"
       ],
+      "related_root_causes": []
+    },
+    {
+      "root_cause_key": "order.apply.amount_invariants_weak",
+      "title": "apply 的金额/状态不变量只查了 >= 0：定金可以大于套餐总价，状态与预订时间可为空",
+      "severity": "HIGH",
+      "owner_layer": "function",
+      "categories": [
+        "function.boundary",
+        "service.data_consistency"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 2,
+      "finding_uids": [
+        "function:FN-APPLY-AMOUNT-INVARIANTS#4",
+        "service:BI-DEPOSIT-LTE-FINAL-AMOUNT#0"
+      ],
+      "layers_own": [
+        "function"
+      ],
+      "layers_all": [
+        "function",
+        "service"
+      ],
+      "cited_from": [
+        "service"
+      ],
+      "cwe": [
+        "CWE-840"
+      ],
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 business_probe.py",
+        "python3 fn_dynamic.py --case APL-12"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [],
       "related_root_causes": []
     },
     {
@@ -229,50 +365,6 @@
       "related_root_causes": []
     },
     {
-      "root_cause_key": "order.snapshot.item_ownership_unchecked",
-      "title": "订单快照：明细归属不校验，空明细静默回退成套餐默认明细",
-      "severity": "HIGH",
-      "owner_layer": "function",
-      "categories": [
-        "function.boundary",
-        "integration.end_to_end_business"
-      ],
-      "category_fit": [
-        "exact",
-        "stretched"
-      ],
-      "finding_count": 2,
-      "finding_uids": [
-        "function:FN-SNAPSHOT-SEMANTICS#3",
-        "integration:PACKAGE_ITEM_NOT_VALIDATED#6"
-      ],
-      "layers_own": [
-        "function"
-      ],
-      "layers_all": [
-        "function",
-        "integration"
-      ],
-      "cited_from": [
-        "integration"
-      ],
-      "cwe": [
-        "CWE-20"
-      ],
-      "confidence": 0.94,
-      "ground_truth": "verified",
-      "repro_cmds": [
-        "python3 fn_dynamic.py --case BPS-03",
-        "python3 integration_dynamic.py --scenario SC02_FOREIGN_ITEM_IN_PACKAGE"
-      ],
-      "violations": [],
-      "notes": [],
-      "merges": [],
-      "related_root_causes": [
-        "order.item_quantity_unvalidated"
-      ]
-    },
-    {
       "root_cause_key": "audit.client_ip_trusted_from_header",
       "title": "审计日志里的 clientIp 完全由客户端伪造：X-Forwarded-For 首段直接采信",
       "severity": "HIGH",
@@ -307,32 +399,34 @@
       "related_root_causes": []
     },
     {
-      "root_cause_key": "cors.allowed_origin_patterns_too_broad",
-      "title": "CORS 白名单等于「整个内网 + 所有本地端口」，且全是明文 http",
+      "root_cause_key": "cors.empty_whitelist_fails_open",
+      "title": "CORS 白名单配成空值时反而允许任意来源跨域（fail-open）",
       "severity": "HIGH",
-      "owner_layer": "file",
-      "categories": [],
+      "owner_layer": "service",
+      "categories": [
+        "service.authz"
+      ],
       "category_fit": [
-        "unmapped"
+        "exact"
       ],
       "finding_count": 1,
       "finding_uids": [
-        "file:FILE-CORS-INTRANET-WIDE#0"
+        "service:CFG-CORS-EMPTY-ALLOWS-ANY-ORIGIN#0"
       ],
       "layers_own": [
-        "file"
+        "service"
       ],
       "layers_all": [
-        "file"
+        "service"
       ],
       "cited_from": [],
       "cwe": [
         "CWE-942"
       ],
-      "confidence": 0.95,
+      "confidence": 0.93,
       "ground_truth": "verified",
       "repro_cmds": [
-        "python3 file_dynamic.py"
+        "python3 config_probe.py"
       ],
       "violations": [],
       "notes": [],
@@ -374,7 +468,7 @@
     },
     {
       "root_cause_key": "index.idx_products_name_unusable",
-      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.535ms vs 0.013ms，差 580 倍）",
+      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.716ms vs 0.019ms，差 406 倍）",
       "severity": "HIGH",
       "owner_layer": "service",
       "categories": [
@@ -1011,34 +1105,65 @@
       "related_root_causes": []
     },
     {
-      "root_cause_key": "order.apply.amount_invariants_weak",
-      "title": "apply 的金额/状态不变量只查了 >= 0：定金可以大于套餐总价，状态与预订时间可为空",
+      "root_cause_key": "order.banquet_type_not_checked_against_package",
+      "title": "订单的宴会类型是否与所选套餐的宴会类型一致？",
       "severity": "MEDIUM",
-      "owner_layer": "function",
+      "owner_layer": "service",
       "categories": [
-        "function.boundary"
+        "service.data_consistency"
       ],
       "category_fit": [
         "exact"
       ],
       "finding_count": 1,
       "finding_uids": [
-        "function:FN-APPLY-AMOUNT-INVARIANTS#4"
+        "service:BI-BANQUET-TYPE-MATCH-PACKAGE#2"
       ],
       "layers_own": [
-        "function"
+        "service"
       ],
       "layers_all": [
-        "function"
+        "service"
       ],
       "cited_from": [],
-      "cwe": [
-        "CWE-840"
-      ],
-      "confidence": 0.92,
+      "cwe": [],
+      "confidence": 0.93,
       "ground_truth": "verified",
       "repro_cmds": [
-        "python3 fn_dynamic.py --case APL-12"
+        "python3 business_probe.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "related_root_causes": []
+    },
+    {
+      "root_cause_key": "order.create.n_plus_one_per_item",
+      "title": "下单时每多一个明细就多 2.0 条 SQL（典型 N+1）",
+      "severity": "MEDIUM",
+      "owner_layer": "service",
+      "categories": [
+        "service.service_latency"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "service:SVC-ORM-N-PLUS-ONE-ORDER-ITEMS#0"
+      ],
+      "layers_own": [
+        "service"
+      ],
+      "layers_all": [
+        "service"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.95,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 orm_query_probe.py"
       ],
       "violations": [],
       "notes": [],
@@ -1117,7 +1242,7 @@
     },
     {
       "root_cause_key": "orders.no_data_lifecycle",
-      "title": "orders 表没有软删/归档，永久增长（当前 184 kB）",
+      "title": "orders 表没有软删/归档，永久增长（当前 192 kB）",
       "severity": "MEDIUM",
       "owner_layer": "class",
       "categories": [
@@ -1177,6 +1302,39 @@
       "ground_truth": "verified",
       "repro_cmds": [
         "python3 file_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "related_root_causes": []
+    },
+    {
+      "root_cause_key": "package.list.n_plus_one_per_package",
+      "title": "套餐列表每多返回 1 个套餐就多 8.0 条 SQL",
+      "severity": "MEDIUM",
+      "owner_layer": "service",
+      "categories": [
+        "service.service_latency"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "service:SVC-ORM-N-PLUS-ONE-PACKAGE-LIST#1"
+      ],
+      "layers_own": [
+        "service"
+      ],
+      "layers_all": [
+        "service"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.93,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 orm_query_probe.py"
       ],
       "violations": [],
       "notes": [],
@@ -1550,6 +1708,39 @@
       "related_root_causes": []
     },
     {
+      "root_cause_key": "config.bad_upload_dir_kills_startup",
+      "title": "上传目录配错会让整个后端起不来，而不是降级运行",
+      "severity": "LOW",
+      "owner_layer": "service",
+      "categories": [
+        "service.resilience"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "service:CFG-UPLOAD-DIR-BAD-KILLS-APP#2"
+      ],
+      "layers_own": [
+        "service"
+      ],
+      "layers_all": [
+        "service"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.85,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 config_probe.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "related_root_causes": []
+    },
+    {
       "root_cause_key": "enum.case_sensitive",
       "title": "订单状态枚举大小写敏感，小写 pending 直接 400",
       "severity": "LOW",
@@ -1911,6 +2102,72 @@
       "related_root_causes": []
     },
     {
+      "root_cause_key": "order.added_items_existence_checked",
+      "title": "加购明细里的商品是否都真实存在且未软删？",
+      "severity": "INFO",
+      "owner_layer": "service",
+      "categories": [
+        "service.data_consistency"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "service:BI-ADDED-ITEMS-EXIST#5"
+      ],
+      "layers_own": [
+        "service"
+      ],
+      "layers_all": [
+        "service"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 business_probe.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "related_root_causes": []
+    },
+    {
+      "root_cause_key": "order.amount_consistent_when_not_overridden",
+      "title": "未使用成交价时，订单金额是否等于套餐总价？",
+      "severity": "INFO",
+      "owner_layer": "service",
+      "categories": [
+        "service.data_consistency"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "service:BI-NOT-FINAL-PRICE-AMOUNT-EQ-PLAN#4"
+      ],
+      "layers_own": [
+        "service"
+      ],
+      "layers_all": [
+        "service"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 business_probe.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "related_root_causes": []
+    },
+    {
       "root_cause_key": "order.update.transaction_boundary_holds",
       "title": "被拒的写请求不会在订单行留下部分写入（事务边界有效）",
       "severity": "INFO",
@@ -2136,6 +2393,39 @@
       "notes": [],
       "merges": [],
       "related_root_causes": []
+    },
+    {
+      "root_cause_key": "upload.error.no_path_leak",
+      "title": "上传失败时错误响应不泄露服务器文件系统路径",
+      "severity": "INFO",
+      "owner_layer": "service",
+      "categories": [
+        "service.interface_contract"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "service:CFG-UPLOAD-ERROR-NO-PATH-LEAK#3"
+      ],
+      "layers_own": [
+        "service"
+      ],
+      "layers_all": [
+        "service"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 config_probe.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "related_root_causes": []
     }
   ],
   "coverage": {
@@ -2158,12 +2448,12 @@
         "inheritance_design": 0
       },
       "service": {
-        "interface_contract": 29,
-        "resilience": 1,
-        "authz": 1,
-        "data_consistency": 2,
+        "interface_contract": 30,
+        "resilience": 2,
+        "authz": 3,
+        "data_consistency": 8,
         "resource_leak": 0,
-        "service_latency": 1
+        "service_latency": 3
       },
       "integration": {
         "end_to_end_business": 11,
@@ -2236,6 +2526,7 @@
       ],
       "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageController.java": [
         "errhandler.internal_detail_leak",
+        "package.list.n_plus_one_per_package",
         "tooling.coverage_recording_gap"
       ],
       "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java": [
@@ -2247,6 +2538,11 @@
         "api.snapshot_structure_undeclared",
         "dto.unknown_field_silent_drop",
         "errhandler.internal_detail_leak",
+        "order.added_items_existence_checked",
+        "order.amount_consistent_when_not_overridden",
+        "order.apply.amount_invariants_weak",
+        "order.banquet_type_not_checked_against_package",
+        "order.create.n_plus_one_per_item",
         "order.create.not_idempotent",
         "order.item_quantity_unvalidated",
         "order.snapshot.item_ownership_unchecked",
@@ -2275,7 +2571,7 @@
         "price.final_price.upper_bound_unvalidated"
       ]
     },
-    "root_cause_count": 60,
-    "finding_count": 96
+    "root_cause_count": 68,
+    "finding_count": 108
   }
 }

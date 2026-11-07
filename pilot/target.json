@@ -65,6 +65,21 @@
       "layer": "class",
       "file": "feature_findings.json",
       "key": "class"
+    },
+    {
+      "layer": "service",
+      "file": "business_findings.json",
+      "key": "service"
+    },
+    {
+      "layer": "service",
+      "file": "orm_findings.json",
+      "key": "service"
+    },
+    {
+      "layer": "service",
+      "file": "config_findings.json",
+      "key": "service"
     }
   ],
   "carriers": {

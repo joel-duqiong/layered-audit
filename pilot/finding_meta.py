@@ -231,6 +231,46 @@ SERVICE: dict[str, Meta] = {
         "错误 JSON 类型是否被隐式转换后接受？",
         "service", 0.90, "defect", ("CWE-20",),
         "jackson.lenient_type_coercion"),
+    "BI-BANQUET-TYPE-MATCH-PACKAGE": _m(
+        "service.data_consistency", "exact",
+        "订单的宴会类型是否与所选套餐的宴会类型一致？",
+        "service", 0.93, "defect", (),
+        "order.banquet_type_not_checked_against_package",
+        note="订单 banquetType 直接取客户端值，服务层从不与所选套餐的 banquetType 比对；"
+             "宴会类型是同一场宴席的分类，不一致就是数据自相矛盾（订单说婚宴、套餐说寿宴）"),
+    "BI-DEPOSIT-LTE-FINAL-AMOUNT": _m(
+        "service.data_consistency", "exact",
+        "订单定金是否不得超过订单本身的金额？",
+        "service", 0.90, "defect", ("CWE-840",),
+        "order.apply.amount_invariants_weak",
+        relation="cited",
+        note="根因已由函数层 FN-APPLY-AMOUNT-INVARIANTS 开单，这里用不变式给出可判定的证据"),
+    "BI-FINAL-AMOUNT-LTE-PACKAGE-PRICE": _m(
+        "service.data_consistency", "exact",
+        "订单金额是否不超过所选套餐的标价？",
+        "service", 0.92, "defect", ("CWE-840",),
+        "price.final_price.upper_bound_unvalidated",
+        relation="cited",
+        note="根因已由函数层 FN-PRICE-CLIENT-CONTROLLED 开单，这里用不变式给出可判定的证据"),
+    "BI-SNAPSHOT-ITEMS-SUBSET-OF-PACKAGE": _m(
+        "service.data_consistency", "exact",
+        "订单快照里的明细是否都属于所选套餐？",
+        "service", 0.92, "defect", ("CWE-20",),
+        "order.snapshot.item_ownership_unchecked",
+        relation="cited",
+        note="根因已由函数层 FN-SNAPSHOT-SEMANTICS 开单，这里用不变式给出可判定的证据"),
+    "BI-NOT-FINAL-PRICE-AMOUNT-EQ-PLAN": _m(
+        "service.data_consistency", "exact",
+        "未使用成交价时，订单金额是否等于套餐总价？",
+        "service", 0.90, "positive", (),
+        "order.amount_consistent_when_not_overridden",
+        note="正面结论：3 个适用场景全部成立"),
+    "BI-ADDED-ITEMS-EXIST": _m(
+        "service.data_consistency", "exact",
+        "加购明细里的商品是否都真实存在且未软删？",
+        "service", 0.90, "positive", (),
+        "order.added_items_existence_checked",
+        note="正面结论：违规场景在建单入口就被拒（HTTP 404）—— 结构性保证，不是碰巧没触发"),
     "SVC-CONCURRENT-WRITE-LOST-UPDATE": _m(
         "service.data_consistency", "exact",
         "并发编辑同一订单是否会静默丢掉对方的修改？",
@@ -250,6 +290,48 @@ SERVICE: dict[str, Meta] = {
         "service", 0.92, "defect", ("CWE-799",),
         "order.create.not_idempotent",
         note="同一个 POST 发两次 → 两个订单 id、库里 2 行；没有幂等键，也没有业务键去重"),
+    "SVC-ORM-N-PLUS-ONE-ORDER-ITEMS": _m(
+        "service.service_latency", "exact",
+        "下单时每多一个套餐明细，是不是就多发一次商品查询和一次分类查询？",
+        "service", 0.95, "defect", (),
+        "order.create.n_plus_one_per_item",
+        note="开 Hibernate 统计的临时实例精确计数：1/2/4 个明细 → 6/8/12 条 SQL，"
+             "斜率恰好 2.0 条/明细（用分类互不相同的商品测，避开持久化上下文缓存）"),
+    "SVC-ORM-N-PLUS-ONE-PACKAGE-LIST": _m(
+        "service.service_latency", "exact",
+        "套餐列表每多返回一个套餐，是不是就多发一批查询？",
+        "service", 0.93, "defect", (),
+        "package.list.n_plus_one_per_package",
+        note="实测 pageSize 1/2/4 → 15/26/39 条 SQL，斜率恰好 8.0 条/套餐"
+             "（= 1 套餐 + 1 明细 + 3 明细 × 2）"),
+    "CFG-CORS-EMPTY-ALLOWS-ANY-ORIGIN": _m(
+        "service.authz", "exact",
+        "CORS 白名单配成空值时，跨域是被收紧还是被放开？",
+        "service", 0.93, "defect", ("CWE-942",),
+        "cors.empty_whitelist_fails_open",
+        note="实测 Access-Control-Allow-Origin: * —— 空配置是 fail-open。"
+             "WebConfig 滤掉空项得到空数组，但 Spring CorsRegistration 默认的 "
+             "permitDefaultValues（allowedOrigins=单星号）没被清掉"),
+    "CFG-CORS-STAR-ALLOWS-ANY-ORIGIN": _m(
+        "service.authz", "exact",
+        "CORS 白名单配成星号时，任何网页是不是都能读全部业务数据？",
+        "service", 0.92, "defect", ("CWE-942",),
+        "cors.allowed_origin_patterns_too_broad",
+        relation="cited",
+        note="与文件层 FILE-CORS-INTRANET-WIDE 同一根因的更严重形态，不重复开单"),
+    "CFG-UPLOAD-DIR-BAD-KILLS-APP": _m(
+        "service.resilience", "exact",
+        "上传目录配错时，后端是降级运行还是直接起不来？",
+        "service", 0.85, "defect", (),
+        "config.bad_upload_dir_kills_startup",
+        note="SeedAssetInitializer（ApplicationRunner）在启动期抛异常 → 上下文起不来 → 容器退出；"
+             "失败方向是对的（fail-fast），但运维看到的是「应用启动失败」而不是「上传目录配错了」"),
+    "CFG-UPLOAD-ERROR-NO-PATH-LEAK": _m(
+        "service.interface_contract", "exact",
+        "上传失败时，错误响应会不会泄露服务器文件系统路径？",
+        "service", 0.90, "positive", (),
+        "upload.error.no_path_leak",
+        note="正面结论：把上传目录破坏掉后，响应是固定业务错误，扫不到任何路径片段"),
     "SVC-PAGINATION-COUNT-DISCARDED": _m(
         "service.service_latency", "exact",
         "分页 count(*) 是否每次列表请求都全表扫描，而前端根本不看 total？",

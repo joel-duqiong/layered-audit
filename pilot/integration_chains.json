@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-07T19:37:27.653330",
+  "generated_at": "2026-11-07T20:09:05.412126",
   "base_url": "http://127.0.0.1:8081",
   "chains": [
     {
@@ -19,12 +19,12 @@
           "method": "POST",
           "path": "/api/orders",
           "status": 200,
-          "evidence": "订单主人创建订单 id=726（请求里没有任何凭证头）"
+          "evidence": "订单主人创建订单 id=802（请求里没有任何凭证头）"
         },
         {
           "n": 2,
           "method": "GET",
-          "path": "/api/orders/726",
+          "path": "/api/orders/802",
           "status": 200,
           "evidence": "全新连接（无 Cookie / Token）读到 4 个 PII 字段：['customerName', 'customerPhone', 'address', 'remark']"
         },
@@ -38,21 +38,21 @@
         {
           "n": 4,
           "method": "PATCH",
-          "path": "/api/orders/726/status",
+          "path": "/api/orders/802/status",
           "status": 200,
           "evidence": "匿名改状态 → DEPOSIT_PAID"
         },
         {
           "n": 5,
           "method": "PUT",
-          "path": "/api/orders/726",
+          "path": "/api/orders/802",
           "status": 200,
           "evidence": "匿名全量覆盖订单：改电话 + 把明细数量改成 99"
         },
         {
           "n": 6,
           "method": "DB",
-          "path": "SELECT ... WHERE id=726",
+          "path": "SELECT ... WHERE id=802",
           "status": 200,
           "evidence": "库里的快照已被重写：明细数量=99，电话=13900000000，状态=PENDING"
         }
@@ -96,21 +96,21 @@
           "method": "POST",
           "path": "/api/uploads/product-image",
           "status": 200,
-          "evidence": "上传非图片字节 55 字节，自报 image/png、文件名 probe.png → imageUrl=/uploads/products/78654e9c-8a13-48a4-8aec-b4fd1f0f6ffc.png"
+          "evidence": "上传非图片字节 55 字节，自报 image/png、文件名 probe.png → imageUrl=/uploads/products/a18a468a-8dc1-4201-8899-7007ad552c81.png"
         },
         {
           "n": 2,
           "method": "GET",
-          "path": "/uploads/products/78654e9c-8a13-48a4-8aec-b4fd1f0f6ffc.png",
+          "path": "/uploads/products/a18a468a-8dc1-4201-8899-7007ad552c81.png",
           "status": 200,
           "evidence": "匿名连接（无凭证）下载 → 200，字节完全一致=True，Content-Type=image/png"
         },
         {
           "n": 3,
           "method": "FS",
-          "path": "/app/uploads/products/78654e9c-8a13-48a4-8aec-b4fd1f0f6ffc.png",
+          "path": "/app/uploads/products/a18a468a-8dc1-4201-8899-7007ad552c81.png",
           "status": 200,
-          "evidence": "-rw-r--r-- 1 root root 55 Nov  7 11:37 /app/uploads/products/78654e9c-8a13-48a4-8aec-b4fd1f0f6ffc.png"
+          "evidence": "-rw-r--r-- 1 root root 55 Nov  7 12:09 /app/uploads/products/a18a468a-8dc1-4201-8899-7007ad552c81.png"
         }
       ],
       "findings": [
@@ -148,14 +148,14 @@
         {
           "n": 2,
           "method": "DB",
-          "path": "SELECT final_price_cent FROM orders WHERE id=727",
+          "path": "SELECT final_price_cent FROM orders WHERE id=803",
           "status": 200,
           "evidence": "库里的成交价 = 1 分"
         },
         {
           "n": 3,
           "method": "GET",
-          "path": "/api/orders/727",
+          "path": "/api/orders/803",
           "status": 200,
           "evidence": "API 回读成交价 = 1 分"
         },
@@ -186,14 +186,14 @@
         {
           "n": 1,
           "method": "PUT",
-          "path": "/api/orders/728",
+          "path": "/api/orders/804",
           "status": 200,
           "evidence": "匿名把明细数量改成 99，成交价保持 1 分"
         },
         {
           "n": 2,
           "method": "GET",
-          "path": "/api/orders/728",
+          "path": "/api/orders/804",
           "status": 200,
           "evidence": "订单金额 0.01 元 / 明细合计 4950.0 元 / 套餐标价 88.88 元 —— 三个数字互不相等"
         },
@@ -235,19 +235,19 @@
           "method": "POST",
           "path": "/api/orders",
           "status": 200,
-          "evidence": "建单 id=729：PENDING、定金 0、成交价 1 分"
+          "evidence": "建单 id=805：PENDING、定金 0、成交价 1 分"
         },
         {
           "n": 2,
           "method": "PATCH",
-          "path": "/api/orders/729/status",
+          "path": "/api/orders/805/status",
           "status": 200,
           "evidence": "匿名 PENDING → COMPLETED 一次成功；前端渲染状态 = 已完成，定金 = 0 元，订单金额 = 0.01 元"
         },
         {
           "n": 3,
           "method": "DB",
-          "path": "SELECT status, deposit_cent FROM orders WHERE id=729",
+          "path": "SELECT status, deposit_cent FROM orders WHERE id=805",
           "status": 200,
           "evidence": "库里的状态 = COMPLETED，定金 = 0 分"
         }

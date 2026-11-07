@@ -1,0 +1,122 @@
+{
+  "service": [
+    {
+      "id": "SVC-ORM-N-PLUS-ONE-ORDER-ITEMS",
+      "severity": "MEDIUM",
+      "endpoint": "POST /api/orders",
+      "title": "下单时每多一个明细就多 2.0 条 SQL（典型 N+1）",
+      "detail": "用开了 Hibernate 统计的第二实例精确数了每次请求发的 SQL 条数：\n[{\"items\": 1, \"statements\": 6}, {\"items\": 2, \"statements\": 8}, {\"items\": 4, \"statements\": 12}]\n斜率 = **每加 1 个套餐明细，多 2.0 条 SQL**。\n对应到代码：OrderService.buildPackageSnapshot 对每个明细调一次 findProduct()（1 条商品查询），随后 productSnapshot 访问 product.getCategory().getName() —— category 是 LAZY 关联，又触发 1 条查询。\n业务后果：订单明细越多，下单越慢，且慢的部分不在任何索引或缓存的管辖范围内。\n（附：套餐列表接口每多返回 1 个套餐多 8.0 条 SQL，同样是 N+1。）",
+      "repro": "python3 orm_query_probe.py",
+      "evidence": {
+        "probes": {
+          "order_create": [
+            {
+              "items": 1,
+              "statements": 6
+            },
+            {
+              "items": 2,
+              "statements": 8
+            },
+            {
+              "items": 4,
+              "statements": 12
+            }
+          ],
+          "package_list": [
+            {
+              "page_size": 1,
+              "statements": 15
+            },
+            {
+              "page_size": 2,
+              "statements": 26
+            },
+            {
+              "page_size": 4,
+              "statements": 39
+            }
+          ],
+          "per_item_statements": 2.0,
+          "per_package_statements": 8.0
+        },
+        "per_item_statements": 2.0,
+        "per_package_statements": 8.0
+      }
+    },
+    {
+      "id": "SVC-ORM-N-PLUS-ONE-PACKAGE-LIST",
+      "severity": "MEDIUM",
+      "endpoint": "GET /api/packages",
+      "title": "套餐列表每多返回 1 个套餐就多 8.0 条 SQL",
+      "detail": "[{\"page_size\": 1, \"statements\": 15}, {\"page_size\": 2, \"statements\": 26}, {\"page_size\": 4, \"statements\": 39}]\n斜率 = 每多 1 个套餐多 8.0 条 SQL。列表页把套餐的明细、明细的商品、商品的分类逐个拉出来 —— 页面打开 50 个套餐就是几百次往返。前端固定只取前 100 条，所以上限也就是几百次往返/页。",
+      "repro": "python3 orm_query_probe.py",
+      "evidence": {
+        "probes": {
+          "order_create": [
+            {
+              "items": 1,
+              "statements": 6
+            },
+            {
+              "items": 2,
+              "statements": 8
+            },
+            {
+              "items": 4,
+              "statements": 12
+            }
+          ],
+          "package_list": [
+            {
+              "page_size": 1,
+              "statements": 15
+            },
+            {
+              "page_size": 2,
+              "statements": 26
+            },
+            {
+              "page_size": 4,
+              "statements": 39
+            }
+          ],
+          "per_item_statements": 2.0,
+          "per_package_statements": 8.0
+        }
+      }
+    }
+  ],
+  "probes": {
+    "order_create": [
+      {
+        "items": 1,
+        "statements": 6
+      },
+      {
+        "items": 2,
+        "statements": 8
+      },
+      {
+        "items": 4,
+        "statements": 12
+      }
+    ],
+    "package_list": [
+      {
+        "page_size": 1,
+        "statements": 15
+      },
+      {
+        "page_size": 2,
+        "statements": 26
+      },
+      {
+        "page_size": 4,
+        "statements": 39
+      }
+    ],
+    "per_item_statements": 2.0,
+    "per_package_statements": 8.0
+  }
+}

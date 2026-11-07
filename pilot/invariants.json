@@ -1,0 +1,89 @@
+{
+  "entity": {
+    "name": "order",
+    "read_sql": "SELECT o.id, o.deposit_cent, o.plan_total_cent, o.final_price_cent, o.use_final_price, o.banquet_type, o.status, o.package_id, o.package_snapshot, o.added_items_snapshot, p.price_cent AS package_price_cent, p.banquet_type AS package_banquet_type, (SELECT jsonb_agg(jsonb_build_object('productId', pi.product_id)) FROM package_items pi WHERE pi.package_id = p.id) AS package_items, (SELECT jsonb_agg(jsonb_build_object('productId', pr.id)) FROM products pr WHERE pr.is_deleted = false) AS existing_products FROM orders o LEFT JOIN packages p ON p.id = o.package_id WHERE o.id IN ({ids})"
+  },
+  "invariants": [
+    {
+      "id": "BI-DEPOSIT-LTE-FINAL-AMOUNT",
+      "severity": "HIGH",
+      "category": "service.data_consistency",
+      "claim": "订单定金是否不得超过订单本身的金额？",
+      "why": "定金是订单金额里的一部分。定金大于订单金额，业务上不可能成立 —— 系统没有任何折扣或溢价模型能解释它。",
+      "assert": {
+        "type": "field_lte_field",
+        "left": "deposit_cent",
+        "right": "final_price_cent"
+      }
+    },
+    {
+      "id": "BI-NOT-FINAL-PRICE-AMOUNT-EQ-PLAN",
+      "severity": "MEDIUM",
+      "category": "service.data_consistency",
+      "claim": "未使用成交价时，订单金额是否等于套餐总价？",
+      "why": "不报成交价就意味着按套餐价成交，两者必须相等。这是数据自洽性的底线。（只在 use_final_price=false 时适用 —— 报了成交价的订单金额由另一条不变式管。）",
+      "assert": {
+        "type": "field_eq_field",
+        "left": "final_price_cent",
+        "right": "plan_total_cent"
+      },
+      "when": {
+        "field": "use_final_price",
+        "op": "eq",
+        "value": false
+      }
+    },
+    {
+      "id": "BI-FINAL-AMOUNT-LTE-PACKAGE-PRICE",
+      "severity": "HIGH",
+      "category": "service.data_consistency",
+      "claim": "订单金额是否不超过所选套餐的标价？",
+      "why": "套餐价是系统里唯一的商品价格基准。订单金额高于套餐标价，等于凭空多收钱。",
+      "assert": {
+        "type": "field_lte_field",
+        "left": "final_price_cent",
+        "right": "package_price_cent"
+      }
+    },
+    {
+      "id": "BI-BANQUET-TYPE-MATCH-PACKAGE",
+      "severity": "MEDIUM",
+      "category": "service.data_consistency",
+      "claim": "订单的宴会类型是否与所选套餐的宴会类型一致？",
+      "why": "套餐带 banquetType（婚宴 / 满月酒 / 寿宴这类分类），订单也带 banquetType。两者指向同一场宴席就必须一致 —— 不一致就是数据自相矛盾（订单说婚宴、套餐说寿宴）。",
+      "assert": {
+        "type": "field_eq_field",
+        "left": "banquet_type",
+        "right": "package_banquet_type"
+      }
+    },
+    {
+      "id": "BI-SNAPSHOT-ITEMS-SUBSET-OF-PACKAGE",
+      "severity": "HIGH",
+      "category": "service.data_consistency",
+      "claim": "订单快照里的明细是否都属于所选套餐？",
+      "why": "快照是订单金额与交付内容的凭据。混进不属于该套餐的商品，快照就不再代表这份套餐。",
+      "assert": {
+        "type": "jsonb_subset_of",
+        "items_path": "package_snapshot.items",
+        "id_field": "productId",
+        "ref_path": "package_items",
+        "ref_id_field": "productId"
+      }
+    },
+    {
+      "id": "BI-ADDED-ITEMS-EXIST",
+      "severity": "MEDIUM",
+      "category": "service.data_consistency",
+      "claim": "加购明细里的商品是否都真实存在且未软删？",
+      "why": "加购快照是交付清单。指向不存在的商品等于凭据里写了个幽灵条目。",
+      "assert": {
+        "type": "jsonb_subset_of",
+        "items_path": "added_items_snapshot",
+        "id_field": "productId",
+        "ref_path": "existing_products",
+        "ref_id_field": "productId"
+      }
+    }
+  ]
+}
