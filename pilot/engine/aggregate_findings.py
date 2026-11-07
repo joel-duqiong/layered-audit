@@ -431,7 +431,7 @@ def _write_md(payload: dict[str, Any], categories: dict[str, tuple[str, ...]]) -
     a("")
 
     (PROJECT_DIR / "audit_report.md").write_text("\n".join(lines), encoding="utf-8")
-    print(f"  报告 -> {HERE / 'audit_report.md'}")
+    print(f"  报告 -> {PROJECT_DIR / 'audit_report.md'}")
 
 
 if __name__ == "__main__":

@@ -148,6 +148,13 @@
       "category": "cross_layer_correlation",
       "carrier": "integration.e2e_three_source",
       "fidelity": "container"
+    },
+    {
+      "role_id": "integration.emergent_masking",
+      "layer": "integration",
+      "category": "emergent_masking",
+      "carrier": "integration.e2e_three_source",
+      "fidelity": "container"
     }
   ],
   "layer_roles": {
@@ -165,15 +172,11 @@
       "function.exception_path",
       "function.numeric"
     ],
-    "file": [
-      "file.cohesion",
-      "file.error_handling_pattern",
-      "file.state_consistency"
-    ],
     "integration": [
       "integration.cross_layer_correlation",
       "integration.cross_service_attack_chain",
       "integration.cross_service_performance",
+      "integration.emergent_masking",
       "integration.end_to_end_business"
     ],
     "class": [
@@ -181,11 +184,16 @@
       "class.encapsulation_leak",
       "class.inheritance_design",
       "class.invariant"
+    ],
+    "file": [
+      "file.cohesion",
+      "file.error_handling_pattern",
+      "file.state_consistency"
     ]
   },
   "counts": {
     "units": 533,
-    "roles": 21,
+    "roles": 22,
     "edges": 786,
     "edges_unresolved": 39,
     "units_with_observations": 15,
@@ -10444,13 +10452,13 @@
       "status": "OBSERVED",
       "observations": 7,
       "case_ids": [
+        "PDS-MONTH",
         "PDS-TODAY",
         "PDS-WEEK",
-        "PDS-MONTH",
-        "PDS-null",
+        "PDS-bad",
         "PDS-lower",
-        "PDS-trim",
-        "PDS-bad"
+        "PDS-null",
+        "PDS-trim"
       ],
       "finding_ids": [],
       "root_cause_keys": [],
@@ -13626,7 +13634,7 @@
       "class": "",
       "symbol": "end-to-end",
       "file": "",
-      "role_count": 4,
+      "role_count": 5,
       "centrality": 0,
       "logic": {
         "branches": 0,

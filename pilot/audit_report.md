@@ -16,11 +16,11 @@
 | 5 | HIGH | file | `cors.allowed_origin_patterns_too_broad` | CORS 白名单等于「整个内网 + 所有本地端口」，且全是明文 http | 2 | 0.95 | verified | `python3 config_probe.py` |
 | 6 | HIGH | service | `errhandler.client_error_mapped_to_500` | 客户端错误被当成服务端错误：返回 [500] | 2 | 0.94 | verified | `curl -X POST 见 observation.json 中 key=POST /api/uploads/p…` |
 | 7 | HIGH | function | `order.apply.amount_invariants_weak` | apply 的金额/状态不变量只查了 >= 0：定金可以大于套餐总价，状态与预订时间可为空 | 2 | 0.92 | verified | `python3 business_probe.py` |
-| 8 | HIGH | function | `order.item_quantity_unvalidated` | 明细归一化只查重复，不查 productId/quantity：数量可为空、为 0、为负 | 2 | 0.93 | verified | `python3 fn_dynamic.py --case NPI-04` |
+| 8 | HIGH | function | `order.item_quantity_unvalidated` | 明细归一化只查重复，不查 productId/quantity：数量可为空、为 0、为负 | 2 | 0.93 | verified | `python3 fn_dynamic.py --case NAI-04` |
 | 9 | HIGH | file | `audit.client_ip_trusted_from_header` | 审计日志里的 clientIp 完全由客户端伪造：X-Forwarded-For 首段直接采信 | 1 | 0.93 | verified | `python3 file_dynamic.py` |
 | 10 | HIGH | service | `cors.empty_whitelist_fails_open` | CORS 白名单配成空值时反而允许任意来源跨域（fail-open） | 1 | 0.93 | verified | `python3 config_probe.py` |
 | 11 | HIGH | integration | `frontend.list_hardcoded_limit_100` | 前端列表固定只取前 100 条并丢弃 total，超出的数据永远不可见 | 1 | 0.95 | verified | `python3 integration_dynamic.py --scenario SC05_LIST_TRUNC…` |
-| 12 | HIGH | service | `index.idx_products_name_unusable` | DDL 声明的 idx_products_name 对服务层查询模式无效（7.739ms vs 0.012ms，差 645 倍） | 1 | 0.88 | verified | `python3 class_dynamic.py` |
+| 12 | HIGH | service | `index.idx_products_name_unusable` | DDL 声明的 idx_products_name 对服务层查询模式无效（7.547ms vs 0.013ms，差 581 倍） | 1 | 0.88 | verified | `python3 class_dynamic.py` |
 | 13 | HIGH | class | `order.status.transition_unconstrained` | 状态机缺失：9/9 种迁移全部被接受，含回退 | 1 | 0.96 | verified | `python3 class_dynamic.py` |
 | 14 | HIGH | function | `order_no.no_collision_guarantee` | 订单号每秒只有 1000 个槽位，并发下单必然撞号（唯一键冲突 → 500） | 1 | 0.9 | verified | `python3 fn_dynamic.py --case GON-02` |
 | 15 | HIGH | class | `rule.missing_in_db_dto_service` | 4 条业务不变量在 DB / DTO / 服务层三层全都不存在 | 1 | 0.85 | verified | `python3 class_dynamic.py` |
@@ -153,6 +153,7 @@
 | cross_service_performance | 1 | ok |
 | cross_service_attack_chain | 2 | ok |
 | cross_layer_correlation | 0 | 零覆盖 —— 没人管 |
+| emergent_masking | 0 | 零覆盖 —— 没人管 |
 
 ## 六、契约缺口（category 装不下）
 

@@ -50,7 +50,7 @@
       "ground_truth": "verified",
       "repro_cmds": [
         "python3 business_probe.py",
-        "python3 fn_dynamic.py --case RFP-05",
+        "python3 fn_dynamic.py --case APL-15",
         "python3 integration_chain.py --chain CHAIN-D",
         "python3 integration_dynamic.py --scenario SC01_CLIENT_CONTROLLED_PRICE",
         "python3 numeric_props.py"
@@ -206,7 +206,7 @@
       "ground_truth": "verified",
       "repro_cmds": [
         "python3 business_probe.py",
-        "python3 fn_dynamic.py --case BPS-03",
+        "python3 fn_dynamic.py --case APL-17",
         "python3 integration_dynamic.py --scenario SC02_FOREIGN_ITEM_IN_PACKAGE"
       ],
       "violations": [],
@@ -389,7 +389,7 @@
       "confidence": 0.93,
       "ground_truth": "verified",
       "repro_cmds": [
-        "python3 fn_dynamic.py --case NPI-04",
+        "python3 fn_dynamic.py --case NAI-04",
         "python3 integration_dynamic.py --scenario SC03_QUANTITY_OVERRIDE"
       ],
       "violations": [],
@@ -518,7 +518,7 @@
     },
     {
       "root_cause_key": "index.idx_products_name_unusable",
-      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.739ms vs 0.012ms，差 645 倍）",
+      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.547ms vs 0.013ms，差 581 倍）",
       "severity": "HIGH",
       "owner_layer": "service",
       "categories": [
@@ -2848,14 +2848,16 @@
         "end_to_end_business": 11,
         "cross_service_performance": 1,
         "cross_service_attack_chain": 2,
-        "cross_layer_correlation": 0
+        "cross_layer_correlation": 0,
+        "emergent_masking": 0
       }
     },
     "zero_coverage_categories": [
       "function.complexity",
       "class.inheritance_design",
       "service.resource_leak",
-      "integration.cross_layer_correlation"
+      "integration.cross_layer_correlation",
+      "integration.emergent_masking"
     ],
     "unmapped_uids": [
       "file:FILE-CORS-INTRANET-WIDE#0",

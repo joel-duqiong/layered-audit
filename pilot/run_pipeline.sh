@@ -64,4 +64,6 @@ echo "=== 集权层门禁（与基线比对，回归即失败退出码 1）==="
 python3 integration_gate.py
 
 echo "=== 残留守卫（探针容器 / ai_ 行 / 非种子上传，必须全 0）==="
+# 先自检：守卫必须能证明自己抓得到（谓词写错时「0 行」是假的）
+python3 probe_residue_check.py --selftest
 python3 probe_residue_check.py

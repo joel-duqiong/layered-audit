@@ -9,5 +9,6 @@
     "package_types": 0,
     "orders": 0
   },
-  "non_seed_uploads": 0
+  "non_seed_uploads": 0,
+  "stray_dirs": []
 }

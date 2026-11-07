@@ -291,6 +291,15 @@
     "base_url": "http://127.0.0.1:8081",
     "work_dir": "/tmp/jiuyan_fn",
     "recordings": "/Users/june/tests/auto-api/recordings",
-    "fn_cases": "fn_cases.json"
+    "fn_cases": "fn_cases.json",
+    "probe_container_prefixes": [
+      "jiuyan-tx-probe",
+      "jiuyan-cfg-",
+      "jiuyan-orm-",
+      "jiuyan-stats-",
+      "jiuyan-feat-",
+      "jiuyan-lazy",
+      "jiuyan-portal"
+    ]
   }
 }
