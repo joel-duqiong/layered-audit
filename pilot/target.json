@@ -264,5 +264,10 @@
     "class": "class.dto_db_contract",
     "service": "service.http_contract",
     "integration": "integration.e2e_three_source"
+  },
+  "sut": {
+    "repo": "/Users/june/jiuyan",
+    "git_base": "dcc9b06",
+    "impact_depth": 3
   }
 }

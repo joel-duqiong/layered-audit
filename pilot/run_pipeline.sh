@@ -54,6 +54,10 @@ python3 java_feature_scan.py
 echo "=== 引擎自检（通用引擎不许写回项目专属的东西 + 换绑定可跑）==="
 python3 engine/check_engine_purity.py
 ./test_portability.sh
+echo "=== Agent 群构建 + 变更影响分析（改一处只动受影响的部分）==="
+python3 engine/build_agent_graph.py
+python3 engine/change_impact.py
+python3 engine/agent_coverage.py
 echo "=== 证据归一化 + 根因聚合（统一 schema / 根因归并 / 覆盖度矩阵）==="
 # 退出码 1 = 结构性违规（阻断）；2 = 契约缺口 category 装不下（不阻断，但要人决策）
 normalize_rc=0
