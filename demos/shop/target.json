@@ -48,8 +48,49 @@
     "integration.end_to_end_business": "端到端业务流程的语义必须自洽",
     "integration.cross_service_performance": "跨服务的端到端延迟必须满足预算",
     "integration.cross_service_attack_chain": "跨服务的调用不得形成可被利用的攻击链",
-    "integration.cross_layer_correlation": "同一根因在多层同时显现时必须被归并"
+    "integration.cross_layer_correlation": "同一根因在多层同时显现时必须被归并",
+    "integration.emergent_masking": "组合条件之间的相互掩盖必须被显式检出：单条件可见的症状在组合下消失时，必须另有判据给出结论"
   },
-  "evidence_sources": [],
-  "unit_sources": {}
+  "evidence_sources": [
+    {
+      "layer": "integration",
+      "file": "artifacts/emergence_chains.json",
+      "key": "findings"
+    }
+  ],
+  "unit_sources": {},
+  "carriers": {
+    "function.jvm_reflection": {
+      "layer": "function",
+      "language": "java",
+      "carrier": "JVM 内反射直调（用例文件驱动的通用 harness）",
+      "fidelity": "stubbed",
+      "note": "demo 的函数层用例来自 demos/shop/fn_cases.json，依赖打桩。"
+    },
+    "file.jvm_whole_class": {
+      "layer": "file",
+      "language": "java",
+      "carrier": "JVM 内整类实例化（字节码声明 + 依赖打桩）",
+      "fidelity": "stubbed"
+    },
+    "class.dto_db_contract": {
+      "layer": "class",
+      "language": "java",
+      "carrier": "反射导出 DTO/实体约束 + PostgreSQL 实况",
+      "fidelity": "hybrid"
+    },
+    "service.http_contract": {
+      "layer": "service",
+      "language": "java",
+      "carrier": "真实容器 HTTP 探针（demo-shop-backend / -vip 两个 profile 实例）",
+      "fidelity": "container"
+    },
+    "integration.e2e_three_source": {
+      "layer": "integration",
+      "language": "java+python",
+      "carrier": "真实容器 HTTP + PostgreSQL 实况 + 跨仓库 python-svc + 条件注入差分",
+      "fidelity": "container",
+      "note": "涌现裁决（emergence_probe.py）就走这个载体：两个 profile 实例对比 + 真实下单 + 真实查库判定不变式。"
+    }
+  }
 }

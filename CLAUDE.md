@@ -68,6 +68,7 @@
 | **可执行依赖图** | ✅ 151 节点 / 414 边；25 个 HTTP 入口**全部**绑定到 openapi（0 未绑定） | `pilot/emergence_graph.py` → `emergence_graph.json` |
 | **切面生效性探针** | ✅ 静态声明的 24 个 `@Transactional` 与运行时实际生效的**差分为空** | `pilot/transaction_probe.py` → `transaction_findings.json` |
 | **残留守卫** | ✅ 探针容器 / `ai_` 行 / 非种子上传必须全 0，否则流水线红 | `pilot/probe_residue_check.py` |
+| **涌现裁决器** | ✅ 通用引擎（七裁决）+ demo-shop 真跑判出 `EMERGENT_CONJUNCTIVE`：单注都不触发、合起来违反（偏离 90000 分），两次跑指纹一致，35 项自证全过 | `pilot/engine/emergence.py`、`demos/shop/emergence_probe.py` → `demos/shop/artifacts/emergence_chains.json`、`demos/shop/EMERGENCE_RESULT.md` |
 
 ### 规模数字（以 `pilot/root_causes.json` 为准）
 
@@ -94,7 +95,7 @@
 | **A** | **Agent 群不是真的「群」** —— 骨架有了，但没有编排/调度/并发 | 「有关系才调用，没关系不调用」未落地 | 🟡 骨架 ✅，编排 ❌ |
 | **B** | **增量更新** —— 影响分析能算了，但各层脚本还不能只跑受影响的靶区 | 「改一处只动一处」只完成一半 | 🟡 分析 ✅，调度 ❌（设计已出 `DESIGN.md` §5） |
 | **B2** | **函数层之外的三层载体仍是项目专属**（file/class/service 的动态脚本、探针） | 换项目只能跑静态层，动态层要重写 | ❌ 函数层已通，其余三层待通用化 |
-| **C** | **涌现只做了 5 条手写攻击链** —— 图与判定式已设计（图 ✅），但候选链生成、按枢纽排序、FDR 门禁未做 | 系统的存在理由只兑现了 5/∞ | 🟡 设计 ✅，实现 ❌ |
+| **C** | **涌现只做了 5 条手写攻击链** —— 图与判定式已设计（图 ✅），**裁决器已实现**（`pilot/engine/emergence.py`，demo-shop 上判出 1 条真涌现 ✅），但候选链生成、按枢纽排序、FDR 门禁未做 | 系统的存在理由只兑现了 5/∞ | 🟡 设计 ✅，裁决 ✅，链生成 ❌ |
 | **D** | **语义地图** —— 只有结构特征，没有「这个函数是干什么的」 | Agent 的「使命」只有一半 | ❌（设计已出，见 §8） |
 | **E** | **跨仓库** —— 只会审一个仓库 | 「两群 Agent 互相调用」未实现 | ❌（设计已出，见 §8） |
 | **F** | **运行时保真度** | Java 动态性让静态结论不可信 | ✅ 已标注 |

@@ -69,11 +69,14 @@ layers:
     label: 集权 agent
     granularity: 跨服务的端到端流程
     # 只做跨层关联与端到端语义判定，不重做下层分析。
+    # emergent_masking：涌现裁决专用 —— 单注能看见的症状被另一个条件组合盖住（合起来反而看不见）。
+    # 开这种单之前必须先有契约里的这个类别：契约变更走提交，不在运行期动态改。
     categories:
       - {id: end_to_end_business,      desc: "跨服务业务流程语义错误(单服务各看合理,串起来错)", oracle: [e2e_scenario, trace_reconstruction]}
       - {id: cross_service_performance, desc: "端到端延迟/级联超时/放大效应",                    oracle: [e2e_load_test, trace_analysis]}
       - {id: cross_service_attack_chain,desc: "跨服务攻击链/信任边界穿透/横向移动",              oracle: [attack_graph, threat_modeling], cwe: [CWE-506, CWE-829]}
       - {id: cross_layer_correlation,  desc: "同一根因在多层同时显现(归并不新增检测)",           oracle: [graph_correlation]}
+      - {id: emergent_masking,         desc: "组合条件掩盖单条件症状(单注可见,合起来反而不可见)", oracle: [e2e_scenario, differential_injection]}
     out_of_scope: [single_unit_analysis]
     escalation_to: []
 
@@ -89,9 +92,9 @@ attribution:
 
 agents:
   # 角色数 = 层契约里 category 的总数（每种 category 是一种判定角色的绑定）。
-  # 最初写 9 是按层分的粗估，实测类别数 19 —— 数字本身不重要，
+  # 最初写 9 是按层分的粗估，实测类别数 22 —— 数字本身不重要，
   # 重要的是「角色」指判定手段的绑定，不是代码单元。
-  total_roles: 19
+  total_roles: 22
   constraint:
     # 一轮最多 admit 多少个「判定作业」。**不是 Agent 实例总数** ——
     # 实例数随代码规模线性增长（533 单元 × 21 角色 = 2071），
@@ -102,7 +105,7 @@ agents:
     # 这条边界必须写死，否则预算一开就会把确定性工作也卡掉。
     max_tokens_per_round: 2000000
     # 一轮内的多样性来源：先按绑定的 oracle 各保一个最高优先作业，再按优先级填满。
-    # 契约里有 15 种 oracle > 12 个槽位 —— 这是有意的，逼出跨轮轮转。
+    # 契约里有 19 种 oracle > 12 个槽位 —— 这是有意的，逼出跨轮轮转。
     diversity_source: bound_oracle
   by_layer:
     - {layer: function, count: 1, note: "单元内问题可确定性判定,无需多 agent"}

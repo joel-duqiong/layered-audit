@@ -451,6 +451,43 @@ D 三个价格并存且界面不显示明细合计 / E 无定金订单一步跳�
 > **我读代码时的推断是「空数组 → 不加 CORS 映射 → 全拒」，实测推翻了它。**
 > 这正是「差分出单」的价值 —— 静态推理会错，实测不会。
 
+### 5.18 涌现裁决器：把「个体对、合起来错」变成可判定的结论
+
+> 这一节是 §4.2 判定式的落地。设计见 `DESIGN.md` §4，实跑结果见
+> `demos/shop/EMERGENCE_RESULT.md`。
+
+**判定式**：`F(s)` = 以注入集合 s 执行链的步骤后，目标不变式是否被违反；
+`EMERGENT(c) ⟺ F(D)=1 且 ∀d∈D: F({d})=0`。
+
+**七种裁决**（`pilot/engine/emergence.py`，优先级从高到低）：
+
+| verdict | 条件 | owner | category |
+|---|---|---|---|
+| `FALSIFIED_CHAIN` | 基线就违反 / 合起来也不违反 / 没有活着的注入 | 不开单 | — |
+| `EMERGENT_MASKING` | 单注触发、成对组合后症状反而消失 | **掩盖者的层**(own) + integration(cited) | `integration.emergent_masking`（契约新增） |
+| `EMERGENT_CONJUNCTIVE` | 合起来错、单独都不错 | integration(own) | `integration.end_to_end_business` |
+| `EMERGENT_CONJUNCTIVE_CORE` | 同上，但 leave-one-out 求出**更小**的核心集 | integration(own) | `integration.end_to_end_business` |
+| `EMERGENT_AMPLIFIED` | 合起来错且偏离量 ≥1.5× 单注 | integration(own) | `integration.cross_service_performance` |
+| `NOT_EMERGENT_ADDITIVE` | 单注也能触发，且违反的不变量相交 | 已有根因 | 集成层不开新单 |
+| `NOT_EMERGENT_INDEPENDENT` | 单注也能触发，且违反的是互不相交的不变量 | 各低层 | 集成层不开单 |
+
+**工程前提：注入是条件注入，不是代码变异。** 被测系统只读，裁决器只换输入与上下文：
+目录里 `mutation.kind` 只有 `data`（数据行）/ `request`（请求字段）/ `instance`（装配上下文）。
+
+**活性门控**：每条注入都要过 `alive_check` —— 单独施加它，能在它自己的层上看到症状
+= 活；看不到 = 死。**死的注入被剔除出分母并告警**（不许静默），三态降级为 `mutant_survivor`。
+
+**三态**：`verified`（实测确认）/ `unverified`（判不了：基线已违反、执行失败、无活着注入）/
+`mutant_survivor`（判出来了，但有注入在这个环境里是死的）。
+
+**引擎 / 项目分离**：`pilot/engine/emergence.py` 零项目字面量，只判定；
+项目侧提供场景执行器（怎么注入、怎么跑、怎么读不变式）。这样「同一份观测 → 同一份裁决」
+可以脱离被测系统复算。
+
+**实跑（demo-shop）**：`EMERG-QUOTA-LEDGER-DIVERGENCE` 判 `EMERGENT_CONJUNCTIVE` ——
+额度按报价查（900000）、账按实付记（810000）两个单点各自都对，
+组合起来才出现「额度被占住、账上没有对应账目」。详见 `demos/shop/EMERGENCE_RESULT.md`。
+
 ### 5.12 通用 / 配置 / 实现 三层切分（这套系统怎么才算「通用」）
 
 **切错边界是最大的浪费**：把 agent 也做成通用 → 变成通用扫描器（本项目明确不要）；
@@ -549,6 +586,7 @@ cd targets/acme-banquet
 | `aggregate_findings.py` | `all_findings.json` | `root_causes.json`、`audit_report.md` | 根因归并（88→53）、归属/越界校验、覆盖度矩阵 |
 | `feature_coverage.py` | `target.json` 的 carriers/features + 各项目侧检测器 | `feature_coverage.json`、`feature_coverage.md` | 特性 × 载体覆盖矩阵 + 盲区清单 + 受影响结论数 |
 | `check_engine_purity.py` | `target.json` + 引擎源码 | — | 引擎纯净度守卫：出现项目字面量就退出码 1 |
+| `emergence.py` | 注入目录（项目配置）+ 场景执行器（项目侧） | 裁决结论 + finding | **涌现裁决器**：F(注入集合) → 七种裁决之一（合起来错/单独对 = 涌现）；活性门控 + leave-one-out 求最小核心集 |
 
 配套：`pilot/target.json`（项目绑定，含 `carriers` / `features` / `repro_templates`）、
 `pilot/finding_meta.py`（人工标注表，含 `CLASS_FILE_HINTS` / `COLUMN_FILE_HINTS` 定位提示）、
@@ -675,6 +713,7 @@ python3 perf_load.py                    # 负载实测（延迟曲线 + 分页 t
 | B6 | **推广到第二个项目** | 🟡 **接缝已补（本轮）**：引擎零项目字面量 + `target.json` 绑定 + 纯净度守卫 + 换绑定冒烟测试。**但还没在真实第二个项目上跑过** —— 那需要为新项目重写 agent 脚本 | 等有第二个项目时做；agent 脚本本来就该重写，不是「通用性缺口」 |
 | B7 | **被测系统自身修复闭环** | 发现 6 条 CRITICAL，但没走「修复 → 门禁转绿 → 摘 xfail」流程 | 挑 1 条（推荐 `NO_AUTHZ`，收益最大）走完整闭环，验证回归资产真的能守住 |
 | B8 | **契约缺口的结构性修法** | 9 条发现装不进现有 category，靠 `UNMAPPED` 标记 | 不是加类别就完事：要能区分「类别表太窄」与「发现开错层」，后者靠 `out_of_scope` 校验自动判（已实现 1 例） |
+| B10 | **涌现裁决器** | ✅ **本轮完成**：`pilot/engine/emergence.py`（七裁决 + 活性门控 + leave-one-out）+ demo-shop 真跑判出 1 条 `EMERGENT_CONJUNCTIVE`（偏离 90000 分）；候选链生成 / FDR 门禁仍未做 | 先做链生成（图驱动），再谈 FDR |
 | B9 | **`repro_cmd` 从 reference 升级成可跑** | ✅ **本轮完成**：14 → **3 条**（函数层 `--case`、集成层 `--scenario` / `--chain`）。剩下 3 条是操作步骤描述或数据文件指针，不硬编 | 剩余 34 条 `layer` 级复现（file / class 层）还可继续降维到用例级 |
 
 ### C. 明确暂缓（别做）

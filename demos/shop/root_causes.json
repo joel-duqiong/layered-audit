@@ -1,0 +1,117 @@
+{
+  "generated_from": "aggregate_findings.py",
+  "summary": {
+    "findings": 1,
+    "root_causes": 1,
+    "collapsed": 0,
+    "violations": 0
+  },
+  "root_causes": [
+    {
+      "root_cause_key": "order.quota_ledger_amount_divergence",
+      "title": "额度占用额（报价）与账本记录额（实付）在会员链路上口径分裂",
+      "severity": "HIGH",
+      "owner_layer": "integration",
+      "categories": [
+        "integration.end_to_end_business"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "integration:EMERG-QUOTA-LEDGER-DIVERGENCE#0"
+      ],
+      "layers_own": [
+        "integration"
+      ],
+      "layers_all": [
+        "integration"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-840"
+      ],
+      "confidence": 0.95,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 demos/shop/emergence_probe.py --chain EMERG-QUOTA-LEDGER-DIVERGENCE"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 1
+      },
+      "related_root_causes": [
+        "order.quota_checked_on_quoted_amount_ledger_on_settled",
+        "pricing.member_tier_bound_to_deployment_profile"
+      ]
+    }
+  ],
+  "coverage": {
+    "matrix": {
+      "function": {
+        "boundary": 0,
+        "complexity": 0,
+        "exception_path": 0,
+        "numeric": 0
+      },
+      "file": {
+        "state_consistency": 0,
+        "error_handling_pattern": 0,
+        "cohesion": 0
+      },
+      "class": {
+        "encapsulation_leak": 0,
+        "invariant": 0,
+        "contract_violation": 0,
+        "inheritance_design": 0
+      },
+      "service": {
+        "interface_contract": 0,
+        "resilience": 0,
+        "authz": 0,
+        "data_consistency": 0,
+        "resource_leak": 0,
+        "service_latency": 0
+      },
+      "integration": {
+        "end_to_end_business": 1,
+        "cross_service_performance": 0,
+        "cross_service_attack_chain": 0,
+        "cross_layer_correlation": 0,
+        "emergent_masking": 0
+      }
+    },
+    "zero_coverage_categories": [
+      "function.boundary",
+      "function.complexity",
+      "function.exception_path",
+      "function.numeric",
+      "file.state_consistency",
+      "file.error_handling_pattern",
+      "file.cohesion",
+      "class.encapsulation_leak",
+      "class.invariant",
+      "class.contract_violation",
+      "class.inheritance_design",
+      "service.interface_contract",
+      "service.resilience",
+      "service.authz",
+      "service.data_consistency",
+      "service.resource_leak",
+      "service.service_latency",
+      "integration.cross_service_performance",
+      "integration.cross_service_attack_chain",
+      "integration.cross_layer_correlation",
+      "integration.emergent_masking"
+    ],
+    "unmapped_uids": [],
+    "unmapped_by_layer": {},
+    "files_with_multiple_root_causes": {},
+    "root_cause_count": 1,
+    "finding_count": 1
+  }
+}

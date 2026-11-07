@@ -121,6 +121,34 @@ def evaluate(row: dict[str, Any], invariant: dict[str, Any]) -> tuple[bool, dict
     return ok, detail
 
 
+def deviation(detail: dict[str, Any]) -> float:
+    """从一次判定的细节算出「偏离量」—— 违反得有多严重（0 = 没违反）。
+
+    涌现裁决要用它比较量级（合起来错得是否比单独错得更狠）。判定细节里的
+    left/right/value 已经是具体数值，这里只做差，不做解释。
+    """
+    kind = detail.get("type")
+
+    def num(value: Any) -> float:
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            return 0.0
+        return float(value)
+
+    if kind == "field_eq_field":
+        return abs(num(detail.get("left")) - num(detail.get("right")))
+    if kind == "field_lte_field":
+        return max(0.0, num(detail.get("left")) - num(detail.get("right")))
+    if kind == "field_gte_field":
+        return max(0.0, num(detail.get("right")) - num(detail.get("left")))
+    if kind == "field_lte_const":
+        return max(0.0, num(detail.get("left")) - num(detail.get("value")))
+    if kind == "field_gte_const":
+        return max(0.0, num(detail.get("value")) - num(detail.get("left")))
+    if kind == "field_in_set":
+        return 0.0 if detail.get("ok") else 1.0
+    return 0.0
+
+
 def evaluate_all(rows: list[dict[str, Any]],
                  invariants: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """对一批行跑一批不变式，返回每条不变式的判定汇总。"""

@@ -1,0 +1,43 @@
+{
+  "schema": "demo-invariants/1",
+  "note": "demo-shop 的业务不变式声明（项目配置）。判定原语复用通用引擎 pilot/engine/invariants.py，零改动。pilot/invariants.json 只支持单个 entity（entity.read_sql），而 demo 需要两个行形状（订单行），故这里用 entities 列表 + 每条不变式声明所属 entity。",
+  "entities": [
+    {
+      "name": "order",
+      "read_sql": "SELECT o.id, o.customer_name, c.level AS customer_level, o.quoted_amount_cent, o.settled_amount_cent, o.quoted_amount_cent * 9 / 10 AS expected_member_price_cent FROM shop_order o JOIN shop_customer c ON c.name = o.customer_name WHERE o.id IN ({ids})"
+    }
+  ],
+  "invariants": [
+    {
+      "id": "BI-QUOTA-LEDGER-PARITY",
+      "entity": "order",
+      "severity": "HIGH",
+      "category": "integration.end_to_end_business",
+      "claim": "额度占用额（通过授信额度检查的报价）是否等于账本记录额（实付）？",
+      "why": "授信额度按客户报价检查并占住，账本按实付记录。两个口径必须相等 —— 不相等就意味着「额度被占住了，却没有对应的账目」，差额就是被白占的额度。",
+      "assert": {
+        "type": "field_eq_field",
+        "left": "quoted_amount_cent",
+        "right": "settled_amount_cent"
+      }
+    },
+    {
+      "id": "BI-VIP-MEMBER-PRICE",
+      "entity": "order",
+      "severity": "HIGH",
+      "category": "service.data_consistency",
+      "claim": "VIP 客户的结算额是否享受了会员价（报价的 9/10）？",
+      "why": "会员价是**客户等级**维度的价格规则：VIP 客户在任何部署环境下都应当拿到九折。这条不变式只对 VIP 客户适用（when 条件），衡量的是「等级条件有没有真的落到定价上」。",
+      "assert": {
+        "type": "field_eq_field",
+        "left": "settled_amount_cent",
+        "right": "expected_member_price_cent"
+      },
+      "when": {
+        "field": "customer_level",
+        "op": "eq",
+        "value": "VIP"
+      }
+    }
+  ]
+}

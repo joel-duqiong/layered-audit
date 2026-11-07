@@ -1,0 +1,144 @@
+{
+  "schema": "emergence-catalog/1",
+  "note": "涌现注入目录（项目侧配置）。注入只改请求字段 / 数据行 / 装配上下文，被测系统代码一行不动。判定与裁决在通用引擎 pilot/engine/emergence.py。",
+  "instances": {
+    "default": {
+      "base_url": "http://127.0.0.1:8090",
+      "profile": "default",
+      "note": "标准装配：只有 StandardPricingStrategy（@Profile(\"!vip\")）"
+    },
+    "vip": {
+      "base_url": "http://127.0.0.1:8091",
+      "profile": "vip",
+      "note": "会员装配：MemberPricingStrategy（@Profile(\"vip\")）生效"
+    }
+  },
+  "database": {
+    "container": "jiuyan-postgres",
+    "user": "jiuyan",
+    "database": "demo_shop"
+  },
+  "chains": [
+    {
+      "id": "EMERG-QUOTA-LEDGER-DIVERGENCE",
+      "title": "额度占用额（报价）与账本记录额（实付）在会员链路上口径分裂",
+      "hypothesis": "授信额度按客户报价检查并占用，账本按折后实付记录；会员价一旦生效（VIP 客户 + 会员装配），两个口径不再相等 —— 额度被占住却没有对应账目。任何一个条件单独都不足以造成分裂：单独 VIP 客户在标准装配下拿不到折扣（结算额=报价），单独会员装配作用在非 VIP 客户上也不打折。",
+      "severity": "HIGH",
+      "entity": "order",
+      "target_invariant": "BI-QUOTA-LEDGER-PARITY",
+      "root_cause_key": "order.quota_ledger_amount_divergence",
+      "claim": "额度占用额与账本记录额是否在同一条下单链路上出现口径分裂？",
+      "cites": [
+        "order.quota_checked_on_quoted_amount_ledger_on_settled",
+        "pricing.member_tier_bound_to_deployment_profile"
+      ],
+      "cwe": [
+        "CWE-840"
+      ],
+      "location": {
+        "file": "/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/backend/src/main/java/com/demo/shop/service/OrderService.java",
+        "line": 58,
+        "symbol": "OrderService.create",
+        "endpoint": "POST /api/orders",
+        "line_hint": "quotaService.withinLimit(按报价 900000) vs ledgerService.record(按实付 810000)"
+      },
+      "baseline_instance": "default",
+      "flow": {
+        "customer": {
+          "name": "ai_probe_emerg_cust",
+          "level": "NORMAL",
+          "creditLimitCent": 1000000
+        },
+        "orders": [
+          {
+            "quotedAmountCent": 900000,
+            "currency": "CNY"
+          }
+        ]
+      },
+      "injections": [
+        {
+          "id": "INJ-TIER-VIP",
+          "defect": "pricing.member_tier_bound_to_deployment_profile",
+          "layer": "service",
+          "target_step": "POST /api/orders",
+          "mutation": {
+            "kind": "data",
+            "target": "customer",
+            "set": {
+              "level": "VIP"
+            }
+          },
+          "expected_symptom": "BI-VIP-MEMBER-PRICE",
+          "alive_check": {
+            "kind": "scenario",
+            "cmd": "python3 demos/shop/emergence_probe.py --alive-check INJ-TIER-VIP",
+            "scenario": {
+              "instance": "default",
+              "customer_level": "VIP",
+              "quote": 900000,
+              "currency": "CNY",
+              "probe_invariant": "BI-VIP-MEMBER-PRICE",
+              "expect": "violated"
+            },
+            "why": "单独注入「客户等级=VIP」后，在标准装配下 VIP 客户拿不到会员价（BI-VIP-MEMBER-PRICE 被违反）—— 这一条低层症状可单独复现，说明等级条件确实到达了定价层，且「会员价被绑在部署维度」这个缺陷是活的。若哪天等级维度被修好（VIP 客户到处都拿九折），本条注入即失效，会被活性检查剔除并告警。"
+          },
+          "active": true
+        },
+        {
+          "id": "INJ-PROFILE-VIP",
+          "defect": "order.quota_checked_on_quoted_amount_ledger_on_settled",
+          "layer": "service",
+          "target_step": "POST /api/orders",
+          "mutation": {
+            "kind": "instance",
+            "instance": "vip"
+          },
+          "expected_symptom": "BI-VIP-MEMBER-PRICE",
+          "alive_check": {
+            "kind": "scenario",
+            "cmd": "python3 demos/shop/emergence_probe.py --alive-check INJ-PROFILE-VIP",
+            "scenario": {
+              "instance": "vip",
+              "customer_level": "VIP",
+              "quote": 900000,
+              "currency": "CNY",
+              "probe_invariant": "BI-VIP-MEMBER-PRICE",
+              "expect": "satisfied"
+            },
+            "why": "装配上下文注入的活性检查：会员装配下 VIP 客户的结算额确实等于报价的 9/10（BI-VIP-MEMBER-PRICE 成立）—— 说明「被装配的是会员价策略」这一条件在目标实例上真的生效。若该实例其实跑的是标准装配（环境漂移），本条注入即为死注入，会被剔除并告警。"
+          },
+          "active": true,
+          "note": "这是**装配上下文注入**：同一份代码、同一份请求，只换被装配的部署上下文（profile）。会员价的生效条件天然是「客户等级维度 ∧ 部署维度」的合取，所以合取式的第二个合取项只能落在装配上下文上 —— 见 EMERGENCE_RESULT.md 的判断记录。"
+        },
+        {
+          "id": "INJ-FX-NONBASE",
+          "defect": "order.fx_rate_applied_to_settlement_without_quota_alignment",
+          "layer": "service",
+          "target_step": "POST /api/orders",
+          "mutation": {
+            "kind": "request",
+            "set": {
+              "currency": "EUR"
+            }
+          },
+          "expected_symptom": "BI-QUOTA-LEDGER-PARITY",
+          "alive_check": {
+            "kind": "scenario",
+            "cmd": "python3 demos/shop/emergence_probe.py --alive-check INJ-FX-NONBASE",
+            "scenario": {
+              "instance": "default",
+              "customer_level": "NORMAL",
+              "quote": 900000,
+              "currency": "EUR",
+              "probe_invariant": "BI-QUOTA-LEDGER-PARITY",
+              "expect": "violated"
+            },
+            "why": "跨仓库汇率注入（外币 → 汇率 92）：单独就能让报价与实付不等 —— 说明这条注入一旦激活，缺陷就不再是涌现（单注即可触发）。故 active=false，只用于敏感性分析。"
+          },
+          "active": false
+        }
+      ]
+    }
+  ]
+}
