@@ -46,9 +46,8 @@
       "confidence": 0.98,
       "ground_truth": "verified",
       "repro_cmds": [
-        "GET /api/orders?page=1&pageSize=100 → data[].customerPhone 是完整 11 位",
         "curl http://127.0.0.1:8081/api/orders   # 无任何凭证",
-        "无凭证 PUT /api/orders/{id}，改 packageItems → 查库 package_snapshot 已变"
+        "python3 integration_chain.py --chain CHAIN-A"
       ],
       "violations": [],
       "notes": [],
@@ -92,9 +91,9 @@
       "confidence": 0.97,
       "ground_truth": "verified",
       "repro_cmds": [
-        "POST /api/orders(finalPriceCent=1) → PUT 改 packageItems.quantity=99 → 看订单详情",
         "python3 fn_dynamic.py --case RFP-05",
-        "见 integration_observation.json scenarios[SC01_CLIENT_CONTROLLED_PRICE]"
+        "python3 integration_chain.py --chain CHAIN-D",
+        "python3 integration_dynamic.py --scenario SC01_CLIENT_CONTROLLED_PRICE"
       ],
       "violations": [],
       "notes": [],
@@ -137,8 +136,8 @@
       "confidence": 0.95,
       "ground_truth": "verified",
       "repro_cmds": [
-        "POST /api/uploads/product-image（file=任意字节, image/png）→ GET 返回的 imageUrl",
-        "python3 fn_dynamic.py --case UPL-04"
+        "python3 fn_dynamic.py --case UPL-04",
+        "python3 integration_chain.py --chain CHAIN-B"
       ],
       "violations": [],
       "notes": [],
@@ -218,7 +217,7 @@
       "ground_truth": "verified",
       "repro_cmds": [
         "python3 fn_dynamic.py --case NPI-04",
-        "见 integration_observation.json scenarios[SC03_QUANTITY_OVERRIDE]"
+        "python3 integration_dynamic.py --scenario SC03_QUANTITY_OVERRIDE"
       ],
       "violations": [],
       "notes": [],
@@ -260,7 +259,7 @@
       "ground_truth": "verified",
       "repro_cmds": [
         "python3 fn_dynamic.py --case BPS-03",
-        "见 integration_observation.json scenarios[SC02_FOREIGN_ITEM_IN_PACKAGE]"
+        "python3 integration_dynamic.py --scenario SC02_FOREIGN_ITEM_IN_PACKAGE"
       ],
       "violations": [],
       "notes": [],
@@ -362,7 +361,7 @@
       "confidence": 0.95,
       "ground_truth": "verified",
       "repro_cmds": [
-        "见 integration_observation.json scenarios[SC05_LIST_TRUNCATION]"
+        "python3 integration_dynamic.py --scenario SC05_LIST_TRUNCATION"
       ],
       "violations": [],
       "notes": [],
@@ -371,7 +370,7 @@
     },
     {
       "root_cause_key": "index.idx_products_name_unusable",
-      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.553ms vs 0.011ms，差 687 倍）",
+      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.755ms vs 0.011ms，差 705 倍）",
       "severity": "HIGH",
       "owner_layer": "service",
       "categories": [
@@ -864,7 +863,7 @@
       "confidence": 0.93,
       "ground_truth": "verified",
       "repro_cmds": [
-        "见 integration_observation.json scenarios[SC04_UNKNOWN_FIELD_SILENT_DROP]"
+        "python3 integration_dynamic.py --scenario SC04_UNKNOWN_FIELD_SILENT_DROP"
       ],
       "violations": [],
       "notes": [],
@@ -1044,7 +1043,7 @@
     },
     {
       "root_cause_key": "orders.no_data_lifecycle",
-      "title": "orders 表没有软删/归档，永久增长（当前 192 kB）",
+      "title": "orders 表没有软删/归档，永久增长（当前 184 kB）",
       "severity": "MEDIUM",
       "owner_layer": "class",
       "categories": [

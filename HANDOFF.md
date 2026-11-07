@@ -133,7 +133,7 @@
 | `location`（file+line+symbol） | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ 86/86（文件 66 / 行号 43） |
 | `claim`（一句话怀疑什么） | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ 86/86 |
 | `evidence_refs` | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ 86/86 |
-| `repro_cmd` | 变体 `repro`/`endpoint` | ✗ | 变体 `repro` | ✗ | 变体 `repro` | ✓ 86/86（case 8 / endpoint 30 / layer 34 / reference 14） |
+| `repro_cmd` | 变体 `repro`/`endpoint` | ✗ | 变体 `repro` | ✗ | 变体 `repro` | ✓ 88/88（case 8 / scenario 9 / request 30 / layer 36 / command 2 / reference 3） |
 | `confidence` | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ 86/86 |
 | `ground_truth` | ✗ | ✗ | ✗ | ✗ | ✗ | ✓ 86/86 |
 
@@ -152,6 +152,23 @@
 
 `fn_dynamic.py` 新增 `--case <id>`（可重复），使函数层的 `repro_cmd` 变成真能跑的命令：
 `python3 fn_dynamic.py --case RFP-05`。
+
+集成层同理：`integration_dynamic.py --scenario SC01_...`（6 个业务场景，已拆成可单独执行的函数）、
+`integration_chain.py --chain CHAIN-A`（5 条攻击链）。**不可直接执行的 repro 从 14 条降到 3 条** ——
+剩下 3 条确实是「操作步骤描述」或「数据文件指针」，硬编成命令反而是假的。
+
+粒度口径（`normalize_findings.py` 的 `_granularity`）：
+
+| 粒度 | 含义 | 例子 |
+|---|---|---|
+| `case` | 单个单元用例 | `python3 fn_dynamic.py --case RFP-05` |
+| `scenario` | 单个缺陷场景 / 攻击链 | `python3 integration_chain.py --chain CHAIN-A` |
+| `request` | 一个 HTTP 请求 | `curl -X DELETE /api/categories/None` |
+| `command` | 其它 shell 命令 | `grep -n 'packageSnapshot' .../OrderResponse.java` |
+| `layer` | 整层脚本（无更细粒度） | `python3 file_dynamic.py` |
+| `reference` | **不是命令**，只是一句指引 | 「见 observation.json 中 key=…」 |
+
+`reference` 单独成一档，是为了不把「读一下这个文件」伪装成「跑这条命令」。
 
 ### 5.5 归属规则
 
@@ -392,7 +409,7 @@ python3 perf_load.py                    # 负载实测（延迟曲线 + 分页 t
 | B6 | **推广到第二个项目** | 现在一切硬编码 jiuyan（路径、端口、容器名、表名） | 抽成配置（`sut:` 段已在 manifest 里预留），至少让「换一个 Spring Boot 项目」能跑起来 |
 | B7 | **被测系统自身修复闭环** | 发现 6 条 CRITICAL，但没走「修复 → 门禁转绿 → 摘 xfail」流程 | 挑 1 条（推荐 `NO_AUTHZ`，收益最大）走完整闭环，验证回归资产真的能守住 |
 | B8 | **契约缺口的结构性修法** | 9 条发现装不进现有 category，靠 `UNMAPPED` 标记 | 不是加类别就完事：要能区分「类别表太窄」与「发现开错层」，后者靠 `out_of_scope` 校验自动判（已实现 1 例） |
-| B9 | **`repro_cmd` 从 reference 升级成可跑** | 86 条里 14 条是 `reference`（原始 repro 只是「见 observation.json 中 key=…」的指引） | 给 file / class 层的动态脚本加 `--case`（函数层已做），把 34 条 `layer` 级复现降维到用例级 |
+| B9 | **`repro_cmd` 从 reference 升级成可跑** | ✅ **本轮完成**：14 → **3 条**（函数层 `--case`、集成层 `--scenario` / `--chain`）。剩下 3 条是操作步骤描述或数据文件指针，不硬编 | 剩余 34 条 `layer` 级复现（file / class 层）还可继续降维到用例级 |
 
 ### C. 明确暂缓（别做）
 
@@ -515,6 +532,10 @@ agent 还没写 —— 这是 §11-B4 编排化的优先级依据。
 - `aggregate_findings.py` → 88 条发现归并为 **53 条根因**；硬违规 1 条；归并提示 4 条；
   零覆盖类别从 10 降到 **8**（`service.service_latency` 与
   `integration.cross_service_performance` 本轮补上）。
+- `repro_cmd` 不可直接执行的从 **14 条降到 3 条**（case 8 / scenario 9 / request 30 /
+  layer 36 / command 2 / reference 3）；
+  `python3 integration_dynamic.py --scenario SC01_CLIENT_CONTROLLED_PRICE` 单场景重放
+  复现成立（FAIL，status=200）。
 - 回归套件 `python3 -m pytest -q` → 70 passed / 8 xfailed，**且跑完零残留**
   （本轮修掉了套件自身漏清理的 33 行）。
 - 残留已归零：`ai_` 前缀行 products/packages/categories/package_types/orders 全为 0；

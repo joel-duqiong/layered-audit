@@ -9,16 +9,16 @@
 
 | # | 严重度 | 归属层 | 根因 | 标题 | 发现数 | 置信 | ground_truth | 可跑复现 |
 |---|--------|--------|------|------|--------|------|---------------|----------|
-| 1 | CRITICAL | service | `authz.no_authorization_layer` | 全系统零鉴权：无凭证即可读写全部业务数据 | 3 | 0.98 | verified | `GET /api/orders?page=1&pageSize=100 → data[].customerPhon…` |
-| 2 | CRITICAL | function | `price.final_price.upper_bound_unvalidated` | 成交价由客户端说了算：resolveFinalPrice 只做下界检查，完全不与套餐价比对 | 3 | 0.97 | verified | `POST /api/orders(finalPriceCent=1) → PUT 改 packageItems.q…` |
-| 3 | CRITICAL | function | `upload.content_type_not_sniffed` | 上传只信客户端自报的扩展名与 contentType：任意字节都以 .png 落盘 | 2 | 0.95 | verified | `POST /api/uploads/product-image（file=任意字节, image/png）→ GE…` |
+| 1 | CRITICAL | service | `authz.no_authorization_layer` | 全系统零鉴权：无凭证即可读写全部业务数据 | 3 | 0.98 | verified | `curl http://127.0.0.1:8081/api/orders   # 无任何凭证` |
+| 2 | CRITICAL | function | `price.final_price.upper_bound_unvalidated` | 成交价由客户端说了算：resolveFinalPrice 只做下界检查，完全不与套餐价比对 | 3 | 0.97 | verified | `python3 fn_dynamic.py --case RFP-05` |
+| 3 | CRITICAL | function | `upload.content_type_not_sniffed` | 上传只信客户端自报的扩展名与 contentType：任意字节都以 .png 落盘 | 2 | 0.95 | verified | `python3 fn_dynamic.py --case UPL-04` |
 | 4 | HIGH | service | `errhandler.client_error_mapped_to_500` | 客户端错误被当成服务端错误：返回 [500] | 2 | 0.94 | verified | `curl -X POST 见 observation.json 中 key=POST /api/uploads/p…` |
 | 5 | HIGH | function | `order.item_quantity_unvalidated` | 明细归一化只查重复，不查 productId/quantity：数量可为空、为 0、为负 | 2 | 0.93 | verified | `python3 fn_dynamic.py --case NPI-04` |
 | 6 | HIGH | function | `order.snapshot.item_ownership_unchecked` | 订单快照：明细归属不校验，空明细静默回退成套餐默认明细 | 2 | 0.94 | verified | `python3 fn_dynamic.py --case BPS-03` |
 | 7 | HIGH | file | `audit.client_ip_trusted_from_header` | 审计日志里的 clientIp 完全由客户端伪造：X-Forwarded-For 首段直接采信 | 1 | 0.93 | verified | `python3 file_dynamic.py` |
 | 8 | HIGH | file | `cors.allowed_origin_patterns_too_broad` | CORS 白名单等于「整个内网 + 所有本地端口」，且全是明文 http | 1 | 0.95 | verified | `python3 file_dynamic.py` |
-| 9 | HIGH | integration | `frontend.list_hardcoded_limit_100` | 前端列表固定只取前 100 条并丢弃 total，超出的数据永远不可见 | 1 | 0.95 | verified | `见 integration_observation.json scenarios[SC05_LIST_TRUNCA…` |
-| 10 | HIGH | service | `index.idx_products_name_unusable` | DDL 声明的 idx_products_name 对服务层查询模式无效（7.553ms vs 0.011ms，差 687 倍） | 1 | 0.88 | verified | `python3 class_dynamic.py` |
+| 9 | HIGH | integration | `frontend.list_hardcoded_limit_100` | 前端列表固定只取前 100 条并丢弃 total，超出的数据永远不可见 | 1 | 0.95 | verified | `python3 integration_dynamic.py --scenario SC05_LIST_TRUNC…` |
+| 10 | HIGH | service | `index.idx_products_name_unusable` | DDL 声明的 idx_products_name 对服务层查询模式无效（7.755ms vs 0.011ms，差 705 倍） | 1 | 0.88 | verified | `python3 class_dynamic.py` |
 | 11 | HIGH | class | `order.status.transition_unconstrained` | 状态机缺失：9/9 种迁移全部被接受，含回退 | 1 | 0.96 | verified | `python3 class_dynamic.py` |
 | 12 | HIGH | function | `order_no.no_collision_guarantee` | 订单号每秒只有 1000 个槽位，并发下单必然撞号（唯一键冲突 → 500） | 1 | 0.9 | verified | `python3 fn_dynamic.py --case GON-02` |
 | 13 | HIGH | class | `rule.missing_in_db_dto_service` | 4 条业务不变量在 DB / DTO / 服务层三层全都不存在 | 1 | 0.85 | verified | `python3 class_dynamic.py` |
@@ -30,13 +30,13 @@
 | 19 | MEDIUM | function | `apply.null_input.npe_instead_of_422` | apply 直接对入参 .trim()：空值触发 NPE（500）而不是业务异常（422） | 1 | 0.93 | verified | `python3 fn_dynamic.py --case APL-02` |
 | 20 | MEDIUM | class | `db.notnull_bypassed_by_empty_string` | orders.address 声明 NOT NULL，实际用空串绕过 —— 非空约束只挡了 NULL | 1 | 0.92 | verified | `python3 class_dynamic.py` |
 | 21 | MEDIUM | class | `dto.required_check_missing` | orders.finalPriceCent 必填性校验落在服务层，DTO 少一条 @NotNull | 1 | 0.88 | verified | `python3 class_dynamic.py` |
-| 22 | MEDIUM | integration | `dto.unknown_field_silent_drop` | 字段名拼错会被静默吞掉，并被「套餐默认明细」悄悄顶替 | 1 | 0.93 | verified | `见 integration_observation.json scenarios[SC04_UNKNOWN_FIE…` |
+| 22 | MEDIUM | integration | `dto.unknown_field_silent_drop` | 字段名拼错会被静默吞掉，并被「套餐默认明细」悄悄顶替 | 1 | 0.93 | verified | `python3 integration_dynamic.py --scenario SC04_UNKNOWN_FI…` |
 | 23 | MEDIUM | file | `errhandler.badrequest_echoes_body` | 400 错误把原始请求体片段原样回显 | 1 | 0.9 | verified | `python3 file_dynamic.py` |
 | 24 | MEDIUM | file | `errhandler.db_constraint_text_leak` | DB 约束冲突的原始错误文本被原样回给客户端 | 1 | 0.92 | verified | `python3 file_dynamic.py` |
 | 25 | MEDIUM | integration | `frontend.image_fallback_cross_domain` | 商品缺图时前端兜底成了套餐种子图 | 1 | 0.88 | verified | `POST /api/products（imageUrl 留空）→ 前端 mapProduct → image 字段…` |
 | 26 | MEDIUM | integration | `frontend.item_count_semantics_divergent` | 同一个套餐，界面上有两个互不相同的「商品数」 | 1 | 0.92 | verified | `造一个套餐，明细含一个 is_active=false 的商品 → 对比卡片与弹层的数字` |
 | 27 | MEDIUM | function | `order.apply.amount_invariants_weak` | apply 的金额/状态不变量只查了 >= 0：定金可以大于套餐总价，状态与预订时间可为空 | 1 | 0.92 | verified | `python3 fn_dynamic.py --case APL-12` |
-| 28 | MEDIUM | class | `orders.no_data_lifecycle` | orders 表没有软删/归档，永久增长（当前 192 kB） | 1 | 0.8 | verified | `python3 class_dynamic.py` |
+| 28 | MEDIUM | class | `orders.no_data_lifecycle` | orders 表没有软删/归档，永久增长（当前 184 kB） | 1 | 0.8 | verified | `python3 class_dynamic.py` |
 | 29 | MEDIUM | file | `package.applyItems.mutate_before_validate` | PackageService.applyItems 先删后校验：明细被清空后才去查商品 | 1 | 0.91 | verified | `python3 file_dynamic.py` |
 | 30 | MEDIUM | class | `softdelete.resurrects_row` | 软删除的行会被同名重建「复活」，id 与 sort_order 沿用旧值 | 1 | 0.9 | verified | `python3 class_dynamic.py` |
 | 31 | MEDIUM | integration | `tooling.coverage_recording_gap` | 1/25 个接口既无真实流量样本、前端也不调用；17 个写接口的真实流量样本为 0 | 1 | 0.85 | verified | `见 /Users/june/tests/auto-api/recordings/jiuyan_readonly.j…` |

@@ -185,7 +185,8 @@ cross_layer:
     required_fields_present: "10/10 × 88 条 = 100%"
     location_file: 68
     location_line: 45
-    repro_cmd: {case: 8, endpoint: 32, layer: 34, reference: 14}
+    repro_cmd: {case: 8, scenario: 9, request: 30, layer: 36, command: 2, reference: 3}
+    repro_not_runnable: 3   # 剩下 3 条是操作步骤描述或数据文件指针，不硬编成命令
     category_fit: {exact: 39, stretched: 39, unmapped: 9}
     owner_stamped: "88/88"
     hard_violations: 1

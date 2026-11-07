@@ -95,7 +95,7 @@ TraceIdFilter.clientIp 的实现是「有 X-Forwarded-For 就取第一段，没�
   },
   "real_container": {
     "spoofed_ip_in_logs": true,
-    "log_segment": "n-urllib/3.14\n2026-11-07T10:53:38.688Z  INFO 1 --- [banquet-backend] [io-8080-exec-25] c.jiuyan.banquet.config.TraceIdFilter    : request end traceId=5f45e838-5b70-4f73-bcd5-d91c91e48370 method=GET path=/api/health status=200 durationMs=0 clientIp=9.9.9.9 userAgent=Python-urllib/3.14 errorCode=null\n"
+    "log_segment": "n-urllib/3.14\n2026-11-07T10:57:48.412Z  INFO 1 --- [banquet-backend] [io-8080-exec-20] c.jiuyan.banquet.config.TraceIdFilter    : request end traceId=8b701391-0d1d-4335-a2fa-0220a22b4d7d method=GET path=/api/health status=200 durationMs=0 clientIp=9.9.9.9 userAgent=Python-urllib/3.14 errorCode=null\n"
   },
   "implementation": "TraceIdFilter.clientIp: forwardedFor.split(\",\")[0].trim()"
 }
@@ -116,7 +116,7 @@ handleBadRequest 用 Map.of("message", ex.getMessage()) 把 Jackson 的解析错
 ```json
 {
   "http_status": 400,
-  "body": "{\"success\":false,\"code\":\"VALIDATION_ERROR\",\"message\":\"参数错误\",\"details\":{\"message\":\"JSON parse error: Unexpected character ('s' (code 115)) in JSON string: {\\\"password\\\":\\\"hunter2\\\"} at [Source: (String)\\\"; line: 1, column: 20]\"},\"timestamp\":1794048813.788520000}",
+  "body": "{\"success\":false,\"code\":\"VALIDATION_ERROR\",\"message\":\"参数错误\",\"details\":{\"message\":\"JSON parse error: Unexpected character ('s' (code 115)) in JSON string: {\\\"password\\\":\\\"hunter2\\\"} at [Source: (String)\\\"; line: 1, column: 20]\"},\"timestamp\":1794049063.493462000}",
   "body_contains_raw_fragment": true,
   "implementation": "GlobalExceptionHandler.handleBadRequest -> Map.of(\"message\", ex.getMessage())"
 }
@@ -137,7 +137,7 @@ handleDataIntegrity 把 ex.getMostSpecificCause().getMessage() 原样放进响�
 ```json
 {
   "http_status": 409,
-  "body": "{\"success\":false,\"code\":\"VALIDATION_ERROR\",\"message\":\"数据约束冲突\",\"details\":{\"message\":\"could not execute statement [ERROR: duplicate key value violates unique constraint \\\"uk_orders_order_no\\\"]\"},\"timestamp\":1794048813.772810000}",
+  "body": "{\"success\":false,\"code\":\"VALIDATION_ERROR\",\"message\":\"数据约束冲突\",\"details\":{\"message\":\"could not execute statement [ERROR: duplicate key value violates unique constraint \\\"uk_orders_order_no\\\"]\"},\"timestamp\":1794049063.479017000}",
   "body_contains_constraint_name": true,
   "body_contains_db_vendor_detail": true,
   "implementation": "GlobalExceptionHandler.handleDataIntegrity -> ex.getMostSpecificCause().getMessage()"
@@ -306,7 +306,7 @@ UploadService.java 这个文件里没有任何体积判断 —— 上限完全�
 ```json
 {
   "dto_validation_status": 400,
-  "dto_validation_body": "{\"success\":false,\"code\":\"VALIDATION_ERROR\",\"message\":\"参数错误\",\"details\":{\"items[0].quantity\":\"must be greater than or equal to 1\"},\"traceId\":\"58a21b10-3211-4a8a-82d7-931763286fc6\",\"timestamp\":\"2026-11-07T18:53:39.589359884+08:00\"}",
+  "dto_validation_body": "{\"success\":false,\"code\":\"VALIDATION_ERROR\",\"message\":\"参数错误\",\"details\":{\"items[0].quantity\":\"must be greater than or equal to 1\"},\"traceId\":\"10e0b099-3f97-41a5-bed9-7309591d69db\",\"timestamp\":\"2026-11-07T18:57:49.328378347+08:00\"}",
   "service_validation_status": 422,
   "service_validation_code": "VALIDATION_ERROR",
   "split_check": {
@@ -410,7 +410,7 @@ GlobalExceptionHandler 一个文件里，错误响应有三种形状：
   "unknown_handler": {
     "id": "ERR-UNKNOWN-NO-LEAK",
     "http_status": 500,
-    "body": "{\"success\":false,\"code\":\"INTERNAL_ERROR\",\"message\":\"系统异常，请稍后重试\",\"timestamp\":1794048813.789382000}",
+    "body": "{\"success\":false,\"code\":\"INTERNAL_ERROR\",\"message\":\"系统异常，请稍后重试\",\"timestamp\":1794049063.494206000}",
     "body_contains_internal_detail": false,
     "repo_calls": []
   },
@@ -431,7 +431,7 @@ ApiResponseAdvice.beforeBodyWrite 对 body==null 也照样包一层，产出 {su
 
 ```json
 {
-  "null_body_json": "{\"success\":true,\"code\":\"OK\",\"message\":\"成功\",\"traceId\":\"FILELAYER-CONTEXT-TRACE\",\"timestamp\":1794048813.795031000}",
+  "null_body_json": "{\"success\":true,\"code\":\"OK\",\"message\":\"成功\",\"traceId\":\"FILELAYER-CONTEXT-TRACE\",\"timestamp\":1794049063.499586000}",
   "supports": {
     "plain": true,
     "enveloped": false,
