@@ -36,10 +36,12 @@
 
 ## 2. 一句话现状
 
-五层全部落地并跑通；共 **86 条 finding，按根因归并后 52 条根因**，其中 6 条 CRITICAL。
+五层全部落地并跑通；共 **88 条 finding，按根因归并后 53 条根因**，其中 6 条 CRITICAL。
 集权层已升级为「真三方对账 + 攻击链 + 常驻门禁」，全部缺陷已固化成 pytest 回归资产。
-**跨层收口层也已落地**：五层输出统一到 layers.yaml 的 10 字段证据 schema（86/86 结构齐备），
-`owner` 补齐到 86/86，根因归并 86→52，产出 category×层 覆盖度矩阵（10 个类别零覆盖）。
+**跨层收口层也已落地**：五层输出统一到 layers.yaml 的 10 字段证据 schema（88/88 结构齐备），
+`owner` 补齐到 88/88，根因归并 88→53，产出 category×层 覆盖度矩阵（8 个类别零覆盖）。
+**负载实测层已落地**：端到端延迟曲线 + 分页 total 开销量化，把 `service.service_latency`
+与 `integration.cross_service_performance` 两个零覆盖类别填上了。
 
 ---
 
@@ -196,6 +198,48 @@ D 三个价格并存且界面不显示明细合计 / E 无定金订单一步跳�
 | 行为层回归 | 闭合不变量写成真通过用例 | `tests/test_integration_alignment.py` |
 | 缺陷层回归 | 已知缺陷写成 `xfail(strict=True)`，修好即 XPASS 变红强制摘标记 | `tests/test_attack_chains.py` |
 
+### 5.10 负载实测：怎么把「性能假设」变成可判定的结论
+
+类层只证明了「索引对查询模式不可用」（591 倍），那是**机制**；用户能感知的是**后果**。
+两者的关系不是显然的 —— 本轮实测给出了答案：机制成立，后果在当前规模下不成立。
+
+做法（`pilot/perf_load.py`）：
+
+1. 按阶梯把 `products` 放大（探针行带 `ai_probe_perf_` 前缀，写完即删）；
+2. 每级跑一次 `ANALYZE products`（否则优化器没有统计信息，plan 不真实）；
+3. 量端到端 HTTP 延迟（真实走 Spring + JPA + 网络，取 p50 而不是均值）；
+4. 用 `EXPLAIN (ANALYZE, BUFFERS)` 跑语义等价 SQL 做归因，分清是 seq scan 还是 count(*)。
+
+**判定口径**（关键，别只看倍数）：
+
+| 判定 | 条件 |
+|---|---|
+| CONFIRMED | 延迟增长快于数据量增长（超线性），或实测规模内已跨过 1 秒预算 |
+| PARTIALLY_CONFIRMED | 延迟随数据量线性增长（机制成立），但远未到不可用阈值 |
+| FALSIFIED | 延迟基本不随数据量增长 |
+
+本轮结论：`PARTIALLY_CONFIRMED`。数据量 30 → 50030 行（1668×）时，带 keyword 的列表接口
+端到端 p50 从 ~6ms 涨到 ~36ms（6×）—— 增长是真的，但按每行 0.0007ms 折算，要到
+**约 140 万行**才触及 1 秒预算。一个农村宴席系统的商品目录不会到这个量级。
+
+所以类层那条 `INDEX_UNUSABLE_FOR_QUERY_PATTERN`（HIGH）**风险等级需要下调**：
+它是真实的结构性缺陷，但当前规模下不产生用户可感知的伤害。
+真正该修的不是「加索引」，而是**别让后端算一个没人要的数**（见下）。
+
+### 5.11 顺手挖出来的：分页 total 是纯开销
+
+`banquetApi.js` 的 `listProducts` / `listPackages` / `listOrders` 三个函数
+一律只取 `data.items.map(...)` —— **`total` 从未被读取**，且 `page` 固定 1、`pageSize` 固定 100。
+但后端对每次列表请求都会额外跑一条 `count(*)`（全表 seq scan，因为
+`lower(name) LIKE '%…%'` 用不上 `idx_products_name`）。
+
+实测（5 万行时）：count(*) 单条 11.8ms，占带 keyword 列表接口端到端延迟的 **31%**，
+占不带 keyword 的 **40%**。**这笔开销 100% 浪费**，且随数据量线性增长。
+
+归属：根因归 **service**（后端白算），集成层只引用「三个列表接口都白付这份开销」
+这个链级后果。这条把集成层已有的 `LIST_TRUNCATED_AT_100`（前端只取前 100 条）
+从「可见性缺陷」升级成了「可见性缺陷 + 纯成本」两罪并罚。
+
 ### 5.9 规划 vs 实现（差距，写出来免得下一个人类 AI 误判）
 
 | `layers.yaml` 规划 | 当前实现 | 差距 |
@@ -221,6 +265,16 @@ D 三个价格并存且界面不显示明细合计 / E 无定金订单一步跳�
 | 集权层 | `integration_static.py` | `integration_dynamic.py` | `integration_reconcile.py` → `integration_chain.py` → `integration_diff.py` → `integration_gate.py` | `integration_declaration.json` / `integration_observation.json` / `integration_reconciliation.json` / `integration_chains.json` / `integration_findings.json` / `integration_gate_report.md` |
 
 其它：`openapi.json`（OpenAPI 快照，服务层输入）、`jiuyan-layer-manifest.yaml`（每层状态 / 归属 pattern / 回归资产台账）、`cleanup.sh` + `cleanup_uploads.py`（收尾）。
+
+### 6.2 负载实测脚本（本轮新增）
+
+| 脚本 | 干什么 | 产物 |
+|---|---|---|
+| `perf_load.py` | 阶梯放大 `products`（探针行 `ai_probe_perf_` 前缀，写完即删），量端到端 HTTP 延迟曲线 + `EXPLAIN (ANALYZE, BUFFERS)` 归因，判定「延迟塌陷」假设 | `perf_load.json` / `perf_load.md` / `perf_findings.json` |
+
+`perf_findings.json` 是**第 6、7 号证据源**（服务层 1 条 + 集成层 1 条），
+`normalize_findings.py` 会读它，所以负载实测的结论直接进总表和覆盖度矩阵。
+跑法：`python3 perf_load.py --scales 0,2000,10000,50000 --rounds 10`
 
 ### 6.1 跨层收口脚本（本轮新增，不属于任何一层）
 
@@ -257,7 +311,12 @@ python3 normalize_findings.py           # 只跑归一化（exit 1 结构性违�
 python3 aggregate_findings.py           # 只跑根因聚合 + 覆盖度矩阵
 python3 aggregate_findings.py --strict  # 有硬违规时退出码 1（CI 用）
 python3 fn_dynamic.py --case RFP-05     # 单用例重放（repro_cmd 用它）
+python3 perf_load.py                    # 负载实测（延迟曲线 + 分页 total 开销）
 ```
+
+流水线**有并发锁**（`/tmp/layered_audit.lock`）：各层脚本共用 `/tmp/jiuyan_fn`、
+`/tmp/jiuyan_file` 这些固定工作目录，两个流水线同时跑会互相覆盖 class 文件，
+表现为 `javap` 随机失败。第二个进程会直接退出码 2 并提示。
 
 门禁**判红**（退出码 1）三类：
 ① 基线 ALIGNED 的对账项这次不是 ALIGNED；
@@ -317,7 +376,8 @@ python3 fn_dynamic.py --case RFP-05     # 单用例重放（repro_cmd 用它）
 | A2 | 门禁挂 CI / pre-commit | 未做 | 做：让「改前端 mapper 或后端 DTO」必须过门禁再进主干 |
 | A3 | `owner` 字段补标 | ✅ **本轮完成**：86/86 条都有 `owner{layer,relation,basis}`，见 `all_findings.json` | — |
 | A4 | 服务层重复开单 | ✅ **本轮完成**：按 `root_cause_key` 归并，86 条发现 → **52 条根因**（25 条 `INTERNAL_LEAK` 收敛成 1 条） | — |
-| A5 | 性能类假设 | 类层实测索引不可用（差 591 倍），但**端到端延迟塌陷未复现** | 补端到端压测：数据量放大后 list 接口延迟曲线 |
+| A5 | 性能类假设 | ✅ **本轮完成**：`perf_load.py` 阶梯压测到 5 万行，判定 `PARTIALLY_CONFIRMED`（机制成立、后果未兑现），见 §5.10；同时挖出「分页 total 是纯开销」新根因 | — |
+| A7 | 回归套件自身漏残留 | ✅ **本轮完成**：harness 造数用运行级 tag `ai_<时间戳>_<uuid6>`，但 `ResourceRegistry.cleanup` 走 API DELETE（软删，行还留在表里）、`make_order` 造的订单没人管 → 跑一次 pytest 留 33 行。已加 session 级按 RUN_TAG 硬删 + `pilot/cleanup.sh` 前缀从 `ai_probe_` 放宽到 `ai_` | — |
 | A6 | 契约缺口的处置 | 9 条发现 `category=UNMAPPED`（file 层 6 / class 层 2 / integration 层 1），`normalize_findings.py` 退出码 2 | **要人决策**：要么修订 `layers.yaml`（file 层加「安全策略 / 可信输入」类别），要么把发现挪到真正该开的层 |
 
 ### B. 项目层面待办（架构缺口，工作量大）
@@ -348,10 +408,10 @@ python3 fn_dynamic.py --case RFP-05     # 单用例重放（repro_cmd 用它）
 |---|---|---|---|---|
 | 函数层 | 8 | 2C/2H/4M | 50 | `fn_findings.json` |
 | 文件层 | 18 | 2H/7M/3L/6I | — | `file_findings.json` |
-| 服务层 | 30 | 1C/2H/27M | — | `findings.json` |
+| 服务层 | 31 | 1C/2H/28M | — | `findings.json` + `perf_findings.json` |
 | 类层 | 16 | 3H/5M/4L/4I | — | `class_findings.json` |
-| 集权层 | 14 | 3C/5H/5M/1L | 31 | `integration_findings.json` |
-| **合计** | **86 → 根因 52** | 6C/14H/48M/8L/10I | | |
+| 集权层 | 15 | 3C/5H/6M/1L | 31 | `integration_findings.json` + `perf_findings.json` |
+| **合计** | **88 → 根因 53** | 6C/14H/49M/8L/10I | | |
 
 ### 6 条 CRITICAL
 
@@ -380,21 +440,41 @@ python3 fn_dynamic.py --case RFP-05     # 单用例重放（repro_cmd 用它）
 | `order.snapshot.item_ownership_unchecked` | HIGH | function | 2 |
 | `column.default_declared_in_three_places` | LOW | class | 2 |
 
-### 12.2 覆盖度：10 个类别零命中
+### 12.2 覆盖度：8 个类别零命中
 
-| 层 | 零覆盖的 category |
-|---|---|
-| function | `complexity`、`numeric` |
-| file | —（3 类全有命中） |
-| class | `encapsulation_leak`、`inheritance_design` |
-| service | `resilience`、`data_consistency`、`resource_leak`、`service_latency` |
-| integration | `cross_service_performance`、`cross_layer_correlation` |
+| 层 | 零覆盖的 category | 契约给的 oracle | 状态 |
+|---|---|---|---|
+| function | `complexity`、`numeric` | `static_analysis` / `benchmark` / `property_based_test` | 未做 |
+| class | `encapsulation_leak`、`inheritance_design` | `mutation_test` / `property_based_test` | 未做 |
+| service | `resilience`、`data_consistency`、`resource_leak` | `chaos_experiment` / `concurrency_test` / `load_test` | 未做 |
+| integration | `cross_layer_correlation` | `graph_correlation` | 未做 |
+| ~~service~~ | ~~`service_latency`~~ | `load_test` | ✅ **本轮补上**（`perf_load.py`） |
+| ~~integration~~ | ~~`cross_service_performance`~~ | `e2e_load_test` | ✅ **本轮补上** |
 
 零覆盖 ≠ 没问题，只代表**这个类别这一轮没人查**。契约里给这些类别配了 oracle
-（`chaos_experiment` / `concurrency_test` / `load_test` / `attack_graph` …），但对应的
+（`chaos_experiment` / `concurrency_test` / `attack_graph` …），但对应的
 agent 还没写 —— 这是 §11-B4 编排化的优先级依据。
+**上表同时说明：覆盖度矩阵不是摆设，本轮就靠它挑出了要补的类别。**
 
-### 12.3 硬违规 1 条 + 归并提示 4 条 + 契约缺口 9 条
+### 12.3 负载实测结论（本轮新增）
+
+| 阶梯（表内商品数） | 带 keyword 端到端 p50 | 不带 keyword p50 | count(*) 单条 | count 扫描 |
+|---|---|---|---|---|
+| 30 | ~6 ms | ~7 ms | 0.02 ms | Seq Scan |
+| 2 030 | 9.3 ms | 7.1 ms | 0.53 ms | Seq Scan |
+| 10 030 | 19.1 ms | 8.4 ms | 2.04 ms | Seq Scan |
+| 50 030 | 35.5 ms | 11.6 ms | 11.03 ms | Seq Scan |
+
+- **判定**：`PARTIALLY_CONFIRMED`。数据量 1668× 时延迟只涨 6.2×，每行成本 0.0007ms，
+  折算约 **140 万行**才触及 1 秒预算 —— 机制（索引不可用、全表扫描）成立，
+  后果（用户可感知的塌陷）在真实业务规模下不成立。
+- **新根因** `pagination.count_total_computed_but_discarded`（MEDIUM，owner=service）：
+  前端三个 list 函数都丢弃 `total`，后端每次列表请求却要付一次 count(*) 全表扫描，
+  5 万行时占端到端延迟 31%（带 keyword）/ 40%（不带 keyword）。**100% 浪费。**
+- **类层那条 `INDEX_UNUSABLE_FOR_QUERY_PATTERN`（HIGH）风险等级建议下调** ——
+  机制是真的，但当前规模不产生用户可感知的伤害。
+
+### 12.4 硬违规 1 条 + 归并提示 4 条 + 契约缺口 9 条
 
 - **硬违规**：`index.idx_products_name_unusable` —— `service_latency` 明确在 class 层的
   `out_of_scope` 里，这条应由 service 层开单（class→service 的归属上提本身合法，但开单位置越界）。
@@ -425,7 +505,23 @@ agent 还没写 —— 这是 §11-B4 编排化的优先级依据。
 
 ## 14. 最近一次验证记录（2026-11-07）
 
-**跨层收口层加入后重跑（最新）**
+**负载实测层加入后重跑（最新）**
+
+- `bash pilot/run_pipeline.sh` → exit 0；门禁 GREEN（对齐 52→52，攻击链确认 5→5）。
+- `perf_load.py --scales 0,2000,10000,50000 --rounds 10` → 判定 `PARTIALLY_CONFIRMED`；
+  探针行 50000 行全部删除，商品表回到 30 行基线。
+- `normalize_findings.py` → 88 条，10 必填字段结构齐备 88/88；结构性违规 **0**；
+  契约缺口 9 条（退出码 2，不阻断）。
+- `aggregate_findings.py` → 88 条发现归并为 **53 条根因**；硬违规 1 条；归并提示 4 条；
+  零覆盖类别从 10 降到 **8**（`service.service_latency` 与
+  `integration.cross_service_performance` 本轮补上）。
+- 回归套件 `python3 -m pytest -q` → 70 passed / 8 xfailed，**且跑完零残留**
+  （本轮修掉了套件自身漏清理的 33 行）。
+- 残留已归零：`ai_` 前缀行 products/packages/categories/package_types/orders 全为 0；
+  DB 回到种子基线（products 30 / packages 4 / orders 8 / categories 8 / package_types 6 /
+  package_items 40）；非种子上传文件 0。
+
+**跨层收口层加入后重跑（对照）**
 
 - `bash pilot/run_pipeline.sh` → exit 0；门禁 GREEN（对齐 52→52，攻击链确认 5→5）。
 - `normalize_findings.py` → 86 条，10 必填字段结构齐备 86/86；结构性违规 **0**；

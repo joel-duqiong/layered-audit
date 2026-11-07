@@ -1,9 +1,9 @@
 {
   "generated_from": "aggregate_findings.py",
   "summary": {
-    "findings": 86,
-    "root_causes": 52,
-    "collapsed": 34,
+    "findings": 88,
+    "root_causes": 53,
+    "collapsed": 35,
     "violations": 1
   },
   "root_causes": [
@@ -52,7 +52,10 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": [
+        "order.snapshot.item_ownership_unchecked"
+      ]
     },
     {
       "root_cause_key": "price.final_price.upper_bound_unvalidated",
@@ -95,7 +98,10 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": [
+        "frontend.detail_total_not_surfaced"
+      ]
     },
     {
       "root_cause_key": "upload.content_type_not_sniffed",
@@ -136,7 +142,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "errhandler.client_error_mapped_to_500",
@@ -174,7 +181,8 @@
       "notes": [],
       "merges": [
         "service 层同一根因开了 2 条 own，可归并为 1 条根因"
-      ]
+      ],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "order.item_quantity_unvalidated",
@@ -214,7 +222,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "order.snapshot.item_ownership_unchecked",
@@ -255,7 +264,10 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": [
+        "order.item_quantity_unvalidated"
+      ]
     },
     {
       "root_cause_key": "audit.client_ip_trusted_from_header",
@@ -288,7 +300,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "cors.allowed_origin_patterns_too_broad",
@@ -320,7 +333,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "frontend.list_hardcoded_limit_100",
@@ -352,11 +366,12 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "index.idx_products_name_unusable",
-      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.752ms vs 0.013ms，差 596 倍）",
+      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.553ms vs 0.011ms，差 687 倍）",
       "severity": "HIGH",
       "owner_layer": "service",
       "categories": [
@@ -388,7 +403,8 @@
       "notes": [
         "合法上提：开单层 ['class'] → owner service（契约 escalation_to 允许）"
       ],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "order.status.transition_unconstrained",
@@ -422,7 +438,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "order_no.no_collision_guarantee",
@@ -457,7 +474,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "rule.missing_in_db_dto_service",
@@ -491,7 +509,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "errhandler.internal_detail_leak",
@@ -563,7 +582,8 @@
       "notes": [],
       "merges": [
         "service 层同一根因开了 25 条 own，可归并为 1 条根因"
-      ]
+      ],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "jackson.lenient_type_coercion",
@@ -601,6 +621,47 @@
       "notes": [],
       "merges": [
         "service 层同一根因开了 2 条 own，可归并为 1 条根因"
+      ],
+      "related_root_causes": []
+    },
+    {
+      "root_cause_key": "pagination.count_total_computed_but_discarded",
+      "title": "分页 total 是纯开销：后端每次列表请求都跑 count(*) 全表扫描，前端从不读这个数",
+      "severity": "MEDIUM",
+      "owner_layer": "service",
+      "categories": [
+        "integration.cross_service_performance",
+        "service.service_latency"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 2,
+      "finding_uids": [
+        "service:SVC-PAGINATION-COUNT-DISCARDED#0",
+        "integration:INT-LIST-COUNT-END-TO-END-WASTE#0"
+      ],
+      "layers_own": [
+        "service"
+      ],
+      "layers_all": [
+        "service",
+        "integration"
+      ],
+      "cited_from": [
+        "integration"
+      ],
+      "cwe": [],
+      "confidence": 0.93,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 perf_load.py --scales 0,2000,10000,50000"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "related_root_causes": [
+        "index.idx_products_name_unusable"
       ]
     },
     {
@@ -635,7 +696,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "api.snapshot_structure_undeclared",
@@ -667,7 +729,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "apply.null_input.npe_instead_of_422",
@@ -702,7 +765,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "db.notnull_bypassed_by_empty_string",
@@ -736,7 +800,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "dto.required_check_missing",
@@ -768,7 +833,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "dto.unknown_field_silent_drop",
@@ -802,7 +868,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "errhandler.badrequest_echoes_body",
@@ -836,7 +903,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "errhandler.db_constraint_text_leak",
@@ -870,7 +938,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "frontend.image_fallback_cross_domain",
@@ -902,7 +971,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "frontend.item_count_semantics_divergent",
@@ -934,7 +1004,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "order.apply.amount_invariants_weak",
@@ -968,7 +1039,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "orders.no_data_lifecycle",
@@ -1000,7 +1072,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "package.applyItems.mutate_before_validate",
@@ -1034,7 +1107,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "softdelete.resurrects_row",
@@ -1068,7 +1142,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "tooling.coverage_recording_gap",
@@ -1098,7 +1173,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "traceid.client_controlled_no_validation",
@@ -1130,7 +1206,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "upload.limit_declared_in_three_places",
@@ -1162,7 +1239,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "upload.no_size_limit",
@@ -1196,7 +1274,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "validation.status_code_split",
@@ -1228,7 +1307,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "webconfig.static_root_normalization_env_dependent",
@@ -1260,7 +1340,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "column.default_declared_in_three_places",
@@ -1293,7 +1374,8 @@
       "notes": [],
       "merges": [
         "class 层同一根因开了 2 条 own，可归并为 1 条根因"
-      ]
+      ],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "api.dead_endpoints",
@@ -1325,7 +1407,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "apiresponse.null_body_wrapped_as_success",
@@ -1357,7 +1440,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "enum.case_sensitive",
@@ -1389,7 +1473,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "errhandler.response_shape_inconsistent",
@@ -1421,7 +1506,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "error.message_mismatch",
@@ -1453,7 +1539,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "service.helpers.duplicated",
@@ -1485,7 +1572,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "check.dto_aligned",
@@ -1517,7 +1605,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "cors.negative_precision_proven",
@@ -1547,7 +1636,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "dead_private_method.none",
@@ -1579,7 +1669,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "enum.check_aligned",
@@ -1611,7 +1702,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "nullability.aligned",
@@ -1643,7 +1735,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "put.required_fk_guarded",
@@ -1675,7 +1768,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "static_oracle.blind_spot_compile_time_constant",
@@ -1705,7 +1799,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "static_root.same_root",
@@ -1735,7 +1830,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "txn.boundary_complete",
@@ -1767,7 +1863,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     },
     {
       "root_cause_key": "txn.rollback_proven",
@@ -1799,7 +1896,8 @@
       ],
       "violations": [],
       "notes": [],
-      "merges": []
+      "merges": [],
+      "related_root_causes": []
     }
   ],
   "coverage": {
@@ -1827,11 +1925,11 @@
         "authz": 1,
         "data_consistency": 0,
         "resource_leak": 0,
-        "service_latency": 0
+        "service_latency": 1
       },
       "integration": {
         "end_to_end_business": 11,
-        "cross_service_performance": 0,
+        "cross_service_performance": 1,
         "cross_service_attack_chain": 2,
         "cross_layer_correlation": 0
       }
@@ -1844,8 +1942,6 @@
       "service.resilience",
       "service.data_consistency",
       "service.resource_leak",
-      "service.service_latency",
-      "integration.cross_service_performance",
       "integration.cross_layer_correlation"
     ],
     "unmapped_uids": [
@@ -1906,7 +2002,8 @@
       ],
       "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java": [
         "errhandler.internal_detail_leak",
-        "frontend.list_hardcoded_limit_100"
+        "frontend.list_hardcoded_limit_100",
+        "pagination.count_total_computed_but_discarded"
       ],
       "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java": [
         "api.snapshot_structure_undeclared",
@@ -1933,7 +2030,7 @@
         "enum.check_aligned"
       ]
     },
-    "root_cause_count": 52,
-    "finding_count": 86
+    "root_cause_count": 53,
+    "finding_count": 88
   }
 }

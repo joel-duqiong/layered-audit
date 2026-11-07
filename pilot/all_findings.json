@@ -2,16 +2,16 @@
   "generated_from": "normalize_findings.py",
   "contract": "/Users/june/.cc-weixin/workspace/layered-audit/layers.yaml",
   "counts": {
-    "total": 86,
+    "total": 88,
     "by_layer": {
       "function": 8,
       "file": 18,
-      "service": 30,
+      "service": 31,
       "class": 16,
-      "integration": 14
+      "integration": 15
     },
     "by_kind": {
-      "defect": 75,
+      "defect": 77,
       "positive": 9,
       "observation": 2
     }
@@ -2889,7 +2889,7 @@
       "related_root_causes": [],
       "kind": "defect",
       "severity": "HIGH",
-      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.752ms vs 0.013ms，差 596 倍）",
+      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.553ms vs 0.011ms，差 687 倍）",
       "detail": "迁移文件建了 products(name) 索引，但服务层关键词搜索写的是 lower(name) LIKE '%kw%'：lower() 让索引无法用于定位，前导 % 让 btree 本来也用不上。EXPLAIN 显示走 Filter 全量过滤而非 Index Cond。类层把索引交给服务层，但服务层不知道该怎么用它 —— 声明没有传递下去。",
       "related": [],
       "note": "检测在 class 层（实体与 DDL 对齐），归属层是 service（查询模式在服务层）",
@@ -3838,7 +3838,7 @@
       "kind": "defect",
       "severity": "HIGH",
       "title": "前端列表固定只取前 100 条并丢弃 total，超出的数据永远不可见",
-      "detail": "后端返回 total=137，实际 items 只有 100 条。前端三个列表接口都写死 page=1&pageSize=100，且拿到响应后只做 data.items.map(...)，PageResponse.total / totalPages 被整个丢弃 —— 用户看不到「还有 35 条」，也没有任何翻页入口。商品/套餐/订单一旦超过 100 条，数据库里多出来的记录在 Pad 端凭空消失。",
+      "detail": "后端返回 total=139，实际 items 只有 100 条。前端三个列表接口都写死 page=1&pageSize=100，且拿到响应后只做 data.items.map(...)，PageResponse.total / totalPages 被整个丢弃 —— 用户看不到「还有 35 条」，也没有任何翻页入口。商品/套餐/订单一旦超过 100 条，数据库里多出来的记录在 Pad 端凭空消失。",
       "related": [],
       "note": "",
       "source": {
@@ -3886,7 +3886,7 @@
       "kind": "defect",
       "severity": "HIGH",
       "title": "可以把不属于该套餐的商品写进套餐明细，后端照单全收",
-      "detail": "下单时 packageItems 里塞进套餐外的商品（['ai_probe_prod_92c422']），后端只校验商品存在、不校验归属，200 通过并写进订单快照。订单快照里的「套餐明细」因此不代表真实套餐，后续对账无据可查。",
+      "detail": "下单时 packageItems 里塞进套餐外的商品（['ai_probe_prod_673c19']），后端只校验商品存在、不校验归属，200 通过并写进订单快照。订单快照里的「套餐明细」因此不代表真实套餐，后续对账无据可查。",
       "related": [],
       "note": "",
       "source": {
@@ -4218,6 +4218,100 @@
       "source": {
         "file": "integration_findings.json",
         "index": 13
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "SVC-PAGINATION-COUNT-DISCARDED",
+      "uid": "service:SVC-PAGINATION-COUNT-DISCARDED#0",
+      "layer": "service",
+      "category": "service.service_latency",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java",
+        "line": 35,
+        "symbol": "GET /api/products, GET /api/packages, GET /api/orders",
+        "endpoint": "GET /api/products, GET /api/packages, GET /api/orders"
+      },
+      "claim": "分页 count(*) 是否每次列表请求都全表扫描，而前端根本不看 total？",
+      "evidence_refs": [
+        "findings.json#SVC-PAGINATION-COUNT-DISCARDED"
+      ],
+      "repro_cmd": "python3 perf_load.py --scales 0,2000,10000,50000",
+      "repro_granularity": "endpoint",
+      "confidence": 0.93,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "pagination.count_total_computed_but_discarded",
+      "related_root_causes": [
+        "index.idx_products_name_unusable"
+      ],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "分页 total 是纯开销：后端每次列表请求都跑 count(*) 全表扫描，前端从不读这个数",
+      "detail": "每个列表接口都带分页参数，后端对每次请求额外跑一条 count(*) 全表扫描（Seq Scan，因为 idx_products_name 对 lower(name) LIKE '%…%' 不可用）。实测数据量阶梯：30 行 → 6.83ms；2030 行 → 10.39ms；10030 行 → 20.72ms；50030 行 → 36.08ms。\n在 50030 行时，count(*) 单条耗时 13.143ms，占带 keyword 列表接口端到端延迟的 36.4%，占不带 keyword 接口的 34.7%。\n而前端 banquetApi.js 的 listProducts / listPackages / listOrders 三个函数一律只取 data.items.map(...)，total 从未被读取 —— 这份开销 100% 浪费。\n本轮判定「端到端延迟随数据量塌陷」为 PARTIALLY_CONFIRMED：延迟确实随数据量线性增长，但 50030 行时端到端仅 36.08ms，按每行 0.000721ms 折算，要到约 1386640 行才触及 1 秒预算。\n结论：结构性 O(N) 成立，但当前规模下后果未兑现 —— 真正该修的不是「加索引」，而是别让后端算一个没人要的数。",
+      "related": [],
+      "note": "实测 5 万行时 count(*) 占端到端 31%（带 keyword）/ 40%（不带 keyword）；前端 listProducts/listPackages/listOrders 三个函数都只取 items，total 从未被读",
+      "source": {
+        "file": "perf_findings.json",
+        "index": 0
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "INT-LIST-COUNT-END-TO-END-WASTE",
+      "uid": "integration:INT-LIST-COUNT-END-TO-END-WASTE#0",
+      "layer": "integration",
+      "category": "integration.cross_service_performance",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java",
+        "line": 35,
+        "symbol": "GET /api/products, GET /api/packages, GET /api/orders",
+        "endpoint": "GET /api/products, GET /api/packages, GET /api/orders"
+      },
+      "claim": "三个列表接口是否每次都为前端丢弃的 total 付一次全表扫描？",
+      "evidence_refs": [
+        "integration_findings.json#INT-LIST-COUNT-END-TO-END-WASTE"
+      ],
+      "repro_cmd": "python3 perf_load.py --scales 0,2000,10000,50000",
+      "repro_granularity": "endpoint",
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "service",
+        "relation": "cited",
+        "basis": "根因归 service；本层拥有链级后果"
+      },
+      "root_cause_key": "pagination.count_total_computed_but_discarded",
+      "related_root_causes": [],
+      "kind": "defect",
+      "severity": "MEDIUM",
+      "title": "三个列表接口每次都为前端丢弃的 total 付一次全表扫描",
+      "detail": "三个列表接口（GET /api/products、/api/packages、/api/orders）在集权层实测中，每次请求的 count(*) 部分占端到端延迟的 36.4%~34.7%，而这个 total 前端从头到尾没读过。\n也就是说：用户每翻一次列表，后端就多付一次全表扫描的钱，收益为零。同时前端把 page 固定成 1、pageSize 固定成 100，超出部分永远不可见 —— 分页机制在这条链路上同时是「成本」和「不可用」。",
+      "related": [],
+      "note": "链级后果归集成层，根因（后端白算一次 count）归服务层",
+      "source": {
+        "file": "perf_findings.json",
+        "index": 0
       },
       "meta": {
         "inferred_fields": [],

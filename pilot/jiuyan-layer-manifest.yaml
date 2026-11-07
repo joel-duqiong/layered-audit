@@ -178,17 +178,19 @@ cross_layer:
     - {name: finding_meta.py, role: 人工标注表 59 个 id -> category / claim / owner / confidence / ground_truth / cwe / root_cause_key, note: "人工判定不是脚本推断；判不出来的写 UNMAPPED 并给 suggested_category"}
     - {name: normalize_findings.py, role: 五层输出 -> 统一 schema 总表, outputs: [all_findings.json], exit_code: "1=结构性违规(阻断) 2=契约缺口(不阻断)"}
     - {name: aggregate_findings.py, role: 根因归并 + 归属校验 + 覆盖度矩阵, outputs: [root_causes.json, audit_report.md], exit_code: "0=无硬违规 1(--strict)=有硬违规"}
+    - {name: perf_load.py, role: 阶梯放大 products 量端到端延迟曲线 + EXPLAIN ANALYZE 归因，判定「延迟塌陷」假设, outputs: [perf_load.json, perf_load.md, perf_findings.json], note: "探针行带 ai_probe_perf_ 前缀，写完即删；perf_findings.json 是第 6/7 号证据源，直接进总表与覆盖度矩阵"}
   measured:
-    findings_total: 86
-    root_causes: 52
-    required_fields_present: "10/10 × 86 条 = 100%"
-    location_file: 66
-    location_line: 43
-    repro_cmd: {case: 8, endpoint: 30, layer: 34, reference: 14}
-    category_fit: {exact: 38, stretched: 39, unmapped: 9}
-    owner_stamped: "86/86"
+    findings_total: 88
+    root_causes: 53
+    required_fields_present: "10/10 × 88 条 = 100%"
+    location_file: 68
+    location_line: 45
+    repro_cmd: {case: 8, endpoint: 32, layer: 34, reference: 14}
+    category_fit: {exact: 39, stretched: 39, unmapped: 9}
+    owner_stamped: "88/88"
     hard_violations: 1
-    zero_coverage_categories: 10
+    zero_coverage_categories: 8
+    zero_coverage_filled_this_round: [service.service_latency, integration.cross_service_performance]
   hard_violations:
     - {root_cause: index.idx_products_name_unusable, reason: "class 层的 out_of_scope 含 service_latency，这条应由 service 层开单", escalation: "class -> service 的上提本身合法，但开单位置越界"}
   merge_hints:
@@ -196,6 +198,13 @@ cross_layer:
     - {root_cause: errhandler.client_error_mapped_to_500, count: 2}
     - {root_cause: jackson.lenient_type_coercion, count: 2}
     - {root_cause: column.default_declared_in_three_places, count: 2}
+  load_test:
+    script: pilot/perf_load.py
+    hypothesis: 端到端延迟随数据量塌陷
+    verdict: PARTIALLY_CONFIRMED
+    evidence: "30 → 50030 行（1668×）时带 keyword 列表接口端到端 p50 ~6ms → ~36ms（6.2×）；每行 0.0007ms，约 140 万行才触及 1 秒预算。机制（idx_products_name 对 lower(name) LIKE '%…%' 不可用，全表 Seq Scan）成立，后果在真实业务规模下不成立"
+    new_root_cause: {key: pagination.count_total_computed_but_discarded, layer: service, severity: MEDIUM, claim: "后端每次列表请求都跑 count(*) 全表扫描，而前端三个 list 函数都丢弃 total —— 5 万行时占端到端延迟 31%~40%，100% 浪费"}
+    downgrade_hint: "类层 INDEX_UNUSABLE_FOR_QUERY_PATTERN（HIGH）机制为真但当前规模不产生用户可感知伤害，风险等级建议下调"
   contract_gaps:
     - {uids: 6, layer: file, issue: "file 层的三类（state_consistency / error_handling_pattern / cohesion）装不下安全策略类发现（CORS 白名单过宽 / 信任客户端 XFF / 客户端可控 traceId）", suggestion: "修订 layers.yaml 的 file 层类别，或把这些发现挪到 service.authz"}
     - {uids: 2, layer: class, issue: "默认值声明三处属跨文件 cohesion，class 层无对应类别且 escalation_to 不含 file"}

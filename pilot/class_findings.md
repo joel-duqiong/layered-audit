@@ -5,7 +5,7 @@ JPA 实体 7 个 | DDL 表 6 张 | 索引 22 个 | finding 16 条
 | 级别 | 层 | 缺陷 |
 |---|---|---|
 | HIGH | class | 状态机缺失：9/9 种迁移全部被接受，含回退 |
-| HIGH | class→service | DDL 声明的 idx_products_name 对服务层查询模式无效（7.752ms vs 0.013ms，差 596 倍） |
+| HIGH | class→service | DDL 声明的 idx_products_name 对服务层查询模式无效（7.553ms vs 0.011ms，差 687 倍） |
 | HIGH | class | 4 条业务不变量在 DB / DTO / 服务层三层全都不存在 |
 | MEDIUM | class | 软删除的行会被同名重建「复活」，id 与 sort_order 沿用旧值 |
 | MEDIUM | class | orders 表没有软删/归档，永久增长（当前 192 kB） |
@@ -47,14 +47,14 @@ DDL 只有取值白名单 CHECK (status IN (...))，没有任何迁移约束；�
 }
 ```
 
-## [HIGH] DDL 声明的 idx_products_name 对服务层查询模式无效（7.752ms vs 0.013ms，差 596 倍）
+## [HIGH] DDL 声明的 idx_products_name 对服务层查询模式无效（7.553ms vs 0.011ms，差 687 倍）
 
 迁移文件建了 products(name) 索引，但服务层关键词搜索写的是 lower(name) LIKE '%kw%'：lower() 让索引无法用于定位，前导 % 让 btree 本来也用不上。EXPLAIN 显示走 Filter 全量过滤而非 Index Cond。类层把索引交给服务层，但服务层不知道该怎么用它 —— 声明没有传递下去。
 
 ```json
 {
-  "like_prefix_lower_ms": 7.752,
-  "exact_equal_ms": 0.013,
+  "like_prefix_lower_ms": 7.553,
+  "exact_equal_ms": 0.011,
   "index_cond_present": true,
   "like_has_index_cond": false,
   "scale_rows": 50000
@@ -106,13 +106,13 @@ DDL 只有取值白名单 CHECK (status IN (...))，没有任何迁移约束；�
 
 ```json
 {
-  "category": "ai_probe_cat_cde7ef",
+  "category": "ai_probe_cat_2e34a6",
   "create": 200,
   "delete": 200,
   "recreate": 200,
   "db_rows": [
     [
-      "126",
+      "146",
       "f"
     ]
   ]
@@ -127,9 +127,9 @@ products/packages/categories 都有 is_deleted，orders 没有。订单是唯一
 {
   "orders_size": "192 kB",
   "table_sizes": {
+    "products": "16 MB",
     "orders": "192 kB",
     "packages": "144 kB",
-    "products": "144 kB",
     "categories": "104 kB",
     "package_items": "104 kB",
     "package_types": "104 kB",
@@ -181,7 +181,7 @@ UpdateProductRequest.imageUrl 没有任何约束（可缺省），但 PUT 的语
 ```json
 {
   "entity": "products",
-  "id": 851259,
+  "id": 1152401,
   "changed_columns": [
     "description",
     "image_url",
@@ -192,15 +192,15 @@ UpdateProductRequest.imageUrl 没有任何约束（可缺省），但 PUT 的语
     "updated_at"
   ],
   "final_row": {
-    "id": 851259,
+    "id": 1152401,
     "name": "ai_probe_fp2",
     "unit": "克",
     "image_url": null,
     "is_active": false,
-    "created_at": "2026-11-07T10:32:42.550619+00:00",
+    "created_at": "2026-11-07T10:53:48.24914+00:00",
     "is_deleted": true,
     "price_cent": 9999,
-    "updated_at": "2026-11-07T10:32:42.952412+00:00",
+    "updated_at": "2026-11-07T10:53:48.613368+00:00",
     "category_id": 2,
     "description": "changed"
   }

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-07T18:32:43.155761",
+  "generated_at": "2026-11-07T18:53:48.814752",
   "findings": [
     {
       "id": "INT-ANON-WRITE-REWRITES-SNAPSHOT",
@@ -15,12 +15,12 @@
             "method": "POST",
             "path": "/api/orders",
             "status": 200,
-            "evidence": "订单主人创建订单 id=499（请求里没有任何凭证头）"
+            "evidence": "订单主人创建订单 id=573（请求里没有任何凭证头）"
           },
           {
             "n": 2,
             "method": "GET",
-            "path": "/api/orders/499",
+            "path": "/api/orders/573",
             "status": 200,
             "evidence": "全新连接（无 Cookie / Token）读到 4 个 PII 字段：['customerName', 'customerPhone', 'address', 'remark']"
           },
@@ -34,21 +34,21 @@
           {
             "n": 4,
             "method": "PATCH",
-            "path": "/api/orders/499/status",
+            "path": "/api/orders/573/status",
             "status": 200,
             "evidence": "匿名改状态 → DEPOSIT_PAID"
           },
           {
             "n": 5,
             "method": "PUT",
-            "path": "/api/orders/499",
+            "path": "/api/orders/573",
             "status": 200,
             "evidence": "匿名全量覆盖订单：改电话 + 把明细数量改成 99"
           },
           {
             "n": 6,
             "method": "DB",
-            "path": "SELECT ... WHERE id=499",
+            "path": "SELECT ... WHERE id=573",
             "status": 200,
             "evidence": "库里的快照已被重写：明细数量=99，电话=13900000000，状态=PENDING"
           }
@@ -71,21 +71,21 @@
             "method": "POST",
             "path": "/api/uploads/product-image",
             "status": 200,
-            "evidence": "上传非图片字节 55 字节，自报 image/png、文件名 probe.png → imageUrl=/uploads/products/7d218b1f-1440-4cb0-a557-d8619b79c794.png"
+            "evidence": "上传非图片字节 55 字节，自报 image/png、文件名 probe.png → imageUrl=/uploads/products/7d611cfc-88a9-4966-8cde-188ca8f2d40e.png"
           },
           {
             "n": 2,
             "method": "GET",
-            "path": "/uploads/products/7d218b1f-1440-4cb0-a557-d8619b79c794.png",
+            "path": "/uploads/products/7d611cfc-88a9-4966-8cde-188ca8f2d40e.png",
             "status": 200,
             "evidence": "匿名连接（无凭证）下载 → 200，字节完全一致=True，Content-Type=image/png"
           },
           {
             "n": 3,
             "method": "FS",
-            "path": "/app/uploads/products/7d218b1f-1440-4cb0-a557-d8619b79c794.png",
+            "path": "/app/uploads/products/7d611cfc-88a9-4966-8cde-188ca8f2d40e.png",
             "status": 200,
-            "evidence": "-rw-r--r-- 1 root root 55 Nov  7 10:32 /app/uploads/products/7d218b1f-1440-4cb0-a557-d8619b79c794.png"
+            "evidence": "-rw-r--r-- 1 root root 55 Nov  7 10:53 /app/uploads/products/7d611cfc-88a9-4966-8cde-188ca8f2d40e.png"
           }
         ],
         "evidence": "下载字节与上传字节一致=True，Content-Type 由服务端按扩展名给出"
@@ -102,7 +102,7 @@
       "evidence": {
         "final_price_cent": 1,
         "snapshot_price_cent": 1,
-        "order_id": 494,
+        "order_id": 568,
         "root_cause": "OrderService.resolveFinalPrice 直接采纳客户端 finalPriceCent",
         "related_lower_layer": "服务层 test_price_is_not_client_controlled 已报根因，本条只补集成症状"
       },
@@ -122,12 +122,12 @@
             "method": "POST",
             "path": "/api/orders",
             "status": 200,
-            "evidence": "订单主人创建订单 id=499（请求里没有任何凭证头）"
+            "evidence": "订单主人创建订单 id=573（请求里没有任何凭证头）"
           },
           {
             "n": 2,
             "method": "GET",
-            "path": "/api/orders/499",
+            "path": "/api/orders/573",
             "status": 200,
             "evidence": "全新连接（无 Cookie / Token）读到 4 个 PII 字段：['customerName', 'customerPhone', 'address', 'remark']"
           },
@@ -141,21 +141,21 @@
           {
             "n": 4,
             "method": "PATCH",
-            "path": "/api/orders/499/status",
+            "path": "/api/orders/573/status",
             "status": 200,
             "evidence": "匿名改状态 → DEPOSIT_PAID"
           },
           {
             "n": 5,
             "method": "PUT",
-            "path": "/api/orders/499",
+            "path": "/api/orders/573",
             "status": 200,
             "evidence": "匿名全量覆盖订单：改电话 + 把明细数量改成 99"
           },
           {
             "n": 6,
             "method": "DB",
-            "path": "SELECT ... WHERE id=499",
+            "path": "SELECT ... WHERE id=573",
             "status": 200,
             "evidence": "库里的快照已被重写：明细数量=99，电话=13900000000，状态=PENDING"
           }
@@ -176,14 +176,14 @@
           {
             "n": 1,
             "method": "PUT",
-            "path": "/api/orders/501",
+            "path": "/api/orders/575",
             "status": 200,
             "evidence": "匿名把明细数量改成 99，成交价保持 1 分"
           },
           {
             "n": 2,
             "method": "GET",
-            "path": "/api/orders/501",
+            "path": "/api/orders/575",
             "status": 200,
             "evidence": "订单金额 0.01 元 / 明细合计 4950.0 元 / 套餐标价 88.88 元 —— 三个数字互不相等"
           },
@@ -204,10 +204,10 @@
       "severity": "HIGH",
       "endpoint": "GET /api/products, GET /api/packages, GET /api/orders",
       "title": "前端列表固定只取前 100 条并丢弃 total，超出的数据永远不可见",
-      "detail": "后端返回 total=137，实际 items 只有 100 条。前端三个列表接口都写死 page=1&pageSize=100，且拿到响应后只做 data.items.map(...)，PageResponse.total / totalPages 被整个丢弃 —— 用户看不到「还有 35 条」，也没有任何翻页入口。商品/套餐/订单一旦超过 100 条，数据库里多出来的记录在 Pad 端凭空消失。",
+      "detail": "后端返回 total=139，实际 items 只有 100 条。前端三个列表接口都写死 page=1&pageSize=100，且拿到响应后只做 data.items.map(...)，PageResponse.total / totalPages 被整个丢弃 —— 用户看不到「还有 35 条」，也没有任何翻页入口。商品/套餐/订单一旦超过 100 条，数据库里多出来的记录在 Pad 端凭空消失。",
       "repro": "见 integration_observation.json scenarios[SC05_LIST_TRUNCATION]",
       "evidence": {
-        "total": 137,
+        "total": 139,
         "items_count": 100,
         "frontend_code": "GET /api/products${toQuery({ page: 1, pageSize: 100, ...params })} -> data.items.map(mapProduct)",
         "root_cause": "前端硬编码 pageSize=100 + 未读取 total/totalPages"
@@ -219,21 +219,21 @@
       "severity": "HIGH",
       "endpoint": "POST /api/orders",
       "title": "可以把不属于该套餐的商品写进套餐明细，后端照单全收",
-      "detail": "下单时 packageItems 里塞进套餐外的商品（['ai_probe_prod_92c422']），后端只校验商品存在、不校验归属，200 通过并写进订单快照。订单快照里的「套餐明细」因此不代表真实套餐，后续对账无据可查。",
+      "detail": "下单时 packageItems 里塞进套餐外的商品（['ai_probe_prod_673c19']），后端只校验商品存在、不校验归属，200 通过并写进订单快照。订单快照里的「套餐明细」因此不代表真实套餐，后续对账无据可查。",
       "repro": "见 integration_observation.json scenarios[SC02_FOREIGN_ITEM_IN_PACKAGE]",
       "evidence": {
         "snapshot_items": [
           {
-            "productId": 801254,
-            "productName": "ai_probe_prod_92c422",
+            "productId": 1102396,
+            "productName": "ai_probe_prod_673c19",
             "priceCent": 1,
             "quantity": 1,
             "unit": "份",
             "imageUrl": null,
-            "categoryName": "ai_probe_cat_5fa6bf"
+            "categoryName": "ai_probe_cat_10102b"
           }
         ],
-        "order_id": 495,
+        "order_id": 569,
         "root_cause": "OrderService.apply 未校验 packageItems 与 packageId 的归属关系"
       },
       "owner": "集权层"
@@ -248,13 +248,13 @@
       "evidence": {
         "snapshot_items": [
           {
-            "productId": 801254,
-            "productName": "ai_probe_prod_92c422",
+            "productId": 1102396,
+            "productName": "ai_probe_prod_673c19",
             "priceCent": 1,
             "quantity": 99,
             "unit": "份",
             "imageUrl": null,
-            "categoryName": "ai_probe_cat_5fa6bf"
+            "categoryName": "ai_probe_cat_10102b"
           }
         ],
         "final_price_cent": 1,
@@ -394,13 +394,13 @@
       "evidence": {
         "snapshot_items": [
           {
-            "productId": 801254,
-            "productName": "ai_probe_prod_92c422",
+            "productId": 1102396,
+            "productName": "ai_probe_prod_673c19",
             "priceCent": 1,
             "quantity": 1,
             "unit": "份",
             "imageUrl": null,
-            "categoryName": "ai_probe_cat_5fa6bf"
+            "categoryName": "ai_probe_cat_10102b"
           }
         ],
         "root_cause": "spring.jackson 未开 fail-on-unknown-properties + buildPackageSnapshot 空明细回退"
@@ -626,7 +626,7 @@
       "result": "PASS",
       "desc": "package_items.id 是内部主键，接口刻意不外露（前端也用不到）",
       "evidence": {
-        "db_value": 171
+        "db_value": 200
       }
     },
     {
@@ -634,7 +634,7 @@
       "result": "PASS",
       "desc": "package_items.package_id 是内部主键，接口刻意不外露（前端也用不到）",
       "evidence": {
-        "db_value": 134
+        "db_value": 163
       }
     },
     {
@@ -828,14 +828,14 @@
           {
             "n": 2,
             "method": "DB",
-            "path": "SELECT final_price_cent FROM orders WHERE id=500",
+            "path": "SELECT final_price_cent FROM orders WHERE id=574",
             "status": 200,
             "evidence": "库里的成交价 = 1 分"
           },
           {
             "n": 3,
             "method": "GET",
-            "path": "/api/orders/500",
+            "path": "/api/orders/574",
             "status": 200,
             "evidence": "API 回读成交价 = 1 分"
           },
@@ -864,19 +864,19 @@
             "method": "POST",
             "path": "/api/orders",
             "status": 200,
-            "evidence": "建单 id=502：PENDING、定金 0、成交价 1 分"
+            "evidence": "建单 id=576：PENDING、定金 0、成交价 1 分"
           },
           {
             "n": 2,
             "method": "PATCH",
-            "path": "/api/orders/502/status",
+            "path": "/api/orders/576/status",
             "status": 200,
             "evidence": "匿名 PENDING → COMPLETED 一次成功；前端渲染状态 = 已完成，定金 = 0 元，订单金额 = 0.01 元"
           },
           {
             "n": 3,
             "method": "DB",
-            "path": "SELECT status, deposit_cent FROM orders WHERE id=502",
+            "path": "SELECT status, deposit_cent FROM orders WHERE id=576",
             "status": 200,
             "evidence": "库里的状态 = COMPLETED，定金 = 0 分"
           }
