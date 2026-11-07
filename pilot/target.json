@@ -16,14 +16,226 @@
     "package_types": "entity/PackageType.java"
   },
   "evidence_sources": [
-    {"layer": "function", "file": "fn_findings.json", "key": "findings"},
-    {"layer": "file", "file": "file_findings.json", "key": null},
-    {"layer": "service", "file": "findings.json", "key": null},
-    {"layer": "class", "file": "class_findings.json", "key": null},
-    {"layer": "integration", "file": "integration_findings.json", "key": "findings"},
-    {"layer": "service", "file": "perf_findings.json", "key": "service"},
-    {"layer": "integration", "file": "perf_findings.json", "key": "integration"},
-    {"layer": "function", "file": "numeric_findings.json", "key": "function"},
-    {"layer": "service", "file": "concurrency_findings.json", "key": "service"}
-  ]
+    {
+      "layer": "function",
+      "file": "fn_findings.json",
+      "key": "findings"
+    },
+    {
+      "layer": "file",
+      "file": "file_findings.json",
+      "key": null
+    },
+    {
+      "layer": "service",
+      "file": "findings.json",
+      "key": null
+    },
+    {
+      "layer": "class",
+      "file": "class_findings.json",
+      "key": null
+    },
+    {
+      "layer": "integration",
+      "file": "integration_findings.json",
+      "key": "findings"
+    },
+    {
+      "layer": "service",
+      "file": "perf_findings.json",
+      "key": "service"
+    },
+    {
+      "layer": "integration",
+      "file": "perf_findings.json",
+      "key": "integration"
+    },
+    {
+      "layer": "function",
+      "file": "numeric_findings.json",
+      "key": "function"
+    },
+    {
+      "layer": "service",
+      "file": "concurrency_findings.json",
+      "key": "service"
+    },
+    {
+      "layer": "class",
+      "file": "feature_findings.json",
+      "key": "class"
+    }
+  ],
+  "carriers": {
+    "function.jvm_reflection": {
+      "layer": "function",
+      "language": "java",
+      "carrier": "JVM 内反射直调（javap 字节码声明 + 动态属性/边界用例），仓库用动态代理打桩",
+      "observes": [
+        "纯函数行为",
+        "参数边界",
+        "数值精度",
+        "异常路径",
+        "字符串处理",
+        "集合顺序"
+      ],
+      "blind_to": [
+        "AOP 切面语义（@Transactional / @Async / @Cacheable / @PreAuthorize）—— 反射直调不走 Spring 容器，代理根本不参与",
+        "Spring 依赖注入装配结果（@Primary / @Qualifier / @Profile / @Conditional 的选择）—— 仓库被打桩，看到的是假依赖图",
+        "Spring 代理行为（自调用失效、private/final/static 方法不被织入）",
+        "配置注入（@Value）与配置刷新 —— 容器不启动，配置不参与",
+        "任何依赖持久化或容器生命周期的语义"
+      ]
+    },
+    "file.jvm_whole_class": {
+      "layer": "file",
+      "language": "java",
+      "carrier": "JVM 内整类实例化（javap 字节码声明 + 动态代理打桩 + 中间态快照 + logback 抓日志）+ 真实容器 HTTP 探针",
+      "observes": [
+        "同文件内多函数的交互",
+        "异常处理风格",
+        "文件内状态一致性",
+        "HTTP 入口上的文件级行为"
+      ],
+      "blind_to": [
+        "AOP 切面语义 —— 容器外实例化，代理不参与",
+        "依赖注入装配结果 —— 依赖是打桩的",
+        "跨文件的 ORM 交互（懒加载 / N+1 / 脏写）"
+      ]
+    },
+    "class.dto_db_contract": {
+      "layer": "class",
+      "language": "java",
+      "carrier": "反射导出 DTO/实体约束声明 + PostgreSQL 实况（information_schema / pg_constraint）+ 影子表等比放大 + 真实容器 HTTP 写路径",
+      "observes": [
+        "实体与 DTO 的字段/可空性/约束一致性",
+        "DB CHECK 与 DTO 校验的对应",
+        "枚举与 DB 白名单",
+        "软删与生命周期",
+        "写入落库的实际形状"
+      ],
+      "blind_to": [
+        "跨实体的关联加载行为（懒加载时机、N+1）",
+        "事务隔离级别下的可见性"
+      ]
+    },
+    "service.http_contract": {
+      "layer": "service",
+      "language": "java",
+      "carrier": "真实容器 HTTP 探针（契约测试 + 差分出单）",
+      "observes": [
+        "HTTP 契约与错误码语义",
+        "鉴权缺失",
+        "输入校验边界",
+        "响应形状",
+        "事务在真实容器里的行为",
+        "并发写冲突",
+        "幂等性"
+      ],
+      "blind_to": [
+        "非 HTTP 入口（Dubbo / gRPC / MQ）—— 本项目没有，但下一个项目有的话这里就是盲区",
+        "网络层真实超时/熔断/降级（探针在同机同网，测不出真实网络故障）"
+      ]
+    },
+    "integration.e2e_three_source": {
+      "layer": "integration",
+      "language": "java+js",
+      "carrier": "真实容器 HTTP + PostgreSQL 实况 + Node 直跑前端 mapper + 攻击链合成",
+      "observes": [
+        "端到端业务语义",
+        "API/DB/前端三方一致性",
+        "攻击链与链级后果",
+        "端到端延迟"
+      ],
+      "blind_to": [
+        "前端渲染后的最终视觉（本系统只到视图模型，不到像素）",
+        "浏览器端状态与本地存储"
+      ]
+    }
+  },
+  "features": [
+    {
+      "id": "aop_aspect",
+      "label": "AOP 切面（代理织入）",
+      "detector": "java_feature_scan.py",
+      "detector_layer": "class",
+      "covered_by": [
+        "service.http_contract",
+        "integration.e2e_three_source"
+      ],
+      "blind_carriers": [
+        "function.jvm_reflection",
+        "file.jvm_whole_class"
+      ],
+      "note": "本项目只用了 @Transactional（24 处）。切面失效点（private/final/static 方法、自调用）与事务内异步逃逸由 java_feature_scan.py 静态判定；「运行时切面真的生效」只能在容器内观测。"
+    },
+    {
+      "id": "dependency_injection",
+      "label": "依赖注入装配",
+      "detector": "java_feature_scan.py",
+      "detector_layer": "class",
+      "covered_by": [],
+      "blind_carriers": [
+        "function.jvm_reflection",
+        "file.jvm_whole_class"
+      ],
+      "note": "本项目全是构造器注入 + 4 处 @Value，没有字段注入。但装配结果（@Primary/@Qualifier/@Profile/@Conditional 选了谁）没有任何检查器 —— 换实现时行为变化不会被这套审计发现。"
+    },
+    {
+      "id": "rpc_boundary",
+      "label": "RPC 边界（Dubbo / gRPC / Feign / MQ）",
+      "detector": "java_feature_scan.py",
+      "detector_layer": "class",
+      "covered_by": [],
+      "blind_carriers": [
+        "service.http_contract"
+      ],
+      "note": "本项目零 RPC 入口（扫描器已确认）。下一个项目若有：service 层载体要加 rpc_contract 载体，否则该服务的契约/鉴权/超时/熔断全部在射程外。"
+    },
+    {
+      "id": "dynamic_config",
+      "label": "动态配置与运行时行为变更",
+      "detector": "java_feature_scan.py",
+      "detector_layer": "class",
+      "covered_by": [],
+      "blind_carriers": [
+        "function.jvm_reflection",
+        "file.jvm_whole_class",
+        "service.http_contract"
+      ],
+      "note": "4 处 @Value 决定行为（上传上限、CORS 白名单等），都是启动时读一次。本项目没有 @RefreshScope / 配置中心；一旦引入，配置在运行中可变 → 门禁基线会在无人改代码的情况下漂移，需要基线失效策略。"
+    },
+    {
+      "id": "jpa_persistence",
+      "label": "JPA 持久化语义（懒加载 / 脏写 / 查询放大）",
+      "detector": "java_feature_scan.py",
+      "detector_layer": "class",
+      "covered_by": [
+        "class.dto_db_contract",
+        "service.http_contract"
+      ],
+      "blind_carriers": [
+        "function.jvm_reflection",
+        "file.jvm_whole_class"
+      ],
+      "note": "class 层查的是声明一致性；查询放大（N+1）这类运行时行为目前没有检查器 —— service 载体能测延迟但测不出「每条明细多查一次」。"
+    },
+    {
+      "id": "http_contract",
+      "label": "HTTP 契约与错误码",
+      "detector": null,
+      "detector_layer": null,
+      "covered_by": [
+        "service.http_contract"
+      ],
+      "blind_carriers": [],
+      "note": "由服务层脚本覆盖（25 个接口）。"
+    }
+  ],
+  "repro_templates": {
+    "function_case": "python3 fn_dynamic.py --case {case_id}",
+    "file_layer": "python3 file_dynamic.py",
+    "class_layer": "python3 class_dynamic.py"
+  }
 }

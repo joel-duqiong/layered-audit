@@ -2,7 +2,7 @@
 
 生成物：/Users/june/.cc-weixin/workspace/layered-audit/pilot/root_causes.json　输入：/Users/june/.cc-weixin/workspace/layered-audit/pilot/all_findings.json
 
-- 发现 94 条 → 根因 58 条（归并 36 条）
+- 发现 96 条 → 根因 60 条（归并 36 条）
 - 硬违规 1 条；契约缺口（无法归类）9 条
 
 ## 一、修复顺序（按根因）
@@ -18,7 +18,7 @@
 | 7 | HIGH | file | `audit.client_ip_trusted_from_header` | 审计日志里的 clientIp 完全由客户端伪造：X-Forwarded-For 首段直接采信 | 1 | 0.93 | verified | `python3 file_dynamic.py` |
 | 8 | HIGH | file | `cors.allowed_origin_patterns_too_broad` | CORS 白名单等于「整个内网 + 所有本地端口」，且全是明文 http | 1 | 0.95 | verified | `python3 file_dynamic.py` |
 | 9 | HIGH | integration | `frontend.list_hardcoded_limit_100` | 前端列表固定只取前 100 条并丢弃 total，超出的数据永远不可见 | 1 | 0.95 | verified | `python3 integration_dynamic.py --scenario SC05_LIST_TRUNC…` |
-| 10 | HIGH | service | `index.idx_products_name_unusable` | DDL 声明的 idx_products_name 对服务层查询模式无效（7.603ms vs 0.012ms，差 634 倍） | 1 | 0.88 | verified | `python3 class_dynamic.py` |
+| 10 | HIGH | service | `index.idx_products_name_unusable` | DDL 声明的 idx_products_name 对服务层查询模式无效（7.535ms vs 0.013ms，差 580 倍） | 1 | 0.88 | verified | `python3 class_dynamic.py` |
 | 11 | HIGH | class | `order.status.transition_unconstrained` | 状态机缺失：9/9 种迁移全部被接受，含回退 | 1 | 0.96 | verified | `python3 class_dynamic.py` |
 | 12 | HIGH | function | `order_no.no_collision_guarantee` | 订单号每秒只有 1000 个槽位，并发下单必然撞号（唯一键冲突 → 500） | 1 | 0.9 | verified | `python3 fn_dynamic.py --case GON-02` |
 | 13 | HIGH | class | `rule.missing_in_db_dto_service` | 4 条业务不变量在 DB / DTO / 服务层三层全都不存在 | 1 | 0.85 | verified | `python3 class_dynamic.py` |
@@ -40,33 +40,35 @@
 | 29 | MEDIUM | service | `order.update.no_concurrency_control` | 并发编辑同一订单会静默丢掉对方的修改：没有版本号、没有冲突检测 | 1 | 0.95 | verified | `python3 concurrency_props.py` |
 | 30 | MEDIUM | class | `orders.no_data_lifecycle` | orders 表没有软删/归档，永久增长（当前 184 kB） | 1 | 0.8 | verified | `python3 class_dynamic.py` |
 | 31 | MEDIUM | file | `package.applyItems.mutate_before_validate` | PackageService.applyItems 先删后校验：明细被清空后才去查商品 | 1 | 0.91 | verified | `python3 file_dynamic.py` |
-| 32 | MEDIUM | class | `softdelete.resurrects_row` | 软删除的行会被同名重建「复活」，id 与 sort_order 沿用旧值 | 1 | 0.9 | verified | `python3 class_dynamic.py` |
-| 33 | MEDIUM | integration | `tooling.coverage_recording_gap` | 1/25 个接口既无真实流量样本、前端也不调用；17 个写接口的真实流量样本为 0 | 1 | 0.85 | verified | `见 /Users/june/tests/auto-api/recordings/jiuyan_readonly.j…` |
-| 34 | MEDIUM | file | `traceid.client_controlled_no_validation` | X-Trace-Id 完全由客户端指定，无格式与长度白名单，原样进日志与响应头 | 1 | 0.88 | verified | `python3 file_dynamic.py` |
-| 35 | MEDIUM | file | `upload.limit_declared_in_three_places` | 上传体积上限 5MB 这个数字散落三处，改一处另两处就开始说谎 | 1 | 0.95 | verified | `python3 file_dynamic.py` |
-| 36 | MEDIUM | function | `upload.no_size_limit` | 上传无体积上限：单请求 20MB 被完整写盘（上传放大 DoS） | 1 | 0.91 | verified | `python3 fn_dynamic.py --case UPL-06` |
-| 37 | MEDIUM | file | `validation.status_code_split` | 同一类「参数非法」返回两种状态码：DTO 校验给 400，服务自校验给 422 | 1 | 0.94 | verified | `python3 file_dynamic.py` |
-| 38 | MEDIUM | file | `webconfig.static_root_normalization_env_dependent` | 静态资源根目录的规范化依赖「目录在启动前就存在」这个环境偶然 | 1 | 0.72 | unverified | `python3 file_dynamic.py` |
-| 39 | LOW | class | `column.default_declared_in_three_places` | products.is_active 的默认值被声明了三遍 | 2 | 0.86 | verified | `python3 class_dynamic.py` |
-| 40 | LOW | integration | `api.dead_endpoints` | 后端 4 个接口前端从不调用 | 1 | 0.9 | verified | `grep -n 'api/' /Users/june/jiuyan/src/api/banquetApi.js` |
-| 41 | LOW | file | `apiresponse.null_body_wrapped_as_success` | null 响应体也被包成 success=true 的信封（data 字段缺失） | 1 | 0.9 | verified | `python3 file_dynamic.py` |
-| 42 | LOW | class | `enum.case_sensitive` | 订单状态枚举大小写敏感，小写 pending 直接 400 | 1 | 0.82 | verified | `python3 class_dynamic.py` |
-| 43 | LOW | file | `errhandler.response_shape_inconsistent` | 同一个异常处理文件里三种响应形状：信封 / 空体 / 未知 | 1 | 0.92 | verified | `python3 file_dynamic.py` |
-| 44 | LOW | class | `error.message_mismatch` | finalPriceCent=null 的报错文案说的是「小于 0」，真实原因是「不能为空」 | 1 | 0.85 | verified | `python3 class_dynamic.py` |
-| 45 | LOW | function | `money_input.normalization_silently_mutates_value` | 金额输入框静默改变用户输入的数值：负号被吞、超过 2 位小数被截断 | 1 | 0.95 | verified | `—` |
-| 46 | LOW | file | `service.helpers.duplicated` | 分页归一化等 4 组方法在 3 个 service 文件里逐字复制 | 1 | 0.93 | verified | `python3 file_dynamic.py` |
-| 47 | INFO | class | `check.dto_aligned` | 8/8 条 DB CHECK 在 DTO 层都有同义约束，防线链条闭合 | 1 | 0.92 | verified | `python3 class_dynamic.py` |
-| 48 | INFO | file | `cors.negative_precision_proven` | CORS 白名单是精确匹配，不是通配全放 | 1 | 0.9 | verified | `python3 file_dynamic.py` |
-| 49 | INFO | file | `dead_private_method.none` | 没有真正无人调用的私有方法 | 1 | 0.88 | verified | `python3 file_dynamic.py` |
-| 50 | INFO | class | `enum.check_aligned` | OrderStatus 枚举与 DB CHECK 白名单完全一致（3/3） | 1 | 0.95 | verified | `python3 class_dynamic.py` |
-| 51 | INFO | function | `money_conversion.roundtrip_exact` | 前端金额换算在合理量级内精确闭合（分→元→分、元→分、显示精度三条性质全过） | 1 | 0.9 | verified | `—` |
-| 52 | INFO | class | `nullability.aligned` | 可空性三方一致 27/31 列（同向设防 21 · DTO 更严 0 · 都可空 6） | 1 | 0.93 | verified | `python3 class_dynamic.py` |
-| 53 | INFO | service | `order.update.transaction_boundary_holds` | 被拒的写请求不会在订单行留下部分写入（事务边界有效） | 1 | 0.9 | verified | `python3 concurrency_props.py` |
-| 54 | INFO | class | `put.required_fk_guarded` | PUT 缺省必填外键被 DTO 的 @NotNull 挡住（400，DB 无脏数据） | 1 | 0.9 | verified | `python3 class_dynamic.py` |
-| 55 | INFO | file | `static_oracle.blind_spot_compile_time_constant` | 静态 oracle 的一处已知盲区：编译期常量内联 | 1 | 0.8 | unverified | `python3 file_dynamic.py` |
-| 56 | INFO | file | `static_root.same_root` | 静态映射根与上传根同源（manifest 假设被证伪） | 1 | 0.85 | verified | `python3 file_dynamic.py` |
-| 57 | INFO | file | `txn.boundary_complete` | 全仓写方法的事务边界一个不缺 | 1 | 0.9 | verified | `python3 file_dynamic.py` |
-| 58 | INFO | file | `txn.rollback_proven` | 事务边界实测有效：中途失败不留残局 | 1 | 0.92 | verified | `python3 file_dynamic.py` |
+| 32 | MEDIUM | class | `service.public_api_returns_jpa_entity` | service 层把 JPA 实体当 public API 返回：调用方能绕过全部业务校验直接改实体 | 1 | 0.88 | verified | `python3 java_feature_scan.py` |
+| 33 | MEDIUM | class | `softdelete.resurrects_row` | 软删除的行会被同名重建「复活」，id 与 sort_order 沿用旧值 | 1 | 0.9 | verified | `python3 class_dynamic.py` |
+| 34 | MEDIUM | integration | `tooling.coverage_recording_gap` | 1/25 个接口既无真实流量样本、前端也不调用；17 个写接口的真实流量样本为 0 | 1 | 0.85 | verified | `见 /Users/june/tests/auto-api/recordings/jiuyan_readonly.j…` |
+| 35 | MEDIUM | file | `traceid.client_controlled_no_validation` | X-Trace-Id 完全由客户端指定，无格式与长度白名单，原样进日志与响应头 | 1 | 0.88 | verified | `python3 file_dynamic.py` |
+| 36 | MEDIUM | file | `upload.limit_declared_in_three_places` | 上传体积上限 5MB 这个数字散落三处，改一处另两处就开始说谎 | 1 | 0.95 | verified | `python3 file_dynamic.py` |
+| 37 | MEDIUM | function | `upload.no_size_limit` | 上传无体积上限：单请求 20MB 被完整写盘（上传放大 DoS） | 1 | 0.91 | verified | `python3 fn_dynamic.py --case UPL-06` |
+| 38 | MEDIUM | file | `validation.status_code_split` | 同一类「参数非法」返回两种状态码：DTO 校验给 400，服务自校验给 422 | 1 | 0.94 | verified | `python3 file_dynamic.py` |
+| 39 | MEDIUM | file | `webconfig.static_root_normalization_env_dependent` | 静态资源根目录的规范化依赖「目录在启动前就存在」这个环境偶然 | 1 | 0.72 | unverified | `python3 file_dynamic.py` |
+| 40 | LOW | class | `column.default_declared_in_three_places` | products.is_active 的默认值被声明了三遍 | 2 | 0.86 | verified | `python3 class_dynamic.py` |
+| 41 | LOW | integration | `api.dead_endpoints` | 后端 4 个接口前端从不调用 | 1 | 0.9 | verified | `grep -n 'api/' /Users/june/jiuyan/src/api/banquetApi.js` |
+| 42 | LOW | file | `apiresponse.null_body_wrapped_as_success` | null 响应体也被包成 success=true 的信封（data 字段缺失） | 1 | 0.9 | verified | `python3 file_dynamic.py` |
+| 43 | LOW | class | `enum.case_sensitive` | 订单状态枚举大小写敏感，小写 pending 直接 400 | 1 | 0.82 | verified | `python3 class_dynamic.py` |
+| 44 | LOW | file | `errhandler.response_shape_inconsistent` | 同一个异常处理文件里三种响应形状：信封 / 空体 / 未知 | 1 | 0.92 | verified | `python3 file_dynamic.py` |
+| 45 | LOW | class | `error.message_mismatch` | finalPriceCent=null 的报错文案说的是「小于 0」，真实原因是「不能为空」 | 1 | 0.85 | verified | `python3 class_dynamic.py` |
+| 46 | LOW | function | `money_input.normalization_silently_mutates_value` | 金额输入框静默改变用户输入的数值：负号被吞、超过 2 位小数被截断 | 1 | 0.95 | verified | `python3 numeric_props.py` |
+| 47 | LOW | file | `service.helpers.duplicated` | 分页归一化等 4 组方法在 3 个 service 文件里逐字复制 | 1 | 0.93 | verified | `python3 file_dynamic.py` |
+| 48 | INFO | class | `check.dto_aligned` | 8/8 条 DB CHECK 在 DTO 层都有同义约束，防线链条闭合 | 1 | 0.92 | verified | `python3 class_dynamic.py` |
+| 49 | INFO | file | `cors.negative_precision_proven` | CORS 白名单是精确匹配，不是通配全放 | 1 | 0.9 | verified | `python3 file_dynamic.py` |
+| 50 | INFO | file | `dead_private_method.none` | 没有真正无人调用的私有方法 | 1 | 0.88 | verified | `python3 file_dynamic.py` |
+| 51 | INFO | class | `enum.check_aligned` | OrderStatus 枚举与 DB CHECK 白名单完全一致（3/3） | 1 | 0.95 | verified | `python3 class_dynamic.py` |
+| 52 | INFO | function | `money_conversion.roundtrip_exact` | 前端金额换算在合理量级内精确闭合（分→元→分、元→分、显示精度三条性质全过） | 1 | 0.9 | verified | `python3 numeric_props.py` |
+| 53 | INFO | class | `nullability.aligned` | 可空性三方一致 27/31 列（同向设防 21 · DTO 更严 0 · 都可空 6） | 1 | 0.93 | verified | `python3 class_dynamic.py` |
+| 54 | INFO | service | `order.update.transaction_boundary_holds` | 被拒的写请求不会在订单行留下部分写入（事务边界有效） | 1 | 0.9 | verified | `python3 concurrency_props.py` |
+| 55 | INFO | class | `put.required_fk_guarded` | PUT 缺省必填外键被 DTO 的 @NotNull 挡住（400，DB 无脏数据） | 1 | 0.9 | verified | `python3 class_dynamic.py` |
+| 56 | INFO | class | `spring.proxy_semantics_clean` | Spring 代理语义干净：没有切面失效点、没有事务内异步逃逸、没有对外暴露实体 | 1 | 0.9 | verified | `python3 java_feature_scan.py` |
+| 57 | INFO | file | `static_oracle.blind_spot_compile_time_constant` | 静态 oracle 的一处已知盲区：编译期常量内联 | 1 | 0.8 | unverified | `python3 file_dynamic.py` |
+| 58 | INFO | file | `static_root.same_root` | 静态映射根与上传根同源（manifest 假设被证伪） | 1 | 0.85 | verified | `python3 file_dynamic.py` |
+| 59 | INFO | file | `txn.boundary_complete` | 全仓写方法的事务边界一个不缺 | 1 | 0.9 | verified | `python3 file_dynamic.py` |
+| 60 | INFO | file | `txn.rollback_proven` | 事务边界实测有效：中途失败不留残局 | 1 | 0.92 | verified | `python3 file_dynamic.py` |
 
 ## 二、硬违规（违反 attribution.rule / out_of_scope）
 
@@ -116,9 +118,9 @@
 
 | category | 命中 | 状态 |
 |----------|------|------|
-| encapsulation_leak | 0 | 零覆盖 —— 没人管 |
+| encapsulation_leak | 1 | ok |
 | invariant | 6 | ok |
-| contract_violation | 7 | ok |
+| contract_violation | 8 | ok |
 | inheritance_design | 0 | 零覆盖 —— 没人管 |
 
 **service**
@@ -170,6 +172,7 @@
 | `/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/Product.java` | 3 | `api.put_full_overwrite`, `column.default_declared_in_three_places`, `index.idx_products_name_unusable` |
 | `/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/WebConfig.java` | 2 | `cors.allowed_origin_patterns_too_broad`, `webconfig.static_root_normalization_env_dependent` |
 | `/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/TraceIdFilter.java` | 2 | `audit.client_ip_trusted_from_header`, `traceid.client_controlled_no_validation` |
+| `/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java` | 2 | `package.applyItems.mutate_before_validate`, `service.public_api_returns_jpa_entity` |
 | `/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/CategoryController.java` | 2 | `errhandler.internal_detail_leak`, `jackson.lenient_type_coercion` |
 | `/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageTypeController.java` | 2 | `errhandler.internal_detail_leak`, `jackson.lenient_type_coercion` |
 | `/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/PackageController.java` | 2 | `errhandler.internal_detail_leak`, `tooling.coverage_recording_gap` |

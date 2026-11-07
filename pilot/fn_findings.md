@@ -23,8 +23,8 @@
 - HTTP 可达：是（边界情况：HTTP 契约层看不出内容问题——必须真的写一次文件才暴露）
 - CWE: CWE-434
 - 证据（2 条实测）：
-  - `UPL-04` com.jiuyan.banquet.service.UploadService#uploadProductImage — 不变量「文件内容不是图片时不得落盘（内容必须嗅探，不能只看客户端自报的 contentType）」→ 落盘文件: [{'name': 'products/b0d02593-6fae-4fe9-9b8d-db16c41b354d.png', 'size': 27, 'first_bytes_hex': '4d5a900003000000', 'magic_ascii': 'MZ......'}] | 落盘 products/b0d02593-6fae-4fe9-9b8d-db16c41b354d.png size=27 head=MZ......
-  - `UPL-07` com.jiuyan.banquet.service.UploadService#uploadProductImage — 不变量「任意字节不得以图片扩展名落盘」→ 落盘文件: [{'name': 'products/c450fffb-aeda-4d31-b6c0-6cf36aea294e.png', 'size': 40, 'first_bytes_hex': '6a75737420706c61', 'magic_ascii': 'just pla'}] | 落盘 products/c450fffb-aeda-4d31-b6c0-6cf36aea294e.png size=40 head=just pla
+  - `UPL-04` com.jiuyan.banquet.service.UploadService#uploadProductImage — 不变量「文件内容不是图片时不得落盘（内容必须嗅探，不能只看客户端自报的 contentType）」→ 落盘文件: [{'name': 'products/e5413771-fec1-49b8-a1c3-bdf28960ded0.png', 'size': 27, 'first_bytes_hex': '4d5a900003000000', 'magic_ascii': 'MZ......'}] | 落盘 products/e5413771-fec1-49b8-a1c3-bdf28960ded0.png size=27 head=MZ......
+  - `UPL-07` com.jiuyan.banquet.service.UploadService#uploadProductImage — 不变量「任意字节不得以图片扩展名落盘」→ 落盘文件: [{'name': 'products/d916503c-d0fb-42c0-b652-29c2c6c27b18.png', 'size': 40, 'first_bytes_hex': '6a75737420706c61', 'magic_ascii': 'just pla'}] | 落盘 products/d916503c-d0fb-42c0-b652-29c2c6c27b18.png size=40 head=just pla
 
 ## [HIGH] FN-ORDER-NO-COLLISION — 订单号每秒只有 1000 个槽位，并发下单必然撞号（唯一键冲突 → 500）
 
@@ -33,7 +33,7 @@
 - HTTP 可达：是（边界情况：无任何边界能挡住并发写；客户端请求速率就是下单速率）
 - CWE: CWE-362
 - 证据（1 条实测）：
-  - `GON-02` # — 不变量「同一秒内生成的订单号必须互不相同（唯一槽位只有 1000 个/秒）」→ 并发生成 3000 个订单号，重复 2048 个 | generated=3000 distinct=952 elapsed=18ms
+  - `GON-02` # — 不变量「同一秒内生成的订单号必须互不相同（唯一槽位只有 1000 个/秒）」→ 并发生成 3000 个订单号，重复 2044 个 | generated=3000 distinct=956 elapsed=16ms
 
 ## [HIGH] FN-SNAPSHOT-SEMANTICS — 订单快照：明细归属不校验，空明细静默回退成套餐默认明细
 
@@ -96,7 +96,7 @@
 - HTTP 可达：是（边界情况：需要看容器/反向代理是否另有兜底限制——应用层没有）
 - CWE: CWE-770
 - 证据（1 条实测）：
-  - `UPL-06` com.jiuyan.banquet.service.UploadService#uploadProductImage — 不变量「上传体积必须有上限（防止上传放大 DoS）」→ 落盘文件: [{'name': 'products/02b963db-2585-4f37-a816-c81c681b2ef1.png', 'size': 20971520, 'first_bytes_hex': '4141414141414141', 'magic_ascii': 'AAAAAAAA'}] | 落盘 products/02b963db-2585-4f37-a816-c81c681b2ef1.png size=20971520 head=AAAAAAAA
+  - `UPL-06` com.jiuyan.banquet.service.UploadService#uploadProductImage — 不变量「上传体积必须有上限（防止上传放大 DoS）」→ 落盘文件: [{'name': 'products/430d4d4c-e2c0-4adf-9025-96ff90804f70.png', 'size': 20971520, 'first_bytes_hex': '4141414141414141', 'magic_ascii': 'AAAAAAAA'}] | 落盘 products/430d4d4c-e2c0-4adf-9025-96ff90804f70.png size=20971520 head=AAAAAAAA
 
 ## 假设裁决
 

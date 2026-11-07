@@ -314,6 +314,69 @@ D 三个价格并存且界面不显示明细合计 / E 无定金订单一步跳�
   也没有业务键去重。实测同一个 body 发两次 → 两个订单 id、库里 2 行。
   客户端超时后重试（所有 HTTP 客户端的标准行为）就会多出一张订单；零鉴权下更是放大器。
 
+### 5.14 Java / Spring 生态特性：我们看得见什么，看不见什么
+
+**先说结论：之前完全没考虑到。** 这是这套审计在真实 Java 项目上的**系统性盲区**，
+不是某个探针的疏漏。根因是：我们把「层契约」当成了语言无关的东西（对的），
+但把**载体（carrier）**当成了实现细节（错的）—— 而 DI / 切面 / 代理 / RPC 这些
+恰恰全都活在载体里。
+
+现在的载体是 Java 专属的：
+
+| 层 | 载体 | 语言 |
+|---|---|---|
+| function | JVM 内反射直调（仓库打桩） | java |
+| file | javap 字节码 + 整类实例化（打桩） | java |
+| class | DTO 反射 + PostgreSQL 实况 | java |
+| service | 真实容器 HTTP 契约测试 | java |
+| integration | HTTP + DB + Node 跑前端 mapper | java+js |
+
+**换语言 = 重写全部 5 个载体**，而不是「换个实现细节」。这就是不通用的地方。
+
+#### 关键盲区：function / file 层根本不在 Spring 容器里
+
+反射直调 + 动态代理打桩 → **Spring 代理不参与**。所以这两层的载体**结构性地看不见**：
+
+| 盲区 | 后果 |
+|---|---|
+| AOP 切面语义（@Transactional/@Async/@Cacheable/@PreAuthorize） | function 层任何跟事务有关的结论都不成立 |
+| Spring DI 装配结果（@Primary/@Qualifier/@Profile/@Conditional 选了谁） | 看到的是打桩后的假依赖图 |
+| Spring 代理行为（自调用失效、private/final/static 不被织入） | 切面失效点查不出来 |
+| 配置注入（@Value）与配置刷新 | 配置不参与，行为不可复现 |
+| 任何依赖持久化 / 容器生命周期的语义 | 同上 |
+
+#### 补法：加一根「特性覆盖」轴（跟 category 覆盖度矩阵同模式）
+
+- `target.json` 里加 `carriers`（每个载体「能观察到什么 / 观察不到什么」）与
+  `features`（项目用到的框架特性清单）
+- `engine/feature_coverage.py`（**通用引擎**）：跑各特性的项目侧检测器 → 产出
+  「特性 × 载体」矩阵 + 盲区清单 + **受影响的结论条数**
+- `pilot/java_feature_scan.py`（**项目侧 Java 检查器**）：切面失效点、事务内异步逃逸、
+  对外暴露 JPA 实体、DI 形态、RPC 入口、动态配置形态
+
+**换语言 = 换特性清单 + 换检测器，引擎不动** —— 这就是「扩展到其他语言」的正确接缝，
+和 `target.json` / `finding_meta.py` / agent 脚本是同一套切分逻辑。
+
+#### 本项目（jiuyan）的实际特性盘点
+
+| 特性 | 用了吗 | 状态 |
+|---|---|---|
+| AOP 切面 | 只用 @Transactional（24 处） | 无切面失效点、无事务内异步逃逸、无自调用 → **静态层面干净** |
+| DI | 全构造器注入 + 4 处 @Value，**零字段注入** | 装配结果（@Primary/@Profile）**无检查器 → 盲区** |
+| RPC（Dubbo/gRPC/Feign/MQ） | **零入口**（扫描器已确认） | 本项目无盲区；下一个项目有的话 service 层载体要加 `rpc_contract` |
+| 动态配置 | 4 处 @Value 都是启动时读一次，无 @RefreshScope / 配置中心 | 一旦引入配置中心 → **门禁基线会在无人改代码的情况下漂移**，需要基线失效策略 |
+| JPA 持久化 | 8 个实体，懒加载关联 | 声明一致性已查；**查询放大（N+1）无检查器 → 盲区** |
+
+#### 本轮因此新增的两条发现
+
+- `JAVA-SERVICE-EXPOSES-JPA-ENTITY`（MEDIUM，class 层，`class.encapsulation_leak`）：
+  `ProductService.findProduct` 与 `PackageService.findPackage` 是 **public 且返回 JPA 实体**，
+  可见性过宽 —— 任何调用方都能绕过 DTO 契约与全部业务校验直接改实体。
+  当前**无跨类调用方**，是潜在泄漏而非正在发生的缺陷（所以是 MEDIUM 不是 HIGH）。
+- `JAVA-SPRING-PROXY-SEMANTICS-CLEAN`（INFO，正面结论）：24 个切面方法全部 public、
+  无 private/final/static 上的切面、无同类内部自调用、事务方法内无异步逃逸。
+  **注意这是静态结论**，证不了「运行时切面真的生效了」—— 那要在容器内观测。
+
 ### 5.12 通用 / 配置 / 实现 三层切分（这套系统怎么才算「通用」）
 
 **切错边界是最大的浪费**：把 agent 也做成通用 → 变成通用扫描器（本项目明确不要）；
@@ -326,9 +389,15 @@ D 三个价格并存且界面不显示明细合计 / E 无定金订单一步跳�
 | **配置** | 项目绑定：源码根、包路径、证据源清单、标注表 | 改这个文件 | `pilot/target.json` |
 | **配置** | 人工标注表：category / claim / owner / confidence / root_cause_key | 换一份 | `pilot/finding_meta.py` |
 | **实现** | 各层 agent 探针脚本（`fn_*` / `file_*` / `contract_*` / `class_*` / `integration_*` / `perf_load.py`） | 重写 | `pilot/` |
+| **实现** | **载体**：层与运行时之间的那层（反射直调 / 字节码 / HTTP 契约 / 三方对账） | **按语言重写** | 各层脚本 |
 
 **agent 层绑定具体靶区不是缺陷** —— agent 本来就该打具体靶区。硬把它通用化，
 就成了「换个项目就自动生成审计」的通用扫描器，那是另一个产品。
+
+**但「载体」是另一回事**：载体是语言专属的（Java 的反射直调、字节码、HTTP 契约，
+换成 Python/Go 就得重写）。所以「通用」的真正含义是：
+**契约与收口引擎通用，载体按语言重写**。载体要覆盖哪些运行时特性、
+看不见哪些，写在 `target.json` 的 `carriers` 段里，由特性覆盖矩阵守着（见 §5.14）。
 
 **通用性怎么被守住（不是靠自觉）**：
 
@@ -378,7 +447,16 @@ cd targets/acme-banquet
 
 其它：`openapi.json`（OpenAPI 快照，服务层输入）、`jiuyan-layer-manifest.yaml`（每层状态 / 归属 pattern / 回归资产台账）、`cleanup.sh` + `cleanup_uploads.py`（收尾）。
 
-### 6.2 负载实测脚本（本轮新增）
+### 6.2 项目侧检测器（不是引擎，按语言/框架各写各的）
+
+| 脚本 | 干什么 | 产出 |
+|---|---|---|
+| `perf_load.py` | 阶梯放大商品表，量端到端延迟曲线 + EXPLAIN 归因 | `perf_findings.json` |
+| `numeric_props.py` | 前端金额换算与金额输入规范化的确定性随机性质 | `numeric_findings.json` |
+| `concurrency_props.py` | 并发写丢更新 / 事务原子性 / POST 幂等 | `concurrency_findings.json` |
+| `java_feature_scan.py` | Java/Spring 特性：切面失效点 / 事务内异步逃逸 / 对外暴露 JPA 实体 / DI 形态 / RPC 入口 / 动态配置 | `feature_findings.json` |
+
+### 6.3 负载实测脚本
 
 | 脚本 | 干什么 | 产物 |
 |---|---|---|
@@ -395,11 +473,16 @@ cd targets/acme-banquet
 | `findings_schema.py` | `layers.yaml`（路径来自 target.json）+ `target.json` | — | 解析契约 + 读项目绑定 + schema 校验（不硬编码类别） |
 | `normalize_findings.py` | `target.json` + 五层 `*_findings.json` | `all_findings.json` | 统一 10 必填字段，退出码 1=结构性违规 2=契约缺口 |
 | `aggregate_findings.py` | `all_findings.json` | `root_causes.json`、`audit_report.md` | 根因归并（88→53）、归属/越界校验、覆盖度矩阵 |
+| `feature_coverage.py` | `target.json` 的 carriers/features + 各项目侧检测器 | `feature_coverage.json`、`feature_coverage.md` | 特性 × 载体覆盖矩阵 + 盲区清单 + 受影响结论数 |
 | `check_engine_purity.py` | `target.json` + 引擎源码 | — | 引擎纯净度守卫：出现项目字面量就退出码 1 |
 
-配套：`pilot/target.json`（项目绑定）、`pilot/finding_meta.py`（人工标注表，
-含 `CLASS_FILE_HINTS` / `COLUMN_FILE_HINTS` 定位提示）、`pilot/test_portability.sh`
-（换绑定可跑冒烟测试）。
+配套：`pilot/target.json`（项目绑定，含 `carriers` / `features` / `repro_templates`）、
+`pilot/finding_meta.py`（人工标注表，含 `CLASS_FILE_HINTS` / `COLUMN_FILE_HINTS` 定位提示）、
+`pilot/test_portability.sh`（换绑定可跑冒烟测试）、
+`pilot/java_feature_scan.py`（Java/Spring 特性检查器）。
+
+**注意引擎不许写死项目脚本名**：复现命令模板也在 `target.json` 的 `repro_templates` 里。
+这条是被 `check_engine_purity.py` 抓出来的 —— 守卫在替我们守自己的边界。
 
 `aggregate_findings.py` 的判定口径（都写死在代码里，别改口径不改文档）：
 
@@ -563,12 +646,12 @@ python3 perf_load.py                    # 负载实测（延迟曲线 + 分页 t
 | `order.snapshot.item_ownership_unchecked` | HIGH | function | 2 |
 | `column.default_declared_in_three_places` | LOW | class | 2 |
 
-### 12.2 覆盖度：5 个类别零命中
+### 12.2 覆盖度：4 个类别零命中
 
 | 层 | 零覆盖的 category | 契约给的 oracle | 状态 |
 |---|---|---|---|
 | function | `complexity` | `static_analysis` / `benchmark` | 未做 |
-| class | `encapsulation_leak`、`inheritance_design` | `mutation_test` / `property_based_test` | 未做 |
+| class | `inheritance_design` | `static_analysis` / `property_based_test` | 未做 |
 | service | `resource_leak` | `load_test` | 未做 |
 | integration | `cross_layer_correlation` | `graph_correlation` | 未做（机制已在聚合器里，见下） |
 | ~~function~~ | ~~`numeric`~~ | `property_based_test` | ✅ 补上（`numeric_props.py`，3 条） |
@@ -576,6 +659,7 @@ python3 perf_load.py                    # 负载实测（延迟曲线 + 分页 t
 | ~~service~~ | ~~`resilience`~~ | `chaos_experiment` | ✅ 补上（幂等性，1 条） |
 | ~~service~~ | ~~`service_latency`~~ | `load_test` | ✅ 补上（`perf_load.py`，1 条） |
 | ~~integration~~ | ~~`cross_service_performance`~~ | `e2e_load_test` | ✅ 补上（1 条） |
+| ~~class~~ | ~~`encapsulation_leak`~~ | `mutation_test` | ✅ 补上（1 条，`java_feature_scan.py`） |
 
 关于 `integration.cross_layer_correlation`：机制**已经实现**（聚合器会归并同源根因、
 报告 5 处跨层佐证、`audit_report.md` 有「跨根因关联」段）。它没命中不是「没人查」，

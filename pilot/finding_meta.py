@@ -332,6 +332,21 @@ CLASS: dict[str, Meta] = {
         "枚举与 DB CHECK 白名单是否完全一致？",
         "class", 0.95, "positive", (),
         "enum.check_aligned"),
+    "JAVA-SERVICE-EXPOSES-JPA-ENTITY": _m(
+        "class.encapsulation_leak", "exact",
+        "service 层是否把 JPA 实体当 public API 暴露？",
+        "class", 0.88, "defect", (),
+        "service.public_api_returns_jpa_entity",
+        note="ProductService.findProduct / PackageService.findPackage 是 public 且返回实体"
+             "（Product / BanquetPackage），可见性过宽：调用方能绕过 DTO 契约与全部业务校验"
+             "直接改实体。当前无跨类调用方，是潜在泄漏而非正在发生的缺陷"),
+    "JAVA-SPRING-PROXY-SEMANTICS-CLEAN": _m(
+        "class.contract_violation", "exact",
+        "Spring 代理语义是否成立（切面能不能织入、有没有绕过代理）？",
+        "class", 0.90, "positive", (),
+        "spring.proxy_semantics_clean",
+        note="24 个切面方法全部 public；无 private/final/static 上的切面；无同类内部自调用；"
+             "事务方法内无异步逃逸。注意这是静态结论，证不了「运行时切面真的生效」"),
     "CLASS-NULLABILITY-ALIGNED": _m(
         "class.invariant", "exact",
         "可空性是否三方一致？",

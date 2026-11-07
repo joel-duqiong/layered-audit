@@ -65,10 +65,9 @@ def evidence_sources() -> tuple[tuple[str, str, str | None], ...]:
 
 # 证据源清单在 target.json 里（换项目改配置，不改代码）
 
-LAYER_REPLAY = {
-    "file": "python3 file_dynamic.py",
-    "class": "python3 class_dynamic.py",
-}
+def repro_templates() -> dict[str, str]:
+    """各层的复现命令模板（项目配置）。引擎不许写死项目脚本名。"""
+    return _target().get("repro_templates", {})
 
 
 # ------------------------------------------------------------------ 源码定位
@@ -250,7 +249,9 @@ def _fn_repro(rec: dict[str, Any]) -> tuple[str, list[str]]:
     cases = [ev.get("case_id") for ev in (evidence or []) if ev.get("case_id")]
     if not cases:
         return "", []
-    return f"python3 fn_dynamic.py --case {cases[0]}", [f"fn_dynamic.py#case:{c}" for c in cases]
+    template = repro_templates().get("function_case", "")
+    cmd = template.format(case_id=cases[0]) if template else ""
+    return cmd, [f"{cases[0]}"]
 
 
 COMMAND_BINARIES = ("grep", "awk", "sed", "cat", "jq", "docker", "psql", "find", "ls", "rg")
@@ -270,7 +271,7 @@ def _granularity(repro_cmd: str) -> str:
     if not repro_cmd:
         return "none"
     head = repro_cmd.strip()
-    if head.startswith("python3 fn_dynamic.py --case"):
+    if "--case" in head:
         return "case"
     if "--scenario" in head or "--chain" in head:
         return "scenario"
@@ -299,9 +300,11 @@ def _build(layer: str, rec: dict[str, Any], index: int, source_file: str) -> dic
     # 复现命令与证据引用：按层决定
     if layer == "function":
         repro_cmd, extra_refs = _fn_repro(rec)
+        if not repro_cmd:
+            repro_cmd = rec.get("repro") or ""
         base_refs = [f"{source_file}#{fid}"]
     elif layer == "file":
-        repro_cmd = LAYER_REPLAY["file"]
+        repro_cmd = rec.get("repro") or repro_templates().get("file_layer", "")
         base_refs = [f"{source_file}#{fid}"]
         extra_refs = []
     elif layer == "service":
@@ -309,7 +312,7 @@ def _build(layer: str, rec: dict[str, Any], index: int, source_file: str) -> dic
         base_refs = [f"{source_file}#{fid}"]
         extra_refs = []
     elif layer == "class":
-        repro_cmd = LAYER_REPLAY["class"]
+        repro_cmd = rec.get("repro") or repro_templates().get("class_layer", "")
         base_refs = [f"{source_file}#{fid}"]
         extra_refs = []
     else:

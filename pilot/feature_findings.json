@@ -1,0 +1,428 @@
+{
+  "class": [
+    {
+      "id": "JAVA-SERVICE-EXPOSES-JPA-ENTITY",
+      "severity": "MEDIUM",
+      "endpoint": "",
+      "title": "service 层把 JPA 实体当 public API 返回：调用方能绕过全部业务校验直接改实体",
+      "detail": "对外的返回类型应该是 DTO（OrderResponse / ProductResponse …），实体一旦暴露给调用方，它就能绕过服务层的所有校验与归一化直接改字段，也绕过了「读路径只读」这个约定。\n{\"file\": \"/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java\", \"class\": \"PackageService\", \"method\": \"findPackage\", \"line\": 107, \"returns_entity\": \"BanquetPackage\", \"cross_class_callers\": [], \"reason\": \"public 方法直接返回 JPA 实体 BanquetPackage，调用方可以绕过 DTO 契约与全部业务校验直接改实体\"}\n{\"file\": \"/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/ProductService.java\", \"class\": \"ProductService\", \"method\": \"findProduct\", \"line\": 103, \"returns_entity\": \"Product\", \"cross_class_callers\": [], \"reason\": \"public 方法直接返回 JPA 实体 Product，调用方可以绕过 DTO 契约与全部业务校验直接改实体\"}",
+      "repro": "python3 java_feature_scan.py",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java",
+        "line": 107,
+        "symbol": "findPackage",
+        "endpoint": ""
+      },
+      "evidence": {
+        "exposures": [
+          {
+            "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java",
+            "class": "PackageService",
+            "method": "findPackage",
+            "line": 107,
+            "returns_entity": "BanquetPackage",
+            "cross_class_callers": [],
+            "reason": "public 方法直接返回 JPA 实体 BanquetPackage，调用方可以绕过 DTO 契约与全部业务校验直接改实体"
+          },
+          {
+            "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/ProductService.java",
+            "class": "ProductService",
+            "method": "findProduct",
+            "line": 103,
+            "returns_entity": "Product",
+            "cross_class_callers": [],
+            "reason": "public 方法直接返回 JPA 实体 Product，调用方可以绕过 DTO 契约与全部业务校验直接改实体"
+          }
+        ]
+      }
+    },
+    {
+      "id": "JAVA-SPRING-PROXY-SEMANTICS-CLEAN",
+      "severity": "INFO",
+      "endpoint": "",
+      "title": "Spring 代理语义干净：没有切面失效点、没有事务内异步逃逸、没有对外暴露实体",
+      "detail": "扫了 63 个编译单元、24 个带切面注解的方法：\n· 切面注解全部落在 public 方法上 → CGLIB/JDK 代理能织入\n· 没有同类内部 this.<切面方法>() 自调用 → 不会绕过代理\n· 事务方法里没有 CompletableFuture / parallelStream / new Thread 逃逸\n· 对外暴露 JPA 实体的 public 方法：2 个（见 JAVA-SERVICE-EXPOSES-JPA-ENTITY）\n注意：这是**静态**结论，证明不了「运行时切面真的生效了」——那需要容器内观测，见 feature_coverage 矩阵里的盲区说明。",
+      "repro": "python3 java_feature_scan.py",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "",
+        "endpoint": ""
+      },
+      "evidence": {
+        "units_scanned": 63,
+        "aspect_methods": 24,
+        "aspect_annotations": [
+          "Transactional"
+        ],
+        "value_injection_points": 4,
+        "field_injection_points": 0
+      }
+    }
+  ],
+  "features": {
+    "aspect": {
+      "used": true,
+      "annotations": [
+        "Transactional"
+      ],
+      "methods": [
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/CategoryService.java",
+          "class": "CategoryService",
+          "method": "list",
+          "line": 30,
+          "annotations": [
+            "Transactional"
+          ],
+          "modifiers": [
+            "public"
+          ]
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/CategoryService.java",
+          "class": "CategoryService",
+          "method": "create",
+          "line": 37,
+          "annotations": [
+            "Transactional"
+          ],
+          "modifiers": [
+            "public"
+          ]
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/CategoryService.java",
+          "class": "CategoryService",
+          "method": "delete",
+          "line": 54,
+          "annotations": [
+            "Transactional"
+          ],
+          "modifiers": [
+            "public"
+          ]
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/OrderService.java",
+          "class": "OrderService",
+          "method": "list",
+          "line": 68,
+          "annotations": [
+            "Transactional"
+          ],
+          "modifiers": [
+            "public"
+          ]
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/OrderService.java",
+          "class": "OrderService",
+          "method": "get",
+          "line": 80,
+          "annotations": [
+            "Transactional"
+          ],
+          "modifiers": [
+            "public"
+          ]
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/OrderService.java",
+          "class": "OrderService",
+          "method": "create",
+          "line": 85,
+          "annotations": [
+            "Transactional"
+          ],
+          "modifiers": [
+            "public"
+          ]
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/OrderService.java",
+          "class": "OrderService",
+          "method": "update",
+          "line": 98,
+          "annotations": [
+            "Transactional"
+          ],
+          "modifiers": [
+            "public"
+          ]
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/OrderService.java",
+          "class": "OrderService",
+          "method": "updateStatus",
+          "line": 110,
+          "annotations": [
+            "Transactional"
+          ],
+          "modifiers": [
+            "public"
+          ]
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java",
+          "class": "PackageService",
+          "method": "list",
+          "line": 51,
+          "annotations": [
+            "Transactional"
+          ],
+          "modifiers": [
+            "public"
+          ]
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java",
+          "class": "PackageService",
+          "method": "get",
+          "line": 61,
+          "annotations": [
+            "Transactional"
+          ],
+          "modifiers": [
+            "public"
+          ]
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java",
+          "class": "PackageService",
+          "method": "create",
+          "line": 66,
+          "annotations": [
+            "Transactional"
+          ],
+          "modifiers": [
+            "public"
+          ]
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java",
+          "class": "PackageService",
+          "method": "update",
+          "line": 77,
+          "annotations": [
+            "Transactional"
+          ],
+          "modifiers": [
+            "public"
+          ]
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java",
+          "class": "PackageService",
+          "method": "updateStatus",
+          "line": 88,
+          "annotations": [
+            "Transactional"
+          ],
+          "modifiers": [
+            "public"
+          ]
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java",
+          "class": "PackageService",
+          "method": "delete",
+          "line": 97,
+          "annotations": [
+            "Transactional"
+          ],
+          "modifiers": [
+            "public"
+          ]
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java",
+          "class": "PackageService",
+          "method": "findPackage",
+          "line": 107,
+          "annotations": [
+            "Transactional"
+          ],
+          "modifiers": [
+            "public"
+          ]
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageTypeService.java",
+          "class": "PackageTypeService",
+          "method": "list",
+          "line": 30,
+          "annotations": [
+            "Transactional"
+          ],
+          "modifiers": [
+            "public"
+          ]
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageTypeService.java",
+          "class": "PackageTypeService",
+          "method": "create",
+          "line": 37,
+          "annotations": [
+            "Transactional"
+          ],
+          "modifiers": [
+            "public"
+          ]
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageTypeService.java",
+          "class": "PackageTypeService",
+          "method": "delete",
+          "line": 54,
+          "annotations": [
+            "Transactional"
+          ],
+          "modifiers": [
+            "public"
+          ]
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/ProductService.java",
+          "class": "ProductService",
+          "method": "list",
+          "line": 46,
+          "annotations": [
+            "Transactional"
+          ],
+          "modifiers": [
+            "public"
+          ]
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/ProductService.java",
+          "class": "ProductService",
+          "method": "create",
+          "line": 56,
+          "annotations": [
+            "Transactional"
+          ],
+          "modifiers": [
+            "public"
+          ]
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/ProductService.java",
+          "class": "ProductService",
+          "method": "update",
+          "line": 67,
+          "annotations": [
+            "Transactional"
+          ],
+          "modifiers": [
+            "public"
+          ]
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/ProductService.java",
+          "class": "ProductService",
+          "method": "updateStatus",
+          "line": 78,
+          "annotations": [
+            "Transactional"
+          ],
+          "modifiers": [
+            "public"
+          ]
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/ProductService.java",
+          "class": "ProductService",
+          "method": "delete",
+          "line": 90,
+          "annotations": [
+            "Transactional"
+          ],
+          "modifiers": [
+            "public"
+          ]
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/ProductService.java",
+          "class": "ProductService",
+          "method": "findProduct",
+          "line": 103,
+          "annotations": [
+            "Transactional"
+          ],
+          "modifiers": [
+            "public"
+          ]
+        }
+      ],
+      "proxy_traps": []
+    },
+    "async_escape_in_transaction": [],
+    "entity_exposure": [
+      {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java",
+        "class": "PackageService",
+        "method": "findPackage",
+        "line": 107,
+        "returns_entity": "BanquetPackage",
+        "cross_class_callers": [],
+        "reason": "public 方法直接返回 JPA 实体 BanquetPackage，调用方可以绕过 DTO 契约与全部业务校验直接改实体"
+      },
+      {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/ProductService.java",
+        "class": "ProductService",
+        "method": "findProduct",
+        "line": 103,
+        "returns_entity": "Product",
+        "cross_class_callers": [],
+        "reason": "public 方法直接返回 JPA 实体 Product，调用方可以绕过 DTO 契约与全部业务校验直接改实体"
+      }
+    ],
+    "di": {
+      "field_injection": [],
+      "value_injection": [
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/SeedAssetInitializer.java",
+          "expr": "${app.file-upload-dir}",
+          "line": 26
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/WebConfig.java",
+          "expr": "${app.cors-allowed-origins}",
+          "line": 17
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/WebConfig.java",
+          "expr": "${app.file-upload-dir}",
+          "line": 18
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/UploadService.java",
+          "expr": "${app.file-upload-dir}",
+          "line": 31
+        }
+      ]
+    },
+    "rpc": {
+      "endpoints": []
+    },
+    "dynamic_config": {
+      "hits": [
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/SeedAssetInitializer.java",
+          "annotation": "Value"
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/WebConfig.java",
+          "annotation": "Value"
+        },
+        {
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/UploadService.java",
+          "annotation": "Value"
+        }
+      ],
+      "value_injection": 4
+    }
+  }
+}

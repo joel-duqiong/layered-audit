@@ -18,10 +18,12 @@ ENGINE_DIR = Path(__file__).resolve().parent
 # 硬编码即违规的形态：项目专属字面量
 FORBIDDEN: tuple[tuple[str, str], ...] = (
     ("绝对路径", r"/Users/|/home/|C:\\\\"),
-    ("容器/数据库调用", r"docker\s+exec|subprocess\.(run|Popen)"),
+    ("容器/数据库调用", r"docker\s+exec|\bpsql\s+-[a-zA-Z]"),
     ("内网地址", r"127\.0\.0\.1|localhost:\d"),
     ("HTTP 客户端", r"\brequests\.|\burllib\b"),
     ("SQL 字面量", r"\b(SELECT|INSERT\s+INTO|UPDATE\s+\w+\s+SET)\b"),
+    # 检测器必须从配置取名字，不许在引擎里写死项目脚本
+    ("写死的脚本调用", r"""['"]python3?\s+[\w./-]+\.py"""),
 )
 
 
@@ -50,6 +52,7 @@ def main() -> None:
         raise SystemExit(1)
     files = sorted(p.name for p in ENGINE_DIR.glob("*.py") if p.name != Path(__file__).name)
     print(f"引擎纯净度检查通过：{len(files)} 个文件零项目耦合（{', '.join(files)}）")
+    print("  允许：按 target.json 的配置调用项目侧检测器（subprocess 本身不算耦合）")
 
 
 if __name__ == "__main__":

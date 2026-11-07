@@ -43,6 +43,8 @@ echo "=== 函数层 numeric 性质探针（property_based_test）==="
 python3 numeric_props.py
 echo "=== 服务层并发与重复写探针（concurrency_test / chaos_experiment）==="
 python3 concurrency_props.py
+echo "=== Java/Spring 特性扫描（切面/DI/RPC/动态配置/JPA）==="
+python3 java_feature_scan.py
 echo "=== 引擎自检（通用引擎不许写回项目专属的东西 + 换绑定可跑）==="
 python3 engine/check_engine_purity.py
 ./test_portability.sh
@@ -57,5 +59,7 @@ elif [ "$normalize_rc" -eq 2 ]; then
   echo "  ↑ 契约缺口：category 装不下，需要人工决策是否修订 layers.yaml（见 audit_report.md）"
 fi
 python3 engine/aggregate_findings.py
+echo "=== 特性覆盖矩阵（特性 × 载体）==="
+python3 engine/feature_coverage.py
 echo "=== 集权层门禁（与基线比对，回归即失败退出码 1）==="
 python3 integration_gate.py

@@ -33,7 +33,7 @@
 - 归属层：集成层（链级后果；越权本身归服务层 NO_AUTHZ）
 - 说明：PUT 走 apply() → buildPackageSnapshot()，匿名会话改明细后，订单快照被整体重建，原来记下的套餐明细不再可信。
 - 复现：python3 integration_chain.py --chain CHAIN-A
-- 证据：`{"chain_steps": [{"n": 1, "method": "POST", "path": "/api/orders", "status": 200, "evidence": "订单主人创建订单 id=664（请求里没有任何凭证头）"}, {"n": 2, "method": "GET", "path": "/api/orders/664", "status": 200, "evidence": "全新连接（无 Cookie / Token）读到 4 个 PII 字段：['customerName', 'customerPhone', 'address', 'remark']"}, {"n": 3, "method": "前端", "path": "App.jsx 订单详情抽屉", "status": null, "evidence": "接口返回手机号明文 13800000999，前端渲染时才脱敏成 138****0999 —— 脱敏只发生在展示层，接口与库里都是明文"}, {"n": 4, "method": "PATCH", "path": "/api/orders/664/status", "status": 200, "evidence": "匿名改状态 → DEPOSIT_PAID"}, {"n": 5, "method": "PUT", "path": "/api/orders/664", "status": 200, "evidence": "匿名全量覆盖订单：改电话 + 把明细数量改成 99"}, {"n": 6, "method": "DB", "path": "SELECT ... WHERE id=664", "status": 200, "evidence": "库里的快照已被重写：明细数量=99，电话=13900000000，状态=PENDING"}], "evidence": "库内快照明细数量=99，电话=13900000000"}`
+- 证据：`{"chain_steps": [{"n": 1, "method": "POST", "path": "/api/orders", "status": 200, "evidence": "订单主人创建订单 id=726（请求里没有任何凭证头）"}, {"n": 2, "method": "GET", "path": "/api/orders/726", "status": 200, "evidence": "全新连接（无 Cookie / Token）读到 4 个 PII 字段：['customerName', 'customerPhone', 'address', 'remark']"}, {"n": 3, "method": "前端", "path": "App.jsx 订单详情抽屉", "status": null, "evidence": "接口返回手机号明文 13800000999，前端渲染时才脱敏成 138****0999 —— 脱敏只发生在展示层，接口与库里都是明文"}, {"n": 4, "method": "PATCH", "path": "/api/orders/726/status", "status": 200, "evidence": "匿名改状态 → DEPOSIT_PAID"}, {"n": 5, "method": "PUT", "path": "/api/orders/726", "status": 200, "evidence": "匿名全量覆盖订单：改电话 + 把明细数量改成 99"}, {"n": 6, "method": "DB", "path": "SELECT ... WHERE id=726", "status": 200, "evidence": "库里的快照已被重写：明细数量=99，电话=13900000000，状态=PENDING"}], "evidence": "库内快照明细数量=99，电话=13900000000"}`
 
 ### CRITICAL · INT-UPLOAD-ANONYMOUS-READBACK
 
@@ -43,7 +43,7 @@
 - 归属层：集成层（链级后果；内容不嗅探归函数层 FN-UPLOAD-NO-CONTENT-SNIFF）
 - 说明：上传接口不校验内容（只信客户端声明），写盘路径又在 /uploads/** 公开映射下，任何人都能把任意字节放进站点并当作静态资源取回。
 - 复现：python3 integration_chain.py --chain CHAIN-B
-- 证据：`{"chain_steps": [{"n": 1, "method": "POST", "path": "/api/uploads/product-image", "status": 200, "evidence": "上传非图片字节 55 字节，自报 image/png、文件名 probe.png → imageUrl=/uploads/products/f95b98d6-df53-4695-8bf0-1e959e9a3362.png"}, {"n": 2, "method": "GET", "path": "/uploads/products/f95b98d6-df53-4695-8bf0-1e959e9a3362.png", "status": 200, "evidence": "匿名连接（无凭证）下载 → 200，字节完全一致=True，Content-Type=image/png"}, {"n": 3, "method": "FS", "path": "/app/uploads/products/f95b98d6-df53-4695-8bf0-1e959e9a3362.png", "status": 200, "evidence": "-rw-r--r-- 1 root root 55 Nov  7 11:22 /app/uploads/products/f95b98d6-df53-4695-8bf0-1e959e9a3362.png"}], "evidence": "下载字节与上传字节一致=True，Content-Type 由服务端按扩展名给出"}`
+- 证据：`{"chain_steps": [{"n": 1, "method": "POST", "path": "/api/uploads/product-image", "status": 200, "evidence": "上传非图片字节 55 字节，自报 image/png、文件名 probe.png → imageUrl=/uploads/products/78654e9c-8a13-48a4-8aec-b4fd1f0f6ffc.png"}, {"n": 2, "method": "GET", "path": "/uploads/products/78654e9c-8a13-48a4-8aec-b4fd1f0f6ffc.png", "status": 200, "evidence": "匿名连接（无凭证）下载 → 200，字节完全一致=True，Content-Type=image/png"}, {"n": 3, "method": "FS", "path": "/app/uploads/products/78654e9c-8a13-48a4-8aec-b4fd1f0f6ffc.png", "status": 200, "evidence": "-rw-r--r-- 1 root root 55 Nov  7 11:37 /app/uploads/products/78654e9c-8a13-48a4-8aec-b4fd1f0f6ffc.png"}], "evidence": "下载字节与上传字节一致=True，Content-Type 由服务端按扩展名给出"}`
 
 ### CRITICAL · PRICE_CLIENT_CONTROLLED_XL
 
@@ -53,7 +53,7 @@
 - 归属层：集权层（集成症状；根因归服务层）
 - 说明：套餐标价 1 分，客户端报成交价 1 分，后端原样落库并返回 200。更糟的是集成症状：OrderResponse 同时返回 finalPriceCent=1 与 packageSnapshot.priceCent=46800，而前端 mapOrder 正好一个用来渲染金额、一个用来渲染套餐价 —— Pad 端同一张订单会同时显示 0.01 元和 468.00 元。服务端没有任何按套餐计价的能力，定价权完全在客户端手上。
 - 复现：python3 integration_dynamic.py --scenario SC01_CLIENT_CONTROLLED_PRICE
-- 证据：`{"final_price_cent": 1, "snapshot_price_cent": 1, "order_id": 659, "root_cause": "OrderService.resolveFinalPrice 直接采纳客户端 finalPriceCent", "related_lower_layer": "服务层 test_price_is_not_client_controlled 已报根因，本条只补集成症状"}`
+- 证据：`{"final_price_cent": 1, "snapshot_price_cent": 1, "order_id": 721, "root_cause": "OrderService.resolveFinalPrice 直接采纳客户端 finalPriceCent", "related_lower_layer": "服务层 test_price_is_not_client_controlled 已报根因，本条只补集成症状"}`
 
 ### HIGH · INT-PII-MASKED-ONLY-IN-FRONTEND
 
@@ -63,7 +63,7 @@
 - 归属层：集成层（链级后果；零鉴权归服务层 NO_AUTHZ）
 - 说明：订单详情抽屉把手机号显示成 138****9999，说明产品侧认定它是敏感字段；但 API 原样返回明文，库里也是明文。配合零鉴权，任何人可分页拉全量手机号。
 - 复现：python3 integration_chain.py --chain CHAIN-A
-- 证据：`{"chain_steps": [{"n": 1, "method": "POST", "path": "/api/orders", "status": 200, "evidence": "订单主人创建订单 id=664（请求里没有任何凭证头）"}, {"n": 2, "method": "GET", "path": "/api/orders/664", "status": 200, "evidence": "全新连接（无 Cookie / Token）读到 4 个 PII 字段：['customerName', 'customerPhone', 'address', 'remark']"}, {"n": 3, "method": "前端", "path": "App.jsx 订单详情抽屉", "status": null, "evidence": "接口返回手机号明文 13800000999，前端渲染时才脱敏成 138****0999 —— 脱敏只发生在展示层，接口与库里都是明文"}, {"n": 4, "method": "PATCH", "path": "/api/orders/664/status", "status": 200, "evidence": "匿名改状态 → DEPOSIT_PAID"}, {"n": 5, "method": "PUT", "path": "/api/orders/664", "status": 200, "evidence": "匿名全量覆盖订单：改电话 + 把明细数量改成 99"}, {"n": 6, "method": "DB", "path": "SELECT ... WHERE id=664", "status": 200, "evidence": "库里的快照已被重写：明细数量=99，电话=13900000000，状态=PENDING"}], "evidence": "接口返回 customerPhone=13800000999，前端渲染脱敏为 138****0999"}`
+- 证据：`{"chain_steps": [{"n": 1, "method": "POST", "path": "/api/orders", "status": 200, "evidence": "订单主人创建订单 id=726（请求里没有任何凭证头）"}, {"n": 2, "method": "GET", "path": "/api/orders/726", "status": 200, "evidence": "全新连接（无 Cookie / Token）读到 4 个 PII 字段：['customerName', 'customerPhone', 'address', 'remark']"}, {"n": 3, "method": "前端", "path": "App.jsx 订单详情抽屉", "status": null, "evidence": "接口返回手机号明文 13800000999，前端渲染时才脱敏成 138****0999 —— 脱敏只发生在展示层，接口与库里都是明文"}, {"n": 4, "method": "PATCH", "path": "/api/orders/726/status", "status": 200, "evidence": "匿名改状态 → DEPOSIT_PAID"}, {"n": 5, "method": "PUT", "path": "/api/orders/726", "status": 200, "evidence": "匿名全量覆盖订单：改电话 + 把明细数量改成 99"}, {"n": 6, "method": "DB", "path": "SELECT ... WHERE id=726", "status": 200, "evidence": "库里的快照已被重写：明细数量=99，电话=13900000000，状态=PENDING"}], "evidence": "接口返回 customerPhone=13800000999，前端渲染脱敏为 138****0999"}`
 
 ### HIGH · INT-THREE-PRICES-NO-DETAIL-TOTAL
 
@@ -73,7 +73,7 @@
 - 归属层：集成层（链级后果；控价根因归函数层 FN-PRICE-CLIENT-CONTROLLED）
 - 说明：客户端可把成交价改成 0.01 元，同时把明细数量改成 99；订单详情抽屉渲染了订单金额和套餐名，却没有渲染明细合计，业务侧没有任何一处能看出这两个数字对不上。
 - 复现：python3 integration_chain.py --chain CHAIN-D
-- 证据：`{"chain_steps": [{"n": 1, "method": "PUT", "path": "/api/orders/666", "status": 200, "evidence": "匿名把明细数量改成 99，成交价保持 1 分"}, {"n": 2, "method": "GET", "path": "/api/orders/666", "status": 200, "evidence": "订单金额 0.01 元 / 明细合计 4950.0 元 / 套餐标价 88.88 元 —— 三个数字互不相等"}, {"n": 3, "method": "前端", "path": "App.jsx 订单详情抽屉", "status": null, "evidence": "抽屉只渲染 已选套餐 / 加购商品 / 订单金额 / 定金，明细单价与明细合计一律不渲染，员工在界面上无法核对订单金额的构成"}], "evidence": "订单金额 0.01 元 vs 明细合计 4950.0 元 vs 套餐标价 88.88 元"}`
+- 证据：`{"chain_steps": [{"n": 1, "method": "PUT", "path": "/api/orders/728", "status": 200, "evidence": "匿名把明细数量改成 99，成交价保持 1 分"}, {"n": 2, "method": "GET", "path": "/api/orders/728", "status": 200, "evidence": "订单金额 0.01 元 / 明细合计 4950.0 元 / 套餐标价 88.88 元 —— 三个数字互不相等"}, {"n": 3, "method": "前端", "path": "App.jsx 订单详情抽屉", "status": null, "evidence": "抽屉只渲染 已选套餐 / 加购商品 / 订单金额 / 定金，明细单价与明细合计一律不渲染，员工在界面上无法核对订单金额的构成"}], "evidence": "订单金额 0.01 元 vs 明细合计 4950.0 元 vs 套餐标价 88.88 元"}`
 
 ### HIGH · LIST_TRUNCATED_AT_100
 
@@ -91,9 +91,9 @@
 
 - 端点：POST /api/orders
 - 归属层：集权层
-- 说明：下单时 packageItems 里塞进套餐外的商品（['ai_probe_prod_97abfe']），后端只校验商品存在、不校验归属，200 通过并写进订单快照。订单快照里的「套餐明细」因此不代表真实套餐，后续对账无据可查。
+- 说明：下单时 packageItems 里塞进套餐外的商品（['ai_probe_prod_ba47be']），后端只校验商品存在、不校验归属，200 通过并写进订单快照。订单快照里的「套餐明细」因此不代表真实套餐，后续对账无据可查。
 - 复现：python3 integration_dynamic.py --scenario SC02_FOREIGN_ITEM_IN_PACKAGE
-- 证据：`{"snapshot_items": [{"productId": 1402740, "productName": "ai_probe_prod_97abfe", "priceCent": 1, "quantity": 1, "unit": "份", "imageUrl": null, "categoryName": "ai_probe_cat_83786b"}], "order_id": 660, "root_cause": "OrderService.apply 未校验 packageItems 与 packageId 的归属关系"}`
+- 证据：`{"snapshot_items": [{"productId": 1602968, "productName": "ai_probe_prod_ba47be", "priceCent": 1, "quantity": 1, "unit": "份", "imageUrl": null, "categoryName": "ai_probe_cat_2ddfbd"}], "order_id": 722, "root_cause": "OrderService.apply 未校验 packageItems 与 packageId 的归属关系"}`
 
 ### HIGH · PACKAGE_QUANTITY_NOT_VALIDATED
 
@@ -103,7 +103,7 @@
 - 归属层：集权层
 - 说明：下单时把套餐内商品数量改成 99 份，planTotalCent/finalPriceCent 仍是套餐原价 1 分 —— 后端不重算、不拒绝。
 - 复现：python3 integration_dynamic.py --scenario SC03_QUANTITY_OVERRIDE
-- 证据：`{"snapshot_items": [{"productId": 1402740, "productName": "ai_probe_prod_97abfe", "priceCent": 1, "quantity": 99, "unit": "份", "imageUrl": null, "categoryName": "ai_probe_cat_83786b"}], "final_price_cent": 1, "root_cause": "OrderService.apply 不依据明细重算金额"}`
+- 证据：`{"snapshot_items": [{"productId": 1602968, "productName": "ai_probe_prod_ba47be", "priceCent": 1, "quantity": 99, "unit": "份", "imageUrl": null, "categoryName": "ai_probe_cat_2ddfbd"}], "final_price_cent": 1, "root_cause": "OrderService.apply 不依据明细重算金额"}`
 
 ### MEDIUM · INT-PACKAGE-COUNT-INCONSISTENT
 
@@ -153,7 +153,7 @@
 - 归属层：集权层
 - 说明：把 packageItems 写成 packageItem 后端不报错（Jackson 默认忽略未知字段），而 OrderService 在明细为空时会回退到套餐自身的默认 items —— 于是用户明明选了 3 道菜并改了数量，订单快照里躺的是套餐出厂明细。前端界面显示的是用户的选择，库里存的是别的东西，两边永远对不上，也没有任何报错。
 - 复现：python3 integration_dynamic.py --scenario SC04_UNKNOWN_FIELD_SILENT_DROP
-- 证据：`{"snapshot_items": [{"productId": 1402740, "productName": "ai_probe_prod_97abfe", "priceCent": 1, "quantity": 1, "unit": "份", "imageUrl": null, "categoryName": "ai_probe_cat_83786b"}], "root_cause": "spring.jackson 未开 fail-on-unknown-properties + buildPackageSnapshot 空明细回退"}`
+- 证据：`{"snapshot_items": [{"productId": 1602968, "productName": "ai_probe_prod_ba47be", "priceCent": 1, "quantity": 1, "unit": "份", "imageUrl": null, "categoryName": "ai_probe_cat_2ddfbd"}], "root_cause": "spring.jackson 未开 fail-on-unknown-properties + buildPackageSnapshot 空明细回退"}`
 
 ### LOW · DEAD_BACKEND_ENDPOINT
 
@@ -187,12 +187,12 @@
 
 | # | 动作 | 目标 | 状态 | 证据 |
 |---|---|---|---|---|
-| 1 | POST | `/api/orders` | 200 | 订单主人创建订单 id=664（请求里没有任何凭证头） |
-| 2 | GET | `/api/orders/664` | 200 | 全新连接（无 Cookie / Token）读到 4 个 PII 字段：['customerName', 'customerPhone', 'address', 'remark'] |
+| 1 | POST | `/api/orders` | 200 | 订单主人创建订单 id=726（请求里没有任何凭证头） |
+| 2 | GET | `/api/orders/726` | 200 | 全新连接（无 Cookie / Token）读到 4 个 PII 字段：['customerName', 'customerPhone', 'address', 'remark'] |
 | 3 | 前端 | `App.jsx 订单详情抽屉` | None | 接口返回手机号明文 13800000999，前端渲染时才脱敏成 138****0999 —— 脱敏只发生在展示层，接口与库里都是明文 |
-| 4 | PATCH | `/api/orders/664/status` | 200 | 匿名改状态 → DEPOSIT_PAID |
-| 5 | PUT | `/api/orders/664` | 200 | 匿名全量覆盖订单：改电话 + 把明细数量改成 99 |
-| 6 | DB | `SELECT ... WHERE id=664` | 200 | 库里的快照已被重写：明细数量=99，电话=13900000000，状态=PENDING |
+| 4 | PATCH | `/api/orders/726/status` | 200 | 匿名改状态 → DEPOSIT_PAID |
+| 5 | PUT | `/api/orders/726` | 200 | 匿名全量覆盖订单：改电话 + 把明细数量改成 99 |
+| 6 | DB | `SELECT ... WHERE id=726` | 200 | 库里的快照已被重写：明细数量=99，电话=13900000000，状态=PENDING |
 
 
 ### CHAIN-B · CONFIRMED
@@ -206,9 +206,9 @@
 
 | # | 动作 | 目标 | 状态 | 证据 |
 |---|---|---|---|---|
-| 1 | POST | `/api/uploads/product-image` | 200 | 上传非图片字节 55 字节，自报 image/png、文件名 probe.png → imageUrl=/uploads/products/f95b98d6-df53-4695-8bf0-1e959e9a3362.png |
-| 2 | GET | `/uploads/products/f95b98d6-df53-4695-8bf0-1e959e9a3362.png` | 200 | 匿名连接（无凭证）下载 → 200，字节完全一致=True，Content-Type=image/png |
-| 3 | FS | `/app/uploads/products/f95b98d6-df53-4695-8bf0-1e959e9a3362.png` | 200 | -rw-r--r-- 1 root root 55 Nov  7 11:22 /app/uploads/products/f95b98d6-df53-4695-8bf0-1e959e9a3362.png |
+| 1 | POST | `/api/uploads/product-image` | 200 | 上传非图片字节 55 字节，自报 image/png、文件名 probe.png → imageUrl=/uploads/products/78654e9c-8a13-48a4-8aec-b4fd1f0f6ffc.png |
+| 2 | GET | `/uploads/products/78654e9c-8a13-48a4-8aec-b4fd1f0f6ffc.png` | 200 | 匿名连接（无凭证）下载 → 200，字节完全一致=True，Content-Type=image/png |
+| 3 | FS | `/app/uploads/products/78654e9c-8a13-48a4-8aec-b4fd1f0f6ffc.png` | 200 | -rw-r--r-- 1 root root 55 Nov  7 11:37 /app/uploads/products/78654e9c-8a13-48a4-8aec-b4fd1f0f6ffc.png |
 
 
 ### CHAIN-C · CONFIRMED
@@ -223,8 +223,8 @@
 | # | 动作 | 目标 | 状态 | 证据 |
 |---|---|---|---|---|
 | 1 | POST | `/api/orders` | 200 | 下单时 finalPriceCent=1（1 分），明细 3 件 × 5000 分 = 15000 分 |
-| 2 | DB | `SELECT final_price_cent FROM orders WHERE id=665` | 200 | 库里的成交价 = 1 分 |
-| 3 | GET | `/api/orders/665` | 200 | API 回读成交价 = 1 分 |
+| 2 | DB | `SELECT final_price_cent FROM orders WHERE id=727` | 200 | 库里的成交价 = 1 分 |
+| 3 | GET | `/api/orders/727` | 200 | API 回读成交价 = 1 分 |
 | 4 | 前端 | `mapOrder（前端真实 mapper）` | 200 | 前端渲染订单金额 = 0.01 元；它自己看到的明细合计 = 150.0 元 |
 
 
@@ -239,8 +239,8 @@
 
 | # | 动作 | 目标 | 状态 | 证据 |
 |---|---|---|---|---|
-| 1 | PUT | `/api/orders/666` | 200 | 匿名把明细数量改成 99，成交价保持 1 分 |
-| 2 | GET | `/api/orders/666` | 200 | 订单金额 0.01 元 / 明细合计 4950.0 元 / 套餐标价 88.88 元 —— 三个数字互不相等 |
+| 1 | PUT | `/api/orders/728` | 200 | 匿名把明细数量改成 99，成交价保持 1 分 |
+| 2 | GET | `/api/orders/728` | 200 | 订单金额 0.01 元 / 明细合计 4950.0 元 / 套餐标价 88.88 元 —— 三个数字互不相等 |
 | 3 | 前端 | `App.jsx 订单详情抽屉` | None | 抽屉只渲染 已选套餐 / 加购商品 / 订单金额 / 定金，明细单价与明细合计一律不渲染，员工在界面上无法核对订单金额的构成 |
 
 
@@ -255,9 +255,9 @@
 
 | # | 动作 | 目标 | 状态 | 证据 |
 |---|---|---|---|---|
-| 1 | POST | `/api/orders` | 200 | 建单 id=667：PENDING、定金 0、成交价 1 分 |
-| 2 | PATCH | `/api/orders/667/status` | 200 | 匿名 PENDING → COMPLETED 一次成功；前端渲染状态 = 已完成，定金 = 0 元，订单金额 = 0.01 元 |
-| 3 | DB | `SELECT status, deposit_cent FROM orders WHERE id=667` | 200 | 库里的状态 = COMPLETED，定金 = 0 分 |
+| 1 | POST | `/api/orders` | 200 | 建单 id=729：PENDING、定金 0、成交价 1 分 |
+| 2 | PATCH | `/api/orders/729/status` | 200 | 匿名 PENDING → COMPLETED 一次成功；前端渲染状态 = 已完成，定金 = 0 元，订单金额 = 0.01 元 |
+| 3 | DB | `SELECT status, deposit_cent FROM orders WHERE id=729` | 200 | 库里的状态 = COMPLETED，定金 = 0 分 |
 
 
 ## 通过的对账项（本层不重复计缺陷）
