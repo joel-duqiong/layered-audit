@@ -15,11 +15,20 @@ layers.yaml 的 evidence.required 声明了 10 个必填字段。这里做两件
 """
 from __future__ import annotations
 
+import functools
+import importlib.util
+import json
+import os
 import re
+import sys
 from pathlib import Path
+from types import ModuleType
 from typing import Any
 
-CONTRACT_PATH = Path(__file__).resolve().parent.parent / "layers.yaml"
+# 项目绑定配置：换项目只改这个文件 + 换标注表 + 重写 agent 脚本，引擎零改动。
+# 默认位置 engine/ 的同级目录 target.json；可用环境变量 LAYERED_AUDIT_TARGET 覆盖。
+ENV_TARGET = "LAYERED_AUDIT_TARGET"
+DEFAULT_TARGET = Path(__file__).resolve().parent.parent / "target.json"
 
 REQUIRED_FIELDS: tuple[str, ...] = (
     "id", "layer", "category", "location", "claim",
@@ -34,9 +43,51 @@ CATEGORY_FIT: tuple[str, ...] = ("exact", "stretched", "unmapped")
 UNMAPPED = "UNMAPPED"
 
 
-def load_layer_categories(path: Path = CONTRACT_PATH) -> dict[str, tuple[str, ...]]:
+@functools.lru_cache(maxsize=1)
+def target_path() -> Path:
+    return Path(os.environ.get(ENV_TARGET, str(DEFAULT_TARGET))).resolve()
+
+
+@functools.lru_cache(maxsize=1)
+def load_target() -> dict[str, Any]:
+    """读项目绑定配置。缺段就报错，不猜默认值。"""
+    path = target_path()
+    if not path.exists():
+        raise FileNotFoundError(f"找不到项目绑定配置: {path}")
+    data = json.loads(path.read_text(encoding="utf-8"))
+    missing = [k for k in ("contract", "source_roots", "annotation_table", "evidence_sources")
+               if k not in data]
+    if missing:
+        raise ValueError(f"{path.name} 缺少必填段: {missing}")
+    return data
+
+
+@functools.lru_cache(maxsize=1)
+def contract_path() -> Path:
+    """层契约路径（相对 target.json 所在目录）。"""
+    base = target_path().parent
+    return (base / load_target()["contract"]).resolve()
+
+
+@functools.lru_cache(maxsize=1)
+def load_annotation_table() -> ModuleType:
+    """加载项目标注表（category / claim / owner / confidence / root_cause_key 的人工判定）。"""
+    base = target_path().parent
+    path = (base / load_target()["annotation_table"]).resolve()
+    spec = importlib.util.spec_from_file_location("target_annotation_table", path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"无法加载标注表: {path}")
+    module = importlib.util.module_from_spec(spec)
+    # 必须先登记到 sys.modules：dataclass 在装饰时会按 __module__ 反查模块，
+    # 没登记会抛 AttributeError（Python 3.14 更严格）
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def load_layer_categories(path: Path | None = None) -> dict[str, tuple[str, ...]]:
     """从 layers.yaml 解析每层允许的 category 列表。解析不出来就报错，不猜。"""
-    text = path.read_text(encoding="utf-8")
+    text = (path or contract_path()).read_text(encoding="utf-8")
     layers: dict[str, list[str]] = {}
     current: str | None = None
     in_categories = False
@@ -68,9 +119,9 @@ def load_layer_categories(path: Path = CONTRACT_PATH) -> dict[str, tuple[str, ..
     return {lay: tuple(cats) for lay, cats in layers.items()}
 
 
-def load_escalation_targets(path: Path = CONTRACT_PATH) -> dict[str, tuple[str, ...]]:
+def load_escalation_targets(path: Path | None = None) -> dict[str, tuple[str, ...]]:
     """解析每层的 escalation_to（允许上提的层）。用于校验归属是否合法。"""
-    text = path.read_text(encoding="utf-8")
+    text = (path or contract_path()).read_text(encoding="utf-8")
     out: dict[str, tuple[str, ...]] = {}
     current: str | None = None
     in_esc = False
@@ -100,9 +151,9 @@ def load_escalation_targets(path: Path = CONTRACT_PATH) -> dict[str, tuple[str, 
     return out
 
 
-def load_out_of_scope(path: Path = CONTRACT_PATH) -> dict[str, tuple[str, ...]]:
+def load_out_of_scope(path: Path | None = None) -> dict[str, tuple[str, ...]]:
     """解析每层的 out_of_scope（明确不许这层开单的类别）。支持行内数组写法。"""
-    text = path.read_text(encoding="utf-8")
+    text = (path or contract_path()).read_text(encoding="utf-8")
     out: dict[str, tuple[str, ...]] = {}
     current: str | None = None
     for line in text.splitlines():

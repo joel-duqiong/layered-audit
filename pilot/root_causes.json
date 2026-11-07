@@ -370,7 +370,7 @@
     },
     {
       "root_cause_key": "index.idx_products_name_unusable",
-      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.755ms vs 0.011ms，差 705 倍）",
+      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（8.042ms vs 0.016ms，差 503 倍）",
       "severity": "HIGH",
       "owner_layer": "service",
       "categories": [
@@ -1043,7 +1043,7 @@
     },
     {
       "root_cause_key": "orders.no_data_lifecycle",
-      "title": "orders 表没有软删/归档，永久增长（当前 184 kB）",
+      "title": "orders 表没有软删/归档，永久增长（当前 200 kB）",
       "severity": "MEDIUM",
       "owner_layer": "class",
       "categories": [

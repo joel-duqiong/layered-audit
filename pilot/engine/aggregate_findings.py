@@ -21,12 +21,15 @@ from typing import Any
 import findings_schema
 
 HERE = Path(__file__).resolve().parent
+# 产物落在「目标项目目录」= target.json 所在目录。引擎目录只放代码。
+PROJECT_DIR = findings_schema.target_path().parent
+
 LAYER_ORDER = ("function", "file", "class", "service", "integration")
 SEVERITY_ORDER = ("CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO")
 
 
 def _load() -> list[dict[str, Any]]:
-    data = json.loads((HERE / "all_findings.json").read_text(encoding="utf-8"))
+    data = json.loads((PROJECT_DIR / "all_findings.json").read_text(encoding="utf-8"))
     return data["findings"]
 
 
@@ -199,7 +202,7 @@ def main() -> None:
         "root_causes": root_causes,
         "coverage": cov,
     }
-    (HERE / "root_causes.json").write_text(
+    (PROJECT_DIR / "root_causes.json").write_text(
         json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
     _report(payload, categories)
@@ -213,7 +216,7 @@ def main() -> None:
 def _report(payload: dict[str, Any], categories: dict[str, tuple[str, ...]]) -> None:
     rcs = payload["root_causes"]
     cov = payload["coverage"]
-    print(f"根因聚合 -> {HERE / 'root_causes.json'}")
+    print(f"根因聚合 -> {PROJECT_DIR / 'root_causes.json'}")
     print(f"  {payload['summary']['findings']} 条发现 -> {payload['summary']['root_causes']} 条根因"
           f"（归并 {payload['summary']['collapsed']} 条）")
 
@@ -305,7 +308,7 @@ def _write_md(payload: dict[str, Any], categories: dict[str, tuple[str, ...]]) -
     a = lines.append
     a("# 分层审计 · 根因与覆盖度报告")
     a("")
-    a(f"生成物：{HERE / 'root_causes.json'}　输入：{HERE / 'all_findings.json'}")
+    a(f"生成物：{PROJECT_DIR / 'root_causes.json'}　输入：{PROJECT_DIR / 'all_findings.json'}")
     a("")
     a(f"- 发现 {payload['summary']['findings']} 条 → 根因 {payload['summary']['root_causes']} 条"
       f"（归并 {payload['summary']['collapsed']} 条）")
@@ -391,7 +394,7 @@ def _write_md(payload: dict[str, Any], categories: dict[str, tuple[str, ...]]) -
         a(f"| `{f}` | {len(keys)} | {', '.join(f'`{k}`' for k in keys)} |")
     a("")
 
-    (HERE / "audit_report.md").write_text("\n".join(lines), encoding="utf-8")
+    (PROJECT_DIR / "audit_report.md").write_text("\n".join(lines), encoding="utf-8")
     print(f"  报告 -> {HERE / 'audit_report.md'}")
 
 

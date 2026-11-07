@@ -1,5 +1,7 @@
 # 交接与状态入口见 ../HANDOFF.md（先读它，再读本文件与 ../layers.yaml）
 # 分层 agent 绑定到真实被测系统
+# 机器可读的项目绑定在 target.json（引擎只读那一个文件）。
+# 这里的 sut 段是给人看的摘要，事实以 target.json 为准。
 sut:
   name: jiuyan
   repo: /Users/june/jiuyan
@@ -7,6 +9,9 @@ sut:
   scale: 63 java files / 7 controller / 6 service / 21 dto / 5 mapper
   unit_tests: 0
   harness: /Users/june/tests/auto-api  (pytest + OpenAPI 快照 + HTTP recordings)
+  binding: target.json          # 源码根 / 包路径 / 证据源清单 —— 引擎唯一读的项目信息
+  annotation_table: finding_meta.py
+  generic_engine: engine/       # 通用收口引擎，换项目零改动（check_engine_purity.py 守着）
 
 # 每层 agent = 固定靶区 + 固定 oracle。异质性来自 oracle 绑定，不来自 prompt 人设。
 agents:

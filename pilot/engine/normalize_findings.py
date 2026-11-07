@@ -16,50 +16,54 @@
 """
 from __future__ import annotations
 
+import functools
 import json
 import re
 from pathlib import Path
 from typing import Any
 
-import finding_meta
 import findings_schema
 
 HERE = Path(__file__).resolve().parent
-JAVA_ROOT = Path("/Users/june/jiuyan/backend/src/main/java")
-PKG_ROOT = "com/jiuyan/banquet"
+PROJECT_DIR = findings_schema.target_path().parent
 UNKNOWN_LINE = 0  # line 为 int 且必填；0 = 该层不以行号为定位单位
 
-TABLE_TO_ENTITY = {
-    "orders": "BanquetOrder",
-    "packages": "BanquetPackage",
-    "products": "Product",
-    "categories": "Category",
-    "package_items": "PackageItem",
-    "package_types": "PackageType",
-}
 
-CLASS_FILE_HINTS = {
-    "NO_STATE_MACHINE": "entity/BanquetOrder.java",
-    "INDEX_UNUSABLE_FOR_QUERY_PATTERN": "entity/Product.java",
-    "CLASS-RULE-MISSING-IN-ALL-LAYERS": "",
-    "NO_DATA_LIFECYCLE": "entity/BanquetOrder.java",
-    "CLASS-ERROR-MESSAGE-MISMATCH": "entity/BanquetOrder.java",
-    "CLASS-ENUM-CASE-SENSITIVE": "entity/OrderStatus.java",
-    "ENUM_CHECK_ALIGNED": "entity/OrderStatus.java",
-    "CLASS-NULLABILITY-ALIGNED": "",
-    "CLASS-CHECK-DTO-ALIGNED": "",
-}
+# ------------------------------------------------------------------ 项目绑定
 
-SOURCES: tuple[tuple[str, str, str | None], ...] = (
-    ("function", "fn_findings.json", "findings"),
-    ("file", "file_findings.json", None),
-    ("service", "findings.json", None),
-    ("class", "class_findings.json", None),
-    ("integration", "integration_findings.json", "findings"),
-    # 负载实验自带 findings：服务层开单根因，集成层引用链级后果
-    ("service", "perf_findings.json", "service"),
-    ("integration", "perf_findings.json", "integration"),
-)
+@functools.lru_cache(maxsize=1)
+def _target() -> dict[str, Any]:
+    return findings_schema.load_target()
+
+
+@functools.lru_cache(maxsize=1)
+def java_root() -> Path:
+    return Path(_target()["source_roots"]["java"])
+
+
+@functools.lru_cache(maxsize=1)
+def pkg_root() -> str:
+    return _target()["source_roots"]["java_package"]
+
+
+@functools.lru_cache(maxsize=1)
+def annotation_table():
+    """项目标注表（人工判定）：category / claim / owner / confidence / root_cause_key。"""
+    return findings_schema.load_annotation_table()
+
+
+@functools.lru_cache(maxsize=1)
+def class_entities() -> dict[str, str]:
+    """表名 -> 实体源码文件（相对 java 包根）。"""
+    return _target().get("class_entities", {})
+
+
+def evidence_sources() -> tuple[tuple[str, str, str | None], ...]:
+    """证据源清单：(层, 文件名, 取值键)。键为 None 表示文件顶层就是数组。"""
+    return tuple((s["layer"], s["file"], s.get("key"))
+                 for s in _target()["evidence_sources"])
+
+# 证据源清单在 target.json 里（换项目改配置，不改代码）
 
 LAYER_REPLAY = {
     "file": "python3 file_dynamic.py",
@@ -71,17 +75,19 @@ LAYER_REPLAY = {
 
 def _java_index() -> dict[str, Path]:
     index: dict[str, Path] = {}
-    for path in JAVA_ROOT.rglob("*.java"):
+    for path in java_root().rglob("*.java"):
         index.setdefault(path.stem, path)
     return index
 
 
-JAVA_INDEX = _java_index()
+@functools.lru_cache(maxsize=1)
+def java_index() -> dict[str, Path]:
+    return _java_index()
 
 
 def _pkg_rel(pkg_path: str) -> str:
-    """'config/WebConfig.java' -> 'com/jiuyan/banquet/config/WebConfig.java'"""
-    return f"{PKG_ROOT}/{pkg_path}"
+    """'config/WebConfig.java' -> '<java_package>/config/WebConfig.java'"""
+    return f"{pkg_root()}/{pkg_path}"
 
 
 def _expand_file_ref(ref: str) -> list[str]:
@@ -124,12 +130,12 @@ def _fn_location(rec: dict[str, Any]) -> dict[str, Any]:
             cls = cls_fqn.rsplit(".", 1)[-1]
             if symbols and not symbols[0].startswith(cls):
                 continue
-            java_path = JAVA_INDEX.get(cls)
+            java_path = java_index().get(cls)
             method = meth
             break
     if java_path is None and symbols:
         cls = symbols[0].split(".")[0]
-        java_path = JAVA_INDEX.get(cls)
+        java_path = java_index().get(cls)
         method = symbols[0].split(".")[-1]
     line = _resolve_line(java_path, method) if java_path and method else UNKNOWN_LINE
     return {
@@ -143,7 +149,7 @@ def _fn_location(rec: dict[str, Any]) -> dict[str, Any]:
 def _file_location(rec: dict[str, Any]) -> dict[str, Any]:
     """文件层：root_cause_file 是包内相对路径，可能指多个文件。"""
     refs = _expand_file_ref(rec.get("root_cause_file") or "")
-    files = [str(JAVA_ROOT / _pkg_rel(r)) for r in refs]
+    files = [str(java_root() / _pkg_rel(r)) for r in refs]
     return {
         "file": files[0] if files else "",
         "line": UNKNOWN_LINE,
@@ -155,27 +161,27 @@ def _file_location(rec: dict[str, Any]) -> dict[str, Any]:
 
 def _class_location(rec: dict[str, Any]) -> dict[str, Any]:
     ev = rec.get("evidence") or {}
-    hint = CLASS_FILE_HINTS.get(rec.get("id", ""))
+    hint = annotation_table().CLASS_FILE_HINTS.get(rec.get("id", ""))
     table = ev.get("table") or ""
     entity = ev.get("entity") or ""
-    if not hint and table:
-        hint = f"entity/{TABLE_TO_ENTITY.get(table, table)}.java"
-    if not hint and entity in TABLE_TO_ENTITY:
-        hint = f"entity/{TABLE_TO_ENTITY[entity]}.java"
+    entities = class_entities()
+    if not hint and table in entities:
+        hint = entities[table]
+    if not hint and entity in entities:
+        hint = entities[entity]
     if not hint:
         column = ev.get("column") or ""
-        if column in ("address", "final_price_cent", "customer_phone", "status"):
-            hint = "entity/BanquetOrder.java"
-        elif column == "is_active":
-            hint = "entity/Product.java"
-    path = str(JAVA_ROOT / _pkg_rel(hint)) if hint else ""
+        hinted = annotation_table().COLUMN_FILE_HINTS.get(column)
+        if hinted:
+            hint = hinted
+    path = str(java_root() / _pkg_rel(hint)) if hint else ""
     return {"file": path, "line": UNKNOWN_LINE, "symbol": ev.get("column") or table or "", "endpoint": ""}
 
 
 def _build_route_index() -> dict[str, tuple[Path, int]]:
     """扫 controller 源码，建 路由 -> (文件, 行号) 索引。纯文本解析，不启动应用。"""
     index: dict[str, tuple[Path, int]] = {}
-    ctrl_dir = JAVA_ROOT / "com/jiuyan/banquet/controller"
+    ctrl_dir = java_root() / pkg_root() / "controller"
     for path in sorted(ctrl_dir.glob("*Controller.java")):
         lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
         base = ""
@@ -198,7 +204,9 @@ def _build_route_index() -> dict[str, tuple[Path, int]]:
     return index
 
 
-ROUTE_INDEX = _build_route_index()
+@functools.lru_cache(maxsize=1)
+def route_index() -> dict[str, tuple[Path, int]]:
+    return _build_route_index()
 
 
 def _endpoint_pairs(endpoint: str) -> list[tuple[str, str]]:
@@ -223,7 +231,7 @@ def _endpoint_location(rec: dict[str, Any]) -> dict[str, Any]:
     endpoint = rec.get("endpoint") or ""
     file_path, line = "", UNKNOWN_LINE
     for method, path in _endpoint_pairs(endpoint):
-        hit = ROUTE_INDEX.get(f"{method} {path}")
+        hit = route_index().get(f"{method} {path}")
         if hit:
             file_path, line = str(hit[0]), hit[1]
             break
@@ -271,11 +279,11 @@ def _granularity(repro_cmd: str) -> str:
 
 def _build(layer: str, rec: dict[str, Any], index: int, source_file: str) -> dict[str, Any]:
     fid = rec.get("id", "")
-    meta = finding_meta.lookup(layer, fid)
+    meta = annotation_table().lookup(layer, fid)
     inferred: list[str] = []
     if meta is None:
         inferred.append("category/claim/owner/confidence/ground_truth/cwe/root_cause_key")
-        meta = finding_meta.Meta(
+        meta = annotation_table().Meta(
             category="UNMAPPED", fit="unmapped",
             claim=f"（未标注：{fid}）",
             owner_layer=layer, confidence=0.4, kind="defect", cwe=(),
@@ -354,7 +362,8 @@ def _build(layer: str, rec: dict[str, Any], index: int, source_file: str) -> dic
 
 
 def load_layer(layer: str, path: str, key: str | None) -> list[dict[str, Any]]:
-    data = json.loads((HERE / path).read_text(encoding="utf-8"))
+    """证据源文件在项目目录（target.json 的同级），不在 engine/ 里。"""
+    data = json.loads((PROJECT_DIR / path).read_text(encoding="utf-8"))
     if key:
         data = data[key]
     if not isinstance(data, list):
@@ -364,8 +373,9 @@ def load_layer(layer: str, path: str, key: str | None) -> list[dict[str, Any]]:
 
 def main() -> None:
     categories = findings_schema.load_layer_categories()
+    sources = evidence_sources()
     records: list[dict[str, Any]] = []
-    for layer, path, key in SOURCES:
+    for layer, path, key in sources:
         for idx, rec in enumerate(load_layer(layer, path, key)):
             records.append(_build(layer, rec, idx, path))
 
@@ -387,17 +397,18 @@ def main() -> None:
 
     out = {
         "generated_from": "normalize_findings.py",
-        "contract": str(findings_schema.CONTRACT_PATH),
+        "contract": str(findings_schema.contract_path()),
+        "target": str(findings_schema.target_path()),
         "counts": {
             "total": len(records),
             "by_layer": {lay: sum(1 for r in records if r["layer"] == lay)
-                         for lay, _p, _k in SOURCES},
+                         for lay, _p, _k in sources},
             "by_kind": {k: sum(1 for r in records if r["kind"] == k)
                         for k in ("defect", "positive", "observation")},
         },
         "findings": records,
     }
-    (HERE / "all_findings.json").write_text(
+    (PROJECT_DIR / "all_findings.json").write_text(
         json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
 
     _report(records, problems, structural, unmapped_problems)
@@ -410,7 +421,7 @@ def main() -> None:
 def _report(records: list[dict[str, Any]], problems: list[str],
             structural: list[str], unmapped_problems: list[str]) -> None:
     total = len(records)
-    print(f"归一化 -> {HERE / 'all_findings.json'}  共 {total} 条")
+    print(f"归一化 -> {PROJECT_DIR / 'all_findings.json'}  共 {total} 条")
 
     print("\n[必填字段：结构齐备 / 有值]")
     for field in findings_schema.REQUIRED_FIELDS:

@@ -1,0 +1,27 @@
+{
+  "target": "jiuyan",
+  "description": "农村宴席 Pad 谈单系统（Spring Boot 3 + PostgreSQL 16 + React 19）",
+  "contract": "../layers.yaml",
+  "annotation_table": "finding_meta.py",
+  "source_roots": {
+    "java": "/Users/june/jiuyan/backend/src/main/java",
+    "java_package": "com/jiuyan/banquet"
+  },
+  "class_entities": {
+    "orders": "entity/BanquetOrder.java",
+    "packages": "entity/BanquetPackage.java",
+    "products": "entity/Product.java",
+    "categories": "entity/Category.java",
+    "package_items": "entity/PackageItem.java",
+    "package_types": "entity/PackageType.java"
+  },
+  "evidence_sources": [
+    {"layer": "function", "file": "fn_findings.json", "key": "findings"},
+    {"layer": "file", "file": "file_findings.json", "key": null},
+    {"layer": "service", "file": "findings.json", "key": null},
+    {"layer": "class", "file": "class_findings.json", "key": null},
+    {"layer": "integration", "file": "integration_findings.json", "key": "findings"},
+    {"layer": "service", "file": "perf_findings.json", "key": "service"},
+    {"layer": "integration", "file": "perf_findings.json", "key": "integration"}
+  ]
+}

@@ -412,5 +412,28 @@ META: dict[str, dict[str, Meta]] = {
 }
 
 
+# 类层实体的源码定位提示：finding id -> 相对 java 包根的文件路径（空串 = 跨实体，无法单点定位）
+CLASS_FILE_HINTS: dict[str, str] = {
+    "NO_STATE_MACHINE": "entity/BanquetOrder.java",
+    "INDEX_UNUSABLE_FOR_QUERY_PATTERN": "entity/Product.java",
+    "CLASS-RULE-MISSING-IN-ALL-LAYERS": "",
+    "NO_DATA_LIFECYCLE": "entity/BanquetOrder.java",
+    "CLASS-ERROR-MESSAGE-MISMATCH": "entity/BanquetOrder.java",
+    "CLASS-ENUM-CASE-SENSITIVE": "entity/OrderStatus.java",
+    "ENUM_CHECK_ALIGNED": "entity/OrderStatus.java",
+    "CLASS-NULLABILITY-ALIGNED": "",
+    "CLASS-CHECK-DTO-ALIGNED": "",
+}
+
+# 只知道列名时的兜底：列 -> 所属实体文件
+COLUMN_FILE_HINTS: dict[str, str] = {
+    "address": "entity/BanquetOrder.java",
+    "final_price_cent": "entity/BanquetOrder.java",
+    "customer_phone": "entity/BanquetOrder.java",
+    "status": "entity/BanquetOrder.java",
+    "is_active": "entity/Product.java",
+}
+
+
 def lookup(layer: str, finding_id: str) -> Meta | None:
     return META.get(layer, {}).get(finding_id)

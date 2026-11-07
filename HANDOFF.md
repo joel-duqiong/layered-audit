@@ -8,8 +8,11 @@
 
 ## 1. 这个项目是做什么的
 
-**一句话**：给自己维护的系统（`/Users/june/jiuyan`，农村宴席 Pad 谈单系统）建一条
-「可复现、可归属、可回归」的多层缺陷审计流水线 —— 不是通用扫描器。
+**一句话**：造一套**与被测项目无关**的多层缺陷审计系统 —— 输入代码库 + 层契约，
+输出带证据、带归属、带复现命令的缺陷台账 + 可回归的门禁。
+`/Users/june/jiuyan`（农村宴席 Pad 谈单系统）是**第一个落地验证的目标**，不是系统的适用范围。
+
+通用的是**这套审计流水线**，不是「通用漏洞扫描器」—— 这两件事不一样，别混。
 
 ### 为什么不是通用扫描器
 
@@ -25,12 +28,14 @@
 2. **每条缺陷归属唯一层** —— owner = 能给出可复现证据的最低层。
 3. **修完能自动回归** —— 缺陷固化进门禁基线 + pytest 用例。
 4. **漏检率有对抗性度量** —— 攻击链从「单点洞」升级为「串起来能干什么」。
+5. **换项目不改编引擎** —— 引擎零项目字面量，且有自动检查守住这条（见 §5.12）。
 
 ### 边界（明确不做）
 
-- 只审 `jiuyan`，**不改被测系统任何文件**（含前端源码，只读）。
+- **不改被测系统任何文件**（含前端源码，只读）。发现的问题出成报告，不直接改代码。
 - 不做通用 SAST/DAST 集成，不做安全扫描器；不做性能压测平台。
 - 不重做下层已开单的缺陷；高层只能引用并量化后果。
+- 不做插件框架、不做多项目并行 —— 通用性靠「一份绑定」实现，不靠机制。
 
 ---
 
@@ -257,6 +262,44 @@ D 三个价格并存且界面不显示明细合计 / E 无定金订单一步跳�
 这个链级后果。这条把集成层已有的 `LIST_TRUNCATED_AT_100`（前端只取前 100 条）
 从「可见性缺陷」升级成了「可见性缺陷 + 纯成本」两罪并罚。
 
+### 5.12 通用 / 配置 / 实现 三层切分（这套系统怎么才算「通用」）
+
+**切错边界是最大的浪费**：把 agent 也做成通用 → 变成通用扫描器（本项目明确不要）；
+什么都不切 → 就是「一个项目的脚本集」，换不了项目。本项目的切法：
+
+| 层 | 内容 | 换项目时 | 位置 |
+|---|---|---|---|
+| **通用** | 层契约 `layers.yaml` | 不改 | `layered-audit/layers.yaml` |
+| **通用** | 收口引擎：schema 校验 / 归一化 / 根因聚合 / 覆盖度矩阵 | **不改** | `pilot/engine/` |
+| **配置** | 项目绑定：源码根、包路径、证据源清单、标注表 | 改这个文件 | `pilot/target.json` |
+| **配置** | 人工标注表：category / claim / owner / confidence / root_cause_key | 换一份 | `pilot/finding_meta.py` |
+| **实现** | 各层 agent 探针脚本（`fn_*` / `file_*` / `contract_*` / `class_*` / `integration_*` / `perf_load.py`） | 重写 | `pilot/` |
+
+**agent 层绑定具体靶区不是缺陷** —— agent 本来就该打具体靶区。硬把它通用化，
+就成了「换个项目就自动生成审计」的通用扫描器，那是另一个产品。
+
+**通用性怎么被守住（不是靠自觉）**：
+
+| 检查 | 做什么 | 跑法 |
+|---|---|---|
+| `engine/check_engine_purity.py` | 引擎目录不许出现：项目名、绝对路径、`docker exec`、`psql`、HTTP 客户端、内网地址 | 流水线里自动跑，退出码 1 = 阻断 |
+| `test_portability.sh` | 换一份 target.json（不同项目名 / 不同源码根 / 不同证据源 / 不同标注表副本）跑一遍引擎，验证产物落在新目标目录且不碰原产物 | 流水线里自动跑 |
+
+`test_portability.sh` 造的是一个**合成目标**（`acme-banquet`），不是真第二个项目。
+它验证的是「引擎不依赖 jiuyan 的任何东西」，**不**验证「换个真实项目就能跑」——
+后者还需要为新项目重写 agent 脚本，是另一件事，别混淆。
+
+**换项目的实际步骤**（引擎一步都不用改）：
+
+```bash
+cp -r pilot/ targets/acme-banquet/          # 复制项目目录
+cd targets/acme-banquet
+# 1. 写 target.json（源码根 / 包路径 / 证据源清单）
+# 2. 写 finding_meta.py（本项目的 finding 标注）
+# 3. 重写各层 agent 脚本
+# 4. 跑：python3 engine/normalize_findings.py && python3 engine/aggregate_findings.py
+```
+
 ### 5.9 规划 vs 实现（差距，写出来免得下一个人类 AI 误判）
 
 | `layers.yaml` 规划 | 当前实现 | 差距 |
@@ -293,14 +336,18 @@ D 三个价格并存且界面不显示明细合计 / E 无定金订单一步跳�
 `normalize_findings.py` 会读它，所以负载实测的结论直接进总表和覆盖度矩阵。
 跑法：`python3 perf_load.py --scales 0,2000,10000,50000 --rounds 10`
 
-### 6.1 跨层收口脚本（本轮新增，不属于任何一层）
+### 6.1 通用收口引擎（`pilot/engine/`，换项目零改动）
 
 | 脚本 | 输入 | 输出 | 作用 |
 |---|---|---|---|
-| `findings_schema.py` | `../layers.yaml` | — | 解析契约 + schema 校验（不硬编码类别） |
-| `finding_meta.py` | 人工标注 | — | 59 个 id 的 category/claim/owner/confidence/ground_truth/cwe/root_cause_key |
-| `normalize_findings.py` | 五层 `*_findings.json` | `all_findings.json` | 统一 10 必填字段，退出码 1=结构性违规 2=契约缺口 |
-| `aggregate_findings.py` | `all_findings.json` | `root_causes.json`、`audit_report.md` | 根因归并（86→52）、归属/越界校验、覆盖度矩阵 |
+| `findings_schema.py` | `layers.yaml`（路径来自 target.json）+ `target.json` | — | 解析契约 + 读项目绑定 + schema 校验（不硬编码类别） |
+| `normalize_findings.py` | `target.json` + 五层 `*_findings.json` | `all_findings.json` | 统一 10 必填字段，退出码 1=结构性违规 2=契约缺口 |
+| `aggregate_findings.py` | `all_findings.json` | `root_causes.json`、`audit_report.md` | 根因归并（88→53）、归属/越界校验、覆盖度矩阵 |
+| `check_engine_purity.py` | `target.json` + 引擎源码 | — | 引擎纯净度守卫：出现项目字面量就退出码 1 |
+
+配套：`pilot/target.json`（项目绑定）、`pilot/finding_meta.py`（人工标注表，
+含 `CLASS_FILE_HINTS` / `COLUMN_FILE_HINTS` 定位提示）、`pilot/test_portability.sh`
+（换绑定可跑冒烟测试）。
 
 `aggregate_findings.py` 的判定口径（都写死在代码里，别改口径不改文档）：
 
@@ -380,6 +427,10 @@ python3 perf_load.py                    # 负载实测（延迟曲线 + 分页 t
 `tests/probe.py` 的前端契约是**静态抽取**的（从 `banquetApi.js` 现场解析 mapper 读了哪些字段），
 前端一改期望值自动跟着变，不会变成「拿旧期望值糊弄过去的假门禁」。
 
+**通用性说明**：这套回归资产的**写法**（三方对账 + 攻击链 + `xfail(strict=True)` 钉缺陷）
+是通用的模板；**实现**是 jiuyan 专属的（探针表名、端点、前端 mapper 路径）。
+换项目照着这个模板重写一套，不要指望改配置就能用 —— 那正是 §5.12 里「实现」层的定义。
+
 ---
 
 ## 11. 剩余工作
@@ -399,6 +450,9 @@ python3 perf_load.py                    # 负载实测（延迟曲线 + 分页 t
 
 ### B. 项目层面待办（架构缺口，工作量大）
 
+> 「通用」的切法见 §5.12：通用的是契约 + 收口引擎，配置的是项目绑定与标注表，
+> 实现的是各层 agent 脚本。**别把 agent 也做成通用**，那是另一个产品。
+
 | # | 事项 | 说明 | 建议顺序 |
 |---|---|---|---|
 | B1 | 证据 schema 落地 | ✅ **本轮完成**：`findings_schema.py` + `finding_meta.py` + `normalize_findings.py`，10 必填字段 86/86 结构齐备 | — |
@@ -406,7 +460,7 @@ python3 perf_load.py                    # 负载实测（延迟曲线 + 分页 t
 | B3 | 覆盖度自检 | ✅ **本轮完成**：layer × category 命中矩阵，零覆盖即警报（当前 10 个类别零覆盖，见 §12.2） | — |
 | B4 | **9 agent 编排化** | 规划 9 个 agent、并发、token 预算；当前是 22 脚本串行 | 先做类层（2 agent）和服务层（4 agent）的拆分，验证编排收益再推广 |
 | B5 | **变异测试 / ground_truth** | `ground_truth`（verified / unverified / mutant_survivor）无实现 | 函数层最适合做（mutation_test 已在 oracle 里），是打通 schema 的试验田 |
-| B6 | **推广到第二个项目** | 现在一切硬编码 jiuyan（路径、端口、容器名、表名） | 抽成配置（`sut:` 段已在 manifest 里预留），至少让「换一个 Spring Boot 项目」能跑起来 |
+| B6 | **推广到第二个项目** | 🟡 **接缝已补（本轮）**：引擎零项目字面量 + `target.json` 绑定 + 纯净度守卫 + 换绑定冒烟测试。**但还没在真实第二个项目上跑过** —— 那需要为新项目重写 agent 脚本 | 等有第二个项目时做；agent 脚本本来就该重写，不是「通用性缺口」 |
 | B7 | **被测系统自身修复闭环** | 发现 6 条 CRITICAL，但没走「修复 → 门禁转绿 → 摘 xfail」流程 | 挑 1 条（推荐 `NO_AUTHZ`，收益最大）走完整闭环，验证回归资产真的能守住 |
 | B8 | **契约缺口的结构性修法** | 9 条发现装不进现有 category，靠 `UNMAPPED` 标记 | 不是加类别就完事：要能区分「类别表太窄」与「发现开错层」，后者靠 `out_of_scope` 校验自动判（已实现 1 例） |
 | B9 | **`repro_cmd` 从 reference 升级成可跑** | ✅ **本轮完成**：14 → **3 条**（函数层 `--case`、集成层 `--scenario` / `--chain`）。剩下 3 条是操作步骤描述或数据文件指针，不硬编 | 剩余 34 条 `layer` 级复现（file / class 层）还可继续降维到用例级 |
@@ -532,6 +586,8 @@ agent 还没写 —— 这是 §11-B4 编排化的优先级依据。
 - `aggregate_findings.py` → 88 条发现归并为 **53 条根因**；硬违规 1 条；归并提示 4 条；
   零覆盖类别从 10 降到 **8**（`service.service_latency` 与
   `integration.cross_service_performance` 本轮补上）。
+- 引擎自检：`engine/check_engine_purity.py` 通过（3 个文件零项目耦合）；
+  `test_portability.sh` 通过（换绑定跑出 30 条、产物落在合成目标目录、不碰原产物）。
 - `repro_cmd` 不可直接执行的从 **14 条降到 3 条**（case 8 / scenario 9 / request 30 /
   layer 36 / command 2 / reference 3）；
   `python3 integration_dynamic.py --scenario SC01_CLIENT_CONTROLLED_PRICE` 单场景重放

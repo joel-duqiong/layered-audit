@@ -18,7 +18,7 @@
 | 7 | HIGH | file | `audit.client_ip_trusted_from_header` | 审计日志里的 clientIp 完全由客户端伪造：X-Forwarded-For 首段直接采信 | 1 | 0.93 | verified | `python3 file_dynamic.py` |
 | 8 | HIGH | file | `cors.allowed_origin_patterns_too_broad` | CORS 白名单等于「整个内网 + 所有本地端口」，且全是明文 http | 1 | 0.95 | verified | `python3 file_dynamic.py` |
 | 9 | HIGH | integration | `frontend.list_hardcoded_limit_100` | 前端列表固定只取前 100 条并丢弃 total，超出的数据永远不可见 | 1 | 0.95 | verified | `python3 integration_dynamic.py --scenario SC05_LIST_TRUNC…` |
-| 10 | HIGH | service | `index.idx_products_name_unusable` | DDL 声明的 idx_products_name 对服务层查询模式无效（7.755ms vs 0.011ms，差 705 倍） | 1 | 0.88 | verified | `python3 class_dynamic.py` |
+| 10 | HIGH | service | `index.idx_products_name_unusable` | DDL 声明的 idx_products_name 对服务层查询模式无效（8.042ms vs 0.016ms，差 503 倍） | 1 | 0.88 | verified | `python3 class_dynamic.py` |
 | 11 | HIGH | class | `order.status.transition_unconstrained` | 状态机缺失：9/9 种迁移全部被接受，含回退 | 1 | 0.96 | verified | `python3 class_dynamic.py` |
 | 12 | HIGH | function | `order_no.no_collision_guarantee` | 订单号每秒只有 1000 个槽位，并发下单必然撞号（唯一键冲突 → 500） | 1 | 0.9 | verified | `python3 fn_dynamic.py --case GON-02` |
 | 13 | HIGH | class | `rule.missing_in_db_dto_service` | 4 条业务不变量在 DB / DTO / 服务层三层全都不存在 | 1 | 0.85 | verified | `python3 class_dynamic.py` |
@@ -36,7 +36,7 @@
 | 25 | MEDIUM | integration | `frontend.image_fallback_cross_domain` | 商品缺图时前端兜底成了套餐种子图 | 1 | 0.88 | verified | `POST /api/products（imageUrl 留空）→ 前端 mapProduct → image 字段…` |
 | 26 | MEDIUM | integration | `frontend.item_count_semantics_divergent` | 同一个套餐，界面上有两个互不相同的「商品数」 | 1 | 0.92 | verified | `造一个套餐，明细含一个 is_active=false 的商品 → 对比卡片与弹层的数字` |
 | 27 | MEDIUM | function | `order.apply.amount_invariants_weak` | apply 的金额/状态不变量只查了 >= 0：定金可以大于套餐总价，状态与预订时间可为空 | 1 | 0.92 | verified | `python3 fn_dynamic.py --case APL-12` |
-| 28 | MEDIUM | class | `orders.no_data_lifecycle` | orders 表没有软删/归档，永久增长（当前 184 kB） | 1 | 0.8 | verified | `python3 class_dynamic.py` |
+| 28 | MEDIUM | class | `orders.no_data_lifecycle` | orders 表没有软删/归档，永久增长（当前 200 kB） | 1 | 0.8 | verified | `python3 class_dynamic.py` |
 | 29 | MEDIUM | file | `package.applyItems.mutate_before_validate` | PackageService.applyItems 先删后校验：明细被清空后才去查商品 | 1 | 0.91 | verified | `python3 file_dynamic.py` |
 | 30 | MEDIUM | class | `softdelete.resurrects_row` | 软删除的行会被同名重建「复活」，id 与 sort_order 沿用旧值 | 1 | 0.9 | verified | `python3 class_dynamic.py` |
 | 31 | MEDIUM | integration | `tooling.coverage_recording_gap` | 1/25 个接口既无真实流量样本、前端也不调用；17 个写接口的真实流量样本为 0 | 1 | 0.85 | verified | `见 /Users/june/tests/auto-api/recordings/jiuyan_readonly.j…` |

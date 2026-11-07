@@ -10,6 +10,7 @@ pilot/*_contract.json
 pilot/file_deps.txt
 pilot/perf_load.json
 pilot/openapi.json
+__pycache__/
 pilot/__pycache__/
 pilot/class_harness/
 pilot/file_harness/
