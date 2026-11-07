@@ -1,8 +1,8 @@
 {
   "generated_from": "aggregate_findings.py",
   "summary": {
-    "findings": 108,
-    "root_causes": 68,
+    "findings": 110,
+    "root_causes": 70,
     "collapsed": 40,
     "violations": 1
   },
@@ -1223,6 +1223,43 @@
       "related_root_causes": []
     },
     {
+      "root_cause_key": "oracle.assertion_weak_under_mutation",
+      "title": "有变异改了实际行为但我们的 oracle 没抓住 —— 断言只看结果，不看「该发生什么」",
+      "severity": "MEDIUM",
+      "owner_layer": "function",
+      "categories": [
+        "function.boundary"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "function:FN-MUTATION-SURVIVOR-WEAK-ASSERTION#0"
+      ],
+      "layers_own": [
+        "function"
+      ],
+      "layers_all": [
+        "function"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.92,
+      "ground_truth": "unverified",
+      "repro_cmds": [
+        "python3 mutation_test.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1
+      },
+      "related_root_causes": []
+    },
+    {
       "root_cause_key": "order.banquet_type_not_checked_against_package",
       "title": "订单的宴会类型是否与所选套餐的宴会类型一致？",
       "severity": "MEDIUM",
@@ -2340,6 +2377,43 @@
       "related_root_causes": []
     },
     {
+      "root_cause_key": "oracle.mutation_harness_operational",
+      "title": "变异测试链路跑通：函数层 oracle 抓得住大部分变异",
+      "severity": "INFO",
+      "owner_layer": "function",
+      "categories": [
+        "function.boundary"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "function:FN-MUTATION-HARNESS-WORKS#1"
+      ],
+      "layers_own": [
+        "function"
+      ],
+      "layers_all": [
+        "function"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 mutation_test.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1
+      },
+      "related_root_causes": []
+    },
+    {
       "root_cause_key": "order.added_items_existence_checked",
       "title": "加购明细里的商品是否都真实存在且未软删？",
       "severity": "INFO",
@@ -2709,7 +2783,7 @@
   "coverage": {
     "matrix": {
       "function": {
-        "boundary": 7,
+        "boundary": 9,
         "complexity": 0,
         "exception_path": 1,
         "numeric": 3
@@ -2849,7 +2923,7 @@
         "price.final_price.upper_bound_unvalidated"
       ]
     },
-    "root_cause_count": 68,
-    "finding_count": 108
+    "root_cause_count": 70,
+    "finding_count": 110
   }
 }

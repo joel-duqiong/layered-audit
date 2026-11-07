@@ -3,17 +3,17 @@
   "contract": "/Users/june/.cc-weixin/workspace/layered-audit/layers.yaml",
   "target": "/Users/june/.cc-weixin/workspace/layered-audit/pilot/target.json",
   "counts": {
-    "total": 108,
+    "total": 110,
     "by_layer": {
-      "function": 11,
+      "function": 13,
       "file": 18,
       "service": 46,
       "class": 18,
       "integration": 15
     },
     "by_kind": {
-      "defect": 91,
-      "positive": 15,
+      "defect": 92,
+      "positive": 16,
       "observation": 2
     }
   },
@@ -5335,6 +5335,100 @@
       "source": {
         "file": "config_findings.json",
         "index": 3
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FN-MUTATION-SURVIVOR-WEAK-ASSERTION",
+      "uid": "function:FN-MUTATION-SURVIVOR-WEAK-ASSERTION#0",
+      "layer": "function",
+      "category": "function.boundary",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "fn_dynamic.py#evaluate",
+        "endpoint": ""
+      },
+      "claim": "把被测代码改坏之后，我们的 oracle 抓不抓得住？",
+      "evidence_refs": [
+        "mutation_findings.json#FN-MUTATION-SURVIVOR-WEAK-ASSERTION"
+      ],
+      "repro_cmd": "python3 mutation_test.py",
+      "repro_granularity": "layer",
+      "confidence": 0.92,
+      "ground_truth": "mutant_survivor",
+      "cwe": [],
+      "owner": {
+        "layer": "function",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "oracle.assertion_weak_under_mutation",
+      "related_root_causes": [],
+      "kind": "defect",
+      "runtime_fidelity": "stubbed",
+      "severity": "MEDIUM",
+      "title": "有变异改了实际行为但我们的 oracle 没抓住 —— 断言只看结果，不看「该发生什么」",
+      "detail": "变异测试：把被测源码复制到临时目录、注入变异、编译后放在 classpath 最前面，用同一批用例跑。判定两种口径 —— 观测变了但判定没变 = **oracle 抓不住**。\n[\n  {\n    \"id\": \"MUT-ADD-PRICE-UPPER-BOUND\",\n    \"status\": \"OK\",\n    \"desc\": \"给 resolveFinalPrice 加上「成交价不得高于套餐总价」的上界校验\",\n    \"should_kill\": \"RFP-06（成交价高于套餐价必须被拒）\",\n    \"killed_by_verdict\": [],\n    \"survived\": [\n      \"RFP-06\"\n    ],\n    \"changed_behaviour_cases\": [\n      \"RFP-06\"\n    ],\n    \"mutation_score\": 0.0\n  },\n  {\n    \"id\": \"MUT-DROP-NEGATIVE-PRICE-GUARD\",\n    \"status\": \"OK\",\n    \"desc\": \"删掉 resolveFinalPrice 的「成交价不得为负」检查\",\n    \"should_kill\": \"RFP-04（负成交价必须被拒）\",\n    \"killed_by_verdict\": [\n      \"RFP-04\"\n    ],\n    \"survived\": [],\n    \"changed_behaviour_cases\": [\n      \"RFP-04\"\n    ],\n    \"mutation_score\": 1.0\n  },\n  {\n    \"id\": \"MUT-DROP-DUPLICATE-ITEM-GUARD\",\n    \"status\": \"OK\",\n    \"desc\": \"删掉 normalizePackageItems 的「套餐商品不能重复」检查\",\n    \"should_kill\": \"NPI-*（套餐明细重复必须被拒）\",\n    \"killed_by_verdict\": [\n      \"NPI-03\"\n    ],\n    \"survived\": [],\n    \"changed_behaviour_cases\": [\n      \"NPI-03\"\n    ],\n    \"mutation_score\": 1.0\n  }\n]\n含义：这些用例只能证明「结果不是期望值」，不能证明「异常该抛还是该返回」。缺陷被同类变异掩盖时，回归资产会假绿。",
+      "related": [],
+      "note": "变异测试实测：3 个变异杀死 2 个；存活的 RFP-06 暴露断言只查「结果不是期望值」，不查「该抛异常还是该返回值」—— 缺陷被同类变异掩盖时回归资产会假绿",
+      "source": {
+        "file": "mutation_findings.json",
+        "index": 0
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "FN-MUTATION-HARNESS-WORKS",
+      "uid": "function:FN-MUTATION-HARNESS-WORKS#1",
+      "layer": "function",
+      "category": "function.boundary",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "mutation_test.py",
+        "endpoint": ""
+      },
+      "claim": "变异测试链路本身是否可信？",
+      "evidence_refs": [
+        "mutation_findings.json#FN-MUTATION-HARNESS-WORKS"
+      ],
+      "repro_cmd": "python3 mutation_test.py",
+      "repro_granularity": "layer",
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "function",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "oracle.mutation_harness_operational",
+      "related_root_causes": [],
+      "kind": "positive",
+      "runtime_fidelity": "stubbed",
+      "severity": "INFO",
+      "title": "变异测试链路跑通：函数层 oracle 抓得住大部分变异",
+      "detail": "实测 3 个变异：MUT-ADD-PRICE-UPPER-BOUND 杀死 0/1、MUT-DROP-NEGATIVE-PRICE-GUARD 杀死 1/1、MUT-DROP-DUPLICATE-ITEM-GUARD 杀死 1/1。\n这条能力本身是资产：它让「我们抓得牢不牢」变成可度量的数，而不是靠感觉。",
+      "related": [],
+      "note": "正面结论：源码复制→注入变异→独立编译→classpath 覆盖→同批用例重跑，链路跑通且能区分「杀死」与「存活」",
+      "source": {
+        "file": "mutation_findings.json",
+        "index": 1
       },
       "meta": {
         "inferred_fields": [],

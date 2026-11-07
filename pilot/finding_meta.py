@@ -81,6 +81,22 @@ FUNCTION: dict[str, Meta] = {
         "明细归一化是否只查重复、不查 productId 与 quantity？",
         "function", 0.93, "defect", ("CWE-20",),
         "order.item_quantity_unvalidated"),
+    "FN-MUTATION-SURVIVOR-WEAK-ASSERTION": _m(
+        "function.boundary", "exact",
+        "把被测代码改坏之后，我们的 oracle 抓不抓得住？",
+        "function", 0.92, "defect", (),
+        "oracle.assertion_weak_under_mutation",
+        ground_truth="mutant_survivor",
+        note="变异测试实测：3 个变异杀死 2 个；存活的 RFP-06 暴露断言只查「结果不是期望值」，"
+             "不查「该抛异常还是该返回值」—— 缺陷被同类变异掩盖时回归资产会假绿"),
+    "FN-MUTATION-HARNESS-WORKS": _m(
+        "function.boundary", "exact",
+        "变异测试链路本身是否可信？",
+        "function", 0.90, "positive", (),
+        "oracle.mutation_harness_operational",
+        ground_truth="verified",
+        note="正面结论：源码复制→注入变异→独立编译→classpath 覆盖→同批用例重跑，"
+             "链路跑通且能区分「杀死」与「存活」"),
     "FN-NUMERIC-MONEY-INPUT-SILENT-MUTATION": _m(
         "function.numeric", "exact",
         "金额输入规范化是否静默改变了用户输入的数值？",

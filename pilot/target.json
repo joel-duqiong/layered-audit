@@ -80,6 +80,11 @@
       "layer": "service",
       "file": "config_findings.json",
       "key": "service"
+    },
+    {
+      "layer": "function",
+      "file": "mutation_findings.json",
+      "key": "function"
     }
   ],
   "carriers": {

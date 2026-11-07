@@ -1,0 +1,159 @@
+{
+  "function": [
+    {
+      "id": "FN-MUTATION-SURVIVOR-WEAK-ASSERTION",
+      "severity": "MEDIUM",
+      "function": "fn_dynamic.py#evaluate",
+      "title": "有变异改了实际行为但我们的 oracle 没抓住 —— 断言只看结果，不看「该发生什么」",
+      "detail": "变异测试：把被测源码复制到临时目录、注入变异、编译后放在 classpath 最前面，用同一批用例跑。判定两种口径 —— 观测变了但判定没变 = **oracle 抓不住**。\n[\n  {\n    \"id\": \"MUT-ADD-PRICE-UPPER-BOUND\",\n    \"status\": \"OK\",\n    \"desc\": \"给 resolveFinalPrice 加上「成交价不得高于套餐总价」的上界校验\",\n    \"should_kill\": \"RFP-06（成交价高于套餐价必须被拒）\",\n    \"killed_by_verdict\": [],\n    \"survived\": [\n      \"RFP-06\"\n    ],\n    \"changed_behaviour_cases\": [\n      \"RFP-06\"\n    ],\n    \"mutation_score\": 0.0\n  },\n  {\n    \"id\": \"MUT-DROP-NEGATIVE-PRICE-GUARD\",\n    \"status\": \"OK\",\n    \"desc\": \"删掉 resolveFinalPrice 的「成交价不得为负」检查\",\n    \"should_kill\": \"RFP-04（负成交价必须被拒）\",\n    \"killed_by_verdict\": [\n      \"RFP-04\"\n    ],\n    \"survived\": [],\n    \"changed_behaviour_cases\": [\n      \"RFP-04\"\n    ],\n    \"mutation_score\": 1.0\n  },\n  {\n    \"id\": \"MUT-DROP-DUPLICATE-ITEM-GUARD\",\n    \"status\": \"OK\",\n    \"desc\": \"删掉 normalizePackageItems 的「套餐商品不能重复」检查\",\n    \"should_kill\": \"NPI-*（套餐明细重复必须被拒）\",\n    \"killed_by_verdict\": [\n      \"NPI-03\"\n    ],\n    \"survived\": [],\n    \"changed_behaviour_cases\": [\n      \"NPI-03\"\n    ],\n    \"mutation_score\": 1.0\n  }\n]\n含义：这些用例只能证明「结果不是期望值」，不能证明「异常该抛还是该返回」。缺陷被同类变异掩盖时，回归资产会假绿。",
+      "repro": "python3 mutation_test.py",
+      "evidence": {
+        "survived_cases": [
+          "RFP-06"
+        ],
+        "mutants": [
+          {
+            "id": "MUT-ADD-PRICE-UPPER-BOUND",
+            "status": "OK",
+            "desc": "给 resolveFinalPrice 加上「成交价不得高于套餐总价」的上界校验",
+            "should_kill": "RFP-06（成交价高于套餐价必须被拒）",
+            "killed_by_verdict": [],
+            "survived": [
+              "RFP-06"
+            ],
+            "changed_behaviour_cases": [
+              "RFP-06"
+            ],
+            "mutation_score": 0.0
+          },
+          {
+            "id": "MUT-DROP-NEGATIVE-PRICE-GUARD",
+            "status": "OK",
+            "desc": "删掉 resolveFinalPrice 的「成交价不得为负」检查",
+            "should_kill": "RFP-04（负成交价必须被拒）",
+            "killed_by_verdict": [
+              "RFP-04"
+            ],
+            "survived": [],
+            "changed_behaviour_cases": [
+              "RFP-04"
+            ],
+            "mutation_score": 1.0
+          },
+          {
+            "id": "MUT-DROP-DUPLICATE-ITEM-GUARD",
+            "status": "OK",
+            "desc": "删掉 normalizePackageItems 的「套餐商品不能重复」检查",
+            "should_kill": "NPI-*（套餐明细重复必须被拒）",
+            "killed_by_verdict": [
+              "NPI-03"
+            ],
+            "survived": [],
+            "changed_behaviour_cases": [
+              "NPI-03"
+            ],
+            "mutation_score": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "id": "FN-MUTATION-HARNESS-WORKS",
+      "severity": "INFO",
+      "function": "mutation_test.py",
+      "title": "变异测试链路跑通：函数层 oracle 抓得住大部分变异",
+      "detail": "实测 3 个变异：MUT-ADD-PRICE-UPPER-BOUND 杀死 0/1、MUT-DROP-NEGATIVE-PRICE-GUARD 杀死 1/1、MUT-DROP-DUPLICATE-ITEM-GUARD 杀死 1/1。\n这条能力本身是资产：它让「我们抓得牢不牢」变成可度量的数，而不是靠感觉。",
+      "repro": "python3 mutation_test.py",
+      "evidence": {
+        "mutants": [
+          {
+            "id": "MUT-ADD-PRICE-UPPER-BOUND",
+            "status": "OK",
+            "desc": "给 resolveFinalPrice 加上「成交价不得高于套餐总价」的上界校验",
+            "should_kill": "RFP-06（成交价高于套餐价必须被拒）",
+            "killed_by_verdict": [],
+            "survived": [
+              "RFP-06"
+            ],
+            "changed_behaviour_cases": [
+              "RFP-06"
+            ],
+            "mutation_score": 0.0
+          },
+          {
+            "id": "MUT-DROP-NEGATIVE-PRICE-GUARD",
+            "status": "OK",
+            "desc": "删掉 resolveFinalPrice 的「成交价不得为负」检查",
+            "should_kill": "RFP-04（负成交价必须被拒）",
+            "killed_by_verdict": [
+              "RFP-04"
+            ],
+            "survived": [],
+            "changed_behaviour_cases": [
+              "RFP-04"
+            ],
+            "mutation_score": 1.0
+          },
+          {
+            "id": "MUT-DROP-DUPLICATE-ITEM-GUARD",
+            "status": "OK",
+            "desc": "删掉 normalizePackageItems 的「套餐商品不能重复」检查",
+            "should_kill": "NPI-*（套餐明细重复必须被拒）",
+            "killed_by_verdict": [
+              "NPI-03"
+            ],
+            "survived": [],
+            "changed_behaviour_cases": [
+              "NPI-03"
+            ],
+            "mutation_score": 1.0
+          }
+        ]
+      }
+    }
+  ],
+  "mutants": [
+    {
+      "id": "MUT-ADD-PRICE-UPPER-BOUND",
+      "status": "OK",
+      "desc": "给 resolveFinalPrice 加上「成交价不得高于套餐总价」的上界校验",
+      "should_kill": "RFP-06（成交价高于套餐价必须被拒）",
+      "killed_by_verdict": [],
+      "survived": [
+        "RFP-06"
+      ],
+      "changed_behaviour_cases": [
+        "RFP-06"
+      ],
+      "mutation_score": 0.0
+    },
+    {
+      "id": "MUT-DROP-NEGATIVE-PRICE-GUARD",
+      "status": "OK",
+      "desc": "删掉 resolveFinalPrice 的「成交价不得为负」检查",
+      "should_kill": "RFP-04（负成交价必须被拒）",
+      "killed_by_verdict": [
+        "RFP-04"
+      ],
+      "survived": [],
+      "changed_behaviour_cases": [
+        "RFP-04"
+      ],
+      "mutation_score": 1.0
+    },
+    {
+      "id": "MUT-DROP-DUPLICATE-ITEM-GUARD",
+      "status": "OK",
+      "desc": "删掉 normalizePackageItems 的「套餐商品不能重复」检查",
+      "should_kill": "NPI-*（套餐明细重复必须被拒）",
+      "killed_by_verdict": [
+        "NPI-03"
+      ],
+      "survived": [],
+      "changed_behaviour_cases": [
+        "NPI-03"
+      ],
+      "mutation_score": 1.0
+    }
+  ]
+}
