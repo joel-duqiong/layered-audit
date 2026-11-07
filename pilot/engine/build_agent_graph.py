@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Any
 
 import findings_schema
-from agent_schema import agent_id, validate_agent, validate_edge
+from agent_schema import agent_id, validate_edge
 
 PROJECT_DIR = findings_schema.target_path().parent
 
@@ -234,105 +234,88 @@ def _evidence_index(units: dict[str, list[dict[str, Any]]]
     return cases, findings_by_unit
 
 
-def _build_instances(roles: dict[str, dict[str, Any]], units: dict[str, list[dict[str, Any]]],
-                     templates: dict[str, str]) -> list[dict[str, Any]]:
-    cases, findings_by_unit = _evidence_index(units)
-    instances: list[dict[str, Any]] = []
+def _build_units(roles: dict[str, dict[str, Any]],
+                 units: dict[str, list[dict[str, Any]]],
+                 edges: list[dict[str, Any]],
+                 templates: dict[str, str]) -> list[dict[str, Any]]:
+    """单元索引 —— 每个可寻址的代码实体一条记录。
 
+    **刻意不物化「Agent 实例」**：一个实例 = (单元 × 角色)，533×19 = 2071 条，
+    但绝大部分既没有观测也没有结论，字段全是占位符 —— 那是纯成本。
+    真正有意义的聚合是「这个单元该被哪些判定手段检验、现在验过没有、有没有结论」，
+    这三样都能实时算，不需要落盘。
+
+    「Agent 实例」这个概念保留在概念层：判定某单元时，(单元, 判定手段) 就是一次
+    Agent 作业；它有观测或结论时才有内容。
+    """
+    cases, findings_by_unit = _evidence_index(units)
+    centrality: dict[str, int] = defaultdict(int)
+    for e in edges:
+        centrality[e["to_agent_id"]] += int(e.get("call_count") or 1)
+
+    # 逻辑密度：只看「这个单元有多少值得测的分支/副作用/守卫」
+    logic: dict[str, dict[str, Any]] = {}
+    fn = _load("fn_declaration.json") or {}
+    for rec in fn.get("functions") or []:
+        key = f"{rec.get('class')}#{rec.get('method')}"
+        branches = int(rec.get("branch_count") or 0)
+        effects = len(rec.get("side_effects") or [])
+        guards = int(rec.get("null_guard_count") or 0)
+        logic[key] = {
+            "branches": branches, "side_effects": effects, "null_guards": guards,
+            "is_pure": bool(rec.get("is_pure")),
+            "score": branches + effects * 3 + guards + (0 if rec.get("is_pure") else 5),
+        }
+    member_logic: dict[str, dict[str, Any]] = defaultdict(
+        lambda: {"branches": 0, "side_effects": 0, "null_guards": 0,
+                 "is_pure": True, "score": 0})
+    for key, d in logic.items():
+        agg = member_logic[key.split("#")[0]]
+        for f in ("branches", "side_effects", "null_guards", "score"):
+            agg[f] += d[f]
+        agg["is_pure"] = agg["is_pure"] and d["is_pure"]
+
+    out: list[dict[str, Any]] = []
     for layer, layer_units in units.items():
-        layer_roles = [r for r in roles.values() if r["layer"] == layer]
-        if not layer_roles:
-            continue
+        layer_roles = sorted(r["role_id"] for r in roles.values() if r["layer"] == layer)
         for unit in layer_units:
             key = unit["unit_key"]
-            uid = agent_id(unit["unit_kind"], key)
             unit_cases = cases.get(key, [])
             unit_findings = findings_by_unit.get(key, []) or findings_by_unit.get(unit["symbol"], [])
-
-            obligations = []
-            for role in layer_roles:
-                violated = [f for f in unit_findings if f.get("category") == role["role_id"]]
-                positive = [f for f in unit_findings
-                            if f.get("category") == role["role_id"]
-                            and f.get("kind") == "positive"]
-                if violated:
-                    status, evidence = "violated", violated
-                elif positive:
-                    status, evidence = "satisfied", positive
-                else:
-                    status, evidence = "unknown", []
-                obligations.append({
-                    "obligation_id": f"OB-{role['role_id'].replace('.', '-')}-{key}",
-                    "statement": templates.get(role["role_id"], role["category"]),
-                    "kind": "invariant",
-                    "oracle": role.get("category"),
-                    "scope": "unit",
-                    "status": status,
-                    "source": "declared" if status != "unknown" else "declared",
-                    "gate_eligible": status != "unknown",
-                    "evidence_refs": [f["uid"] for f in evidence][:3],
-                    "confidence": max([f.get("confidence", 0) for f in evidence], default=0.0),
-                })
-
-            status = "PASS"
-            if any(o["status"] == "violated" for o in obligations):
+            violated = [f for f in unit_findings if f.get("kind") != "positive"]
+            positive = [f for f in unit_findings if f.get("kind") == "positive"]
+            if violated:
                 status = "FAIL"
-            elif any(o["status"] == "unknown" for o in obligations):
+            elif unit_cases:
+                status = "OBSERVED"
+            elif positive:
+                status = "PASS"
+            else:
                 status = "UNKNOWN"
-
-            satisfied = sum(1 for o in obligations if o["status"] == "satisfied")
-            violated_n = sum(1 for o in obligations if o["status"] == "violated")
-            unknown = sum(1 for o in obligations if o["status"] == "unknown")
-            total = len(obligations) or 1
-
-            instances.append({
-                "agent_id": uid,
-                "role_id": "",
+            lg = logic.get(key) or member_logic.get(key) or {
+                "branches": 0, "side_effects": 0, "null_guards": 0,
+                "is_pure": True, "score": 0}
+            out.append({
+                "unit_key": key,
+                "kind": unit["unit_kind"],
                 "layer": layer,
-                "unit": {
-                    "unit_kind": unit["unit_kind"],
-                    "unit_key": key,
-                    "file": unit.get("file", ""),
-                    "symbol": unit["symbol"],
-                    "line": 0,
-                },
-                "mission": {
-                    "statement": f"{unit['symbol']} 需要满足 {layer} 层的判定要求",
-                    "source": "derived",
-                    "confidence": 0.5,
-                    "gate_eligible": True,
-                    "obligations": obligations,
-                },
-                "static_life": {
-                    "carrier_id": "",
-                    "facts": unit["facts"],
-                    "contract_fingerprint": _sha(unit["facts"]),
-                    "blind_to": [],
-                },
-                "dynamic_life": {
-                    "fidelity": "unknown",
-                    "exercised": bool(unit_cases),
-                    "cases": [{"case_id": c["id"], "verdict": c["verdict"],
-                               "invariant": c.get("invariant", "")}
-                              for c in unit_cases[:20]],
-                    "behavior_fingerprint": _sha([c["verdict"] for c in unit_cases]),
-                },
-                "relations": {"in_edges": [], "out_edges": []},
-                "conclusions": {
-                    "agent_status": status,
-                    "fulfillment": {"satisfied": satisfied, "violated": violated_n,
-                                    "unknown": unknown, "total": total,
-                                    "ratio": round(satisfied / total, 3)},
-                    "coverage": {"exercised": len(unit_cases), "total": total,
-                                 "ratio": round(len(unit_cases) / total, 3)},
-                    "finding_ids": [f["uid"] for f in unit_findings][:10],
-                    "root_cause_keys": sorted({f.get("root_cause_key", "") for f in unit_findings}),
-                    "owner_layer": layer,
-                },
-                "state": {"status": "fresh", "stale_reason": None,
-                          "baseline_key": f"{uid}@{_sha(unit['facts'])}"},
+                "class": unit.get("class", ""),
+                "symbol": unit["symbol"],
+                "file": unit.get("file", ""),
+                "role_count": len(layer_roles),
+                "centrality": centrality.get(agent_id(unit["unit_kind"], key), 0),
+                "logic": lg,
+                "priority": centrality.get(agent_id(unit["unit_kind"], key), 0) * (1 + lg["score"]),
+                "status": status,
+                "observations": len(unit_cases),
+                "case_ids": [c["id"] for c in unit_cases][:20],
+                "finding_ids": [f["uid"] for f in unit_findings][:20],
+                "root_cause_keys": sorted({f.get("root_cause_key", "") for f in unit_findings
+                                           if f.get("root_cause_key")}),
+                "obligation_template": templates.get(layer_roles[0], "") if layer_roles else "",
+                "obligation_source_layer": layer,
             })
-    return instances
+    return out
 
 
 def main() -> None:
@@ -342,66 +325,43 @@ def main() -> None:
     roles = _roles(categories)
     units = _units()
     edges = _edges(units)
-    instances = _build_instances(roles, units, templates)
-
-    # 给每个 role 各实例化一份（role × unit）
-    expanded: list[dict[str, Any]] = []
-    for inst in instances:
-        for role in roles.values():
-            if role["layer"] != inst["layer"]:
-                continue
-            clone = json.loads(json.dumps(inst, ensure_ascii=False))
-            clone["role_id"] = role["role_id"]
-            clone["mission"]["obligations"] = [
-                o for o in inst["mission"]["obligations"]
-                if o["obligation_id"].startswith(f"OB-{role['role_id'].replace('.', '-')}-")
-            ]
-            clone["static_life"]["carrier_id"] = role["carrier"]
-            clone["dynamic_life"]["fidelity"] = role["fidelity"]
-            expanded.append(clone)
-
-    # 关系回填
-    by_id = {i["agent_id"] + "|" + i["role_id"]: i for i in expanded}
-    for e in edges:
-        for inst in expanded:
-            if inst["agent_id"] == e["from_agent_id"]:
-                inst["relations"]["out_edges"].append(e["edge_id"])
-            if inst["agent_id"] == e["to_agent_id"]:
-                inst["relations"]["in_edges"].append(e["edge_id"])
+    unit_records = _build_units(roles, units, edges, templates)
 
     problems: list[str] = []
-    for inst in expanded:
-        for p in validate_agent(inst):
-            problems.append(f"{inst['agent_id']}|{inst['role_id']}: {p}")
+    for u in unit_records:
+        if not u["unit_key"] or not u["role_count"]:
+            problems.append(f"{u.get('unit_key')}: 单元缺少 unit_key 或 roles")
     for e in edges:
         for p in validate_edge(e):
             problems.append(f"{e['edge_id']}: {p}")
 
     payload = {
-        "schema_version": 1,
+        "schema_version": 2,
         "repo_id": target.get("target", ""),
         "roles": list(roles.values()),
+        "layer_roles": {lay: sorted(r["role_id"] for r in roles.values() if r["layer"] == lay)
+                        for lay in {r["layer"] for r in roles.values()}},
         "counts": {
-            "units": len(units.get("function", [])) + len(units.get("file", []))
-                     + len(units.get("class", [])) + len(units.get("service", []))
-                     + len(units.get("integration", [])),
+            "units": len(unit_records),
             "roles": len(roles),
-            "agents": len(expanded),
             "edges": len(edges),
             "edges_unresolved": sum(1 for e in edges if e["resolution"] == "unknown"),
+            "units_with_observations": sum(1 for u in unit_records if u["observations"]),
+            "units_with_findings": sum(1 for u in unit_records if u["finding_ids"]),
         },
-        "agents": expanded,
+        "units": unit_records,
     }
-    (PROJECT_DIR / "agents.json").write_text(
+    (PROJECT_DIR / "units.json").write_text(
         json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     (PROJECT_DIR / "edges.json").write_text(
         json.dumps({"schema_version": 1, "edges": edges}, ensure_ascii=False, indent=2),
         encoding="utf-8")
 
     c = payload["counts"]
-    print(f"Agent 群 -> {PROJECT_DIR / 'agents.json'}")
-    print(f"  单元 {c['units']} / 角色 {c['roles']} / Agent 实例 {c['agents']} / 边 {c['edges']}"
+    print(f"单元索引 -> {PROJECT_DIR / 'units.json'}")
+    print(f"  单元 {c['units']} / 角色 {c['roles']} / 边 {c['edges']}"
           f"（未解析边 {c['edges_unresolved']}）")
+    print(f"  有动态观测的单元 {c['units_with_observations']} / 有结论的 {c['units_with_findings']}")
     if problems:
         print(f"  契约违规 {len(problems)} 条：")
         for p in problems[:10]:

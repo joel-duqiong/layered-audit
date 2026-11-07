@@ -259,8 +259,8 @@
     "resolved_ratio": 0.1485,
     "upper_bound_ratio": 0.1485,
     "affected_by_layer": {
-      "function": 296,
-      "file": 15
+      "function": 74,
+      "file": 5
     },
     "affected_root_causes": 4
   },
@@ -277,11 +277,11 @@
     "file:com.jiuyan.banquet.controller.OrderController": [
       "type_use/static/semantic @file:com.jiuyan.banquet.service.OrderService"
     ],
-    "fn:com.jiuyan.banquet.controller.OrderController#list": [
-      "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#list"
-    ],
     "fn:com.jiuyan.banquet.controller.OrderController#get": [
       "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#get"
+    ],
+    "fn:com.jiuyan.banquet.controller.OrderController#list": [
+      "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#list"
     ],
     "fn:com.jiuyan.banquet.controller.OrderController#update": [
       "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#update"

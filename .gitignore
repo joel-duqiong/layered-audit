@@ -9,6 +9,7 @@ pilot/*_diff.json
 pilot/*_contract.json
 pilot/file_deps.txt
 pilot/perf_load.json
+pilot/agents.json
 pilot/openapi.json
 __pycache__/
 pilot/__pycache__/

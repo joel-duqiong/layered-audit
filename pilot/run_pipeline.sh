@@ -35,29 +35,13 @@ python3 integration_dynamic.py
 python3 integration_reconcile.py
 python3 integration_chain.py
 python3 integration_diff.py
-echo "=== 负载实测（端到端延迟曲线 + 分页 total 开销）==="
-python3 perf_load.py --scales "${PERF_SCALES:-0,2000,10000,50000}" --rounds "${PERF_ROUNDS:-10}"
 echo "=== 清理 ==="
 ./cleanup.sh
-echo "=== 函数层 numeric 性质探针（property_based_test）==="
-python3 numeric_props.py
-echo "=== 服务层并发与重复写探针（concurrency_test / chaos_experiment）==="
-python3 concurrency_props.py
-echo "=== ORM 查询放大探针（N+1，第二实例开 Hibernate 统计）==="
-python3 orm_query_probe.py
-echo "=== 配置失败模式探针（克隆实例改配置观察行为）==="
-python3 config_probe.py
-echo "=== 变异测试（改坏被测代码，看 oracle 抓不抓得住）==="
-python3 mutation_test.py
-echo "=== 切面生效性探针（静态声明 vs 运行时事务拦截器，差分出单）==="
-python3 transaction_probe.py
-echo "=== 业务不变式探针（声明式不变量 → 造场景 → 判定）==="
-python3 business_probe.py
-echo "=== Java/Spring 特性扫描（切面/DI/RPC/动态配置/JPA）==="
-python3 java_feature_scan.py
 echo "=== 引擎自检（通用引擎不许写回项目专属的东西 + 换绑定可跑）==="
 python3 engine/check_engine_purity.py
 ./test_portability.sh
+echo "=== 探针作业调度（按 max_agents 闸门分轮 admit，产物并集合并）==="
+python3 engine/scheduler.py
 echo "=== Agent 群构建 + 变更影响分析（改一处只动受影响的部分）==="
 python3 engine/build_agent_graph.py
 python3 engine/change_impact.py

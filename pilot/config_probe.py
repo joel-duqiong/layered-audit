@@ -49,30 +49,47 @@ def upload_probe(base: str) -> dict[str, Any]:
     return {"status": resp.status_code, "body": body, "path_leaks": leaks}
 
 
+VARIANTS = ("cors_empty", "cors_star", "upload_dir_bad", "upload_dir_broken", "upload_relative")
+
+
 def main() -> None:
+    import argparse
+    parser = argparse.ArgumentParser(description="配置失败模式探针")
+    parser.add_argument("--only", action="append", default=[], metavar="VARIANT",
+                        help="只跑指定的配置变体（可重复）")
+    args = parser.parse_args()
+    only = set(args.only) or set(VARIANTS)
+    unknown = sorted(only - set(VARIANTS))
+    if unknown:
+        raise SystemExit(f"未知配置变体: {unknown}；可用: {list(VARIANTS)}")
+
     probes: dict[str, Any] = {}
     findings: list[dict[str, Any]] = []
 
     # --- CORS 白名单为空 ---
-    with ProbeInstance("jiuyan-cfg-empty-cors",
-                       {"CORS_ALLOWED_ORIGINS": ""}) as inst:
-        probes["cors_empty"] = cors_probe(inst.base)
+    if "cors_empty" in only:
+        with ProbeInstance("jiuyan-cfg-empty-cors",
+                           {"CORS_ALLOWED_ORIGINS": ""}) as inst:
+            probes["cors_empty"] = cors_probe(inst.base)
     # --- CORS 白名单为 * ---
-    with ProbeInstance("jiuyan-cfg-star-cors",
-                       {"CORS_ALLOWED_ORIGINS": "*"}) as inst:
-        probes["cors_star"] = cors_probe(inst.base)
+    if "cors_star" in only:
+        with ProbeInstance("jiuyan-cfg-star-cors",
+                           {"CORS_ALLOWED_ORIGINS": "*"}) as inst:
+            probes["cors_star"] = cors_probe(inst.base)
     # --- 上传目录配成不可用的路径：应用还能起来吗 ---
-    try:
-        with ProbeInstance("jiuyan-cfg-bad-upload-dir",
-                           {"FILE_UPLOAD_DIR": "/proc/self/nonexistent-dir"}) as inst:
-            probes["upload_dir_bad"] = upload_probe(inst.base)
-    except RuntimeError as exc:
-        probes["upload_dir_bad"] = {"started": False, "error": str(exc)}
-        # 实例起不来时它已经自己收尾了，这里再确认一次没有残留
-        subprocess.run(["docker", "rm", "-f", "jiuyan-cfg-bad-upload-dir"], check=False)
+    if "upload_dir_bad" in only:
+        try:
+            with ProbeInstance("jiuyan-cfg-bad-upload-dir",
+                               {"FILE_UPLOAD_DIR": "/proc/self/nonexistent-dir"}) as inst:
+                probes["upload_dir_bad"] = upload_probe(inst.base)
+        except RuntimeError as exc:
+            probes["upload_dir_bad"] = {"started": False, "error": str(exc)}
+            # 实例起不来时它已经自己收尾了，这里再确认一次没有残留
+            subprocess.run(["docker", "rm", "-f", "jiuyan-cfg-bad-upload-dir"], check=False)
 
     # --- 上传目录先可用、跑起来后再破坏掉：看上传接口的错误响应会不会泄露路径 ---
-    with ProbeInstance("jiuyan-cfg-broken-upload-dir") as inst:
+    if "upload_dir_broken" in only:
+      with ProbeInstance("jiuyan-cfg-broken-upload-dir") as inst:
         upload_dir = f"/tmp/{inst.name}-uploads"
         # 把 products 目录换成一个普通文件 -> Files.createDirectories 必然失败
         subprocess.run(["docker", "exec", inst.name, "rm", "-rf", f"{upload_dir}/products"],
@@ -82,12 +99,13 @@ def main() -> None:
         probes["upload_dir_broken"] = upload_probe(inst.base)
 
     # --- 上传目录是相对路径 ---
-    with ProbeInstance("jiuyan-cfg-relative-upload-dir",
-                       {"FILE_UPLOAD_DIR": "relative-uploads"}) as inst:
-        probes["upload_relative"] = upload_probe(inst.base)
+    if "upload_relative" in only:
+        with ProbeInstance("jiuyan-cfg-relative-upload-dir",
+                           {"FILE_UPLOAD_DIR": "relative-uploads"}) as inst:
+            probes["upload_relative"] = upload_probe(inst.base)
 
-    star = probes["cors_star"]
-    empty = probes["cors_empty"]
+    star = probes.get("cors_star") or {}
+    empty = probes.get("cors_empty") or {}
     if empty.get("allow_origin") is not None:
         findings.append({
             "id": "CFG-CORS-EMPTY-ALLOWS-ANY-ORIGIN",
@@ -146,7 +164,7 @@ def main() -> None:
             "evidence": {"probe": bad},
         })
     up = probes.get("upload_dir_broken") or {}
-    if not up.get("path_leaks") and up.get("status"):
+    if up.get("status") and not up.get("path_leaks"):
         findings.append({
             "id": "CFG-UPLOAD-ERROR-NO-PATH-LEAK",
             "severity": "INFO",
@@ -178,7 +196,10 @@ def main() -> None:
         })
 
     payload = {"service": findings, "probes": probes}
-    OUT.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    # 单变体运行时写到独立文件，由调度器做并集合并（并集不缩集）
+    target = OUT if not args.only else OUT.with_name(
+        OUT.stem + "." + "_".join(sorted(only)) + ".json")
+    target.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"配置失败模式探针 -> {OUT}  {len(findings)} 条发现")
     for k, v in probes.items():
         print(f"  {k}: {json.dumps(v, ensure_ascii=False)[:150]}")

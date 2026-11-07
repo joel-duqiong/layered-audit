@@ -88,10 +88,21 @@ attribution:
     - {name: "缓存不一致并发下暴露",   layers: [class, service], owner: class, note: "owner 取不变式被破坏的层,不是症状显现的层"}
 
 agents:
-  total: 9
+  # 角色数 = 层契约里 category 的总数（每种 category 是一种判定角色的绑定）。
+  # 最初写 9 是按层分的粗估，实测类别数 19 —— 数字本身不重要，
+  # 重要的是「角色」指判定手段的绑定，不是代码单元。
+  total_roles: 19
   constraint:
+    # 一轮最多 admit 多少个「判定作业」。**不是 Agent 实例总数** ——
+    # 实例数随代码规模线性增长（533 单元 × 21 角色 = 2071），
+    # 限制总数等于限制系统规模，没意义。
+    # 语义：每轮同时进行的作业数上限，被挤掉的进 deferred 队列（报告里显式列出）。
     max_agents: 12
+    # 每轮 token 预算。**只约束将来的模型轨**；确定性轨 token 恒为 0，不受它约束。
+    # 这条边界必须写死，否则预算一开就会把确定性工作也卡掉。
     max_tokens_per_round: 2000000
+    # 一轮内的多样性来源：先按绑定的 oracle 各保一个最高优先作业，再按优先级填满。
+    # 契约里有 15 种 oracle > 12 个槽位 —— 这是有意的，逼出跨轮轮转。
     diversity_source: bound_oracle
   by_layer:
     - {layer: function, count: 1, note: "单元内问题可确定性判定,无需多 agent"}

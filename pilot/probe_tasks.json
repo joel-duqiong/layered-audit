@@ -1,0 +1,160 @@
+{
+  "note": "探针作业目录 —— 一个 task = 一次判定作业（对某单元用某种判定手段）。调度器按 max_agents 闸门分轮 admit。",
+  "tasks": [
+    {
+      "task_id": "perf-load-sweep",
+      "script": "perf_load.py",
+      "oracle": "load_test",
+      "layer": "service",
+      "argv": [
+        "--scales",
+        "0,2000,10000,50000"
+      ],
+      "priority": 90
+    },
+    {
+      "task_id": "numeric-props",
+      "script": "numeric_props.py",
+      "oracle": "property_based_test",
+      "layer": "function",
+      "argv": [],
+      "priority": 85
+    },
+    {
+      "task_id": "concurrency-props",
+      "script": "concurrency_props.py",
+      "oracle": "concurrency_test",
+      "layer": "service",
+      "argv": [],
+      "priority": 88
+    },
+    {
+      "task_id": "business-props",
+      "script": "business_probe.py",
+      "oracle": "property_based_test",
+      "layer": "service",
+      "argv": [],
+      "priority": 92
+    },
+    {
+      "task_id": "mutation-MUT-ADD-PRICE-UPPER-BOUND",
+      "script": "mutation_test.py",
+      "oracle": "mutation_test",
+      "layer": "function",
+      "argv": [
+        "--only",
+        "MUT-ADD-PRICE-UPPER-BOUND"
+      ],
+      "priority": 70
+    },
+    {
+      "task_id": "mutation-MUT-DROP-NEGATIVE-PRICE-GUARD",
+      "script": "mutation_test.py",
+      "oracle": "mutation_test",
+      "layer": "function",
+      "argv": [
+        "--only",
+        "MUT-DROP-NEGATIVE-PRICE-GUARD"
+      ],
+      "priority": 71
+    },
+    {
+      "task_id": "mutation-MUT-DROP-DUPLICATE-ITEM-GUARD",
+      "script": "mutation_test.py",
+      "oracle": "mutation_test",
+      "layer": "function",
+      "argv": [
+        "--only",
+        "MUT-DROP-DUPLICATE-ITEM-GUARD"
+      ],
+      "priority": 72
+    },
+    {
+      "task_id": "config-cors-empty",
+      "script": "config_probe.py",
+      "oracle": "chaos_experiment",
+      "layer": "service",
+      "argv": [
+        "--only",
+        "cors_empty"
+      ],
+      "priority": 80
+    },
+    {
+      "task_id": "config-cors-star",
+      "script": "config_probe.py",
+      "oracle": "chaos_experiment",
+      "layer": "service",
+      "argv": [
+        "--only",
+        "cors_star"
+      ],
+      "priority": 79
+    },
+    {
+      "task_id": "config-upload-dir-bad",
+      "script": "config_probe.py",
+      "oracle": "chaos_experiment",
+      "layer": "service",
+      "argv": [
+        "--only",
+        "upload_dir_bad"
+      ],
+      "priority": 60
+    },
+    {
+      "task_id": "config-upload-dir-broken",
+      "script": "config_probe.py",
+      "oracle": "chaos_experiment",
+      "layer": "service",
+      "argv": [
+        "--only",
+        "upload_dir_broken"
+      ],
+      "priority": 61
+    },
+    {
+      "task_id": "config-upload-relative",
+      "script": "config_probe.py",
+      "oracle": "chaos_experiment",
+      "layer": "service",
+      "argv": [
+        "--only",
+        "upload_relative"
+      ],
+      "priority": 58
+    },
+    {
+      "task_id": "transaction-effectiveness",
+      "script": "transaction_probe.py",
+      "oracle": "trace_analysis",
+      "layer": "service",
+      "argv": [],
+      "priority": 95
+    },
+    {
+      "task_id": "java-feature-scan",
+      "script": "java_feature_scan.py",
+      "oracle": "static_analysis",
+      "layer": "class",
+      "argv": [],
+      "priority": 82
+    },
+    {
+      "task_id": "emergence-graph",
+      "script": "emergence_graph.py",
+      "oracle": "graph_correlation",
+      "layer": "integration",
+      "argv": [],
+      "priority": 87
+    },
+    {
+      "task_id": "orm-query-amplification",
+      "script": "orm_query_probe.py",
+      "oracle": "load_test",
+      "layer": "service",
+      "argv": [],
+      "priority": 76
+    }
+  ]
+}

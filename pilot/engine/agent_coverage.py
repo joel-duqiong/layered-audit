@@ -22,7 +22,7 @@ PROJECT_DIR = findings_schema.target_path().parent
 
 
 def build() -> dict[str, Any]:
-    agents = json.loads((PROJECT_DIR / "agents.json").read_text(encoding="utf-8"))
+    graph = json.loads((PROJECT_DIR / "units.json").read_text(encoding="utf-8"))
     edges = json.loads((PROJECT_DIR / "edges.json").read_text(encoding="utf-8"))["edges"]
     rcs = json.loads((PROJECT_DIR / "root_causes.json").read_text(encoding="utf-8"))
 
@@ -32,43 +32,33 @@ def build() -> dict[str, Any]:
         centrality[e["to_agent_id"]] += int(e.get("call_count") or 1)
 
     by_unit: dict[str, dict[str, Any]] = {}
-    for a in agents["agents"]:
-        key = a["unit"]["unit_key"]
-        rec = by_unit.setdefault(key, {
-            "unit_key": key,
-            "layer": a["layer"],
-            "symbol": a["unit"].get("symbol", ""),
-            "centrality": 0,
-            "agents": 0,
-            "status": "UNKNOWN",
-            "obligations": {"satisfied": 0, "violated": 0, "unknown": 0},
-            "cases": 0,
-            "root_causes": set(),
-        })
-        rec["agents"] += 1
-        rec["centrality"] = max(rec["centrality"], centrality.get(a["agent_id"], 0))
-        rec["cases"] += len(a["dynamic_life"].get("cases") or [])
-        for ob in a["mission"]["obligations"]:
-            rec["obligations"][ob["status"]] = rec["obligations"].get(ob["status"], 0) + 1
-            if ob["status"] == "violated":
-                rec["status"] = "FAIL"
-        if rec["status"] != "FAIL":
-            if all(ob["status"] != "unknown" for ob in a["mission"]["obligations"]):
-                rec["status"] = "PASS"
-            elif a["dynamic_life"].get("exercised"):
-                # 有动态观测，但还有义务没被判定 —— 不等于「没问题」，也不等于「没查」
-                rec["status"] = "OBSERVED"
-            else:
-                rec["status"] = "UNKNOWN"
-        for k in a["conclusions"].get("root_cause_keys") or []:
-            if k:
-                rec["root_causes"].add(k)
+    for u in graph["units"]:
+        by_unit[u["unit_key"]] = {
+            "unit_key": u["unit_key"],
+            "layer": u["layer"],
+            "symbol": u["symbol"],
+            "centrality": u["centrality"],
+            "logic": u["logic"],
+            "priority": u["priority"],
+            "status": u["status"],
+            "observations": u["observations"],
+            "agents": u["role_count"],
+            # 义务三值：该单元有 role_count 条义务；有结论的是 satisfied/violated，
+            # 其余 unknown（没被任何判定手段验过）。没被验过 ≠ 满足。
+            "obligations": {
+                "satisfied": 0,
+                "violated": len(u["root_cause_keys"]),
+                "unknown": max(0, u["role_count"] - len(u["root_cause_keys"])),
+            },
+            "cases": u["observations"],
+            "root_causes": u["root_cause_keys"],
+        }
 
     units = list(by_unit.values())
     for u in units:
         u["root_causes"] = sorted(u["root_causes"])
 
-    # 逻辑密度：只看「这个单元有多少值得测的分支/副作用/守卫」。
+
     # 没有这一步，排序会被 Lombok 生成的 getter 刷屏 —— 中心性高但零分支零副作用，
     # 测它没有意义。优先级 = 中心性 × 逻辑密度。
     density: dict[str, dict[str, Any]] = {}

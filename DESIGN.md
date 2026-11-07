@@ -504,11 +504,12 @@ features:
 
 | 来源 | 主题 | 核心结论 | 落地 |
 |---|---|---|---|
-| Agent 1 | Agent 群架构 | unit/role/instance 三级；Agent = 确定性执行体 + 作用域参数化 | ✅ `engine/agent_schema.py`、`build_agent_graph.py` |
+| Agent 1 | Agent 群架构 | unit/role/instance 三级；Agent = 确定性执行体 + 作用域参数化 | 🟡 **部分采纳**：三级分离保留；**物化 2071 个实例被砍**（95% 占位符，8.4 MB → `units.json` 398 KB）→ `engine/agent_schema.py`、`build_agent_graph.py` |
 | Agent 2 | 涌现检测 | （见 §4） | ⏳ |
-| Agent 3 | 增量与调度 | （见 §5） | 🟡 影响分析 ✅ / 调度 ⏳ |
+| Agent 3 | 增量与调度 | （见 §5）；它指出的两个既有缺陷是真的 | 🟡 影响分析 ✅ / 调度 ⏳；**两个 bug 已修**（`unit.file` 全空、`row_gone` 判绿吞回归） |
 | Agent 4 | 语义地图与双轨 | 职责 = 可执行断言；双轨两个准入等级 | ⏳（设计已定） |
-| Agent 5 | Java 特性矩阵 | （见 §6） | ⏳ |
+| Agent 5 | Java 特性矩阵 | （见 §6）；它指出我的自调用检测有真盲区 | 🟡 **已采纳并修**：自调用漏检 11 处 → 8 处命中；事务生效性探针已做 |
+| Agent 6 | 幻觉治理 | 模型只选模板填槽位；极性翻转最危险；triage 三段差分 | 🏗️ 变异测试已落地（极性/绑定脆弱性已有可测机制） |
 | Agent 6 | 幻觉治理 | 模型只选模板填槽位；极性翻转是最危险幻觉；triage 三段差分 | 🏗️ 已落地：变异测试 `mutation_test.py` |
 
 ### 已落地的验证结果

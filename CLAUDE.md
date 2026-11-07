@@ -58,7 +58,8 @@
 
 | 块 | 状态 | 位置 |
 |---|---|---|
-| **Agent 群骨架** | ✅ unit / role / instance 三级分离，533 单元 / 21 角色 / **2071 个 Agent 实例** / 786 条边，契约违规 0 | `pilot/engine/agent_schema.py`、`build_agent_graph.py` → `agents.json` / `edges.json` |
+| **Agent 群骨架** | ✅ unit / role / instance 三级分离，533 单元 / 21 角色 / 786 条边，契约违规 0 | `pilot/engine/agent_schema.py`、`build_agent_graph.py` → `units.json` / `edges.json` |
+| **执行预算闸门** | ✅ `max_agents: 12` 第一次被真正消费（分轮 admit + oracle 多样性保底 + 产物并集合并） | `pilot/engine/budget.py`、`scheduler.py` → `schedule_report.json` |
 | **变更影响分析** | ✅ git diff → 类名匹配 → 沿入边传播（深度 3）→ 受影响 Agent 集合；区分「解析出的」与「保守上界」 | `pilot/engine/change_impact.py` → `change_impact.json` |
 | **盲区地图** | ✅ 按中心性排序的「最该先验的单元」 | `pilot/engine/agent_coverage.py` → `agent_coverage.json` |
 | **变异测试** | ✅ `ground_truth=mutant_survivor` 从没人实现过 → 现在有真实数据 | `pilot/mutation_test.py` → `mutation_findings.json` |
@@ -160,7 +161,8 @@ python3 engine/check_engine_purity.py   # 引擎纯净度守卫（退出码 1 = 
   A5 盲区地图（投测试的优先级）      ✅ engine/agent_coverage.py
   A6 可执行依赖图 G_exec             ✅ emergence_graph.py（25/25 入口绑定）
   A7 切面生效性差分                  ✅ transaction_probe.py
-  A8 按影响集调度（没波及就复用）     ⬜ 各层脚本加 --scope
+  A8 预算闸门（max_agents 真消费）   ✅ engine/budget.py + scheduler.py
+  A8' 按影响集调度（没波及就复用）    ⬜ 各层脚本加 --scope
   A9 候选链生成 + 枢纽排序 + FDR 门禁 ⬜ emergence_chain.py + emergence_gate.py
 阶段 2（引模型，双轨）
   B1 语义地图：职责 → 可验证断言    ⬜ 模型只出断言草案，确定性层判定
@@ -189,12 +191,30 @@ python3 engine/check_engine_purity.py   # 引擎纯净度守卫（退出码 1 = 
 | **D6** | **拓扑序 = 理解顺序**（「A depends_on B」意味着 B 先被理解） | 有出处的成熟做法（CodeWiki, ACL 2026 Findings） | 待落：组级委派 |
 | **D7** | **涌现的可判定性比完备性更重要** | 门禁只能建立在可复现的结论上；宁可只报 5 条经人工确认的，不要 200 条不可复现的候选 | 待落：`detect_emergence.py` |
 | **D8** | **exit code 要有第三态**：0 绿 / 1 红 / 2 **没查完** | 「没查完」必须与「查了没问题」区分开，否则覆盖度矩阵会骗人 | ✅ 已落（门禁：`row_gone` 判 INCOMPLETE、退出码 2、拒绝 `--accept`） |
+| **D13** | **`max_agents: 12` = 一轮 admit 的判定作业数上限**（不是 Agent 实例总数） | 实例总数随代码规模线性增长（533×21=2071），限制总数等于限制系统规模；且契约里 `max_tokens_per_round` 明确是「每轮」，两者必须同族才自洽 | ✅ 已落：`engine/budget.py` + `scheduler.py`，分轮 admit + oracle 多样性保底 + 产物并集合并；`layers.yaml` 已写明语义 |
+| **D14** | **token 预算只约束模型轨，确定性轨不受约束** | 否则预算一开就把确定性工作也卡掉 | ✅ 已落（`BudgetLedger` 里确定性轨 token 恒为 0） |
 | **D11** | **判定层永远全量跑，探测层才做增量** | diff/归一化/聚合/门禁都是纯函数，秒级；只有有副作用、昂贵、产证据的探测层才值得增量 | ✅ 决议已定，落点在 `DESIGN.md` §5.3 |
 | **D12** | **产物合并是并集，永不缩集** | 少一个分片 = 退出码 2（没查完），不是 0。这是门禁红/绿语义不被增量破坏的唯一保证 | ✅ 决议已定 + 门禁已实现第三态 |
 | **D9** | **模型通道的可复现性靠内容哈希缓存，不靠 temperature/seed** | 本环境的模型通道是 subagent，拿不到 temperature/seed；同 `cache_key` 二次调用必须命中缓存、禁止重采样 | 记录：账本降级为 (brief_hash, model_id, response_hash) |
 | **D10** | **classpath 覆盖可行** → 变异测试证明力完整 | `fn_dynamic` 的 classpath 是 `[harness, CLASSES, deps]`，变异目录插到最前即可 | ✅ 已实现 `mutation_test.py` |
 
-## 9. 进度更新约定
+## 9. 我砍掉了什么（独立判断记录）
+
+> 用户提醒过：「不要被之前的方案束缚，要有自己独立判断」。
+> 这份记录是**我自己的取舍**，不是 Agent 的设计 —— 下一个人可以推翻，但要给理由。
+
+| 砍掉 / 降级 | 理由 |
+|---|---|
+| **物化 2071 个 Agent 实例**（`agents.json` 8.4 MB） | 实测 95% 以上是占位符：mission.statement 非占位 **0** 条、义务 satisfied **0** 条、state 非 fresh **0** 条。**没人消费它**。改成 `units.json`（533 条轻单元，398 KB）+ 覆盖度按需实时算。行为等价、体积 21×↓ |
+| 涌现的**七种裁决式** | 设计完整，但当前只有 5 条手写链，判定式跑不出更多结论 —— 先不实现，等候选链生成器先出来 |
+| 跨仓库 Agent 群 | **没有第二个仓库**。没有真实目标就写跨仓库实现 = 空转 |
+| token 预算 / 递归委派 / 语义地图 | 都依赖模型，而模型**还没接**。先把确定性层做厚 |
+| 剩下 3 个零覆盖类别 | 这个项目本身没有那些面（函数太简单 / 继承只有一层 / 无缓存无消息队列）。**查不出东西是事实，不是不作为** |
+
+**保留的**（每个都产出了可用的数字或真判定）：
+Agent 群骨架、变更影响、盲区地图、变异测试、切面生效性、可执行依赖图、残留守卫、预算闸门。
+
+## 10. 进度更新约定
 
 每完成一块，**同时更新**：`CLAUDE.md` §3 的进度表与数字 → `HANDOFF.md` §11/§14 →
 `pilot/jiuyan-layer-manifest.yaml` 的 `cross_layer` 段 → 提交（带 Co-Authored-By）。

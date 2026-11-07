@@ -24,6 +24,7 @@ from pathlib import Path
 from typing import Any
 
 import findings_schema
+from agent_schema import agent_id
 
 PROJECT_DIR = findings_schema.target_path().parent
 
@@ -60,30 +61,24 @@ def build() -> dict[str, Any]:
     base = sut.get("git_base", "HEAD~1")
     depth = int(sut.get("impact_depth", 3))
 
-    agents = json.loads((PROJECT_DIR / "agents.json").read_text(encoding="utf-8"))
+    graph = json.loads((PROJECT_DIR / "units.json").read_text(encoding="utf-8"))
     edges = json.loads((PROJECT_DIR / "edges.json").read_text(encoding="utf-8"))["edges"]
 
     files = changed_files(repo, base)
 
-    # 文件 -> 受影响单元（函数层单元没有 file 字段，用类名反查文件单元）
-    file_units = {u["unit"]["unit_key"]: u for u in agents["agents"] if u["layer"] == "file"}
-    class_to_file = {k: v["unit"].get("file", "") for k, v in file_units.items()}
-    unit_to_file: dict[str, str] = {}
-    for u in agents["agents"]:
-        if u["layer"] != "function":
-            continue
-        cls = u["unit"]["unit_key"].split("#")[0]
-        unit_to_file[u["agent_id"]] = class_to_file.get(cls, "")
+    # 单元 -> agent_id（与边表对齐）
+    unit_agents = {u["unit_key"]: agent_id(u["kind"], u["unit_key"]) for u in graph["units"]}
+    unit_by_agent = {v: k for k, v in unit_agents.items()}
 
     # 改动文件 -> 类名（简单名）。路径口径不一致（仓库相对 vs 包相对），
     # 用类名匹配最稳：一次改名会同时改两边，但类名通常不变。
     changed_types = {Path(cf).stem for cf in files if cf.endswith(".java")}
     changed_units: set[str] = set()
-    for u in agents["agents"]:
-        cls = u["unit"]["unit_key"].split("#")[0]
+    for u in graph["units"]:
+        cls = u["unit_key"].split("#")[0]
         simple = cls.rsplit(".", 1)[-1]
         if simple in changed_types:
-            changed_units.add(u["agent_id"])
+            changed_units.add(unit_agents[u["unit_key"]])
 
     # 反向边：被调方 -> 调用方
     in_edges: dict[str, list[dict[str, Any]]] = defaultdict(list)
@@ -113,19 +108,20 @@ def build() -> dict[str, Any]:
     # 受影响的根因（按 unit 归属）
     rc = json.loads((PROJECT_DIR / "root_causes.json").read_text(encoding="utf-8"))
     agent_root_causes: dict[str, set[str]] = defaultdict(set)
-    for a in agents["agents"]:
-        for key in a["conclusions"].get("root_cause_keys") or []:
+    for u in graph["units"]:
+        for key in u.get("root_cause_keys") or []:
             if key:
-                agent_root_causes[key].add(a["agent_id"])
+                agent_root_causes[key].add(unit_agents[u["unit_key"]])
     affected_rc = sorted(k for k, agents_of in agent_root_causes.items()
                          if agents_of & (upper))
 
     by_layer: dict[str, int] = defaultdict(int)
-    for a in agents["agents"]:
-        if a["agent_id"] in upper:
-            by_layer[a["layer"]] += 1
+    layer_of = {unit_agents[u["unit_key"]]: u["layer"] for u in graph["units"]}
+    for a in upper:
+        if a in layer_of:
+            by_layer[layer_of[a]] += 1
 
-    total_agents = len({a["agent_id"] for a in agents["agents"]})
+    total_agents = len(unit_agents)
     return {
         "base": base,
         "diff_range": diff_range(base),

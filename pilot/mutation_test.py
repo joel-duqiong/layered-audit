@@ -146,6 +146,12 @@ def _observation_signature(obs: dict[str, Any]) -> str:
 
 
 def main() -> None:
+    import argparse
+    parser = argparse.ArgumentParser(description="变异测试")
+    parser.add_argument("--only", action="append", default=[], metavar="MUTANT_ID",
+                        help="只跑指定的变异（可重复）")
+    args = parser.parse_args()
+
     global SUT_SRC
     sut = json.loads((HERE / "target.json").read_text(encoding="utf-8"))
     backend = Path(sut["sut"]["repo"]) / "backend"
@@ -166,7 +172,10 @@ def main() -> None:
         base_verdict[c["id"]] = (ok, why)
 
     results: list[dict[str, Any]] = []
+    wanted = set(args.only)
     for mut in _mutants():
+        if wanted and mut["id"] not in wanted:
+            continue
         with tempfile.TemporaryDirectory(prefix="jiuyan_mut_") as td:
             work = Path(td)
             classes = _compile_mutant(mut, work)
@@ -246,7 +255,9 @@ def main() -> None:
         })
 
     payload = {"function": findings, "mutants": results}
-    OUT.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    target = OUT if not args.only else OUT.with_name(
+        OUT.stem + "." + "_".join(sorted(wanted)) + ".json")
+    target.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"变异测试 -> {OUT}")
     for r in results:
         if r.get("status") == "OK":
