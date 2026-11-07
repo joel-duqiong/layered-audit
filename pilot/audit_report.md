@@ -2,29 +2,29 @@
 
 生成物：/Users/june/.cc-weixin/workspace/layered-audit/pilot/root_causes.json　输入：/Users/june/.cc-weixin/workspace/layered-audit/pilot/all_findings.json
 
-- 发现 91 条 → 根因 70 条（归并 21 条）
+- 发现 93 条 → 根因 70 条（归并 23 条）
 - 硬违规 1 条；契约缺口（无法归类）9 条
 
 ## 一、修复顺序（按根因）
 
 | # | 严重度 | 归属层 | 根因 | 标题 | 发现数 | 置信 | ground_truth | 可跑复现 |
 |---|--------|--------|------|------|--------|------|---------------|----------|
-| 1 | CRITICAL | function | `price.final_price.upper_bound_unvalidated` | 成交价由客户端说了算：resolveFinalPrice 只做下界检查，完全不与套餐价比对 | 5 | 0.97 | verified | `python3 business_probe.py` |
+| 1 | CRITICAL | function | `price.final_price.upper_bound_unvalidated` | 成交价由客户端说了算：resolveFinalPrice 只做下界检查，完全不与套餐价比对 | 6 | 0.97 | verified | `python3 business_probe.py` |
 | 2 | CRITICAL | service | `authz.no_authorization_layer` | 全系统零鉴权：无凭证即可读写全部业务数据 | 3 | 0.98 | verified | `curl http://127.0.0.1:8081/api/orders   # 无任何凭证` |
 | 3 | CRITICAL | function | `upload.content_type_not_sniffed` | 上传只信客户端自报的扩展名与 contentType：任意字节都以 .png 落盘 | 2 | 0.95 | verified | `python3 fn_dynamic.py --case UPL-04` |
-| 4 | HIGH | function | `order.snapshot.item_ownership_unchecked` | 订单快照：明细归属不校验，空明细静默回退成套餐默认明细 | 3 | 0.94 | verified | `python3 business_probe.py` |
-| 5 | HIGH | file | `cors.allowed_origin_patterns_too_broad` | CORS 白名单等于「整个内网 + 所有本地端口」，且全是明文 http | 2 | 0.95 | verified | `python3 config_probe.py` |
-| 6 | HIGH | service | `errhandler.client_error_mapped_to_500` | 客户端错误被当成服务端错误：返回 [500] | 2 | 0.94 | verified | `curl -X POST 见 observation.json 中 key=POST /api/uploads/p…` |
-| 7 | HIGH | function | `order.apply.amount_invariants_weak` | apply 的金额/状态不变量只查了 >= 0：定金可以大于套餐总价，状态与预订时间可为空 | 2 | 0.92 | verified | `python3 business_probe.py` |
-| 8 | HIGH | function | `order.item_quantity_unvalidated` | 明细归一化只查重复，不查 productId/quantity：数量可为空、为 0、为负 | 2 | 0.93 | verified | `python3 fn_dynamic.py --case NAI-04` |
+| 4 | HIGH | function | `order.item_quantity_unvalidated` | 明细归一化只查重复，不查 productId/quantity：数量可为空、为 0、为负 | 3 | 0.93 | verified | `python3 fn_dynamic.py --case NAI-04` |
+| 5 | HIGH | function | `order.snapshot.item_ownership_unchecked` | 订单快照：明细归属不校验，空明细静默回退成套餐默认明细 | 3 | 0.94 | verified | `python3 business_probe.py` |
+| 6 | HIGH | file | `cors.allowed_origin_patterns_too_broad` | CORS 白名单等于「整个内网 + 所有本地端口」，且全是明文 http | 2 | 0.95 | verified | `python3 config_probe.py` |
+| 7 | HIGH | service | `errhandler.client_error_mapped_to_500` | 客户端错误被当成服务端错误：返回 [500] | 2 | 0.94 | verified | `curl -X POST 见 observation.json 中 key=POST /api/uploads/p…` |
+| 8 | HIGH | function | `order.apply.amount_invariants_weak` | apply 的金额/状态不变量只查了 >= 0：定金可以大于套餐总价，状态与预订时间可为空 | 2 | 0.92 | verified | `python3 business_probe.py` |
 | 9 | HIGH | file | `audit.client_ip_trusted_from_header` | 审计日志里的 clientIp 完全由客户端伪造：X-Forwarded-For 首段直接采信 | 1 | 0.93 | verified | `python3 file_dynamic.py` |
 | 10 | HIGH | service | `cors.empty_whitelist_fails_open` | CORS 白名单配成空值时反而允许任意来源跨域（fail-open） | 1 | 0.93 | verified | `python3 config_probe.py` |
 | 11 | HIGH | integration | `frontend.list_hardcoded_limit_100` | 前端列表固定只取前 100 条并丢弃 total，超出的数据永远不可见 | 1 | 0.95 | verified | `python3 integration_dynamic.py --scenario SC05_LIST_TRUNC…` |
-| 12 | HIGH | service | `index.idx_products_name_unusable` | DDL 声明的 idx_products_name 对服务层查询模式无效（8.019ms vs 0.013ms，差 617 倍） | 1 | 0.88 | verified | `python3 class_dynamic.py` |
+| 12 | HIGH | service | `index.idx_products_name_unusable` | DDL 声明的 idx_products_name 对服务层查询模式无效（7.97ms vs 0.014ms，差 569 倍） | 1 | 0.88 | verified | `python3 class_dynamic.py` |
 | 13 | HIGH | class | `order.status.transition_unconstrained` | 状态机缺失：9/9 种迁移全部被接受，含回退 | 1 | 0.96 | verified | `python3 class_dynamic.py` |
 | 14 | HIGH | function | `order_no.no_collision_guarantee` | 订单号每秒只有 1000 个槽位，并发下单必然撞号（唯一键冲突 → 500） | 1 | 0.9 | verified | `python3 fn_dynamic.py --case GON-02` |
 | 15 | HIGH | class | `rule.missing_in_db_dto_service` | 4 条业务不变量在 DB / DTO / 服务层三层全都不存在 | 1 | 0.85 | verified | `python3 class_dynamic.py` |
-| 16 | MEDIUM | service | `errhandler.internal_detail_leak` | 错误响应把内部实现细节返回给客户端 | 7 | 0.92 | verified | `curl -X PATCH /api/orders/1241/status` |
+| 16 | MEDIUM | service | `errhandler.internal_detail_leak` | 错误响应把内部实现细节返回给客户端 | 7 | 0.92 | verified | `curl -X PATCH /api/orders/1314/status` |
 | 17 | MEDIUM | service | `pagination.count_total_computed_but_discarded` | 分页 total 是纯开销：后端每次列表请求都跑 count(*) 全表扫描，前端从不读这个数 | 2 | 0.93 | verified | `python3 perf_load.py --scales 0,2000,10000,50000` |
 | 18 | MEDIUM | class | `api.put_full_overwrite` | PUT 是全量覆盖：不传的 imageUrl 会被抹成 NULL | 1 | 0.91 | verified | `python3 class_dynamic.py` |
 | 19 | MEDIUM | integration | `api.snapshot_structure_undeclared` | 前端依赖的订单快照内部结构，在 API 契约里零声明 | 1 | 0.92 | verified | `grep -n 'packageSnapshot' backend/src/main/java/com/jiuya…` |
@@ -41,7 +41,7 @@
 | 30 | MEDIUM | service | `order.create.n_plus_one_per_item` | 下单时每多一个明细就多 2.0 条 SQL（典型 N+1） | 1 | 0.95 | verified | `python3 orm_query_probe.py` |
 | 31 | MEDIUM | service | `order.create.not_idempotent` | 下单接口没有幂等：同一个请求重发一次就产生两个订单 | 1 | 0.92 | verified | `python3 concurrency_props.py` |
 | 32 | MEDIUM | service | `order.update.no_concurrency_control` | 并发编辑同一订单会静默丢掉对方的修改：没有版本号、没有冲突检测 | 1 | 0.95 | verified | `python3 concurrency_props.py` |
-| 33 | MEDIUM | class | `orders.no_data_lifecycle` | orders 表没有软删/归档，永久增长（当前 184 kB） | 1 | 0.8 | verified | `python3 class_dynamic.py` |
+| 33 | MEDIUM | class | `orders.no_data_lifecycle` | orders 表没有软删/归档，永久增长（当前 192 kB） | 1 | 0.8 | verified | `python3 class_dynamic.py` |
 | 34 | MEDIUM | file | `package.applyItems.mutate_before_validate` | PackageService.applyItems 先删后校验：明细被清空后才去查商品 | 1 | 0.91 | verified | `python3 file_dynamic.py` |
 | 35 | MEDIUM | service | `package.list.n_plus_one_per_package` | 套餐列表每多返回 1 个套餐就多 8.0 条 SQL | 1 | 0.93 | verified | `python3 orm_query_probe.py` |
 | 36 | MEDIUM | class | `service.public_api_returns_jpa_entity` | service 层把 JPA 实体当 public API 返回：调用方能绕过全部业务校验直接改实体 | 1 | 0.88 | verified | `python3 java_feature_scan.py` |
@@ -110,7 +110,7 @@
 
 | category | 命中 | 状态 |
 |----------|------|------|
-| boundary | 9 | ok |
+| boundary | 11 | ok |
 | complexity | 0 | 零覆盖 —— 没人管 |
 | exception_path | 1 | ok |
 | numeric | 3 | ok |

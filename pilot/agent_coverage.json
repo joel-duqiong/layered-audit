@@ -1,14 +1,14 @@
 {
   "counts": {
     "units": 532,
-    "verified_units": 5,
-    "observed_only_units": 12,
-    "unknown_units": 515,
-    "verified_ratio": 0.0094,
+    "verified_units": 6,
+    "observed_only_units": 13,
+    "unknown_units": 513,
+    "verified_ratio": 0.0113,
     "obligations": {
       "satisfied": 0,
-      "violated": 5,
-      "unknown": 2063
+      "violated": 6,
+      "unknown": 2062
     },
     "root_causes_with_multiple_carriers": 0
   },
@@ -620,6 +620,9 @@
     ],
     "order.apply.amount_invariants_weak": [
       "com.jiuyan.banquet.service.OrderService#apply"
+    ],
+    "order.item_quantity_unvalidated": [
+      "com.jiuyan.banquet.service.OrderService#normalizePackageItems"
     ],
     "order_no.no_collision_guarantee": [
       "com.jiuyan.banquet.service.OrderService#generateOrderNo"

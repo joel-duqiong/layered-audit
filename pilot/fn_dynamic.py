@@ -659,6 +659,9 @@ def main() -> None:
     parser.add_argument("--cases-file", default="",
                         help="用例文件（含打桩与类型别名）；给了就用通用 harness，"
                              "换项目只换这个文件")
+    parser.add_argument("--extra-cases", default="",
+                        help="额外的用例文件（如语义地图编译出来的职责断言），"
+                             "与主用例合并执行")
     parser.add_argument("--incremental", action="store_true",
                         help="增量模式：只重跑指纹变了的用例，其余复用上次分片；"
                              "有分片缺失则退出码 2（没查完，不是绿）")
@@ -679,6 +682,21 @@ def main() -> None:
         classpath = ensure_harness()
         main_class = "FunctionHarness"
         CASES_FILE.write_text(json.dumps(cases, ensure_ascii=False), encoding="utf-8")
+    if args.extra_cases:
+        extra_path = Path(args.extra_cases)
+        if not extra_path.is_absolute():
+            extra_path = project.project_dir() / extra_path
+        extra = json.loads(extra_path.read_text(encoding="utf-8"))
+        extra_cases = extra.get("cases", extra) if isinstance(extra, dict) else extra
+        cases = list(cases) + list(extra_cases)
+        print(f"合并额外用例 {len(extra_cases)} 条（语义地图职责断言）")
+        # 用例文件必须重新写 —— 上面那份还是合并前的
+        if spec is not None:
+            CASES_FILE.write_text(
+                json.dumps({**spec, "cases": cases}, ensure_ascii=False), encoding="utf-8")
+        else:
+            CASES_FILE.write_text(json.dumps(cases, ensure_ascii=False), encoding="utf-8")
+
     if args.case:
         known = {c["id"] for c in cases}
         unknown = sorted(set(args.case) - known)
@@ -698,12 +716,18 @@ def main() -> None:
                  if _stored_fingerprint(cid) != fp}
         print(f"增量模式：{len(cases)} 条用例，失效 {len(stale)} 条，需重跑 {len(stale)} 条")
 
+    # all_cases 始终是**完整**的用例集合；cases_to_run 只是这次要跑的子集。
+    # 增量合并后观测覆盖 all_cases，用例定义也必须按 all_cases 查 ——
+    # 否则「复用回来的分片」会因为找不到用例定义而 KeyError。
+    all_cases = list(cases)
+    cases_to_run = list(cases)
     if stale is not None and stale:
-        cases = [c for c in cases if c["id"] in stale]
+        cases_to_run = [c for c in all_cases if c["id"] in stale]
         if spec is not None:
             CASES_FILE.write_text(
-                json.dumps({**spec, "cases": cases}, ensure_ascii=False), encoding="utf-8")
+                json.dumps({**spec, "cases": cases_to_run}, ensure_ascii=False), encoding="utf-8")
         else:
+            CASES_FILE.write_text(json.dumps(cases_to_run, ensure_ascii=False), encoding="utf-8")
             CASES_FILE.write_text(json.dumps(cases, ensure_ascii=False), encoding="utf-8")
 
     raw: list[dict] = []
@@ -721,12 +745,23 @@ def main() -> None:
 
     # 写分片 + 并集合并（增量模式下把复用���分片合回来）
     if stale is not None:
-        raw = _merge_incremental(raw, cases, fingerprints, stale)
+        raw = _merge_incremental(raw, cases_to_run, fingerprints, stale)
 
-    by_id = {c["id"]: c for c in cases}
+    by_id = {c["id"]: c for c in all_cases}
     results = []
     for obs in raw:
         cdef = by_id[obs["id"]]
+        # 「参数类型对不上」是用例构造错误，不是断言失败，更不是缺陷。
+        # 不拦下来的话，一个构造错的断言会以 FAIL 的面目混进缺陷台账。
+        if "argument type mismatch" in str(obs.get("exception_message", "")):
+            results.append({
+                "id": cdef["id"], "group": cdef["group"], "func": cdef["func"],
+                "target": obs.get("target", ""), "label": cdef.get("label", ""),
+                "invariant": cdef["invariant"], "check": cdef["check"],
+                "verdict": "INVALID", "reason": "用例构造错误：参数类型与方法签名对不上",
+                "observation": obs,
+            })
+            continue
         ok, reason = evaluate(cdef, obs)
         results.append({
             "id": cdef["id"], "group": cdef["group"], "func": cdef["func"],

@@ -300,6 +300,25 @@
       "jiuyan-feat-",
       "jiuyan-lazy",
       "jiuyan-portal"
-    ]
+    ],
+    "db": {
+      "container": "jiuyan-postgres",
+      "user": "jiuyan",
+      "database": "jiuyan"
+    },
+    "probe_ai_columns": {
+      "products": "name",
+      "packages": "name",
+      "categories": "name",
+      "package_types": "name",
+      "orders": "customer_name"
+    },
+    "upload_dir": "/app/uploads",
+    "residue_selftest": {
+      "table": "products",
+      "name_column": "name",
+      "columns": "name, category_id, price_cent, unit",
+      "values_sql": "'{{marker}}', (SELECT id FROM categories LIMIT 1), 1, 'selftest'"
+    }
   }
 }

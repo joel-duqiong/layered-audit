@@ -14,7 +14,28 @@
     "base_url": "http://127.0.0.1:8090",
     "work_dir": "/tmp/demo_shop_work",
     "recordings": "",
-    "artifacts_dir": "/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/artifacts"
+    "artifacts_dir": "/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/artifacts",
+    "db": {
+      "container": "jiuyan-postgres",
+      "user": "jiuyan",
+      "database": "demo_shop"
+    },
+    "probe_ai_columns": {
+      "shop_product": "name",
+      "shop_category": "name",
+      "shop_customer": "name",
+      "shop_order": "customer_name"
+    },
+    "upload_dir": "/app/uploads",
+    "probe_container_prefixes": [
+      "demo-shop-probe"
+    ],
+    "residue_selftest": {
+      "table": "shop_product",
+      "name_column": "name",
+      "columns": "name, price_cent, stock, category_id",
+      "values_sql": "'{{marker}}', 1, 1, (SELECT id FROM shop_category LIMIT 1)"
+    }
   },
   "source_roots": {
     "java": "/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/backend/src/main/java",

@@ -1,0 +1,233 @@
+{
+  "note": "语义地图（项目侧）：每个单元的「使命」+ 一条可机械验证的断言。编译器把职责编译成可执行 case，复用函数层已有的执行器。source=declared 的是人工确认的；source=model_hint 的模型产出永远 gate_eligible=false（只是线索，不进门禁）。",
+  "missions": [
+    {
+      "id": "OB-RESOLVE-PRICE-UPPER-BOUND",
+      "unit": "com.jiuyan.banquet.service.OrderService#resolveFinalPrice",
+      "class": "com.jiuyan.banquet.service.OrderService",
+      "method": "resolveFinalPrice",
+      "group": "SEMANTIC_OBLIGATION",
+      "label": "成交价上界",
+      "mission": "计算订单最终成交价：客户端报的价格高于套餐标价时，必须被拒绝或限到套餐价以内",
+      "template": "returns_le_arg",
+      "args": [
+        {
+          "$t": "bool",
+          "v": true
+        },
+        {
+          "$t": "long",
+          "v": 999999
+        },
+        {
+          "$t": "long",
+          "v": 46800
+        }
+      ],
+      "bound": {
+        "kind": "arg",
+        "index": 2,
+        "limit": 46800
+      },
+      "source": "declared",
+      "finding": {
+        "id": "FN-SEMANTIC-PRICE-UPPER-BOUND",
+        "severity": "HIGH",
+        "title": "职责断言：成交价不得高于套餐标价",
+        "root_cause": "resolveFinalPrice 只校验了成交价非负，没有与套餐标价比对，客户端报 999999 分（套餐价 46800 分）被原样接受",
+        "cwe": null,
+        "api_reachable": true,
+        "boundary_protected": false,
+        "boundary_note": "DTO 上只有 @Min(0)，没有上界"
+      }
+    },
+    {
+      "id": "OB-PARSE-STATUS-INVALID",
+      "unit": "com.jiuyan.banquet.service.OrderService#parseStatus",
+      "class": "com.jiuyan.banquet.service.OrderService",
+      "method": "parseStatus",
+      "group": "SEMANTIC_OBLIGATION",
+      "label": "非法状态必须 422",
+      "mission": "把状态串解析成合法状态：认不出的状态必须以业务错误码拒绝，不能默默当 null",
+      "template": "throws_business_code",
+      "args": [
+        {
+          "$t": "str",
+          "v": "NOT_A_STATUS"
+        }
+      ],
+      "bound": {
+        "kind": "const",
+        "value": {
+          "code": "ORDER_STATUS_INVALID",
+          "status": 422
+        }
+      },
+      "source": "declared"
+    },
+    {
+      "id": "OB-PARSE-DATE-SCOPE-INVALID",
+      "unit": "com.jiuyan.banquet.service.OrderService#parseDateScope",
+      "class": "com.jiuyan.banquet.service.OrderService",
+      "method": "parseDateScope",
+      "group": "SEMANTIC_OBLIGATION",
+      "label": "非法日期区间必须 400",
+      "mission": "解析日期区间：认不出的区间必须 400 拒绝，不能默默不过滤",
+      "template": "throws_business_code",
+      "args": [
+        {
+          "$t": "str",
+          "v": "NOT_A_RANGE"
+        }
+      ],
+      "bound": {
+        "kind": "const",
+        "value": {
+          "code": "VALIDATION_ERROR",
+          "status": 400
+        }
+      },
+      "source": "declared"
+    },
+    {
+      "id": "OB-NORMALIZE-ITEMS-DUPLICATE",
+      "unit": "com.jiuyan.banquet.service.OrderService#normalizePackageItems",
+      "class": "com.jiuyan.banquet.service.OrderService",
+      "method": "normalizePackageItems",
+      "group": "SEMANTIC_OBLIGATION",
+      "label": "明细重复必须拒绝",
+      "mission": "明细归一化：同一个商品出现两次必须拒绝，不能静默合并",
+      "template": "throws_business_code",
+      "args": [
+        {
+          "$t": "pkgItems",
+          "v": [
+            {
+              "productId": 11,
+              "quantity": 2
+            },
+            {
+              "productId": 11,
+              "quantity": 3
+            }
+          ]
+        }
+      ],
+      "bound": {
+        "kind": "const",
+        "value": {
+          "code": "VALIDATION_ERROR",
+          "status": 422
+        }
+      },
+      "source": "declared"
+    },
+    {
+      "id": "OB-NORMALIZE-ITEMS-QUANTITY",
+      "unit": "com.jiuyan.banquet.service.OrderService#normalizePackageItems",
+      "class": "com.jiuyan.banquet.service.OrderService",
+      "method": "normalizePackageItems",
+      "group": "SEMANTIC_OBLIGATION",
+      "label": "数量必须 ≥1",
+      "mission": "明细归一化：数量必须是正整数，0 或负数必须拒绝",
+      "template": "throws_business_code",
+      "args": [
+        {
+          "$t": "pkgItems",
+          "v": [
+            {
+              "productId": 11,
+              "quantity": 0
+            }
+          ]
+        }
+      ],
+      "bound": {
+        "kind": "const",
+        "value": {
+          "code": "VALIDATION_ERROR",
+          "status": 422
+        }
+      },
+      "source": "declared",
+      "finding": {
+        "id": "FN-SEMANTIC-ITEM-QUANTITY-NON-POSITIVE",
+        "severity": "MEDIUM",
+        "title": "职责断言：明细数量必须是正整数，数量为 0 被原样接受",
+        "root_cause": "normalizePackageItems 只检查商品是否重复，不检查数量；quantity=0 会被原样归一化进快照，明细合计因此少算这一项",
+        "cwe": null,
+        "api_reachable": true,
+        "boundary_protected": false,
+        "boundary_note": "PackageItemRequest.quantity 上没有 @Min(1)，服务端也没补"
+      }
+    },
+    {
+      "id": "OB-FIND-PRODUCT-MISSING",
+      "unit": "com.jiuyan.banquet.service.ProductService#findProduct",
+      "class": "com.jiuyan.banquet.service.ProductService",
+      "method": "findProduct",
+      "group": "SEMANTIC_OBLIGATION",
+      "label": "商品不存在必须 404",
+      "mission": "按 id 取商品：商品不存在（或已软删）必须报 404，不能返回 null 让调用方自己炸",
+      "template": "throws_business_code",
+      "args": [
+        {
+          "$t": "long",
+          "v": 99999999
+        }
+      ],
+      "bound": {
+        "kind": "const",
+        "value": {
+          "code": "PRODUCT_NOT_FOUND",
+          "status": 404
+        }
+      },
+      "source": "declared"
+    },
+    {
+      "id": "OB-FIND-PACKAGE-MISSING",
+      "unit": "com.jiuyan.banquet.service.PackageService#findPackage",
+      "class": "com.jiuyan.banquet.service.PackageService",
+      "method": "findPackage",
+      "group": "SEMANTIC_OBLIGATION",
+      "label": "套餐不存在必须 404",
+      "mission": "按 id 取套餐：套餐不存在（或已软删）必须报 404",
+      "template": "throws_business_code",
+      "args": [
+        {
+          "$t": "long",
+          "v": 99999999
+        }
+      ],
+      "bound": {
+        "kind": "const",
+        "value": {
+          "code": "PACKAGE_NOT_FOUND",
+          "status": 404
+        }
+      },
+      "source": "declared"
+    },
+    {
+      "id": "OB-CATEGORY-CREATE-IDEMPOTENT",
+      "unit": "com.jiuyan.banquet.service.CategoryService#create",
+      "class": "com.jiuyan.banquet.service.CategoryService",
+      "method": "create",
+      "group": "SEMANTIC_OBLIGATION",
+      "label": "创建分类必须返回分类",
+      "mission": "创建分类：同名时返回既有分类（幂等），必须返回分类对象而不是空",
+      "template": "not_null",
+      "args": [
+        {
+          "$t": "entity",
+          "class": "com.jiuyan.banquet.dto.CreateCategoryRequest",
+          "fields": {
+            "name": "ai_probe_semantic_cat"
+          }
+        }
+      ],
+      "source": "declared"
+    }
+  ]
+}

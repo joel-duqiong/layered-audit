@@ -5,44 +5,44 @@
       "severity": "MEDIUM",
       "endpoint": "GET /api/products, GET /api/packages, GET /api/orders",
       "title": "分页 total 是纯开销：后端每次列表请求都跑 count(*) 全表扫描，前端从不读这个数",
-      "detail": "每个列表接口都带分页参数，后端对每次请求额外跑一条 count(*) 全表扫描（Seq Scan，因为 idx_products_name 对 lower(name) LIKE '%…%' 不可用）。实测数据量阶梯：30 行 → 7.62ms；2030 行 → 9.05ms；10030 行 → 19.04ms；50030 行 → 36.91ms。\n在 50030 行时，count(*) 单条耗时 10.502ms，占带 keyword 列表接口端到端延迟的 28.5%，占不带 keyword 接口的 42.4%。\n而前端 banquetApi.js 的 listProducts / listPackages / listOrders 三个函数一律只取 data.items.map(...)，total 从未被读取 —— 这份开销 100% 浪费。\n本轮判定「端到端延迟随数据量塌陷」为 PARTIALLY_CONFIRMED：延迟确实随数据量线性增长，但 50030 行时端到端仅 36.91ms，按每行 0.000738ms 折算，要到约 1355459 行才触及 1 秒预算。\n结论：结构性 O(N) 成立，但当前规模下后果未兑现 —— 真正该修的不是「加索引」，而是别让后端算一个没人要的数。",
+      "detail": "每个列表接口都带分页参数，后端对每次请求额外跑一条 count(*) 全表扫描（Seq Scan，因为 idx_products_name 对 lower(name) LIKE '%…%' 不可用）。实测数据量阶梯：30 行 → 7.03ms；2030 行 → 10.65ms；10030 行 → 16.02ms；50030 行 → 36.78ms。\n在 50030 行时，count(*) 单条耗时 10.664ms，占带 keyword 列表接口端到端延迟的 29.0%，占不带 keyword 接口的 44.0%。\n而前端 banquetApi.js 的 listProducts / listPackages / listOrders 三个函数一律只取 data.items.map(...)，total 从未被读取 —— 这份开销 100% 浪费。\n本轮判定「端到端延迟随数据量塌陷」为 PARTIALLY_CONFIRMED：延迟确实随数据量线性增长，但 50030 行时端到端仅 36.78ms，按每行 0.000735ms 折算，要到约 1360250 行才触及 1 秒预算。\n结论：结构性 O(N) 成立，但当前规模下后果未兑现 —— 真正该修的不是「加索引」，而是别让后端算一个没人要的数。",
       "repro": "python3 perf_load.py --scales 0,2000,10000,50000",
       "evidence": {
         "scales": [
           {
             "total_products": 30,
-            "endpoint_p50_ms": 7.62,
-            "count_query_ms": 0.037,
+            "endpoint_p50_ms": 7.03,
+            "count_query_ms": 0.031,
             "count_scan": "Seq Scan",
             "page_scan": "Seq Scan"
           },
           {
             "total_products": 2030,
-            "endpoint_p50_ms": 9.05,
-            "count_query_ms": 0.618,
+            "endpoint_p50_ms": 10.65,
+            "count_query_ms": 0.675,
             "count_scan": "Seq Scan",
             "page_scan": "Seq Scan"
           },
           {
             "total_products": 10030,
-            "endpoint_p50_ms": 19.04,
-            "count_query_ms": 3.208,
+            "endpoint_p50_ms": 16.02,
+            "count_query_ms": 2.279,
             "count_scan": "Seq Scan",
             "page_scan": "Seq Scan"
           },
           {
             "total_products": 50030,
-            "endpoint_p50_ms": 36.91,
-            "count_query_ms": 10.502,
+            "endpoint_p50_ms": 36.78,
+            "count_query_ms": 10.664,
             "count_scan": "Seq Scan",
             "page_scan": "Seq Scan"
           }
         ],
-        "count_waste_ratio_with_keyword": 0.285,
-        "count_waste_ratio_no_keyword": 0.424,
+        "count_waste_ratio_with_keyword": 0.29,
+        "count_waste_ratio_no_keyword": 0.44,
         "frontend_discards_total": "banquetApi.js listProducts/listPackages/listOrders 只返回 data.items.map(...)",
         "verdict": "PARTIALLY_CONFIRMED",
-        "projected_rows_for_1s": 1355459
+        "projected_rows_for_1s": 1360250
       }
     }
   ],
@@ -52,7 +52,7 @@
       "severity": "MEDIUM",
       "endpoint": "GET /api/products, GET /api/packages, GET /api/orders",
       "title": "三个列表接口每次都为前端丢弃的 total 付一次全表扫描",
-      "detail": "三个列表接口（GET /api/products、/api/packages、/api/orders）在集权层实测中，每次请求的 count(*) 部分占端到端延迟的 28.5%~42.4%，而这个 total 前端从头到尾没读过。\n也就是说：用户每翻一次列表，后端就多付一次全表扫描的钱，收益为零。同时前端把 page 固定成 1、pageSize 固定成 100，超出部分永远不可见 —— 分页机制在这条链路上同时是「成本」和「不可用」。",
+      "detail": "三个列表接口（GET /api/products、/api/packages、/api/orders）在集权层实测中，每次请求的 count(*) 部分占端到端延迟的 29.0%~44.0%，而这个 total 前端从头到尾没读过。\n也就是说：用户每翻一次列表，后端就多付一次全表扫描的钱，收益为零。同时前端把 page 固定成 1、pageSize 固定成 100，超出部分永远不可见 —— 分页机制在这条链路上同时是「成本」和「不可用」。",
       "repro": "python3 perf_load.py --scales 0,2000,10000,50000",
       "evidence": {
         "chain_steps": [
@@ -61,7 +61,7 @@
             "method": "GET",
             "path": "/api/products?keyword=…&page=1&pageSize=100",
             "status": 200,
-            "evidence": "端到端 p50 36.91ms，其中 count(*) 占 28.5%"
+            "evidence": "端到端 p50 36.78ms，其中 count(*) 占 29.0%"
           },
           {
             "n": 2,

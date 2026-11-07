@@ -159,7 +159,10 @@ class ClassProbe:
             return PLACEHOLDER_RE.sub(lambda m: str(self._placeholder(m.group(1), ctx)), value)
         if isinstance(value, dict):
             if "$sql" in value:
-                rows = self.db.sql(str(value["$sql"]))
+                # SQL 里也可能带占位符（例如「换另一个分类」要先拿到当前分类 id）
+                query = PLACEHOLDER_RE.sub(
+                    lambda m: str(self._placeholder(m.group(1), ctx)), str(value["$sql"]))
+                rows = self.db.sql(query)
                 cell = rows[0][0] if rows and rows[0] else ""
                 cast = value.get("as", "str")
                 out: Any = cell
@@ -208,15 +211,26 @@ class ClassProbe:
                 body[field] = self.prefix + "probe"
         return body
 
-    def _track(self, table: str | None, row_id: Any) -> None:
+    def _track(self, table: str | None, row_id: Any,
+               cleanup: list[str] | None = None,
+               ctx: dict[str, Any] | None = None) -> None:
+        """记下造出来的行。
+
+        cleanup 是这一行专属的清理语句 —— 有些表有外键依赖（套餐 -> 套餐明细），
+        删父行前必须先删子行。清理顺序错了，探针自己造的行就留在库里。
+        """
         if table and row_id is not None:
-            self._created.append({"table": table, "id": row_id})
+            self._created.append({"table": table, "id": row_id,
+                                  "cleanup": list(cleanup or []),
+                                  "ctx": dict(ctx or {})})
 
     def _cleanup(self, probe: dict) -> None:
         """把本探针造出来的行删干净 —— 自己造的自己清，不指望别人。"""
-        statements = list(probe.get("cleanup_sql", []))
         for row in self._created:
+            # 行专属清理优先（外键顺序），否则用探针级的
+            statements = list(row.get("cleanup") or probe.get("cleanup_sql", []))
             ctx = {"id": row["id"], "table": row["table"]}
+            ctx.update(row.get("ctx") or {})
             for stmt in statements:
                 filled = self._resolve(stmt, ctx)
                 try:
@@ -228,8 +242,8 @@ class ClassProbe:
                                                "sql": filled, "ok": False,
                                                "error": str(exc)[:200]})
         # 兜底：探针没写 cleanup_sql 时，按 id 删掉它造的行
-        if not statements:
-            for row in self._created:
+        for row in self._created:
+            if not (row.get("cleanup") or probe.get("cleanup_sql", [])):
                 try:
                     self.db.raw(f"DELETE FROM {row['table']} WHERE id = {row['id']}")
                     self._cleanup_log.append({"table": row["table"], "id": row["id"],
@@ -317,14 +331,14 @@ class ClassProbe:
         ctx: dict[str, Any] = {}
         create = probe["create"]
         name_field = probe.get("name_field", "name")
-        name = self._resolve(create["body"].get(name_field, ""), ctx)
+        # body 只解析一次 —— 名字必须来自解析后的 body，
+        # 否则「{{rand6}}」在两次解析里会得到两个不同的值
+        body = self._enforce_prefix(self._resolve(create["body"], ctx), probe)
+        name = body.get(name_field, "")
         ctx["name"] = name
-        body = dict(create["body"])
-        body[name_field] = name
-        body = self._enforce_prefix(self._resolve(body, ctx), probe)
         st, payload = self.api.call(create["method"], create["path"], body)
         created = self._created_id(payload)
-        self._track(probe.get("entity"), created)
+        self._track(probe.get("entity"), created, probe.get("cleanup_sql"), ctx)
         out: dict[str, Any] = {"category": name, "create_status": st}
         if created:
             delete = probe["delete"]
@@ -334,7 +348,8 @@ class ClassProbe:
             out["recreate_status"] = st3
             out["recreate_body"] = payload3
             read = probe["read"]
-            where = read.get("where", "id = {id}").format(id=created)
+            ctx["id"] = created
+            where = self._resolve(read.get("where", "id = {{id}}"), ctx)
             rows = self.db.sql(f"SELECT {read['columns']} FROM {read['table']} WHERE {where}")
             out["db_rows"] = rows
         return out
@@ -454,12 +469,13 @@ class ClassProbe:
         cases = []
         for case in probe["cases"]:
             ctx: dict[str, Any] = {}
-            body = self._enforce_prefix(self._resolve(case["body"], ctx), probe)
+            body = self._enforce_prefix(self._resolve(case["body"], ctx),
+                                        {"entity": case.get("entity")})
             st, payload = self.api.call(case["method"], case["path"], body)
             row = None
             oid = self._created_id(payload)
             if st == 200 and oid is not None:
-                self._track(case.get("entity"), oid)
+                self._track(case.get("entity"), oid, case.get("cleanup_sql"))
                 rows = self.db.rows(f"SELECT {case['read_columns']} FROM {case['table']} "
                                     f"WHERE id={oid}")
                 row = rows[0] if rows else None
@@ -477,15 +493,16 @@ class ClassProbe:
         for ent in probe["entities"]:
             ctx: dict[str, Any] = {}
             create = ent["create"]
-            body = self._enforce_prefix(self._resolve(create["body"], ctx), probe)
+            body = self._enforce_prefix(self._resolve(create["body"], ctx),
+                                        {"entity": ent.get("entity")})
             st, payload = self.api.call(create["method"], create["path"], body)
             oid = self._created_id(payload)
             if st != 200 or oid is None:
                 continue
             self._track(ent.get("entity"), oid)
             ctx["id"] = oid
-            if ent.get("alt_id_sql"):
-                alt = self._resolve(ent["alt_id_sql"], ctx)
+            if ent.get("alt_id"):
+                alt = self._resolve(ent["alt_id"], ctx)
                 ctx["alt_id"] = alt if alt not in ("", None) else self._resolve(
                     ent.get("alt_id_fallback", ""), ctx)
 
@@ -500,7 +517,7 @@ class ClassProbe:
             previous = snap()
             for step in ent["steps"]:
                 sbody = self._resolve(step.get("body"), ctx)
-                sbody = self._enforce_prefix(sbody, probe)
+                sbody = self._enforce_prefix(sbody, {"entity": ent.get("entity")})
                 http, _ = self.api.call(step["method"], step["path"].format(id=oid), sbody)
                 current = snap()
                 record: dict[str, Any] = {"action": step["action"],

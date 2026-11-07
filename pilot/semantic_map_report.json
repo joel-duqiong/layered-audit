@@ -1,0 +1,18 @@
+{
+  "missions_total": 8,
+  "compiled_ok": 8,
+  "compile_failed": [],
+  "rejected_by_validation": [],
+  "units_with_mission": [
+    "com.jiuyan.banquet.service.CategoryService#create",
+    "com.jiuyan.banquet.service.OrderService#normalizePackageItems",
+    "com.jiuyan.banquet.service.OrderService#parseDateScope",
+    "com.jiuyan.banquet.service.OrderService#parseStatus",
+    "com.jiuyan.banquet.service.OrderService#resolveFinalPrice",
+    "com.jiuyan.banquet.service.PackageService#findPackage",
+    "com.jiuyan.banquet.service.ProductService#findProduct"
+  ],
+  "source_mix": {
+    "declared": 8
+  }
+}

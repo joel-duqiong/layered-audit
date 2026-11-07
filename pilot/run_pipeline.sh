@@ -32,8 +32,10 @@ python3 engine/incremental_plan.py --write
 
 echo "=== 函数层（字节码声明 / JVM 直调 / 差分）==="
 run_layer function python3 fn_static.py
+# 语义地图：把「每个单元该干什么」编译成可执行断言（复用函数层执行器，不新增语义）
+python3 semantic_probe.py
 # 增量：只重跑指纹变了的用例，其余复用分片；缺分片 -> 退出码 2（没查完，不是绿）
-run_layer function python3 fn_dynamic.py --incremental
+run_layer function python3 fn_dynamic.py --incremental --extra-cases semantic_cases.json
 run_layer function python3 fn_diff.py
 echo "=== 文件层（字节码声明 / 整类实例化实测 / 差分）==="
 run_layer file python3 file_static.py

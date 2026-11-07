@@ -234,6 +234,42 @@ def main() -> None:
             passed_highlights.append({"case_id": c["id"], "function": c["target"],
                                       "invariant": c["invariant"], "actual": c["reason"]})
 
+    # 语义地图的职责断言：失败即开单（开单元数据由项目的语义地图声明）
+    semantic_path = Path(__file__).resolve().parent / "semantic_map.json"
+    if semantic_path.exists():
+        sem_map = json.loads(semantic_path.read_text(encoding="utf-8"))
+        by_case = {m["id"]: m for m in sem_map.get("missions", [])}
+        for c in cases:
+            if c["group"] != "SEMANTIC_OBLIGATION" or c["verdict"] != "FAIL":
+                continue
+            mission = by_case.get(c["id"], {})
+            meta = mission.get("finding")
+            if not meta:
+                continue
+            obs = c.get("observation") or {}
+            findings.append({
+                "id": meta["id"], "layer": "function", "severity": meta["severity"],
+                "title": meta["title"], "function": c["target"],
+                "root_cause": meta.get("root_cause", ""),
+                "api_reachable": meta.get("api_reachable", True),
+                "boundary_protected": meta.get("boundary_protected", False),
+                "boundary_note": meta.get("boundary_note", ""),
+                "cwe": meta.get("cwe"),
+                "owner": f"函数层（{mission.get('unit', c['target'])}）",
+                "case_count": 1,
+                "evidence": [{
+                    "case_id": c["id"], "function": c["target"],
+                    "invariant": c["invariant"], "actual": c.get("reason", ""),
+                    "exception": obs.get("exception_class"),
+                }],
+                "related_findings": [],
+                "semantic_obligation": {
+                    "mission": mission.get("mission"),
+                    "template": mission.get("template"),
+                    "source": mission.get("source", "declared"),
+                },
+            })
+
     payload = {
         "meta": {
             "layer": "function",

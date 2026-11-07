@@ -158,6 +158,17 @@
     }
   ],
   "layer_roles": {
+    "file": [
+      "file.cohesion",
+      "file.error_handling_pattern",
+      "file.state_consistency"
+    ],
+    "class": [
+      "class.contract_violation",
+      "class.encapsulation_leak",
+      "class.inheritance_design",
+      "class.invariant"
+    ],
     "service": [
       "service.authz",
       "service.data_consistency",
@@ -166,10 +177,11 @@
       "service.resource_leak",
       "service.service_latency"
     ],
-    "file": [
-      "file.cohesion",
-      "file.error_handling_pattern",
-      "file.state_consistency"
+    "function": [
+      "function.boundary",
+      "function.complexity",
+      "function.exception_path",
+      "function.numeric"
     ],
     "integration": [
       "integration.cross_layer_correlation",
@@ -177,18 +189,6 @@
       "integration.cross_service_performance",
       "integration.emergent_masking",
       "integration.end_to_end_business"
-    ],
-    "function": [
-      "function.boundary",
-      "function.complexity",
-      "function.exception_path",
-      "function.numeric"
-    ],
-    "class": [
-      "class.contract_violation",
-      "class.encapsulation_leak",
-      "class.inheritance_design",
-      "class.invariant"
     ]
   },
   "counts": {
@@ -196,8 +196,8 @@
     "roles": 22,
     "edges": 786,
     "edges_unresolved": 39,
-    "units_with_observations": 15,
-    "units_with_findings": 5
+    "units_with_observations": 17,
+    "units_with_findings": 6
   },
   "units": [
     {
@@ -9843,10 +9843,11 @@
       },
       "priority": 17,
       "status": "OBSERVED",
-      "observations": 2,
+      "observations": 3,
       "case_ids": [
         "CTG-01",
-        "CTG-02"
+        "CTG-02",
+        "OB-CATEGORY-CREATE-IDEMPOTENT"
       ],
       "finding_ids": [],
       "root_cause_keys": [],
@@ -10122,8 +10123,9 @@
       },
       "priority": 0,
       "status": "FAIL",
-      "observations": 7,
+      "observations": 8,
       "case_ids": [
+        "OB-RESOLVE-PRICE-UPPER-BOUND",
         "RFP-01",
         "RFP-02",
         "RFP-03",
@@ -10133,7 +10135,8 @@
         "RFP-07"
       ],
       "finding_ids": [
-        "function:FN-PRICE-CLIENT-CONTROLLED#0"
+        "function:FN-PRICE-CLIENT-CONTROLLED#0",
+        "function:FN-SEMANTIC-PRICE-UPPER-BOUND#8"
       ],
       "root_cause_keys": [
         "price.final_price.upper_bound_unvalidated"
@@ -10267,8 +10270,8 @@
         "score": 3
       },
       "priority": 0,
-      "status": "OBSERVED",
-      "observations": 7,
+      "status": "FAIL",
+      "observations": 9,
       "case_ids": [
         "NPI-01",
         "NPI-02",
@@ -10276,10 +10279,16 @@
         "NPI-04",
         "NPI-05",
         "NPI-06",
-        "NPI-07"
+        "NPI-07",
+        "OB-NORMALIZE-ITEMS-DUPLICATE",
+        "OB-NORMALIZE-ITEMS-QUANTITY"
       ],
-      "finding_ids": [],
-      "root_cause_keys": [],
+      "finding_ids": [
+        "function:FN-SEMANTIC-ITEM-QUANTITY-NON-POSITIVE#9"
+      ],
+      "root_cause_keys": [
+        "order.item_quantity_unvalidated"
+      ],
       "obligation_template": "",
       "obligation_source_layer": "function"
     },
@@ -10417,8 +10426,9 @@
       },
       "priority": 0,
       "status": "OBSERVED",
-      "observations": 7,
+      "observations": 8,
       "case_ids": [
+        "OB-PARSE-STATUS-INVALID",
         "PST-01",
         "PST-02",
         "PST-03",
@@ -10450,8 +10460,9 @@
       },
       "priority": 0,
       "status": "OBSERVED",
-      "observations": 7,
+      "observations": 8,
       "case_ids": [
+        "OB-PARSE-DATE-SCOPE-INVALID",
         "PDS-MONTH",
         "PDS-TODAY",
         "PDS-WEEK",
@@ -10857,9 +10868,11 @@
         "score": 8
       },
       "priority": 0,
-      "status": "UNKNOWN",
-      "observations": 0,
-      "case_ids": [],
+      "status": "OBSERVED",
+      "observations": 1,
+      "case_ids": [
+        "OB-FIND-PACKAGE-MISSING"
+      ],
       "finding_ids": [],
       "root_cause_keys": [],
       "obligation_template": "",
@@ -11492,9 +11505,11 @@
         "score": 8
       },
       "priority": 0,
-      "status": "UNKNOWN",
-      "observations": 0,
-      "case_ids": [],
+      "status": "OBSERVED",
+      "observations": 1,
+      "case_ids": [
+        "OB-FIND-PRODUCT-MISSING"
+      ],
       "finding_ids": [],
       "root_cause_keys": [],
       "obligation_template": "",

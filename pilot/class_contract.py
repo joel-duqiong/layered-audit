@@ -16,20 +16,34 @@ import json
 import subprocess
 from pathlib import Path
 
+import fn_static
 from fn_static import BACKEND, CLASSES, PKG, ensure_compiled, run
 
 D = project.artifact_dir()
 WORK = project.work_dir() / "class"
 HARNESS = WORK / "harness"
+# 依赖 classpath：优先用文件层跑出来的 deps（更全），没有就退回 fn_static 的
 DEPS_FILE = D / "file_deps.txt"
 OUT = D / "class_contract.json"
 
 SRC_ROOTS = ("dto", "entity")
 
 
+def db_spec() -> dict:
+    """DB 通道 —— 容器 / 库 / 用户来自项目绑定，不写死。"""
+    spec = project.paths().get("db") or {}
+    return {"container": spec.get("container", ""), "user": spec.get("user", ""),
+            "database": spec.get("database", "")}
+
+
 def psql(sql: str) -> str:
+    spec = db_spec()
+    missing = [k for k, v in spec.items() if not v]
+    if missing:
+        raise RuntimeError(f"target.json 的 paths.db 缺 {missing} —— 无法查 DB")
     rc = subprocess.run(
-        ["docker", "exec", "jiuyan-postgres", "psql", "-U", "jiuyan", "-d", "jiuyan", "-tAF", "|", "-c", sql],
+        ["docker", "exec", spec["container"], "psql", "-U", spec["user"],
+         "-d", spec["database"], "-tAF", "|", "-c", sql],
         capture_output=True, text=True, timeout=60)
     if rc.returncode != 0:
         raise RuntimeError(rc.stderr.strip()[:300])
@@ -42,7 +56,7 @@ def db_actual() -> dict:
         SELECT table_name, column_name, data_type, is_nullable,
                COALESCE(column_default,''), character_maximum_length
         FROM information_schema.columns
-        WHERE table_schema='public' AND table_name NOT LIKE 'ai_probe_%'
+        WHERE table_schema='public' AND NOT starts_with(table_name, 'ai_probe_')
           AND table_name <> 'flyway_schema_history'
         ORDER BY table_name, ordinal_position
     """).splitlines()
@@ -58,7 +72,7 @@ def db_actual() -> dict:
         FROM pg_constraint con
         JOIN pg_class rel ON rel.oid = con.conrelid
         JOIN pg_namespace ns ON ns.oid = rel.relnamespace
-        WHERE ns.nspname='public' AND rel.relname NOT LIKE 'ai_probe_%'
+        WHERE ns.nspname='public' AND NOT starts_with(rel.relname, 'ai_probe_')
           AND rel.relname <> 'flyway_schema_history'
         ORDER BY rel.relname, con.conname
     """).splitlines()
@@ -70,7 +84,7 @@ def db_actual() -> dict:
 
     idx = psql("""
         SELECT tablename, indexname, indexdef FROM pg_indexes
-        WHERE schemaname='public' AND tablename NOT LIKE 'ai_probe_%'
+        WHERE schemaname='public' AND NOT starts_with(tablename, 'ai_probe_')
           AND tablename <> 'flyway_schema_history'
         ORDER BY tablename, indexname
     """).splitlines()
@@ -90,7 +104,8 @@ def reflection() -> list[dict]:
     src = Path(__file__).resolve().parent / "class_harness" / "ClassContract.java"
     out_dir = WORK / "classes"
     out_dir.mkdir(parents=True, exist_ok=True)
-    deps = DEPS_FILE.read_text().strip() if DEPS_FILE.exists() else ""
+    deps_file = DEPS_FILE if DEPS_FILE.exists() else fn_static.DEPS_FILE
+    deps = deps_file.read_text().strip() if deps_file.exists() else ""
     run(["javac", "-cp", f"{CLASSES}:{deps}", "-d", str(out_dir), str(src)])
 
     classes = []

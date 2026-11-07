@@ -97,6 +97,22 @@ FUNCTION: dict[str, Meta] = {
         ground_truth="verified",
         note="正面结论：源码复制→注入变异→独立编译→classpath 覆盖→同批用例重跑，"
              "链路跑通且能区分「杀死」与「存活」"),
+    "FN-SEMANTIC-PRICE-UPPER-BOUND": _m(
+        "function.boundary", "exact",
+        "职责断言：成交价不得高于套餐标价",
+        "function", 0.95, "defect", (),
+        "price.final_price.upper_bound_unvalidated",
+        relation="cited",
+        note="来自语义地图的职责断言（OB-RESOLVE-PRICE-UPPER-BOUND）；"
+             "与 FN-PRICE-CLIENT-CONTROLLED 同一根因，从「使命未被满足」的角度再证一次"),
+    "FN-SEMANTIC-ITEM-QUANTITY-NON-POSITIVE": _m(
+        "function.boundary", "exact",
+        "职责断言：明细数量必须是正整数",
+        "function", 0.92, "defect", (),
+        "order.item_quantity_unvalidated",
+        relation="cited",
+        note="来自语义地图的职责断言（OB-NORMALIZE-ITEMS-QUANTITY）；"
+             "与 FN-ITEM-QUANTITY-NOVALIDATION 同一根因，补上了「数量为 0」这个面"),
     "FN-NUMERIC-MONEY-INPUT-SILENT-MUTATION": _m(
         "function.numeric", "exact",
         "金额输入规范化是否静默改变了用户输入的数值？",

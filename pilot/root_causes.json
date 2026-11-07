@@ -1,9 +1,9 @@
 {
   "generated_from": "aggregate_findings.py",
   "summary": {
-    "findings": 91,
+    "findings": 93,
     "root_causes": 70,
-    "collapsed": 21,
+    "collapsed": 23,
     "violations": 1
   },
   "root_causes": [
@@ -22,9 +22,10 @@
         "exact",
         "stretched"
       ],
-      "finding_count": 5,
+      "finding_count": 6,
       "finding_uids": [
         "function:FN-PRICE-CLIENT-CONTROLLED#0",
+        "function:FN-SEMANTIC-PRICE-UPPER-BOUND#9",
         "integration:PRICE_CLIENT_CONTROLLED_XL#2",
         "integration:INT-THREE-PRICES-NO-DETAIL-TOTAL#4",
         "function:FN-NUMERIC-BIGINT-PRECISION-LOSS#2",
@@ -51,6 +52,7 @@
       "repro_cmds": [
         "python3 business_probe.py",
         "python3 fn_dynamic.py --case APL-15",
+        "python3 fn_dynamic.py --case OB-RESOLVE-PRICE-UPPER-BOUND",
         "python3 integration_chain.py --chain CHAIN-D",
         "python3 integration_dynamic.py --scenario SC01_CLIENT_CONTROLLED_PRICE",
         "python3 numeric_props.py"
@@ -60,7 +62,7 @@
       "merges": [],
       "evidence_fidelity": "stubbed",
       "fidelity_breakdown": {
-        "stubbed": 2,
+        "stubbed": 3,
         "container": 3
       },
       "related_root_causes": [
@@ -163,6 +165,55 @@
       "evidence_fidelity": "stubbed",
       "fidelity_breakdown": {
         "stubbed": 1,
+        "container": 1
+      },
+      "related_root_causes": []
+    },
+    {
+      "root_cause_key": "order.item_quantity_unvalidated",
+      "title": "明细归一化只查重复，不查 productId/quantity：数量可为空、为 0、为负",
+      "severity": "HIGH",
+      "owner_layer": "function",
+      "categories": [
+        "function.boundary",
+        "integration.end_to_end_business"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 3,
+      "finding_uids": [
+        "function:FN-ITEM-QUANTITY-NOVALIDATION#6",
+        "function:FN-SEMANTIC-ITEM-QUANTITY-NON-POSITIVE#8",
+        "integration:PACKAGE_QUANTITY_NOT_VALIDATED#7"
+      ],
+      "layers_own": [
+        "function"
+      ],
+      "layers_all": [
+        "function",
+        "integration"
+      ],
+      "cited_from": [
+        "function",
+        "integration"
+      ],
+      "cwe": [
+        "CWE-20"
+      ],
+      "confidence": 0.93,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 fn_dynamic.py --case NAI-04",
+        "python3 fn_dynamic.py --case OB-NORMALIZE-ITEMS-QUANTITY",
+        "python3 integration_dynamic.py --scenario SC03_QUANTITY_OVERRIDE"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 2,
         "container": 1
       },
       "related_root_causes": []
@@ -357,52 +408,6 @@
       "related_root_causes": []
     },
     {
-      "root_cause_key": "order.item_quantity_unvalidated",
-      "title": "明细归一化只查重复，不查 productId/quantity：数量可为空、为 0、为负",
-      "severity": "HIGH",
-      "owner_layer": "function",
-      "categories": [
-        "function.boundary",
-        "integration.end_to_end_business"
-      ],
-      "category_fit": [
-        "exact"
-      ],
-      "finding_count": 2,
-      "finding_uids": [
-        "function:FN-ITEM-QUANTITY-NOVALIDATION#6",
-        "integration:PACKAGE_QUANTITY_NOT_VALIDATED#7"
-      ],
-      "layers_own": [
-        "function"
-      ],
-      "layers_all": [
-        "function",
-        "integration"
-      ],
-      "cited_from": [
-        "integration"
-      ],
-      "cwe": [
-        "CWE-20"
-      ],
-      "confidence": 0.93,
-      "ground_truth": "verified",
-      "repro_cmds": [
-        "python3 fn_dynamic.py --case NAI-04",
-        "python3 integration_dynamic.py --scenario SC03_QUANTITY_OVERRIDE"
-      ],
-      "violations": [],
-      "notes": [],
-      "merges": [],
-      "evidence_fidelity": "stubbed",
-      "fidelity_breakdown": {
-        "stubbed": 1,
-        "container": 1
-      },
-      "related_root_causes": []
-    },
-    {
       "root_cause_key": "audit.client_ip_trusted_from_header",
       "title": "审计日志里的 clientIp 完全由客户端伪造：X-Forwarded-For 首段直接采信",
       "severity": "HIGH",
@@ -518,7 +523,7 @@
     },
     {
       "root_cause_key": "index.idx_products_name_unusable",
-      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（8.019ms vs 0.013ms，差 617 倍）",
+      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.97ms vs 0.014ms，差 569 倍）",
       "severity": "HIGH",
       "owner_layer": "service",
       "categories": [
@@ -709,13 +714,13 @@
       "confidence": 0.92,
       "ground_truth": "verified",
       "repro_cmds": [
-        "curl -X PATCH /api/orders/1241/status",
-        "curl -X PATCH /api/packages/284/status",
-        "curl -X PATCH /api/products/2804354/status",
+        "curl -X PATCH /api/orders/1314/status",
+        "curl -X PATCH /api/packages/295/status",
+        "curl -X PATCH /api/products/3004477/status",
         "curl -X POST /api/packages",
         "curl -X POST /api/products",
-        "curl -X PUT /api/packages/284",
-        "curl -X PUT /api/products/2804354"
+        "curl -X PUT /api/packages/295",
+        "curl -X PUT /api/products/3004477"
       ],
       "violations": [],
       "notes": [],
@@ -1346,7 +1351,7 @@
     },
     {
       "root_cause_key": "orders.no_data_lifecycle",
-      "title": "orders 表没有软删/归档，永久增长（当前 184 kB）",
+      "title": "orders 表没有软删/归档，永久增长（当前 192 kB）",
       "severity": "MEDIUM",
       "owner_layer": "class",
       "categories": [
@@ -2753,7 +2758,7 @@
   "coverage": {
     "matrix": {
       "function": {
-        "boundary": 9,
+        "boundary": 11,
         "complexity": 0,
         "exception_path": 1,
         "numeric": 3
@@ -2889,6 +2894,6 @@
       ]
     },
     "root_cause_count": 70,
-    "finding_count": 91
+    "finding_count": 93
   }
 }

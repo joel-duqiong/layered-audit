@@ -1,0 +1,531 @@
+{
+  "note": "类层探针的项目侧声明（jiuyan）。通用引擎在 pilot/class_probe.py；换项目只换这个文件。探针自己声明它要看什么（表/列/实体/DTO/端点），引擎只负责执行。",
+  "probe_prefix": "ai_probe_",
+  "prefix_fields": {
+    "orders": {
+      "dto": [
+        "customerName",
+        "banquetName"
+      ],
+      "db_column": "customer_name"
+    },
+    "products": {
+      "dto": [
+        "name"
+      ],
+      "db_column": "name"
+    },
+    "packages": {
+      "dto": [
+        "name"
+      ],
+      "db_column": "name"
+    },
+    "categories": {
+      "dto": [
+        "name"
+      ],
+      "db_column": "name"
+    },
+    "package_types": {
+      "dto": [
+        "name"
+      ],
+      "db_column": "name"
+    }
+  },
+  "probes": [
+    {
+      "id": "transition",
+      "kind": "state_transition",
+      "entity": "orders",
+      "create": {
+        "method": "POST",
+        "path": "/api/orders",
+        "body": {
+          "customerName": "ai_probe_cls",
+          "customerPhone": "13800000001",
+          "banquetName": "ai_probe_cls",
+          "banquetType": "婚宴",
+          "reservationTime": "{{plus30d}}",
+          "tableCount": 1,
+          "packageId": {
+            "$sql": "SELECT id FROM packages WHERE is_deleted=false LIMIT 1",
+            "as": "int"
+          },
+          "planTotalCent": 1,
+          "useFinalPrice": true,
+          "finalPriceCent": 1,
+          "depositCent": 0,
+          "status": "PENDING"
+        }
+      },
+      "state_endpoint": {
+        "method": "PATCH",
+        "path": "/api/orders/{id}/status"
+      },
+      "state_field": "status",
+      "states": [
+        "PENDING",
+        "DEPOSIT_PAID",
+        "COMPLETED"
+      ],
+      "read": {
+        "table": "orders",
+        "column": "status"
+      },
+      "cleanup_sql": [
+        "DELETE FROM orders WHERE id = {{id}}"
+      ]
+    },
+    {
+      "id": "index_usage",
+      "kind": "index_usage",
+      "queries": [
+        {
+          "label": "prefix_like_lower",
+          "sql": "SELECT count(*) FROM products WHERE lower(name) LIKE '%五香%'"
+        },
+        {
+          "label": "exact_equal",
+          "sql": "SELECT count(*) FROM products WHERE name = '五香卤牛肉'"
+        },
+        {
+          "label": "prefix_like_raw",
+          "sql": "SELECT count(*) FROM products WHERE name LIKE '%五香%'"
+        },
+        {
+          "label": "orders_status",
+          "sql": "SELECT count(*) FROM orders WHERE status = 'PENDING'"
+        },
+        {
+          "label": "orders_status_range",
+          "sql": "SELECT count(*) FROM orders WHERE status='PENDING' AND created_at > now() - interval '1 day'"
+        }
+      ]
+    },
+    {
+      "id": "softdelete_unique",
+      "kind": "soft_delete_unique",
+      "entity": "categories",
+      "name_field": "name",
+      "create": {
+        "method": "POST",
+        "path": "/api/categories",
+        "body": {
+          "name": "{{prefix}}cat_{{rand6}}"
+        }
+      },
+      "delete": {
+        "method": "DELETE",
+        "path": "/api/categories/{id}"
+      },
+      "read": {
+        "table": "categories",
+        "columns": "id, is_deleted",
+        "where": "name = '{{name}}'"
+      },
+      "cleanup_sql": [
+        "DELETE FROM categories WHERE name = '{{name}}'"
+      ]
+    },
+    {
+      "id": "scale_experiment",
+      "kind": "scale_experiment",
+      "source_table": "products",
+      "shadow_table": "ai_probe_products",
+      "rows": 50000,
+      "insert_sql": "INSERT INTO ai_probe_products (name, category_id, price_cent, unit, is_active, is_deleted) SELECT '菜品'||g, 1, 100, '份', true, false FROM generate_series(1,{{rows}}) g",
+      "queries": [
+        {
+          "label": "like_prefix_lower",
+          "sql": "SELECT count(*) FROM ai_probe_products WHERE lower(name) LIKE '%菜品%'"
+        },
+        {
+          "label": "like_prefix_raw",
+          "sql": "SELECT count(*) FROM ai_probe_products WHERE name LIKE '%菜品%'"
+        },
+        {
+          "label": "exact_equal",
+          "sql": "SELECT count(*) FROM ai_probe_products WHERE name = '菜品1'"
+        }
+      ]
+    },
+    {
+      "id": "db_invariants",
+      "kind": "db_invariants",
+      "orphan_checks": [
+        {
+          "label": "orphan_orders_package",
+          "sql": "SELECT count(*) FROM orders o LEFT JOIN packages p ON o.package_id=p.id WHERE o.package_id IS NOT NULL AND p.id IS NULL"
+        }
+      ],
+      "soft_delete_probe": {
+        "label": "orders_without_soft_delete",
+        "table": "orders",
+        "column": "is_deleted"
+      },
+      "table_sizes_sql": "SELECT relname, pg_size_pretty(pg_total_relation_size(relid)) FROM pg_stat_user_tables ORDER BY pg_total_relation_size(relid) DESC"
+    },
+    {
+      "id": "defense_audit",
+      "kind": "defense_audit",
+      "constraint_probes": [
+        {
+          "name": "chk_orders_table_count",
+          "table": "orders",
+          "sql": "INSERT INTO orders (order_no, customer_name, customer_phone, banquet_name, banquet_type, address, reservation_time, table_count, package_snapshot, added_items_snapshot, plan_total_cent, use_final_price, final_price_cent, deposit_cent, status) VALUES ('ai_probe_c1','ai_probe_c1','1','ai_probe_c1','x','a', now(), 0, '{}'::jsonb, '[]'::jsonb, 0, false, 0, 0, 'PENDING')"
+        },
+        {
+          "name": "chk_orders_deposit_cent",
+          "table": "orders",
+          "sql": "INSERT INTO orders (order_no, customer_name, customer_phone, banquet_name, banquet_type, address, reservation_time, table_count, package_snapshot, added_items_snapshot, plan_total_cent, use_final_price, final_price_cent, deposit_cent, status) VALUES ('ai_probe_c2','ai_probe_c2','1','ai_probe_c2','x','a', now(), 1, '{}'::jsonb, '[]'::jsonb, 0, false, 0, -1, 'PENDING')"
+        },
+        {
+          "name": "chk_orders_status",
+          "table": "orders",
+          "sql": "INSERT INTO orders (order_no, customer_name, customer_phone, banquet_name, banquet_type, address, reservation_time, table_count, package_snapshot, added_items_snapshot, plan_total_cent, use_final_price, final_price_cent, deposit_cent, status) VALUES ('ai_probe_c3','ai_probe_c3','1','ai_probe_c3','x','a', now(), 1, '{}'::jsonb, '[]'::jsonb, 0, false, 0, 0, 'NOT_A_STATUS')"
+        },
+        {
+          "name": "chk_orders_final_price_cent",
+          "table": "orders",
+          "sql": "INSERT INTO orders (order_no, customer_name, customer_phone, banquet_name, banquet_type, address, reservation_time, table_count, package_snapshot, added_items_snapshot, plan_total_cent, use_final_price, final_price_cent, deposit_cent, status) VALUES ('ai_probe_c7','ai_probe_c7','1','ai_probe_c7','x','a', now(), 1, '{}'::jsonb, '[]'::jsonb, 0, false, -1, 0, 'PENDING')"
+        },
+        {
+          "name": "chk_orders_plan_total_cent",
+          "table": "orders",
+          "sql": "INSERT INTO orders (order_no, customer_name, customer_phone, banquet_name, banquet_type, address, reservation_time, table_count, package_snapshot, added_items_snapshot, plan_total_cent, use_final_price, final_price_cent, deposit_cent, status) VALUES ('ai_probe_c8','ai_probe_c8','1','ai_probe_c8','x','a', now(), 1, '{}'::jsonb, '[]'::jsonb, -1, false, 0, 0, 'PENDING')"
+        },
+        {
+          "name": "chk_package_items_quantity",
+          "table": "package_items",
+          "sql": "INSERT INTO package_items (package_id, product_id, quantity) SELECT id, id, 0 FROM packages LIMIT 1"
+        },
+        {
+          "name": "chk_packages_price_cent",
+          "table": "packages",
+          "sql": "INSERT INTO packages (name, banquet_type, price_cent) VALUES ('ai_probe_c4','x',-1)"
+        },
+        {
+          "name": "chk_products_price_cent",
+          "table": "products",
+          "sql": "INSERT INTO products (name, category_id, price_cent, unit) VALUES ('ai_probe_c5', (SELECT id FROM categories LIMIT 1), -1, '份')"
+        }
+      ],
+      "no_defense_probes": [
+        {
+          "label": "deposit_cent > final_price_cent（定金大于成交价）",
+          "table": "orders",
+          "sql": "INSERT INTO orders (order_no, customer_name, customer_phone, banquet_name, banquet_type, address, reservation_time, table_count, package_snapshot, added_items_snapshot, plan_total_cent, use_final_price, final_price_cent, deposit_cent, status) VALUES ('ai_probe_n1','ai_probe_n1','1','ai_probe_n1','x','a', now(), 1, '{}'::jsonb, '[]'::jsonb, 100, true, 1, 999999, 'PENDING')"
+        },
+        {
+          "label": "reservation_time 在过去（预订过去的日期）",
+          "table": "orders",
+          "sql": "INSERT INTO orders (order_no, customer_name, customer_phone, banquet_name, banquet_type, address, reservation_time, table_count, package_snapshot, added_items_snapshot, plan_total_cent, use_final_price, final_price_cent, deposit_cent, status) VALUES ('ai_probe_n2','ai_probe_n2','1','ai_probe_n2','x','a', now() - interval '1 year', 1, '{}'::jsonb, '[]'::jsonb, 100, true, 100, 0, 'PENDING')"
+        },
+        {
+          "label": "customer_phone 非手机号格式",
+          "table": "orders",
+          "sql": "INSERT INTO orders (order_no, customer_name, customer_phone, banquet_name, banquet_type, address, reservation_time, table_count, package_snapshot, added_items_snapshot, plan_total_cent, use_final_price, final_price_cent, deposit_cent, status) VALUES ('ai_probe_n3','ai_probe_n3','not-a-phone','ai_probe_n3','x','a', now(), 1, '{}'::jsonb, '[]'::jsonb, 100, true, 100, 0, 'PENDING')"
+        },
+        {
+          "label": "status=COMPLETED 但 deposit_cent=0（未付定金却已完成）",
+          "table": "orders",
+          "sql": "INSERT INTO orders (order_no, customer_name, customer_phone, banquet_name, banquet_type, address, reservation_time, table_count, package_snapshot, added_items_snapshot, plan_total_cent, use_final_price, final_price_cent, deposit_cent, status) VALUES ('ai_probe_n4','ai_probe_n4','1','ai_probe_n4','x','a', now(), 1, '{}'::jsonb, '[]'::jsonb, 100, true, 100, 0, 'COMPLETED')"
+        },
+        {
+          "label": "orders.address 为 NULL（DB 声明 NOT NULL）",
+          "table": "orders",
+          "sql": "INSERT INTO orders (order_no, customer_name, customer_phone, banquet_name, banquet_type, reservation_time, table_count, package_snapshot, added_items_snapshot, plan_total_cent, use_final_price, final_price_cent, deposit_cent, status) VALUES ('ai_probe_n5','ai_probe_n5','1','ai_probe_n5','x', now(), 1, '{}'::jsonb, '[]'::jsonb, 100, true, 100, 0, 'PENDING')"
+        },
+        {
+          "label": "products.category_id 指向一个不存在的分类（FK 应拦）",
+          "table": "products",
+          "sql": "INSERT INTO products (name, category_id, price_cent, unit) VALUES ('ai_probe_n6', 999999, 100, '份')"
+        }
+      ],
+      "soft_delete_propagation": [
+        {
+          "label": "product -> 已软删的 category",
+          "sql": "UPDATE categories SET is_deleted=true WHERE id=(SELECT id FROM categories WHERE is_deleted=false LIMIT 1);",
+          "probe_sql": "SELECT count(*) FROM products p JOIN categories c ON c.id=p.category_id WHERE c.is_deleted=true AND p.is_deleted=false"
+        },
+        {
+          "label": "order -> 已软删的 package",
+          "sql": "UPDATE packages SET is_deleted=true WHERE id=(SELECT id FROM packages WHERE is_deleted=false LIMIT 1);",
+          "probe_sql": "SELECT count(*) FROM orders o JOIN packages p ON p.id=o.package_id WHERE p.is_deleted=true"
+        }
+      ]
+    },
+    {
+      "id": "contract_boundary",
+      "kind": "contract_boundary",
+      "entity": "orders",
+      "method": "POST",
+      "path": "/api/orders",
+      "body": {
+        "customerName": "ai_probe_cls",
+        "customerPhone": "13800000001",
+        "banquetName": "ai_probe_cls",
+        "banquetType": "婚宴",
+        "reservationTime": "{{plus30d}}",
+        "tableCount": 1,
+        "packageId": {
+          "$sql": "SELECT id FROM packages WHERE is_deleted=false LIMIT 1",
+          "as": "int"
+        },
+        "planTotalCent": 100,
+        "useFinalPrice": true,
+        "finalPriceCent": 100,
+        "depositCent": 0,
+        "status": "PENDING"
+      },
+      "read": {
+        "table": "orders",
+        "columns": "status, deposit_cent, final_price_cent, table_count, reservation_time, customer_phone, address, plan_total_cent"
+      },
+      "cases": [
+        {
+          "label": "address 缺省（DTO 无约束，DB NOT NULL）",
+          "override": {}
+        },
+        {
+          "label": "finalPriceCent=null（DTO 可空，DB NOT NULL）",
+          "override": {
+            "finalPriceCent": null
+          }
+        },
+        {
+          "label": "reservationTime 在过去",
+          "override": {
+            "reservationTime": "{{minus365d}}"
+          }
+        },
+        {
+          "label": "customerPhone 非手机号",
+          "override": {
+            "customerPhone": "not-a-phone"
+          }
+        },
+        {
+          "label": "status 小写 pending",
+          "override": {
+            "status": "pending"
+          }
+        },
+        {
+          "label": "depositCent > finalPriceCent",
+          "override": {
+            "depositCent": 999999,
+            "finalPriceCent": 1
+          }
+        },
+        {
+          "label": "tableCount=0",
+          "override": {
+            "tableCount": 0
+          }
+        },
+        {
+          "label": "status=COMPLETED 且 depositCent=0",
+          "override": {
+            "status": "COMPLETED"
+          }
+        }
+      ],
+      "cleanup_sql": [
+        "DELETE FROM orders WHERE id = {{id}}"
+      ]
+    },
+    {
+      "id": "nullability",
+      "kind": "nullability",
+      "cases": [
+        {
+          "label": "products.is_active 缺省（DB NOT NULL, DTO 无 @NotNull）",
+          "method": "POST",
+          "path": "/api/products",
+          "entity": "products",
+          "table": "products",
+          "read_columns": "id, is_active, name",
+          "body": {
+            "name": "ai_probe_nn",
+            "categoryId": {
+              "$sql": "SELECT id FROM categories WHERE is_deleted=false LIMIT 1",
+              "as": "int"
+            },
+            "priceCent": 1,
+            "unit": "份"
+          },
+          "cleanup_sql": [
+            "DELETE FROM package_items WHERE package_id = {{id}}",
+            "DELETE FROM products WHERE id = {{id}}"
+          ]
+        },
+        {
+          "label": "packages.is_active 缺省（DB NOT NULL, DTO 无 @NotNull）",
+          "method": "POST",
+          "path": "/api/packages",
+          "entity": "packages",
+          "table": "packages",
+          "read_columns": "id, is_active, name",
+          "body": {
+            "name": "ai_probe_nn_pkg",
+            "banquetType": "婚宴",
+            "priceCent": 1,
+            "items": [
+              {
+                "productId": 1,
+                "quantity": 1
+              }
+            ]
+          },
+          "cleanup_sql": [
+            "DELETE FROM package_items WHERE package_id = {{id}}",
+            "DELETE FROM packages WHERE id = {{id}}"
+          ]
+        },
+        {
+          "label": "products.categoryId 缺省（DB NOT NULL, DTO 有 @NotNull）",
+          "method": "POST",
+          "path": "/api/products",
+          "entity": "products",
+          "table": "products",
+          "read_columns": "id, is_active, name",
+          "body": {
+            "name": "ai_probe_nn2",
+            "priceCent": 1,
+            "unit": "份"
+          },
+          "cleanup_sql": [
+            "DELETE FROM package_items WHERE package_id = {{id}}",
+            "DELETE FROM products WHERE id = {{id}}"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "write_footprint",
+      "kind": "write_footprint",
+      "entities": [
+        {
+          "entity": "products",
+          "table": "products",
+          "create": {
+            "method": "POST",
+            "path": "/api/products",
+            "body": {
+              "name": "ai_probe_fp",
+              "categoryId": {
+                "$sql": "SELECT id FROM categories WHERE is_deleted=false LIMIT 1",
+                "as": "int",
+                "as_name": "category_id"
+              },
+              "priceCent": 1234,
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-01.jpg",
+              "description": "probe",
+              "isActive": true
+            }
+          },
+          "alt_id_fallback": "{{category_id}}",
+          "steps": [
+            {
+              "action": "PUT /api/products/{id}",
+              "method": "PUT",
+              "path": "/api/products/{id}",
+              "body": {
+                "name": "ai_probe_fp2",
+                "categoryId": "{{category_id}}",
+                "priceCent": 9999,
+                "unit": "克",
+                "description": "changed",
+                "isActive": false
+              }
+            },
+            {
+              "action": "PATCH /api/products/{id}/status",
+              "method": "PATCH",
+              "path": "/api/products/{id}/status",
+              "body": {
+                "isActive": true
+              }
+            },
+            {
+              "action": "PUT /api/products/{id} 换 categoryId",
+              "method": "PUT",
+              "path": "/api/products/{id}",
+              "body": {
+                "name": "ai_probe_fp2",
+                "categoryId": "{{alt_id}}",
+                "priceCent": 9999,
+                "unit": "克",
+                "description": "changed",
+                "isActive": false
+              }
+            },
+            {
+              "action": "PUT /api/products/{id} 缺省 categoryId",
+              "method": "PUT",
+              "path": "/api/products/{id}",
+              "body": {
+                "name": "ai_probe_fp3",
+                "priceCent": 1,
+                "unit": "克"
+              },
+              "record_http": true
+            },
+            {
+              "action": "DELETE /api/products/{id}",
+              "method": "DELETE",
+              "path": "/api/products/{id}"
+            }
+          ],
+          "cleanup_sql": [
+            "DELETE FROM products WHERE id = {{id}}"
+          ],
+          "alt_id": {
+            "$sql": "SELECT id FROM categories WHERE is_deleted=false AND id <> {{category_id}} LIMIT 1",
+            "as": "int_or_null"
+          }
+        },
+        {
+          "entity": "packages",
+          "table": "packages",
+          "create": {
+            "method": "POST",
+            "path": "/api/packages",
+            "body": {
+              "name": "ai_probe_fp_pkg",
+              "banquetType": "婚宴",
+              "priceCent": 1000,
+              "items": []
+            }
+          },
+          "steps": [
+            {
+              "action": "PUT /api/packages/{id}",
+              "method": "PUT",
+              "path": "/api/packages/{id}",
+              "body": {
+                "name": "ai_probe_fp_pkg2",
+                "banquetType": "婚宴",
+                "priceCent": 2000,
+                "items": []
+              }
+            },
+            {
+              "action": "DELETE /api/packages/{id}",
+              "method": "DELETE",
+              "path": "/api/packages/{id}"
+            }
+          ],
+          "cleanup_sql": [
+            "DELETE FROM package_items WHERE package_id = {{id}}",
+            "DELETE FROM packages WHERE id = {{id}}"
+          ]
+        }
+      ]
+    }
+  ]
+}
