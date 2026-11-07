@@ -3,16 +3,16 @@
   "contract": "/Users/june/.cc-weixin/workspace/layered-audit/layers.yaml",
   "target": "/Users/june/.cc-weixin/workspace/layered-audit/pilot/target.json",
   "counts": {
-    "total": 110,
+    "total": 111,
     "by_layer": {
       "function": 13,
       "file": 18,
-      "service": 46,
+      "service": 47,
       "class": 18,
       "integration": 15
     },
     "by_kind": {
-      "defect": 92,
+      "defect": 93,
       "positive": 16,
       "observation": 2
     }
@@ -2928,7 +2928,7 @@
       "kind": "defect",
       "runtime_fidelity": "hybrid",
       "severity": "HIGH",
-      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.716ms vs 0.019ms，差 406 倍）",
+      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.62ms vs 0.012ms，差 635 倍）",
       "detail": "迁移文件建了 products(name) 索引，但服务层关键词搜索写的是 lower(name) LIKE '%kw%'：lower() 让索引无法用于定位，前导 % 让 btree 本来也用不上。EXPLAIN 显示走 Filter 全量过滤而非 Index Cond。类层把索引交给服务层，但服务层不知道该怎么用它 —— 声明没有传递下去。",
       "related": [],
       "note": "检测在 class 层（实体与 DDL 对齐），归属层是 service（查询模式在服务层）",
@@ -3073,7 +3073,7 @@
       "kind": "defect",
       "runtime_fidelity": "hybrid",
       "severity": "MEDIUM",
-      "title": "orders 表没有软删/归档，永久增长（当前 192 kB）",
+      "title": "orders 表没有软删/归档，永久增长（当前 184 kB）",
       "detail": "products/packages/categories 都有 is_deleted，orders 没有。订单是唯一不设生命周期的表，还带 2 个 jsonb 快照列和 6 个索引 —— 数据量上来后这张表会最先撑爆。",
       "related": [],
       "note": "类层无「生命周期」类别；资源上限语义更接近 service.resource_leak",
@@ -3946,7 +3946,7 @@
       "runtime_fidelity": "container",
       "severity": "HIGH",
       "title": "可以把不属于该套餐的商品写进套餐明细，后端照单全收",
-      "detail": "下单时 packageItems 里塞进套餐外的商品（['ai_probe_prod_415833']），后端只校验商品存在、不校验归属，200 通过并写进订单快照。订单快照里的「套餐明细」因此不代表真实套餐，后续对账无据可查。",
+      "detail": "下单时 packageItems 里塞进套餐外的商品（['ai_probe_prod_995953']），后端只校验商品存在、不校验归属，200 通过并写进订单快照。订单快照里的「套餐明细」因此不代表真实套餐，后续对账无据可查。",
       "related": [],
       "note": "",
       "source": {
@@ -4328,7 +4328,7 @@
       "runtime_fidelity": "container",
       "severity": "MEDIUM",
       "title": "分页 total 是纯开销：后端每次列表请求都跑 count(*) 全表扫描，前端从不读这个数",
-      "detail": "每个列表接口都带分页参数，后端对每次请求额外跑一条 count(*) 全表扫描（Seq Scan，因为 idx_products_name 对 lower(name) LIKE '%…%' 不可用）。实测数据量阶梯：30 行 → 6.17ms；2030 行 → 10.06ms；10030 行 → 19.72ms；50030 行 → 36.4ms。\n在 50030 行时，count(*) 单条耗时 14.989ms，占带 keyword 列表接口端到端延迟的 41.2%，占不带 keyword 接口的 47.3%。\n而前端 banquetApi.js 的 listProducts / listPackages / listOrders 三个函数一律只取 data.items.map(...)，total 从未被读取 —— 这份开销 100% 浪费。\n本轮判定「端到端延迟随数据量塌陷」为 PARTIALLY_CONFIRMED：延迟确实随数据量线性增长，但 50030 行时端到端仅 36.4ms，按每行 0.000728ms 折算，要到约 1374450 行才触及 1 秒预算。\n结论：结构性 O(N) 成立，但当前规模下后果未兑现 —— 真正该修的不是「加索引」，而是别让后端算一个没人要的数。",
+      "detail": "每个列表接口都带分页参数，后端对每次请求额外跑一条 count(*) 全表扫描（Seq Scan，因为 idx_products_name 对 lower(name) LIKE '%…%' 不可用）。实测数据量阶梯：30 行 → 6.46ms；2030 行 → 9.55ms；10030 行 → 17.51ms；50030 行 → 35.41ms。\n在 50030 行时，count(*) 单条耗时 13.922ms，占带 keyword 列表接口端到端延迟的 39.3%，占不带 keyword 接口的 46.9%。\n而前端 banquetApi.js 的 listProducts / listPackages / listOrders 三个函数一律只取 data.items.map(...)，total 从未被读取 —— 这份开销 100% 浪费。\n本轮判定「端到端延迟随数据量塌陷」为 PARTIALLY_CONFIRMED：延迟确实随数据量线性增长，但 50030 行时端到端仅 35.41ms，按每行 0.000708ms 折算，要到约 1412877 行才触及 1 秒预算。\n结论：结构性 O(N) 成立，但当前规模下后果未兑现 —— 真正该修的不是「加索引」，而是别让后端算一个没人要的数。",
       "related": [],
       "note": "实测 5 万行时 count(*) 占端到端 31%（带 keyword）/ 40%（不带 keyword）；前端 listProducts/listPackages/listOrders 三个函数都只取 items，total 从未被读",
       "source": {
@@ -4375,7 +4375,7 @@
       "runtime_fidelity": "container",
       "severity": "MEDIUM",
       "title": "三个列表接口每次都为前端丢弃的 total 付一次全表扫描",
-      "detail": "三个列表接口（GET /api/products、/api/packages、/api/orders）在集权层实测中，每次请求的 count(*) 部分占端到端延迟的 41.2%~47.3%，而这个 total 前端从头到尾没读过。\n也就是说：用户每翻一次列表，后端就多付一次全表扫描的钱，收益为零。同时前端把 page 固定成 1、pageSize 固定成 100，超出部分永远不可见 —— 分页机制在这条链路上同时是「成本」和「不可用」。",
+      "detail": "三个列表接口（GET /api/products、/api/packages、/api/orders）在集权层实测中，每次请求的 count(*) 部分占端到端延迟的 39.3%~46.9%，而这个 total 前端从头到尾没读过。\n也就是说：用户每翻一次列表，后端就多付一次全表扫描的钱，收益为零。同时前端把 page 固定成 1、pageSize 固定成 100，超出部分永远不可见 —— 分页机制在这条链路上同时是「成本」和「不可用」。",
       "related": [],
       "note": "链级后果归集成层，根因（后端白算一次 count）归服务层",
       "source": {
@@ -4565,7 +4565,7 @@
       "runtime_fidelity": "container",
       "severity": "MEDIUM",
       "title": "并发编辑同一订单会静默丢掉对方的修改：没有版本号、没有冲突检测",
-      "detail": "订单编辑走 PUT /api/orders/{id}，服务层在事务里整行覆盖，没有乐观锁（无 version / ETag / If-Match），也没有任何冲突检测。\n两个客户端同时编辑同一订单、各改一个字段时，后提交的那个用自己那份完整快照覆盖了整行，先提交的人的修改直接消失 —— 没有报错、没有冲突提示，两边都以为自己改成功了。\n实测：{\"property\": \"两个并发 PUT 分别改 customerPhone 与 address，最终行必须同时含两个新值\", \"ok\": false, \"order_id\": 806, \"http_status\": {\"A\": 200, \"B\": 200}, \"final_row\": {\"remark\": \"ai_probe_conc_dc1_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_addr_concurrent\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"phone_applied\": false, \"address_applied\": true, \"lost_update\": true}\n谈单场景下的具体后果：销售 A 改了成交价、销售 B 同时改了电话，A 的改价凭空消失，订单金额回到旧值，而 A 的界面显示他改成功了。",
+      "detail": "订单编辑走 PUT /api/orders/{id}，服务层在事务里整行覆盖，没有乐观锁（无 version / ETag / If-Match），也没有任何冲突检测。\n两个客户端同时编辑同一订单、各改一个字段时，后提交的那个用自己那份完整快照覆盖了整行，先提交的人的修改直接消失 —— 没有报错、没有冲突提示，两边都以为自己改成功了。\n实测：{\"property\": \"两个并发 PUT 分别改 customerPhone 与 address，最终行必须同时含两个新值\", \"ok\": false, \"order_id\": 890, \"http_status\": {\"A\": 200, \"B\": 200}, \"final_row\": {\"remark\": \"ai_probe_conc_dc1_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_addr_concurrent\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"phone_applied\": false, \"address_applied\": true, \"lost_update\": true}\n谈单场景下的具体后果：销售 A 改了成交价、销售 B 同时改了电话，A 的改价凭空消失，订单金额回到旧值，而 A 的界面显示他改成功了。",
       "related": [],
       "note": "两个并发 PUT 各改一个字段，都返回 200，但最终行只含后写者的完整快照 —— 先写者的修改凭空消失，两边都以为自己成功了，没有任何冲突提示",
       "source": {
@@ -4612,7 +4612,7 @@
       "runtime_fidelity": "container",
       "severity": "INFO",
       "title": "被拒的写请求不会在订单行留下部分写入（事务边界有效）",
-      "detail": "同一个 PUT 里塞一个非法字段（tableCount=0，@Min(1) 拒绝）和一个合法字段的改动，服务返回 4xx 后，订单行与请求前逐字段一致 —— 没有出现「校验失败但另一部分已经写进去」的半截状态。\n实测：{\"property\": \"被拒的 PUT 不能在订单行留下任何部分写入\", \"ok\": true, \"order_id\": 807, \"http_status\": 400, \"before\": {\"remark\": \"ai_probe_conc_dc2_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc2_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"after\": {\"remark\": \"ai_probe_conc_dc2_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc2_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"partial_write\": false}",
+      "detail": "同一个 PUT 里塞一个非法字段（tableCount=0，@Min(1) 拒绝）和一个合法字段的改动，服务返回 4xx 后，订单行与请求前逐字段一致 —— 没有出现「校验失败但另一部分已经写进去」的半截状态。\n实测：{\"property\": \"被拒的 PUT 不能在订单行留下任何部分写入\", \"ok\": true, \"order_id\": 891, \"http_status\": 400, \"before\": {\"remark\": \"ai_probe_conc_dc2_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc2_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"after\": {\"remark\": \"ai_probe_conc_dc2_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc2_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"partial_write\": false}",
       "related": [],
       "note": "正面结论：校验失败后订单行与请求前逐字段一致，没有半截写入",
       "source": {
@@ -4661,7 +4661,7 @@
       "runtime_fidelity": "container",
       "severity": "MEDIUM",
       "title": "下单接口没有幂等：同一个请求重发一次就产生两个订单",
-      "detail": "POST /api/orders 不接受也不返回幂等键，没有按业务键去重，也没有唯一约束能挡住重复。客户端在超时后重试（这是所有 HTTP 客户端的标准行为），就会多出一张订单。\n实测：{\"property\": \"同一个 POST 重发两次，只能有一个订单落库（POST 必须幂等或带幂等键）\", \"ok\": false, \"http_status\": [200, 200], \"first_order_id\": 808, \"second_order_id\": 809, \"orders_in_db\": 2, \"same_id\": false}\n在零鉴权的前提下，这个接口同时也是「随便重发就能灌订单」的放大器。",
+      "detail": "POST /api/orders 不接受也不返回幂等键，没有按业务键去重，也没有唯一约束能挡住重复。客户端在超时后重试（这是所有 HTTP 客户端的标准行为），就会多出一张订单。\n实测：{\"property\": \"同一个 POST 重发两次，只能有一个订单落库（POST 必须幂等或带幂等键）\", \"ok\": false, \"http_status\": [200, 200], \"first_order_id\": 892, \"second_order_id\": 893, \"orders_in_db\": 2, \"same_id\": false}\n在零鉴权的前提下，这个接口同时也是「随便重发就能灌订单」的放大器。",
       "related": [],
       "note": "同一个 POST 发两次 → 两个订单 id、库里 2 行；没有幂等键，也没有业务键去重",
       "source": {
@@ -4676,8 +4676,55 @@
       }
     },
     {
+      "id": "JAVA-ASPECT-SELF-INVOCATION-BYPASS",
+      "uid": "class:JAVA-ASPECT-SELF-INVOCATION-BYPASS#0",
+      "layer": "class",
+      "category": "class.contract_violation",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java",
+        "line": 54,
+        "symbol": "normalizePageSize",
+        "endpoint": ""
+      },
+      "claim": "同类内部是否直接调用了被切面标注的方法（绕过 Spring 代理）？",
+      "evidence_refs": [
+        "feature_findings.json#JAVA-ASPECT-SELF-INVOCATION-BYPASS"
+      ],
+      "repro_cmd": "python3 java_feature_scan.py",
+      "repro_granularity": "layer",
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "class",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "spring.self_invocation_bypasses_proxy",
+      "related_root_causes": [],
+      "kind": "defect",
+      "runtime_fidelity": "hybrid",
+      "severity": "MEDIUM",
+      "title": "同类内部直接调用被切面标注的方法 → 绕过 Spring 代理，切面语义不生效",
+      "detail": "Java 里同类内部调用**通常不带 this. 前缀**（findProduct(id)），这类调用走的是 this 引用，**不经过代理** → 被调方法上的 @Transactional(readOnly=true) 之类的切面不生效。\n本项目当前的实际后果有限（外层调用方本身就是写事务，readOnly 只读语义失效），但这是**代理绕过**的典型形态 —— 一旦外层语义变化或这些方法被挪出事务，就会静默失去事务边界。\n{\"kind\": \"self_invocation_bypasses_proxy\", \"file\": \"/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java\", \"class\": \"PackageService\", \"method\": \"normalizePageSize\", \"line\": 54, \"target\": \"findPackage\", \"reason\": \"normalizePageSize 内部直接调用 findPackage()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效\"}\n{\"kind\": \"self_invocation_bypasses_proxy\", \"file\": \"/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java\", \"class\": \"PackageService\", \"method\": \"get\", \"line\": 61, \"target\": \"findPackage\", \"reason\": \"get 内部直接调用 findPackage()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效\"}\n{\"kind\": \"self_invocation_bypasses_proxy\", \"file\": \"/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java\", \"class\": \"PackageService\", \"method\": \"update\", \"line\": 77, \"target\": \"findPackage\", \"reason\": \"update 内部直接调用 findPackage()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效\"}\n{\"kind\": \"self_invocation_bypasses_proxy\", \"file\": \"/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java\", \"class\": \"PackageService\", \"method\": \"updateStatus\", \"line\": 88, \"target\": \"findPackage\", \"reason\": \"updateStatus 内部直接调用 findPackage()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效\"}\n{\"kind\": \"self_invocation_bypasses_proxy\", \"file\": \"/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java\", \"class\": \"PackageService\", \"method\": \"delete\", \"line\": 97, \"target\": \"findPackage\", \"reason\": \"delete 内部直接调用 findPackage()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效\"}\n{\"kind\": \"self_invocation_bypasses_proxy\", \"file\": \"/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/ProductService.java\", \"class\": \"ProductService\", \"method\": \"update\", \"line\": 67, \"target\": \"findProduct\", \"reason\": \"update 内部直接调用 findProduct()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效\"}\n{\"kind\": \"self_invocation_bypasses_proxy\", \"file\": \"/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/ProductService.java\", \"class\": \"ProductService\", \"method\": \"updateStatus\", \"line\": 78, \"target\": \"findProduct\", \"reason\": \"updateStatus 内部直接调用 findProduct()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效\"}\n{\"kind\": \"self_invocation_bypasses_proxy\", \"file\": \"/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/ProductService.java\", \"class\": \"ProductService\", \"method\": \"delete\", \"line\": 90, \"target\": \"findProduct\", \"reason\": \"delete 内部直接调用 findProduct()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效\"}",
+      "related": [],
+      "note": "Java 里同类内部调用通常不带 this. 前缀，这类调用不走代理 → 被调方法的 readOnly 等切面语义失效。本项目当前后果有限（外层已是写事务），但这是代理绕过的典型形态",
+      "source": {
+        "file": "feature_findings.json",
+        "index": 0
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
       "id": "JAVA-SERVICE-EXPOSES-JPA-ENTITY",
-      "uid": "class:JAVA-SERVICE-EXPOSES-JPA-ENTITY#0",
+      "uid": "class:JAVA-SERVICE-EXPOSES-JPA-ENTITY#1",
       "layer": "class",
       "category": "class.encapsulation_leak",
       "category_fit": "exact",
@@ -4711,53 +4758,6 @@
       "detail": "对外的返回类型应该是 DTO（OrderResponse / ProductResponse …），实体一旦暴露给调用方，它就能绕过服务层的所有校验与归一化直接改字段，也绕过了「读路径只读」这个约定。\n{\"file\": \"/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java\", \"class\": \"PackageService\", \"method\": \"findPackage\", \"line\": 107, \"returns_entity\": \"BanquetPackage\", \"cross_class_callers\": [], \"reason\": \"public 方法直接返回 JPA 实体 BanquetPackage，调用方可以绕过 DTO 契约与全部业务校验直接改实体\"}\n{\"file\": \"/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/ProductService.java\", \"class\": \"ProductService\", \"method\": \"findProduct\", \"line\": 103, \"returns_entity\": \"Product\", \"cross_class_callers\": [], \"reason\": \"public 方法直接返回 JPA 实体 Product，调用方可以绕过 DTO 契约与全部业务校验直接改实体\"}",
       "related": [],
       "note": "ProductService.findProduct / PackageService.findPackage 是 public 且返回实体（Product / BanquetPackage），可见性过宽：调用方能绕过 DTO 契约与全部业务校验直接改实体。当前无跨类调用方，是潜在泄漏而非正在发生的缺陷",
-      "source": {
-        "file": "feature_findings.json",
-        "index": 0
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": false
-      }
-    },
-    {
-      "id": "JAVA-SPRING-PROXY-SEMANTICS-CLEAN",
-      "uid": "class:JAVA-SPRING-PROXY-SEMANTICS-CLEAN#1",
-      "layer": "class",
-      "category": "class.contract_violation",
-      "category_fit": "exact",
-      "suggested_category": "",
-      "location": {
-        "file": "",
-        "line": 0,
-        "symbol": "",
-        "endpoint": ""
-      },
-      "claim": "Spring 代理语义是否成立（切面能不能织入、有没有绕过代理）？",
-      "evidence_refs": [
-        "feature_findings.json#JAVA-SPRING-PROXY-SEMANTICS-CLEAN"
-      ],
-      "repro_cmd": "python3 java_feature_scan.py",
-      "repro_granularity": "layer",
-      "confidence": 0.9,
-      "ground_truth": "verified",
-      "cwe": [],
-      "owner": {
-        "layer": "class",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "spring.proxy_semantics_clean",
-      "related_root_causes": [],
-      "kind": "positive",
-      "runtime_fidelity": "hybrid",
-      "severity": "INFO",
-      "title": "Spring 代理语义干净：没有切面失效点、没有事务内异步逃逸、没有对外暴露实体",
-      "detail": "扫了 63 个编译单元、24 个带切面注解的方法：\n· 切面注解全部落在 public 方法上 → CGLIB/JDK 代理能织入\n· 没有同类内部 this.<切面方法>() 自调用 → 不会绕过代理\n· 事务方法里没有 CompletableFuture / parallelStream / new Thread 逃逸\n· 对外暴露 JPA 实体的 public 方法：2 个（见 JAVA-SERVICE-EXPOSES-JPA-ENTITY）\n注意：这是**静态**结论，证明不了「运行时切面真的生效了」——那需要容器内观测，见 feature_coverage 矩阵里的盲区说明。",
-      "related": [],
-      "note": "24 个切面方法全部 public；无 private/final/static 上的切面；无同类内部自调用；事务方法内无异步逃逸。注意这是静态结论，证不了「运行时切面真的生效」",
       "source": {
         "file": "feature_findings.json",
         "index": 1
@@ -4804,7 +4804,7 @@
       "runtime_fidelity": "container",
       "severity": "HIGH",
       "title": "订单定金是否不得超过订单本身的金额？",
-      "detail": "定金是订单金额里的一部分。定金大于订单金额，业务上不可能成立 —— 系统没有任何折扣或溢价模型能解释它。\n不变式：BI-DEPOSIT-LTE-FINAL-AMOUNT　判定原语：field_lte_field\n实测 6 个订单场景，违反 1 次：\n[\n  {\n    \"row_id\": 814,\n    \"type\": \"field_lte_field\",\n    \"left\": 999999,\n    \"right\": 1,\n    \"ok\": false,\n    \"scenario\": \"deposit_over\"\n  }\n]",
+      "detail": "定金是订单金额里的一部分。定金大于订单金额，业务上不可能成立 —— 系统没有任何折扣或溢价模型能解释它。\n不变式：BI-DEPOSIT-LTE-FINAL-AMOUNT　判定原语：field_lte_field\n实测 6 个订单场景，违反 1 次：\n[\n  {\n    \"row_id\": 899,\n    \"type\": \"field_lte_field\",\n    \"left\": 999999,\n    \"right\": 1,\n    \"ok\": false,\n    \"scenario\": \"deposit_over\"\n  }\n]",
       "related": [],
       "note": "根因已由函数层 FN-APPLY-AMOUNT-INVARIANTS 开单，这里用不变式给出可判定的证据",
       "source": {
@@ -4853,7 +4853,7 @@
       "runtime_fidelity": "container",
       "severity": "HIGH",
       "title": "订单金额是否不超过所选套餐的标价？",
-      "detail": "套餐价是系统里唯一的商品价格基准。订单金额高于套餐标价，等于凭空多收钱。\n不变式：BI-FINAL-AMOUNT-LTE-PACKAGE-PRICE　判定原语：field_lte_field\n实测 6 个订单场景，违反 1 次：\n[\n  {\n    \"row_id\": 816,\n    \"type\": \"field_lte_field\",\n    \"left\": 999999999,\n    \"right\": 46800,\n    \"ok\": false,\n    \"scenario\": \"over_pkg_price\"\n  }\n]",
+      "detail": "套餐价是系统里唯一的商品价格基准。订单金额高于套餐标价，等于凭空多收钱。\n不变式：BI-FINAL-AMOUNT-LTE-PACKAGE-PRICE　判定原语：field_lte_field\n实测 6 个订单场景，违反 1 次：\n[\n  {\n    \"row_id\": 901,\n    \"type\": \"field_lte_field\",\n    \"left\": 999999999,\n    \"right\": 46800,\n    \"ok\": false,\n    \"scenario\": \"over_pkg_price\"\n  }\n]",
       "related": [],
       "note": "根因已由函数层 FN-PRICE-CLIENT-CONTROLLED 开单，这里用不变式给出可判定的证据",
       "source": {
@@ -4900,7 +4900,7 @@
       "runtime_fidelity": "container",
       "severity": "MEDIUM",
       "title": "订单的宴会类型是否与所选套餐的宴会类型一致？",
-      "detail": "套餐带 banquetType（婚宴 / 满月酒 / 寿宴这类分类），订单也带 banquetType。两者指向同一场宴席就必须一致 —— 不一致就是数据自相矛盾（订单说婚宴、套餐说寿宴）。\n不变式：BI-BANQUET-TYPE-MATCH-PACKAGE　判定原语：field_eq_field\n实测 6 个订单场景，违反 1 次：\n[\n  {\n    \"row_id\": 817,\n    \"type\": \"field_eq_field\",\n    \"left\": \"寿宴\",\n    \"right\": \"升学宴\",\n    \"ok\": false,\n    \"scenario\": \"wrong_btype\"\n  }\n]",
+      "detail": "套餐带 banquetType（婚宴 / 满月酒 / 寿宴这类分类），订单也带 banquetType。两者指向同一场宴席就必须一致 —— 不一致就是数据自相矛盾（订单说婚宴、套餐说寿宴）。\n不变式：BI-BANQUET-TYPE-MATCH-PACKAGE　判定原语：field_eq_field\n实测 6 个订单场景，违反 1 次：\n[\n  {\n    \"row_id\": 902,\n    \"type\": \"field_eq_field\",\n    \"left\": \"寿宴\",\n    \"right\": \"升学宴\",\n    \"ok\": false,\n    \"scenario\": \"wrong_btype\"\n  }\n]",
       "related": [],
       "note": "订单 banquetType 直接取客户端值，服务层从不与所选套餐的 banquetType 比对；宴会类型是同一场宴席的分类，不一致就是数据自相矛盾（订单说婚宴、套餐说寿宴）",
       "source": {
@@ -4949,7 +4949,7 @@
       "runtime_fidelity": "container",
       "severity": "HIGH",
       "title": "订单快照里的明细是否都属于所选套餐？",
-      "detail": "快照是订单金额与交付内容的凭据。混进不属于该套餐的商品，快照就不再代表这份套餐。\n不变式：BI-SNAPSHOT-ITEMS-SUBSET-OF-PACKAGE　判定原语：jsonb_subset_of\n实测 6 个订单场景，违反 1 次：\n[\n  {\n    \"row_id\": 818,\n    \"type\": \"jsonb_subset_of\",\n    \"item_ids\": [\n      30\n    ],\n    \"ref_ids\": [\n      1,\n      4,\n      7,\n      10,\n      11,\n      13,\n      19,\n      21,\n      25,\n      26\n    ],\n    \"outside_ref\": [\n      30\n    ],\n    \"ok\": false,\n    \"scenario\": \"foreign_item\"\n  }\n]",
+      "detail": "快照是订单金额与交付内容的凭据。混进不属于该套餐的商品，快照就不再代表这份套餐。\n不变式：BI-SNAPSHOT-ITEMS-SUBSET-OF-PACKAGE　判定原语：jsonb_subset_of\n实测 6 个订单场景，违反 1 次：\n[\n  {\n    \"row_id\": 903,\n    \"type\": \"jsonb_subset_of\",\n    \"item_ids\": [\n      30\n    ],\n    \"ref_ids\": [\n      1,\n      4,\n      7,\n      10,\n      11,\n      13,\n      19,\n      21,\n      25,\n      26\n    ],\n    \"outside_ref\": [\n      30\n    ],\n    \"ok\": false,\n    \"scenario\": \"foreign_item\"\n  }\n]",
       "related": [],
       "note": "根因已由函数层 FN-SNAPSHOT-SEMANTICS 开单，这里用不变式给出可判定的证据",
       "source": {
@@ -5186,7 +5186,7 @@
       "runtime_fidelity": "container",
       "severity": "HIGH",
       "title": "CORS 白名单配成空值时反而允许任意来源跨域（fail-open）",
-      "detail": "这是本轮最反直觉的一条：**把白名单清空，跨域不是被收紧，而是被放开。**\n机制：WebConfig 把 app.cors-allowed-origins 拆开、滤掉空项，得到一个**空数组**，传给 allowedOriginPatterns(...)；而 Spring 的 CorsRegistration 默认先 applyPermitDefaultValues()（allowedOrigins 变成 单个星号），空数组并没有把它清掉 → 最终任何来源都放行。\n实测（Origin: http://evil.example.com）：Access-Control-Allow-Origin = '*'。\n运维的直觉是「清空白名单 = 关掉跨域」，实际拿到的是「对全世界开放跨域」。叠加零鉴权：任何网页都能读全部业务数据。\n对照：白名单配成 * 时 Spring 回显请求的 Origin（实测 'http://evil.example.com'），同样是任意来源放行 —— 但那是显式配置，属于配置者自己的选择；空值这条是**踩空即中招**。\n实测全集：\n{\n  \"cors_empty\": {\n    \"status\": 200,\n    \"allow_origin\": \"*\",\n    \"vary\": \"Origin, Access-Control-Request-Method, Access-Control-Request-Headers\"\n  },\n  \"cors_star\": {\n    \"status\": 200,\n    \"allow_origin\": \"http://evil.example.com\",\n    \"vary\": \"Origin, Access-Control-Request-Method, Access-Control-Request-Headers\"\n  },\n  \"upload_dir_bad\": {\n    \"started\": false,\n    \"error\": \"探针实例 jiuyan-cfg-bad-upload-dir 没起来\"\n  },\n  \"upload_dir_broken\": {\n    \"status\": 500,\n    \"body\": {\n      \"success\": false,\n      \"code\": \"IMAGE_UPLOAD_FAILED\",\n      \"message\": \"图片上传失败\",\n      \"traceId\": \"78ef9cb4-a6a4-4465-bbdf-9f3e1b20ee4b\",\n      \"timestamp\": \"2026-11-07T20:17:55.533731751+08:00\"\n    },\n    \"path_leaks\": []\n  },\n  \"upload_relative\": {\n    \"status\": 200,\n    \"body\": {\n      \"success\": true,\n      \"code\": \"OK\",\n      \"message\": \"成功\",\n      \"data\": {\n        \"imageUrl\": \"/uploads/products/43d91f8a-8659-4a02-b848-76b064eefc05.png\"\n      },\n      \"traceId\": \"54142c34-4084-4d18-8ff4-27c4f2043628\",\n      \"timestamp\": \"2026-11-07T20:18:00.062105128+08:00\"\n    },\n    \"path_leaks\": []\n  }\n}",
+      "detail": "这是本轮最反直觉的一条：**把白名单清空，跨域不是被收紧，而是被放开。**\n机制：WebConfig 把 app.cors-allowed-origins 拆开、滤掉空项，得到一个**空数组**，传给 allowedOriginPatterns(...)；而 Spring 的 CorsRegistration 默认先 applyPermitDefaultValues()（allowedOrigins 变成 单个星号），空数组并没有把它清掉 → 最终任何来源都放行。\n实测（Origin: http://evil.example.com）：Access-Control-Allow-Origin = '*'。\n运维的直觉是「清空白名单 = 关掉跨域」，实际拿到的是「对全世界开放跨域」。叠加零鉴权：任何网页都能读全部业务数据。\n对照：白名单配成 * 时 Spring 回显请求的 Origin（实测 'http://evil.example.com'），同样是任意来源放行 —— 但那是显式配置，属于配置者自己的选择；空值这条是**踩空即中招**。\n实测全集：\n{\n  \"cors_empty\": {\n    \"status\": 200,\n    \"allow_origin\": \"*\",\n    \"vary\": \"Origin, Access-Control-Request-Method, Access-Control-Request-Headers\"\n  },\n  \"cors_star\": {\n    \"status\": 200,\n    \"allow_origin\": \"http://evil.example.com\",\n    \"vary\": \"Origin, Access-Control-Request-Method, Access-Control-Request-Headers\"\n  },\n  \"upload_dir_bad\": {\n    \"started\": false,\n    \"error\": \"探针实例 jiuyan-cfg-bad-upload-dir 没起来\"\n  },\n  \"upload_dir_broken\": {\n    \"status\": 500,\n    \"body\": {\n      \"success\": false,\n      \"code\": \"IMAGE_UPLOAD_FAILED\",\n      \"message\": \"图片上传失败\",\n      \"traceId\": \"451f6295-2598-4595-9afc-fd6f7a44376c\",\n      \"timestamp\": \"2026-11-07T22:35:16.275847553+08:00\"\n    },\n    \"path_leaks\": []\n  },\n  \"upload_relative\": {\n    \"status\": 200,\n    \"body\": {\n      \"success\": true,\n      \"code\": \"OK\",\n      \"message\": \"成功\",\n      \"data\": {\n        \"imageUrl\": \"/uploads/products/5251bca1-8a5c-4794-a92f-9e7e4f3f3053.png\"\n      },\n      \"traceId\": \"70a721e8-118c-46a0-a225-2272076c15d0\",\n      \"timestamp\": \"2026-11-07T22:35:20.843233263+08:00\"\n    },\n    \"path_leaks\": []\n  }\n}",
       "related": [],
       "note": "实测 Access-Control-Allow-Origin: * —— 空配置是 fail-open。WebConfig 滤掉空项得到空数组，但 Spring CorsRegistration 默认的 permitDefaultValues（allowedOrigins=单星号）没被清掉",
       "source": {
@@ -5329,7 +5329,7 @@
       "runtime_fidelity": "container",
       "severity": "INFO",
       "title": "上传失败时错误响应不泄露服务器文件系统路径",
-      "detail": "把上传目录破坏掉（products 目录换成一个普通文件，Files.createDirectories 必然失败）后，接口返回的是固定的业务错误，响应体里没有任何路径片段：\n{\"success\": false, \"code\": \"IMAGE_UPLOAD_FAILED\", \"message\": \"图片上传失败\", \"traceId\": \"78ef9cb4-a6a4-4465-bbdf-9f3e1b20ee4b\", \"timestamp\": \"2026-11-07T20:17:55.533731751+08:00\"}\n扫描的片段：[]（空 = 没泄露）。\n对照：文件层已开的 INTERNAL_LEAK（25 处）是**其它**接口把框架异常原文透传，上传这条是干净的。",
+      "detail": "把上传目录破坏掉（products 目录换成一个普通文件，Files.createDirectories 必然失败）后，接口返回的是固定的业务错误，响应体里没有任何路径片段：\n{\"success\": false, \"code\": \"IMAGE_UPLOAD_FAILED\", \"message\": \"图片上传失败\", \"traceId\": \"451f6295-2598-4595-9afc-fd6f7a44376c\", \"timestamp\": \"2026-11-07T22:35:16.275847553+08:00\"}\n扫描的片段：[]（空 = 没泄露）。\n对照：文件层已开的 INTERNAL_LEAK（25 处）是**其它**接口把框架异常原文透传，上传这条是干净的。",
       "related": [],
       "note": "正面结论：把上传目录破坏掉后，响应是固定业务错误，扫不到任何路径片段",
       "source": {
@@ -5429,6 +5429,53 @@
       "source": {
         "file": "mutation_findings.json",
         "index": 1
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "SVC-TX-DECLARED-EQUALS-EFFECTIVE",
+      "uid": "service:SVC-TX-DECLARED-EQUALS-EFFECTIVE#0",
+      "layer": "service",
+      "category": "service.data_consistency",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "",
+        "endpoint": ""
+      },
+      "claim": "声明的 @Transactional 是否与运行时实际生效的事务完全一致？",
+      "evidence_refs": [
+        "transaction_findings.json#SVC-TX-DECLARED-EQUALS-EFFECTIVE"
+      ],
+      "repro_cmd": "python3 transaction_probe.py",
+      "repro_granularity": "layer",
+      "confidence": 0.93,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "spring.transaction_effectiveness_verified",
+      "related_root_causes": [],
+      "kind": "positive",
+      "runtime_fidelity": "container",
+      "severity": "INFO",
+      "title": "静态声明的事务与运行时实际生效的事务完全一致（差分为空）",
+      "detail": "静态声明 24 个 @Transactional 方法，运行时事务拦截器对其中全部打了生效记录，无遗漏、无多报。\\n另有 3 条框架自身的事务（Spring Data repository 自带 @Transactional(readOnly=true)），单独归桶，不算项目缺陷。\\n**这是静态扫描无法单独给出的结论** —— 只有把静态声明与运行时拦截器日志差分才能确认「切面真的织入了」。",
+      "related": [],
+      "note": "容器内开事务拦截器 TRACE，逐请求 diff 日志得到「哪个请求触发了哪些方法」→ 静态声明与运行时生效差分为空。这是静态分析永远证明不了的结论",
+      "source": {
+        "file": "transaction_findings.json",
+        "index": 0
       },
       "meta": {
         "inferred_fields": [],

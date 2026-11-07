@@ -85,6 +85,11 @@
       "layer": "function",
       "file": "mutation_findings.json",
       "key": "function"
+    },
+    {
+      "layer": "service",
+      "file": "transaction_findings.json",
+      "key": "service"
     }
   ],
   "carriers": {

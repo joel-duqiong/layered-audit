@@ -348,6 +348,32 @@ SERVICE: dict[str, Meta] = {
         "service", 0.90, "positive", (),
         "upload.error.no_path_leak",
         note="正面结论：把上传目录破坏掉后，响应是固定业务错误，扫不到任何路径片段"),
+    "SVC-TX-DECLARED-EQUALS-EFFECTIVE": _m(
+        "service.data_consistency", "exact",
+        "声明的 @Transactional 是否与运行时实际生效的事务完全一致？",
+        "service", 0.93, "positive", (),
+        "spring.transaction_effectiveness_verified",
+        ground_truth="verified",
+        note="容器内开事务拦截器 TRACE，逐请求 diff 日志得到「哪个请求触发了哪些方法」→ "
+             "静态声明与运行时生效差分为空。这是静态分析永远证明不了的结论"),
+    "SVC-TX-DECLARED-NOT-EFFECTIVE": _m(
+        "service.data_consistency", "exact",
+        "被触达的方法是否声明了 @Transactional 却没在运行时生效？",
+        "service", 0.93, "defect", (),
+        "spring.transaction_declared_not_effective",
+        note="触达了但事务拦截器没打生效记录 → 事务边界是假的，出错不会回滚"),
+    "SVC-TX-EFFECTIVE-NOT-DECLARED": _m(
+        "service.data_consistency", "exact",
+        "运行时生效的事务是否没被静态规则识别？",
+        "service", 0.85, "defect", (),
+        "spring.transaction_effective_not_declared",
+        note="可能是隐式事务（Spring Data repository 自带 readOnly）或扫描器的注解匹配有盲区"),
+    "SVC-TX-PROBE-INCONCLUSIVE": _m(
+        "service.data_consistency", "exact",
+        "事务生效性能不能被观测到（探针是否失效）？",
+        "service", 0.80, "observation", (),
+        "spring.transaction_probe_inconclusive",
+        note="探针 0 抽取 → 判定「没查完」而不是「没生效」。Spring 版本漂移会让日志格式变"),
     "SVC-PAGINATION-COUNT-DISCARDED": _m(
         "service.service_latency", "exact",
         "分页 count(*) 是否每次列表请求都全表扫描，而前端根本不看 total？",
@@ -430,6 +456,24 @@ CLASS: dict[str, Meta] = {
         "枚举与 DB CHECK 白名单是否完全一致？",
         "class", 0.95, "positive", (),
         "enum.check_aligned"),
+    "JAVA-ASPECT-NON-PROXYABLE-METHOD": _m(
+        "class.contract_violation", "exact",
+        "切面注解是否挂在了代理织入不到的方法上？",
+        "class", 0.92, "defect", (),
+        "spring.aspect_on_non_proxyable_method",
+        note="private / final / static 方法上的 @Transactional 永远不生效"),
+    "JAVA-ASPECT-SELF-INVOCATION-BYPASS": _m(
+        "class.contract_violation", "exact",
+        "同类内部是否直接调用了被切面标注的方法（绕过 Spring 代理）？",
+        "class", 0.90, "defect", (),
+        "spring.self_invocation_bypasses_proxy",
+        note="Java 里同类内部调用通常不带 this. 前缀，这类调用不走代理 → "
+             "被调方法的 readOnly 等切面语义失效。本项目当前后果有限（外层已是写事务），"
+             "但这是代理绕过的典型形态"),
+
+
+
+
     "JAVA-SERVICE-EXPOSES-JPA-ENTITY": _m(
         "class.encapsulation_leak", "exact",
         "service 层是否把 JPA 实体当 public API 暴露？",

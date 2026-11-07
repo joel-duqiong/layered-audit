@@ -33,6 +33,7 @@ REPORT_MD = os.path.join(D, "integration_gate_report.md")
 NEW_MISMATCH = {"VALUE_MISMATCH", "SEMANTIC_MISMATCH", "FRONTEND_MISSING"}
 RED = "RED"
 GREEN = "GREEN"
+INCOMPLETE = "INCOMPLETE"   # 没查完 —— 必须与「绿」区分（CLAUDE.md 决议 D8）
 
 
 def load_json(path: str) -> Any:
@@ -119,8 +120,10 @@ def compare(baseline: dict, recon: dict, chains: dict) -> list[dict]:
 
     for key, verdict in sorted(base_rows.items()):
         if key not in cur_rows:
-            diffs.append({"level": GREEN, "kind": "row_gone", "key": key,
-                          "before": verdict, "after": "（本次无此项）"})
+            # 本次没有这一项 —— 可能是对账项真的消失了，也可能是**这次没查**。
+            # 两者必须区分：判成绿就等于把「没查」当成「没问题」，增量场景下会吞掉真回归。
+            diffs.append({"level": INCOMPLETE, "kind": "row_gone", "key": key,
+                          "before": verdict, "after": "（本次无此项 —— 没查完，不是没问题）"})
 
     base_chains: dict[str, str] = baseline.get("chains", {})
     cur_chains = collect_chains(chains)
@@ -136,7 +139,7 @@ def compare(baseline: dict, recon: dict, chains: dict) -> list[dict]:
                           "before": prev or "（基线无此链）", "after": verdict})
     for cid, verdict in sorted(base_chains.items()):
         if cid not in cur_chains:
-            diffs.append({"level": GREEN, "kind": "chain_gone", "key": cid,
+            diffs.append({"level": INCOMPLETE, "kind": "chain_gone", "key": cid,
                           "before": verdict, "after": "（本次无此链）"})
     return diffs
 
@@ -196,14 +199,16 @@ def main() -> int:
     diffs = compare(baseline, recon, chains)
     red = [d for d in diffs if d["level"] == RED]
     green = [d for d in diffs if d["level"] == GREEN]
+    incomplete = [d for d in diffs if d["level"] == INCOMPLETE]
     cur_rows = collect_rows(recon)
     cur_chains = collect_chains(chains)
 
     report = {
         "generated_at": datetime.datetime.now().isoformat(),
-        "verdict": RED if red else GREEN,
+        "verdict": RED if red else (INCOMPLETE if incomplete else GREEN),
         "red_count": len(red),
         "green_count": len(green),
+        "incomplete_count": len(incomplete),
         "baseline_aligned": baseline.get("aligned", 0),
         "current_aligned": sum(1 for v in cur_rows.values() if v == "ALIGNED"),
         "baseline_confirmed": sum(1 for v in baseline.get("chains", {}).values()
@@ -216,7 +221,7 @@ def main() -> int:
         fh.write(render_md(report))
 
     print(f"门禁报告 -> {REPORT_MD}")
-    print(f"  结论 {report['verdict']}：红 {len(red)} / 绿 {len(green)}")
+    print(f"  结论 {report['verdict']}：红 {len(red)} / 绿 {len(green)} / 没查完 {len(incomplete)}")
     print(f"  对齐项 {report['baseline_aligned']} -> {report['current_aligned']}"
           f"；攻击链确认 {report['baseline_confirmed']} -> {report['current_confirmed']}")
     for d in diffs:
@@ -225,6 +230,13 @@ def main() -> int:
     if red:
         print("门禁失败：存在回归（红项见上表）")
         return 1
+
+    if incomplete:
+        # 这次没查完 —— 不能判绿，也不能接受为新基线（否则基线被悄悄缩小，
+        # 真回归会以「这一项本次没有」的形式被吞掉）
+        print(f"门禁未完成：有 {len(incomplete)} 项本次没测到（红 0 / 没查完 {len(incomplete)}）")
+        print("  这是「没查完」，不是「没问题」。--accept 被拒绝 —— 缺项时接受基线会缩小比对集。")
+        return 2
 
     if "--accept" in args:
         dump_json(BASELINE, build_baseline(recon, chains))

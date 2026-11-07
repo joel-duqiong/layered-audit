@@ -262,19 +262,17 @@
       "function": 296,
       "file": 15
     },
-    "affected_root_causes": 3
+    "affected_root_causes": 4
   },
   "affected_root_causes": [
+    "apply.null_input.npe_instead_of_422",
     "order.apply.amount_invariants_weak",
     "order_no.no_collision_guarantee",
     "price.final_price.upper_bound_unvalidated"
   ],
   "reasons": {
-    "fn:com.jiuyan.banquet.controller.OrderController#get": [
-      "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#get"
-    ],
-    "fn:com.jiuyan.banquet.controller.OrderController#create": [
-      "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#create"
+    "fn:com.jiuyan.banquet.controller.OrderController#updateStatus": [
+      "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#updateStatus"
     ],
     "file:com.jiuyan.banquet.controller.OrderController": [
       "type_use/static/semantic @file:com.jiuyan.banquet.service.OrderService"
@@ -282,11 +280,14 @@
     "fn:com.jiuyan.banquet.controller.OrderController#list": [
       "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#list"
     ],
-    "fn:com.jiuyan.banquet.controller.OrderController#updateStatus": [
-      "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#updateStatus"
+    "fn:com.jiuyan.banquet.controller.OrderController#get": [
+      "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#get"
     ],
     "fn:com.jiuyan.banquet.controller.OrderController#update": [
       "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#update"
+    ],
+    "fn:com.jiuyan.banquet.controller.OrderController#create": [
+      "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#create"
     ]
   }
 }

@@ -5,10 +5,10 @@ JPA 实体 7 个 | DDL 表 6 张 | 索引 22 个 | finding 16 条
 | 级别 | 层 | 缺陷 |
 |---|---|---|
 | HIGH | class | 状态机缺失：9/9 种迁移全部被接受，含回退 |
-| HIGH | class→service | DDL 声明的 idx_products_name 对服务层查询模式无效（7.716ms vs 0.019ms，差 406 倍） |
+| HIGH | class→service | DDL 声明的 idx_products_name 对服务层查询模式无效（7.62ms vs 0.012ms，差 635 倍） |
 | HIGH | class | 4 条业务不变量在 DB / DTO / 服务层三层全都不存在 |
 | MEDIUM | class | 软删除的行会被同名重建「复活」，id 与 sort_order 沿用旧值 |
-| MEDIUM | class | orders 表没有软删/归档，永久增长（当前 192 kB） |
+| MEDIUM | class | orders 表没有软删/归档，永久增长（当前 184 kB） |
 | MEDIUM | class | orders.address 声明 NOT NULL，实际用空串绕过 —— 非空约束只挡了 NULL |
 | MEDIUM | class | orders.finalPriceCent 必填性校验落在服务层，DTO 少一条 @NotNull |
 | MEDIUM | class | PUT 是全量覆盖：不传的 imageUrl 会被抹成 NULL |
@@ -47,14 +47,14 @@ DDL 只有取值白名单 CHECK (status IN (...))，没有任何迁移约束；�
 }
 ```
 
-## [HIGH] DDL 声明的 idx_products_name 对服务层查询模式无效（7.716ms vs 0.019ms，差 406 倍）
+## [HIGH] DDL 声明的 idx_products_name 对服务层查询模式无效（7.62ms vs 0.012ms，差 635 倍）
 
 迁移文件建了 products(name) 索引，但服务层关键词搜索写的是 lower(name) LIKE '%kw%'：lower() 让索引无法用于定位，前导 % 让 btree 本来也用不上。EXPLAIN 显示走 Filter 全量过滤而非 Index Cond。类层把索引交给服务层，但服务层不知道该怎么用它 —— 声明没有传递下去。
 
 ```json
 {
-  "like_prefix_lower_ms": 7.716,
-  "exact_equal_ms": 0.019,
+  "like_prefix_lower_ms": 7.62,
+  "exact_equal_ms": 0.012,
   "index_cond_present": true,
   "like_has_index_cond": false,
   "scale_rows": 50000
@@ -106,29 +106,29 @@ DDL 只有取值白名单 CHECK (status IN (...))，没有任何迁移约束；�
 
 ```json
 {
-  "category": "ai_probe_cat_bc3b69",
+  "category": "ai_probe_cat_a5674b",
   "create": 200,
   "delete": 200,
   "recreate": 200,
   "db_rows": [
     [
-      "171",
+      "179",
       "f"
     ]
   ]
 }
 ```
 
-## [MEDIUM] orders 表没有软删/归档，永久增长（当前 192 kB）
+## [MEDIUM] orders 表没有软删/归档，永久增长（当前 184 kB）
 
 products/packages/categories 都有 is_deleted，orders 没有。订单是唯一不设生命周期的表，还带 2 个 jsonb 快照列和 6 个索引 —— 数据量上来后这张表会最先撑爆。
 
 ```json
 {
-  "orders_size": "192 kB",
+  "orders_size": "184 kB",
   "table_sizes": {
     "products": "16 MB",
-    "orders": "192 kB",
+    "orders": "184 kB",
     "packages": "144 kB",
     "categories": "104 kB",
     "package_items": "104 kB",
@@ -181,7 +181,7 @@ UpdateProductRequest.imageUrl 没有任何约束（可缺省），但 PUT 的语
 ```json
 {
   "entity": "products",
-  "id": 1753087,
+  "id": 1953315,
   "changed_columns": [
     "description",
     "image_url",
@@ -192,15 +192,15 @@ UpdateProductRequest.imageUrl 没有任何约束（可缺省），但 PUT 的语
     "updated_at"
   ],
   "final_row": {
-    "id": 1753087,
+    "id": 1953315,
     "name": "ai_probe_fp2",
     "unit": "克",
     "image_url": null,
     "is_active": false,
-    "created_at": "2026-11-07T12:09:01.737801+00:00",
+    "created_at": "2026-11-07T14:30:51.818228+00:00",
     "is_deleted": true,
     "price_cent": 9999,
-    "updated_at": "2026-11-07T12:09:02.113831+00:00",
+    "updated_at": "2026-11-07T14:30:52.222803+00:00",
     "category_id": 2,
     "description": "changed"
   }

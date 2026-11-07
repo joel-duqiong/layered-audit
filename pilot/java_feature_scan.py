@@ -43,7 +43,11 @@ CLASS_RE = re.compile(
 )
 FIELD_INJECT_RE = re.compile(r"@(Autowired|Resource|Inject)\b")
 VALUE_RE = re.compile(r"@Value\(\s*\"(?P<expr>[^\"]+)\"")
-SELF_CALL_RE = re.compile(r"\bthis\.(?P<name>\w+)\s*\(")
+# 自调用检测：Java 里同类内部调用**通常不带 this. 前缀**（findProduct(id) 而不是
+# this.findProduct(id)）。只认 this. 会漏掉绝大多数自调用 —— 而自调用正是
+# Spring 代理失效（事务/只读/缓存不生效）的典型入口。
+# 负向先行断言排掉「别的对象的方法调用」（obj.findProduct(...) 走代理，不算自调用）。
+SELF_CALL_RE = re.compile(r"(?<![\w.])(?:this\s*\.\s*)?(?P<name>\w+)\s*\(")
 ASYNC_ESCAPE_RE = re.compile(r"CompletableFuture|parallelStream\s*\(|new\s+Thread\s*\(|@Async|ExecutorService|\.supplyAsync\s*\(")
 
 
@@ -195,17 +199,21 @@ def main() -> None:
                         "reason": f"{'/'.join(m['modifiers'])} 方法上的 {','.join(aspects)} "
                                   f"不会被 Spring 代理织入",
                     })
-            # 自调用：同类内部 this.<被切面方法>( → 绕过代理 → 事务/切面失效
+            # 自调用：同类内部直接调被切面方法 → 绕过代理 → 事务/切面不生效
             for sc in SELF_CALL_RE.finditer(m["body"]):
-                if sc.group("name") in annotated:
-                    proxy_traps.append({
-                        "kind": "self_invocation_bypasses_proxy",
-                        "file": unit["file"], "class": unit["class"], "method": m["name"],
-                        "line": m["line"],
-                        "target": sc.group("name"),
-                        "reason": f"{m['name']} 内部 this.{sc.group('name')}() 绕过代理，"
-                                  f"被调方法的切面不生效",
-                    })
+                target = sc.group("name")
+                if target not in annotated:
+                    continue
+                if target == m["name"]:
+                    continue  # 递归调用不算「绕过代理」的典型形态，另行标注
+                proxy_traps.append({
+                    "kind": "self_invocation_bypasses_proxy",
+                    "file": unit["file"], "class": unit["class"], "method": m["name"],
+                    "line": m["line"],
+                    "target": target,
+                    "reason": f"{m['name']} 内部直接调用 {target}()（无 this. 也算），"
+                              f"绕过 Spring 代理，被调方法的切面（事务/只读）不生效",
+                })
             # 事务方法里的异步逃逸 → 读不到未提交数据
             if aspects and ASYNC_ESCAPE_RE.search(m["body"]):
                 async_escapes.append({
@@ -225,17 +233,42 @@ def main() -> None:
                 })
 
     findings: list[dict[str, Any]] = []
-    if proxy_traps:
+    non_proxyable = [t for t in proxy_traps
+                     if t["kind"] == "aspect_on_non_proxyable_method"]
+    self_invocation = [t for t in proxy_traps
+                       if t["kind"] == "self_invocation_bypasses_proxy"]
+    if non_proxyable:
         findings.append({
-            "id": "JAVA-ASPECT-PROXY-BYPASS",
+            "id": "JAVA-ASPECT-NON-PROXYABLE-METHOD",
             "severity": "HIGH",
             "endpoint": "",
-            "title": "切面被绕过：代理织入不到的方法上挂着切面注解",
-            "detail": "\n".join(json.dumps(t, ensure_ascii=False) for t in proxy_traps),
+            "title": "切面挂在了代理织入不到的方法上（private / final / static）",
+            "detail": ("CGLIB / JDK 代理都不会织入 private、final、static 方法 —— "
+                       "这些方法上的 @Transactional 永远不生效。\n"
+                       + "\n".join(json.dumps(t, ensure_ascii=False) for t in non_proxyable)),
             "repro": "python3 java_feature_scan.py",
-            "location": {"file": proxy_traps[0]["file"], "line": proxy_traps[0]["line"],
-                         "symbol": proxy_traps[0]["method"], "endpoint": ""},
-            "evidence": {"traps": proxy_traps},
+            "location": {"file": non_proxyable[0]["file"], "line": non_proxyable[0]["line"],
+                         "symbol": non_proxyable[0]["method"], "endpoint": ""},
+            "evidence": {"traps": non_proxyable},
+        })
+    if self_invocation:
+        findings.append({
+            "id": "JAVA-ASPECT-SELF-INVOCATION-BYPASS",
+            "severity": "MEDIUM",
+            "endpoint": "",
+            "title": "同类内部直接调用被切面标注的方法 → 绕过 Spring 代理，切面语义不生效",
+            "detail": (
+                "Java 里同类内部调用**通常不带 this. 前缀**（findProduct(id)），"
+                "这类调用走的是 this 引用，**不经过代理** → 被调方法上的 "
+                "@Transactional(readOnly=true) 之类的切面不生效。\n"
+                "本项目当前的实际后果有限（外层调用方本身就是写事务，readOnly 只读语义失效），"
+                "但这是**代理绕过**的典型形态 —— 一旦外层语义变化或这些方法被挪出事务，"
+                "就会静默失去事务边界。\n"
+                + "\n".join(json.dumps(t, ensure_ascii=False) for t in self_invocation)),
+            "repro": "python3 java_feature_scan.py",
+            "location": {"file": self_invocation[0]["file"], "line": self_invocation[0]["line"],
+                         "symbol": self_invocation[0]["method"], "endpoint": ""},
+            "evidence": {"traps": self_invocation},
         })
     if async_escapes:
         findings.append({

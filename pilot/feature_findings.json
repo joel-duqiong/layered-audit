@@ -1,6 +1,96 @@
 {
   "class": [
     {
+      "id": "JAVA-ASPECT-SELF-INVOCATION-BYPASS",
+      "severity": "MEDIUM",
+      "endpoint": "",
+      "title": "同类内部直接调用被切面标注的方法 → 绕过 Spring 代理，切面语义不生效",
+      "detail": "Java 里同类内部调用**通常不带 this. 前缀**（findProduct(id)），这类调用走的是 this 引用，**不经过代理** → 被调方法上的 @Transactional(readOnly=true) 之类的切面不生效。\n本项目当前的实际后果有限（外层调用方本身就是写事务，readOnly 只读语义失效），但这是**代理绕过**的典型形态 —— 一旦外层语义变化或这些方法被挪出事务，就会静默失去事务边界。\n{\"kind\": \"self_invocation_bypasses_proxy\", \"file\": \"/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java\", \"class\": \"PackageService\", \"method\": \"normalizePageSize\", \"line\": 54, \"target\": \"findPackage\", \"reason\": \"normalizePageSize 内部直接调用 findPackage()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效\"}\n{\"kind\": \"self_invocation_bypasses_proxy\", \"file\": \"/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java\", \"class\": \"PackageService\", \"method\": \"get\", \"line\": 61, \"target\": \"findPackage\", \"reason\": \"get 内部直接调用 findPackage()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效\"}\n{\"kind\": \"self_invocation_bypasses_proxy\", \"file\": \"/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java\", \"class\": \"PackageService\", \"method\": \"update\", \"line\": 77, \"target\": \"findPackage\", \"reason\": \"update 内部直接调用 findPackage()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效\"}\n{\"kind\": \"self_invocation_bypasses_proxy\", \"file\": \"/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java\", \"class\": \"PackageService\", \"method\": \"updateStatus\", \"line\": 88, \"target\": \"findPackage\", \"reason\": \"updateStatus 内部直接调用 findPackage()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效\"}\n{\"kind\": \"self_invocation_bypasses_proxy\", \"file\": \"/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java\", \"class\": \"PackageService\", \"method\": \"delete\", \"line\": 97, \"target\": \"findPackage\", \"reason\": \"delete 内部直接调用 findPackage()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效\"}\n{\"kind\": \"self_invocation_bypasses_proxy\", \"file\": \"/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/ProductService.java\", \"class\": \"ProductService\", \"method\": \"update\", \"line\": 67, \"target\": \"findProduct\", \"reason\": \"update 内部直接调用 findProduct()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效\"}\n{\"kind\": \"self_invocation_bypasses_proxy\", \"file\": \"/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/ProductService.java\", \"class\": \"ProductService\", \"method\": \"updateStatus\", \"line\": 78, \"target\": \"findProduct\", \"reason\": \"updateStatus 内部直接调用 findProduct()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效\"}\n{\"kind\": \"self_invocation_bypasses_proxy\", \"file\": \"/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/ProductService.java\", \"class\": \"ProductService\", \"method\": \"delete\", \"line\": 90, \"target\": \"findProduct\", \"reason\": \"delete 内部直接调用 findProduct()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效\"}",
+      "repro": "python3 java_feature_scan.py",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java",
+        "line": 54,
+        "symbol": "normalizePageSize",
+        "endpoint": ""
+      },
+      "evidence": {
+        "traps": [
+          {
+            "kind": "self_invocation_bypasses_proxy",
+            "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java",
+            "class": "PackageService",
+            "method": "normalizePageSize",
+            "line": 54,
+            "target": "findPackage",
+            "reason": "normalizePageSize 内部直接调用 findPackage()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效"
+          },
+          {
+            "kind": "self_invocation_bypasses_proxy",
+            "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java",
+            "class": "PackageService",
+            "method": "get",
+            "line": 61,
+            "target": "findPackage",
+            "reason": "get 内部直接调用 findPackage()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效"
+          },
+          {
+            "kind": "self_invocation_bypasses_proxy",
+            "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java",
+            "class": "PackageService",
+            "method": "update",
+            "line": 77,
+            "target": "findPackage",
+            "reason": "update 内部直接调用 findPackage()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效"
+          },
+          {
+            "kind": "self_invocation_bypasses_proxy",
+            "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java",
+            "class": "PackageService",
+            "method": "updateStatus",
+            "line": 88,
+            "target": "findPackage",
+            "reason": "updateStatus 内部直接调用 findPackage()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效"
+          },
+          {
+            "kind": "self_invocation_bypasses_proxy",
+            "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java",
+            "class": "PackageService",
+            "method": "delete",
+            "line": 97,
+            "target": "findPackage",
+            "reason": "delete 内部直接调用 findPackage()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效"
+          },
+          {
+            "kind": "self_invocation_bypasses_proxy",
+            "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/ProductService.java",
+            "class": "ProductService",
+            "method": "update",
+            "line": 67,
+            "target": "findProduct",
+            "reason": "update 内部直接调用 findProduct()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效"
+          },
+          {
+            "kind": "self_invocation_bypasses_proxy",
+            "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/ProductService.java",
+            "class": "ProductService",
+            "method": "updateStatus",
+            "line": 78,
+            "target": "findProduct",
+            "reason": "updateStatus 内部直接调用 findProduct()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效"
+          },
+          {
+            "kind": "self_invocation_bypasses_proxy",
+            "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/ProductService.java",
+            "class": "ProductService",
+            "method": "delete",
+            "line": 90,
+            "target": "findProduct",
+            "reason": "delete 内部直接调用 findProduct()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效"
+          }
+        ]
+      }
+    },
+    {
       "id": "JAVA-SERVICE-EXPOSES-JPA-ENTITY",
       "severity": "MEDIUM",
       "endpoint": "",
@@ -34,29 +124,6 @@
             "reason": "public 方法直接返回 JPA 实体 Product，调用方可以绕过 DTO 契约与全部业务校验直接改实体"
           }
         ]
-      }
-    },
-    {
-      "id": "JAVA-SPRING-PROXY-SEMANTICS-CLEAN",
-      "severity": "INFO",
-      "endpoint": "",
-      "title": "Spring 代理语义干净：没有切面失效点、没有事务内异步逃逸、没有对外暴露实体",
-      "detail": "扫了 63 个编译单元、24 个带切面注解的方法：\n· 切面注解全部落在 public 方法上 → CGLIB/JDK 代理能织入\n· 没有同类内部 this.<切面方法>() 自调用 → 不会绕过代理\n· 事务方法里没有 CompletableFuture / parallelStream / new Thread 逃逸\n· 对外暴露 JPA 实体的 public 方法：2 个（见 JAVA-SERVICE-EXPOSES-JPA-ENTITY）\n注意：这是**静态**结论，证明不了「运行时切面真的生效了」——那需要容器内观测，见 feature_coverage 矩阵里的盲区说明。",
-      "repro": "python3 java_feature_scan.py",
-      "location": {
-        "file": "",
-        "line": 0,
-        "symbol": "",
-        "endpoint": ""
-      },
-      "evidence": {
-        "units_scanned": 63,
-        "aspect_methods": 24,
-        "aspect_annotations": [
-          "Transactional"
-        ],
-        "value_injection_points": 4,
-        "field_injection_points": 0
       }
     }
   ],
@@ -356,7 +423,80 @@
           ]
         }
       ],
-      "proxy_traps": []
+      "proxy_traps": [
+        {
+          "kind": "self_invocation_bypasses_proxy",
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java",
+          "class": "PackageService",
+          "method": "normalizePageSize",
+          "line": 54,
+          "target": "findPackage",
+          "reason": "normalizePageSize 内部直接调用 findPackage()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效"
+        },
+        {
+          "kind": "self_invocation_bypasses_proxy",
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java",
+          "class": "PackageService",
+          "method": "get",
+          "line": 61,
+          "target": "findPackage",
+          "reason": "get 内部直接调用 findPackage()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效"
+        },
+        {
+          "kind": "self_invocation_bypasses_proxy",
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java",
+          "class": "PackageService",
+          "method": "update",
+          "line": 77,
+          "target": "findPackage",
+          "reason": "update 内部直接调用 findPackage()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效"
+        },
+        {
+          "kind": "self_invocation_bypasses_proxy",
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java",
+          "class": "PackageService",
+          "method": "updateStatus",
+          "line": 88,
+          "target": "findPackage",
+          "reason": "updateStatus 内部直接调用 findPackage()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效"
+        },
+        {
+          "kind": "self_invocation_bypasses_proxy",
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java",
+          "class": "PackageService",
+          "method": "delete",
+          "line": 97,
+          "target": "findPackage",
+          "reason": "delete 内部直接调用 findPackage()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效"
+        },
+        {
+          "kind": "self_invocation_bypasses_proxy",
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/ProductService.java",
+          "class": "ProductService",
+          "method": "update",
+          "line": 67,
+          "target": "findProduct",
+          "reason": "update 内部直接调用 findProduct()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效"
+        },
+        {
+          "kind": "self_invocation_bypasses_proxy",
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/ProductService.java",
+          "class": "ProductService",
+          "method": "updateStatus",
+          "line": 78,
+          "target": "findProduct",
+          "reason": "updateStatus 内部直接调用 findProduct()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效"
+        },
+        {
+          "kind": "self_invocation_bypasses_proxy",
+          "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/ProductService.java",
+          "class": "ProductService",
+          "method": "delete",
+          "line": 90,
+          "target": "findProduct",
+          "reason": "delete 内部直接调用 findProduct()（无 this. 也算），绕过 Spring 代理，被调方法的切面（事务/只读）不生效"
+        }
+      ]
     },
     "async_escape_in_transaction": [],
     "entity_exposure": [

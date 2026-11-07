@@ -1,0 +1,13 @@
+{
+  "ok": true,
+  "problems": [],
+  "probe_containers": [],
+  "ai_prefix_rows": {
+    "products": 0,
+    "packages": 0,
+    "categories": 0,
+    "package_types": 0,
+    "orders": 0
+  },
+  "non_seed_uploads": 0
+}

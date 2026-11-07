@@ -49,6 +49,8 @@ echo "=== 配置失败模式探针（克隆实例改配置观察行为）==="
 python3 config_probe.py
 echo "=== 变异测试（改坏被测代码，看 oracle 抓不抓得住）==="
 python3 mutation_test.py
+echo "=== 切面生效性探针（静态声明 vs 运行时事务拦截器，差分出单）==="
+python3 transaction_probe.py
 echo "=== 业务不变式探针（声明式不变量 → 造场景 → 判定）==="
 python3 business_probe.py
 echo "=== Java/Spring 特性扫描（切面/DI/RPC/动态配置/JPA）==="
@@ -75,3 +77,6 @@ echo "=== 特性覆盖矩阵（特性 × 载体）==="
 python3 engine/feature_coverage.py
 echo "=== 集权层门禁（与基线比对，回归即失败退出码 1）==="
 python3 integration_gate.py
+
+echo "=== 残留守卫（探针容器 / ai_ 行 / 非种子上传，必须全 0）==="
+python3 probe_residue_check.py

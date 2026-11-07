@@ -72,6 +72,7 @@ def _units() -> dict[str, list[dict[str, Any]]]:
             "unit_key": f"{cls}#{method}",
             "class": cls,
             "symbol": f"{cls.split('.')[-1]}.{method}",
+            "file": fn_rec.get("file", ""),
             "facts": fn_rec,
         })
 
@@ -96,6 +97,17 @@ def _units() -> dict[str, list[dict[str, Any]]]:
             "symbol": cls,
             "facts": rec,
         })
+
+    # 函数单元的源码文件：fn_declaration 不带 file 字段，
+    # 从文件单元（file_declaration 有 file）按类名反查补上 ——
+    # 增量调度要按文件路径定位受影响单元，这条链路不能是死的。
+    class_to_file: dict[str, str] = {}
+    for u in units["file"]:
+        if u.get("file"):
+            class_to_file.setdefault(u["class"], u["file"])
+    for u in units["function"]:
+        if not u.get("file"):
+            u["file"] = class_to_file.get(u["class"], "")
 
     # 服务与端到端各是一个整体单元
     units["service"].append({
@@ -189,7 +201,7 @@ def _evidence_index(units: dict[str, list[dict[str, Any]]]
     """动态用例按目标函数索引；发现按 unit 索引。
 
     发现里的 location.symbol 常是「简单类名.方法名」（OrderService.apply），
-    而 unit_key 是全限定名（com.jiuyan.banquet.service.OrderService#apply）。
+    而 unit_key 是全限定名（com.example.svc.OrderService#apply）。
     不做简单名→全名的解析，文件层单元就会永远关联不上自己的 finding，
     在盲区地图里被误标成「完全没查」。
     """
@@ -280,7 +292,7 @@ def _build_instances(roles: dict[str, dict[str, Any]], units: dict[str, list[dic
                 "unit": {
                     "unit_kind": unit["unit_kind"],
                     "unit_key": key,
-                    "file": "",
+                    "file": unit.get("file", ""),
                     "symbol": unit["symbol"],
                     "line": 0,
                 },

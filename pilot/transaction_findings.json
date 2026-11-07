@@ -1,0 +1,128 @@
+{
+  "service": [
+    {
+      "id": "SVC-TX-DECLARED-EQUALS-EFFECTIVE",
+      "severity": "INFO",
+      "endpoint": "",
+      "title": "静态声明的事务与运行时实际生效的事务完全一致（差分为空）",
+      "detail": "静态声明 24 个 @Transactional 方法，运行时事务拦截器对其中全部打了生效记录，无遗漏、无多报。\\n另有 3 条框架自身的事务（Spring Data repository 自带 @Transactional(readOnly=true)），单独归桶，不算项目缺陷。\\n**这是静态扫描无法单独给出的结论** —— 只有把静态声明与运行时拦截器日志差分才能确认「切面真的织入了」。",
+      "repro": "python3 transaction_probe.py",
+      "evidence": {
+        "declared": [
+          "com.jiuyan.banquet.service.CategoryService.create",
+          "com.jiuyan.banquet.service.CategoryService.delete",
+          "com.jiuyan.banquet.service.CategoryService.list",
+          "com.jiuyan.banquet.service.OrderService.create",
+          "com.jiuyan.banquet.service.OrderService.get",
+          "com.jiuyan.banquet.service.OrderService.list",
+          "com.jiuyan.banquet.service.OrderService.update",
+          "com.jiuyan.banquet.service.OrderService.updateStatus",
+          "com.jiuyan.banquet.service.PackageService.create",
+          "com.jiuyan.banquet.service.PackageService.delete",
+          "com.jiuyan.banquet.service.PackageService.findPackage",
+          "com.jiuyan.banquet.service.PackageService.get",
+          "com.jiuyan.banquet.service.PackageService.list",
+          "com.jiuyan.banquet.service.PackageService.update",
+          "com.jiuyan.banquet.service.PackageService.updateStatus",
+          "com.jiuyan.banquet.service.PackageTypeService.create",
+          "com.jiuyan.banquet.service.PackageTypeService.delete",
+          "com.jiuyan.banquet.service.PackageTypeService.list",
+          "com.jiuyan.banquet.service.ProductService.create",
+          "com.jiuyan.banquet.service.ProductService.delete",
+          "com.jiuyan.banquet.service.ProductService.findProduct",
+          "com.jiuyan.banquet.service.ProductService.list",
+          "com.jiuyan.banquet.service.ProductService.update",
+          "com.jiuyan.banquet.service.ProductService.updateStatus"
+        ],
+        "effective": [
+          "com.jiuyan.banquet.service.CategoryService.list",
+          "com.jiuyan.banquet.service.OrderService.create",
+          "com.jiuyan.banquet.service.OrderService.get",
+          "com.jiuyan.banquet.service.OrderService.list",
+          "com.jiuyan.banquet.service.OrderService.update",
+          "com.jiuyan.banquet.service.OrderService.updateStatus",
+          "com.jiuyan.banquet.service.PackageService.list",
+          "com.jiuyan.banquet.service.PackageTypeService.list",
+          "com.jiuyan.banquet.service.ProductService.list"
+        ],
+        "framework_effective": [
+          "org.springframework.data.jpa.repository.support.SimpleJpaRepository.findAll",
+          "org.springframework.data.jpa.repository.support.SimpleJpaRepository.findById",
+          "org.springframework.data.jpa.repository.support.SimpleJpaRepository.save"
+        ]
+      }
+    }
+  ],
+  "declared": [
+    "com.jiuyan.banquet.service.CategoryService.create",
+    "com.jiuyan.banquet.service.CategoryService.delete",
+    "com.jiuyan.banquet.service.CategoryService.list",
+    "com.jiuyan.banquet.service.OrderService.create",
+    "com.jiuyan.banquet.service.OrderService.get",
+    "com.jiuyan.banquet.service.OrderService.list",
+    "com.jiuyan.banquet.service.OrderService.update",
+    "com.jiuyan.banquet.service.OrderService.updateStatus",
+    "com.jiuyan.banquet.service.PackageService.create",
+    "com.jiuyan.banquet.service.PackageService.delete",
+    "com.jiuyan.banquet.service.PackageService.findPackage",
+    "com.jiuyan.banquet.service.PackageService.get",
+    "com.jiuyan.banquet.service.PackageService.list",
+    "com.jiuyan.banquet.service.PackageService.update",
+    "com.jiuyan.banquet.service.PackageService.updateStatus",
+    "com.jiuyan.banquet.service.PackageTypeService.create",
+    "com.jiuyan.banquet.service.PackageTypeService.delete",
+    "com.jiuyan.banquet.service.PackageTypeService.list",
+    "com.jiuyan.banquet.service.ProductService.create",
+    "com.jiuyan.banquet.service.ProductService.delete",
+    "com.jiuyan.banquet.service.ProductService.findProduct",
+    "com.jiuyan.banquet.service.ProductService.list",
+    "com.jiuyan.banquet.service.ProductService.update",
+    "com.jiuyan.banquet.service.ProductService.updateStatus"
+  ],
+  "effective": [
+    "com.jiuyan.banquet.service.CategoryService.list",
+    "com.jiuyan.banquet.service.OrderService.create",
+    "com.jiuyan.banquet.service.OrderService.get",
+    "com.jiuyan.banquet.service.OrderService.list",
+    "com.jiuyan.banquet.service.OrderService.update",
+    "com.jiuyan.banquet.service.OrderService.updateStatus",
+    "com.jiuyan.banquet.service.PackageService.list",
+    "com.jiuyan.banquet.service.PackageTypeService.list",
+    "com.jiuyan.banquet.service.ProductService.list"
+  ],
+  "framework_effective": [
+    "org.springframework.data.jpa.repository.support.SimpleJpaRepository.findAll",
+    "org.springframework.data.jpa.repository.support.SimpleJpaRepository.findById",
+    "org.springframework.data.jpa.repository.support.SimpleJpaRepository.save"
+  ],
+  "triggered": [
+    "com.jiuyan.banquet.service.CategoryService.list",
+    "com.jiuyan.banquet.service.OrderService.get",
+    "com.jiuyan.banquet.service.OrderService.list",
+    "com.jiuyan.banquet.service.OrderService.update",
+    "com.jiuyan.banquet.service.OrderService.updateStatus",
+    "com.jiuyan.banquet.service.PackageService.list",
+    "com.jiuyan.banquet.service.PackageTypeService.list",
+    "com.jiuyan.banquet.service.ProductService.list",
+    "org.springframework.data.jpa.repository.support.SimpleJpaRepository.findAll",
+    "org.springframework.data.jpa.repository.support.SimpleJpaRepository.findById"
+  ],
+  "declared_not_triggered": [
+    "com.jiuyan.banquet.service.CategoryService.create",
+    "com.jiuyan.banquet.service.CategoryService.delete",
+    "com.jiuyan.banquet.service.OrderService.create",
+    "com.jiuyan.banquet.service.PackageService.create",
+    "com.jiuyan.banquet.service.PackageService.delete",
+    "com.jiuyan.banquet.service.PackageService.findPackage",
+    "com.jiuyan.banquet.service.PackageService.get",
+    "com.jiuyan.banquet.service.PackageService.update",
+    "com.jiuyan.banquet.service.PackageService.updateStatus",
+    "com.jiuyan.banquet.service.PackageTypeService.create",
+    "com.jiuyan.banquet.service.PackageTypeService.delete",
+    "com.jiuyan.banquet.service.ProductService.create",
+    "com.jiuyan.banquet.service.ProductService.delete",
+    "com.jiuyan.banquet.service.ProductService.findProduct",
+    "com.jiuyan.banquet.service.ProductService.update",
+    "com.jiuyan.banquet.service.ProductService.updateStatus"
+  ]
+}

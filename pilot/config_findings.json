@@ -5,7 +5,7 @@
       "severity": "HIGH",
       "endpoint": "GET /api/**",
       "title": "CORS 白名单配成空值时反而允许任意来源跨域（fail-open）",
-      "detail": "这是本轮最反直觉的一条：**把白名单清空，跨域不是被收紧，而是被放开。**\n机制：WebConfig 把 app.cors-allowed-origins 拆开、滤掉空项，得到一个**空数组**，传给 allowedOriginPatterns(...)；而 Spring 的 CorsRegistration 默认先 applyPermitDefaultValues()（allowedOrigins 变成 单个星号），空数组并没有把它清掉 → 最终任何来源都放行。\n实测（Origin: http://evil.example.com）：Access-Control-Allow-Origin = '*'。\n运维的直觉是「清空白名单 = 关掉跨域」，实际拿到的是「对全世界开放跨域」。叠加零鉴权：任何网页都能读全部业务数据。\n对照：白名单配成 * 时 Spring 回显请求的 Origin（实测 'http://evil.example.com'），同样是任意来源放行 —— 但那是显式配置，属于配置者自己的选择；空值这条是**踩空即中招**。\n实测全集：\n{\n  \"cors_empty\": {\n    \"status\": 200,\n    \"allow_origin\": \"*\",\n    \"vary\": \"Origin, Access-Control-Request-Method, Access-Control-Request-Headers\"\n  },\n  \"cors_star\": {\n    \"status\": 200,\n    \"allow_origin\": \"http://evil.example.com\",\n    \"vary\": \"Origin, Access-Control-Request-Method, Access-Control-Request-Headers\"\n  },\n  \"upload_dir_bad\": {\n    \"started\": false,\n    \"error\": \"探针实例 jiuyan-cfg-bad-upload-dir 没起来\"\n  },\n  \"upload_dir_broken\": {\n    \"status\": 500,\n    \"body\": {\n      \"success\": false,\n      \"code\": \"IMAGE_UPLOAD_FAILED\",\n      \"message\": \"图片上传失败\",\n      \"traceId\": \"78ef9cb4-a6a4-4465-bbdf-9f3e1b20ee4b\",\n      \"timestamp\": \"2026-11-07T20:17:55.533731751+08:00\"\n    },\n    \"path_leaks\": []\n  },\n  \"upload_relative\": {\n    \"status\": 200,\n    \"body\": {\n      \"success\": true,\n      \"code\": \"OK\",\n      \"message\": \"成功\",\n      \"data\": {\n        \"imageUrl\": \"/uploads/products/43d91f8a-8659-4a02-b848-76b064eefc05.png\"\n      },\n      \"traceId\": \"54142c34-4084-4d18-8ff4-27c4f2043628\",\n      \"timestamp\": \"2026-11-07T20:18:00.062105128+08:00\"\n    },\n    \"path_leaks\": []\n  }\n}",
+      "detail": "这是本轮最反直觉的一条：**把白名单清空，跨域不是被收紧，而是被放开。**\n机制：WebConfig 把 app.cors-allowed-origins 拆开、滤掉空项，得到一个**空数组**，传给 allowedOriginPatterns(...)；而 Spring 的 CorsRegistration 默认先 applyPermitDefaultValues()（allowedOrigins 变成 单个星号），空数组并没有把它清掉 → 最终任何来源都放行。\n实测（Origin: http://evil.example.com）：Access-Control-Allow-Origin = '*'。\n运维的直觉是「清空白名单 = 关掉跨域」，实际拿到的是「对全世界开放跨域」。叠加零鉴权：任何网页都能读全部业务数据。\n对照：白名单配成 * 时 Spring 回显请求的 Origin（实测 'http://evil.example.com'），同样是任意来源放行 —— 但那是显式配置，属于配置者自己的选择；空值这条是**踩空即中招**。\n实测全集：\n{\n  \"cors_empty\": {\n    \"status\": 200,\n    \"allow_origin\": \"*\",\n    \"vary\": \"Origin, Access-Control-Request-Method, Access-Control-Request-Headers\"\n  },\n  \"cors_star\": {\n    \"status\": 200,\n    \"allow_origin\": \"http://evil.example.com\",\n    \"vary\": \"Origin, Access-Control-Request-Method, Access-Control-Request-Headers\"\n  },\n  \"upload_dir_bad\": {\n    \"started\": false,\n    \"error\": \"探针实例 jiuyan-cfg-bad-upload-dir 没起来\"\n  },\n  \"upload_dir_broken\": {\n    \"status\": 500,\n    \"body\": {\n      \"success\": false,\n      \"code\": \"IMAGE_UPLOAD_FAILED\",\n      \"message\": \"图片上传失败\",\n      \"traceId\": \"451f6295-2598-4595-9afc-fd6f7a44376c\",\n      \"timestamp\": \"2026-11-07T22:35:16.275847553+08:00\"\n    },\n    \"path_leaks\": []\n  },\n  \"upload_relative\": {\n    \"status\": 200,\n    \"body\": {\n      \"success\": true,\n      \"code\": \"OK\",\n      \"message\": \"成功\",\n      \"data\": {\n        \"imageUrl\": \"/uploads/products/5251bca1-8a5c-4794-a92f-9e7e4f3f3053.png\"\n      },\n      \"traceId\": \"70a721e8-118c-46a0-a225-2272076c15d0\",\n      \"timestamp\": \"2026-11-07T22:35:20.843233263+08:00\"\n    },\n    \"path_leaks\": []\n  }\n}",
       "repro": "python3 config_probe.py",
       "evidence": {
         "probes": {
@@ -29,8 +29,8 @@
               "success": false,
               "code": "IMAGE_UPLOAD_FAILED",
               "message": "图片上传失败",
-              "traceId": "78ef9cb4-a6a4-4465-bbdf-9f3e1b20ee4b",
-              "timestamp": "2026-11-07T20:17:55.533731751+08:00"
+              "traceId": "451f6295-2598-4595-9afc-fd6f7a44376c",
+              "timestamp": "2026-11-07T22:35:16.275847553+08:00"
             },
             "path_leaks": []
           },
@@ -41,10 +41,10 @@
               "code": "OK",
               "message": "成功",
               "data": {
-                "imageUrl": "/uploads/products/43d91f8a-8659-4a02-b848-76b064eefc05.png"
+                "imageUrl": "/uploads/products/5251bca1-8a5c-4794-a92f-9e7e4f3f3053.png"
               },
-              "traceId": "54142c34-4084-4d18-8ff4-27c4f2043628",
-              "timestamp": "2026-11-07T20:18:00.062105128+08:00"
+              "traceId": "70a721e8-118c-46a0-a225-2272076c15d0",
+              "timestamp": "2026-11-07T22:35:20.843233263+08:00"
             },
             "path_leaks": []
           }
@@ -80,8 +80,8 @@
               "success": false,
               "code": "IMAGE_UPLOAD_FAILED",
               "message": "图片上传失败",
-              "traceId": "78ef9cb4-a6a4-4465-bbdf-9f3e1b20ee4b",
-              "timestamp": "2026-11-07T20:17:55.533731751+08:00"
+              "traceId": "451f6295-2598-4595-9afc-fd6f7a44376c",
+              "timestamp": "2026-11-07T22:35:16.275847553+08:00"
             },
             "path_leaks": []
           },
@@ -92,10 +92,10 @@
               "code": "OK",
               "message": "成功",
               "data": {
-                "imageUrl": "/uploads/products/43d91f8a-8659-4a02-b848-76b064eefc05.png"
+                "imageUrl": "/uploads/products/5251bca1-8a5c-4794-a92f-9e7e4f3f3053.png"
               },
-              "traceId": "54142c34-4084-4d18-8ff4-27c4f2043628",
-              "timestamp": "2026-11-07T20:18:00.062105128+08:00"
+              "traceId": "70a721e8-118c-46a0-a225-2272076c15d0",
+              "timestamp": "2026-11-07T22:35:20.843233263+08:00"
             },
             "path_leaks": []
           }
@@ -121,7 +121,7 @@
       "severity": "INFO",
       "endpoint": "POST /api/uploads/product-image",
       "title": "上传失败时错误响应不泄露服务器文件系统路径",
-      "detail": "把上传目录破坏掉（products 目录换成一个普通文件，Files.createDirectories 必然失败）后，接口返回的是固定的业务错误，响应体里没有任何路径片段：\n{\"success\": false, \"code\": \"IMAGE_UPLOAD_FAILED\", \"message\": \"图片上传失败\", \"traceId\": \"78ef9cb4-a6a4-4465-bbdf-9f3e1b20ee4b\", \"timestamp\": \"2026-11-07T20:17:55.533731751+08:00\"}\n扫描的片段：[]（空 = 没泄露）。\n对照：文件层已开的 INTERNAL_LEAK（25 处）是**其它**接口把框架异常原文透传，上传这条是干净的。",
+      "detail": "把上传目录破坏掉（products 目录换成一个普通文件，Files.createDirectories 必然失败）后，接口返回的是固定的业务错误，响应体里没有任何路径片段：\n{\"success\": false, \"code\": \"IMAGE_UPLOAD_FAILED\", \"message\": \"图片上传失败\", \"traceId\": \"451f6295-2598-4595-9afc-fd6f7a44376c\", \"timestamp\": \"2026-11-07T22:35:16.275847553+08:00\"}\n扫描的片段：[]（空 = 没泄露）。\n对照：文件层已开的 INTERNAL_LEAK（25 处）是**其它**接口把框架异常原文透传，上传这条是干净的。",
       "repro": "python3 config_probe.py",
       "evidence": {
         "probe": {
@@ -130,8 +130,8 @@
             "success": false,
             "code": "IMAGE_UPLOAD_FAILED",
             "message": "图片上传失败",
-            "traceId": "78ef9cb4-a6a4-4465-bbdf-9f3e1b20ee4b",
-            "timestamp": "2026-11-07T20:17:55.533731751+08:00"
+            "traceId": "451f6295-2598-4595-9afc-fd6f7a44376c",
+            "timestamp": "2026-11-07T22:35:16.275847553+08:00"
           },
           "path_leaks": []
         }
@@ -159,8 +159,8 @@
         "success": false,
         "code": "IMAGE_UPLOAD_FAILED",
         "message": "图片上传失败",
-        "traceId": "78ef9cb4-a6a4-4465-bbdf-9f3e1b20ee4b",
-        "timestamp": "2026-11-07T20:17:55.533731751+08:00"
+        "traceId": "451f6295-2598-4595-9afc-fd6f7a44376c",
+        "timestamp": "2026-11-07T22:35:16.275847553+08:00"
       },
       "path_leaks": []
     },
@@ -171,10 +171,10 @@
         "code": "OK",
         "message": "成功",
         "data": {
-          "imageUrl": "/uploads/products/43d91f8a-8659-4a02-b848-76b064eefc05.png"
+          "imageUrl": "/uploads/products/5251bca1-8a5c-4794-a92f-9e7e4f3f3053.png"
         },
-        "traceId": "54142c34-4084-4d18-8ff4-27c4f2043628",
-        "timestamp": "2026-11-07T20:18:00.062105128+08:00"
+        "traceId": "70a721e8-118c-46a0-a225-2272076c15d0",
+        "timestamp": "2026-11-07T22:35:20.843233263+08:00"
       },
       "path_leaks": []
     }
