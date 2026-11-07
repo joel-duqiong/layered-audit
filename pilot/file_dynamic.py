@@ -23,7 +23,7 @@ from pathlib import Path
 
 
 BACKEND = project.backend_root()
-PILOT = project.artifact_dir()
+PILOT = Path(__file__).resolve().parent   # harness 源码在脚本目录，不在产物目录
 WORK = project.work_dir() / "file"
 HARNESS = WORK / "harness"
 CLASSES = project.work_dir() / "classes"

@@ -56,6 +56,12 @@ def main() -> None:
     if uploads:
         problems.append(f"残留非种子上传文件 {len(uploads)} 个: {uploads[:5]}")
 
+    # 探针的落盘目录不该跑到工作目录里（ctor 覆盖写错时最常见的泄漏形态）
+    stray = sorted(str(q) for q in HERE.glob("*")
+                   if q.is_dir() and q.name in ("products", "packages", "uploads"))
+    if stray:
+        problems.append(f"工作目录里出现散落的落盘目录（探针写错了上传路径）: {stray}")
+
     payload = {"ok": not problems, "problems": problems,
                "probe_containers": names, "ai_prefix_rows": counts,
                "non_seed_uploads": len(uploads)}

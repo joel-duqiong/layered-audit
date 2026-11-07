@@ -77,6 +77,34 @@ LAYERED_AUDIT_TARGET=$PWD/target.json python3 ../../pilot/fn_static.py
 ```bash
 LAYERED_AUDIT_TARGET=.../demos/shop/target.json python3 ../../pilot/fn_static.py
 #  → 类 27 个 / 函数 77 个（纯函数 71 个）
+
+LAYERED_AUDIT_TARGET=.../demos/shop/target.json   python3 ../../pilot/fn_dynamic.py --cases-file .../demos/shop/fn_cases.json
+#  → 用例 6 条：通过 6，失败 0
 ```
 
 所有路径来自 `target.json` 的 `paths` 段；`pilot/project.py` 是唯一读它的地方。
+
+**函数层载体已经通用化**：`pilot/fn_harness/GenericHarness.java` 里零项目字面量 ——
+目标类、依赖打桩、样本、用例、类型别名全部来自用例文件（`fn_cases.json`）。
+换项目只换这个文件。
+
+harness 会做的事（都是通用的）：
+- 反射选目标类的构造器，**递归构造依赖图**（接口 → 动态代理并查打桩表；具体类 → 递归构造其构造器参数）
+- 按用例里的类型别名解码参数（record 用 Jackson 还原，实体按字段名找 setter）
+- 记录返回/异常/落盘状态/每个打桩方法的调用次数
+
+用例文件长这样：
+
+```json
+{
+  "types":    {"order": "com.x.Order"},
+  "fixtures": {"11": {"$entity": "com.x.Product", "fields": {"id": 11}}},
+  "stubs":    {"com.x.YRepo": {"findById": {"$byKey": {"11": {"$fixture": "11"}}},
+                               "save": {"$echoArg0": true}}},
+  "ctor":     {"com.x.ZService": {"0": "<UPLOAD_ROOT>"}},
+  "cases":    [{"id": "X-01", "class": "...", "method": "...", "args": [...],
+                "check": {"type": "returns_eq", "value": 1}}]
+}
+```
+
+**验证过等价性**：同一批 jiuyan 用例，原版 harness 与通用 harness 的判定 **0 条不同**（64 通过 / 28 失败）。

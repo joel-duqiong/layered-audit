@@ -87,7 +87,7 @@ def reflection() -> list[dict]:
     """反射导出 DTO 与实体的精确声明。"""
     ensure_compiled()
     HARNESS.mkdir(parents=True, exist_ok=True)
-    src = D / "class_harness" / "ClassContract.java"
+    src = Path(__file__).resolve().parent / "class_harness" / "ClassContract.java"
     out_dir = WORK / "classes"
     out_dir.mkdir(parents=True, exist_ok=True)
     deps = DEPS_FILE.read_text().strip() if DEPS_FILE.exists() else ""

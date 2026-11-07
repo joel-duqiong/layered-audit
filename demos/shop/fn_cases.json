@@ -1,0 +1,244 @@
+{
+  "types": {
+    "order": "com.demo.shop.entity.ShopOrder",
+    "product": "com.demo.shop.entity.ShopProduct",
+    "customer": "com.demo.shop.entity.ShopCustomer",
+    "category": "com.demo.shop.entity.ShopCategory"
+  },
+  "fixtures": {
+    "11": {
+      "$entity": "com.demo.shop.entity.ShopProduct",
+      "fields": {
+        "id": 11,
+        "name": "商品-1",
+        "priceCent": 1000,
+        "stock": 10,
+        "category": {
+          "$entity": "com.demo.shop.entity.ShopCategory",
+          "fields": {
+            "id": 1,
+            "name": "粮油"
+          }
+        }
+      }
+    },
+    "1": {
+      "$entity": "com.demo.shop.entity.ShopCustomer",
+      "fields": {
+        "id": 1,
+        "name": "demo-vip",
+        "level": "VIP",
+        "creditLimitCent": 1000000
+      }
+    }
+  },
+  "stubs": {
+    "com.demo.shop.repository.ShopProductRepository": {
+      "findAll": {
+        "$list": [
+          {
+            "$entity": "com.demo.shop.entity.ShopProduct",
+            "fields": {
+              "id": 11,
+              "name": "商品-1",
+              "priceCent": 1000,
+              "stock": 10,
+              "category": {
+                "$entity": "com.demo.shop.entity.ShopCategory",
+                "fields": {
+                  "id": 1,
+                  "name": "粮油"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "findById": {
+        "$byKey": {
+          "11": {
+            "$fixture": "11"
+          }
+        }
+      },
+      "save": {
+        "$echoArg0": true
+      }
+    },
+    "com.demo.shop.repository.ShopCustomerRepository": {
+      "findByName": {
+        "$byKey": {
+          "demo-vip": {
+            "$fixture": "1"
+          }
+        }
+      },
+      "save": {
+        "$echoArg0": true
+      }
+    },
+    "com.demo.shop.repository.ShopOrderRepository": {
+      "save": {
+        "$echoArg0": true
+      }
+    },
+    "com.demo.shop.repository.ShopCategoryRepository": {
+      "save": {
+        "$echoArg0": true
+      }
+    },
+    "PricingStrategy": {
+      "settle": {
+        "$echoArg0": true
+      }
+    }
+  },
+  "ctor": {
+    "com.demo.shop.service.OrderService": {
+      "5": "http://127.0.0.1:8098"
+    }
+  },
+  "cases": [
+    {
+      "id": "DSP-01",
+      "group": "PRICING",
+      "func": "reflect",
+      "class": "com.demo.shop.service.PricingService",
+      "method": "settle",
+      "args": [
+        {
+          "$t": "fixture",
+          "v": "1"
+        },
+        {
+          "$t": "long",
+          "v": 900000
+        }
+      ],
+      "check": {
+        "type": "returns_eq",
+        "value": 900000
+      },
+      "invariant": "标准价策略下按原价结算（MemberPricingStrategy 在非 vip profile 下不激活）",
+      "label": ""
+    },
+    {
+      "id": "DSP-02",
+      "group": "PRICING",
+      "func": "reflect",
+      "class": "com.demo.shop.service.PricingService",
+      "method": "settle",
+      "args": [
+        {
+          "$t": "fixture",
+          "v": "1"
+        },
+        {
+          "$t": "long",
+          "v": 900000
+        }
+      ],
+      "check": {
+        "type": "returns_eq",
+        "value": 810000
+      },
+      "invariant": "VIP 九折：报价 900000 应结算 810000",
+      "label": "",
+      "stubs": {
+        "PricingStrategy": {
+          "settle": {
+            "$const": 810000
+          }
+        }
+      }
+    },
+    {
+      "id": "DSP-03",
+      "group": "QUOTA",
+      "func": "reflect",
+      "class": "com.demo.shop.service.QuotaService",
+      "method": "withinLimit",
+      "args": [
+        {
+          "$t": "fixture",
+          "v": "1"
+        },
+        {
+          "$t": "long",
+          "v": 900000
+        }
+      ],
+      "check": {
+        "type": "returns_eq",
+        "value": true
+      },
+      "invariant": "额度按客户报价检查：900000 在 1000000 额度内 → 通过",
+      "label": ""
+    },
+    {
+      "id": "DSP-04",
+      "group": "QUOTA",
+      "func": "reflect",
+      "class": "com.demo.shop.service.QuotaService",
+      "method": "withinLimit",
+      "args": [
+        {
+          "$t": "fixture",
+          "v": "1"
+        },
+        {
+          "$t": "long",
+          "v": 1000001
+        }
+      ],
+      "check": {
+        "type": "returns_eq",
+        "value": false
+      },
+      "invariant": "额度超限必须被拒",
+      "label": ""
+    },
+    {
+      "id": "DSP-05",
+      "group": "ORDER",
+      "func": "reflect",
+      "class": "com.demo.shop.service.OrderService",
+      "method": "create",
+      "args": [
+        {
+          "$t": "entity",
+          "class": "com.demo.shop.web.dto.CreateOrderRequest",
+          "fields": {
+            "customerName": "demo-vip",
+            "quotedAmountCent": 900000,
+            "currency": "CNY"
+          }
+        }
+      ],
+      "check": {
+        "type": "returns_non_null"
+      },
+      "invariant": "下单成功返回订单",
+      "label": ""
+    },
+    {
+      "id": "DSP-06",
+      "group": "LSP",
+      "func": "reflect",
+      "class": "com.demo.shop.entity.ShopOrder",
+      "method": "touch",
+      "args": [
+        {
+          "$t": "str",
+          "v": "system"
+        }
+      ],
+      "check": {
+        "type": "entity_field_null",
+        "field": "updatedBy"
+      },
+      "invariant": "ShopOrder.touch 覆写后把审计人清空 —— 违反里氏替换（父类承诺 touch 只记录审计信息）",
+      "label": ""
+    }
+  ]
+}

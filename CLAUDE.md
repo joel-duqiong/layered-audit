@@ -60,6 +60,7 @@
 |---|---|---|
 | **Agent 群骨架** | ✅ unit / role / instance 三级分离，533 单元 / 21 角色 / 786 条边，契约违规 0 | `pilot/engine/agent_schema.py`、`build_agent_graph.py` → `units.json` / `edges.json` |
 | **执行预算闸门** | ✅ `max_agents: 12` 第一次被真正消费（分轮 admit + oracle 多样性保底 + 产物并集合并） | `pilot/engine/budget.py`、`scheduler.py` → `schedule_report.json` |
+| **函数层载体通用化** | ✅ **通用反射 harness**：目标类、依赖、打桩、用例、类型别名全部来自用例文件，harness 里零项目字面量。jiuyan 92 条用例判定 **0 条不同**（64/28 与原版一致）；demo-shop 6 条全过 | `pilot/fn_harness/GenericHarness.java`、`pilot/fn_cases.json`、`demos/shop/fn_cases.json` |
 | **变更影响分析** | ✅ git diff → 类名匹配 → 沿入边传播（深度 3）→ 受影响 Agent 集合；区分「解析出的」与「保守上界」 | `pilot/engine/change_impact.py` → `change_impact.json` |
 | **盲区地图** | ✅ 按中心性排序的「最该先验的单元」 | `pilot/engine/agent_coverage.py` → `agent_coverage.json` |
 | **变异测试** | ✅ `ground_truth=mutant_survivor` 从没人实现过 → 现在有真实数据 | `pilot/mutation_test.py` → `mutation_findings.json` |
@@ -92,6 +93,7 @@
 |---|---|---|---|
 | **A** | **Agent 群不是真的「群」** —— 骨架有了，但没有编排/调度/并发 | 「有关系才调用，没关系不调用」未落地 | 🟡 骨架 ✅，编排 ❌ |
 | **B** | **增量更新** —— 影响分析能算了，但各层脚本还不能只跑受影响的靶区 | 「改一处只动一处」只完成一半 | 🟡 分析 ✅，调度 ❌（设计已出 `DESIGN.md` §5） |
+| **B2** | **函数层之外的三层载体仍是项目专属**（file/class/service 的动态脚本、探针） | 换项目只能跑静态层，动态层要重写 | ❌ 函数层已通，其余三层待通用化 |
 | **C** | **涌现只做了 5 条手写攻击链** —— 图与判定式已设计（图 ✅），但候选链生成、按枢纽排序、FDR 门禁未做 | 系统的存在理由只兑现了 5/∞ | 🟡 设计 ✅，实现 ❌ |
 | **D** | **语义地图** —— 只有结构特征，没有「这个函数是干什么的」 | Agent 的「使命」只有一半 | ❌（设计已出，见 §8） |
 | **E** | **跨仓库** —— 只会审一个仓库 | 「两群 Agent 互相调用」未实现 | ❌（设计已出，见 §8） |

@@ -290,6 +290,7 @@
     "app_container": "jiuyan-backend",
     "base_url": "http://127.0.0.1:8081",
     "work_dir": "/tmp/jiuyan_fn",
-    "recordings": "/Users/june/tests/auto-api/recordings"
+    "recordings": "/Users/june/tests/auto-api/recordings",
+    "fn_cases": "fn_cases.json"
   }
 }

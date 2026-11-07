@@ -73,6 +73,11 @@ def base_url() -> str:
     return os.environ.get("JIUYAN_BASE_URL", path("base_url", "http://127.0.0.1:8081"))
 
 
+def project_dir() -> Path:
+    """项目目录（target.json 所在目录）—— 项目自己的配置都在这。"""
+    return Path(os.environ.get(ENV_TARGET, str(TARGET_FILE))).resolve().parent
+
+
 def artifact_dir() -> Path:
     """产物目录 —— 各层脚本的输入输出都落在这里。
 

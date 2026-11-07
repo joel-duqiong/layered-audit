@@ -20,7 +20,8 @@ import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-HERE = project.artifact_dir()
+HERE = project.artifact_dir()          # 产物目录（可按目标隔离）
+SCRIPT_DIR = Path(__file__).resolve().parent   # 脚本/源码目录（harness 源码在这）
 WORK = project.work_dir()
 CLASSES = WORK / "classes"
 HARNESS_CLASSES = WORK / "harness"
@@ -386,6 +387,19 @@ def parse_dt(value: str) -> datetime.datetime:
     return datetime.fromisoformat(value)
 
 
+def _call_count(counts: dict, method: str) -> int:
+    """按方法名汇总调用次数。
+
+    harness 记的键是「仓储简单名#方法名」，断言里通常只写方法名，
+    所以两种写法都要认（精确匹配优先，否则按后缀匹配）。
+    """
+    if method in counts:
+        return counts[method]
+    suffix = "#" + method
+    hit = [v for k, v in counts.items() if k.endswith(suffix)]
+    return sum(hit) if hit else 0
+
+
 def evaluate(case_def: dict, obs: dict) -> tuple[bool, str]:
     ch = case_def["check"]
     kind = ch["type"]
@@ -408,6 +422,13 @@ def evaluate(case_def: dict, obs: dict) -> tuple[bool, str]:
     if kind == "returns_eq":
         ok = value == ch["value"]
         return ok, f"期望 {ch['value']!r}，实际 {value!r}"
+    if kind == "returns_non_null":
+        ok = value is not None
+        return ok, f"期望非 null，实际 {value!r}"
+    if kind == "entity_field_null":
+        state = obs.get("entity_state") or {}
+        got = state.get(ch["field"], "__缺失__")
+        return got is None, f"期望 {ch['field']} 为 null，实际 {got!r}"
     if kind == "returns_null":
         return value is None, f"期望 null，实际 {value!r}"
     if kind == "returns_ge":
@@ -476,25 +497,25 @@ def evaluate(case_def: dict, obs: dict) -> tuple[bool, str]:
         missing = [f for f in ch["fields"] if not isinstance(value, dict) or f not in value]
         return not missing, f"缺失字段 {missing}"
     if kind == "state_eq":
-        state = obs.get("order_state") or {}
+        state = obs.get("entity_state") or {}
         got = state.get(ch["field"])
         return got == ch["value"], f"期望 {ch['field']}={ch['value']!r}，实际 {got!r}"
     if kind == "state_ge":
-        state = obs.get("order_state") or {}
+        state = obs.get("entity_state") or {}
         got = state.get(ch["field"])
         ok = isinstance(got, (int, float)) and got >= ch["value"]
         return ok, f"期望 {ch['field']} >= {ch['value']}，实际 {got!r}"
     if kind == "state_le":
-        state = obs.get("order_state") or {}
+        state = obs.get("entity_state") or {}
         got = state.get(ch["field"])
         ok = isinstance(got, (int, float)) and got <= ch["value"]
         return ok, f"期望 {ch['field']} <= {ch['value']}，实际 {got!r}"
     if kind == "state_not_null":
-        state = obs.get("order_state") or {}
+        state = obs.get("entity_state") or {}
         got = state.get(ch["field"])
         return got is not None, f"{ch['field']} 实际 {got!r}"
     if kind == "state_snapshot_items_count":
-        state = obs.get("order_state") or {}
+        state = obs.get("entity_state") or {}
         snap = state.get("packageSnapshot") or {}
         items = snap.get("items")
         ok = isinstance(items, list) and len(items) == ch["value"]
@@ -502,6 +523,12 @@ def evaluate(case_def: dict, obs: dict) -> tuple[bool, str]:
     if kind == "burst_unique":
         dups = obs.get("duplicates")
         return dups == 0, f"并发生成 {obs.get('generated')} 个订单号，重复 {dups} 个"
+    if kind in ("call_count_eq", "call_count_at_least"):
+        counts = obs.get("call_counts") or {}
+        got = _call_count(counts, ch["method"])
+        if kind == "call_count_eq":
+            return got == ch["value"], f"{ch['method']} 调用 {got} 次，期望正好 {ch['value']} 次"
+        return got >= ch["value"], f"{ch['method']} 调用 {got} 次，期望 ≥ {ch['value']}"
     if kind == "order_no_attempts":
         got = obs.get("order_no_exists_calls")
         return got == ch["value"], f"期望重试 {ch['value']} 次，实际 {got} 次"
@@ -521,13 +548,27 @@ def evaluate(case_def: dict, obs: dict) -> tuple[bool, str]:
 
 # ----------------------------------------------------------------- runner
 
+def ensure_generic_harness() -> list[str]:
+    """编译通用 harness（不含任何项目字面量，用例与打桩来自用例文件）。"""
+    import fn_static
+    fn_static.ensure_compiled()
+    deps = (WORK / "deps.txt").read_text().strip()
+    generic_classes = WORK / "generic_classes"
+    generic_classes.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["javac", "-nowarn", "-encoding", "UTF-8", "-d", str(generic_classes),
+                    "-cp", f"{fn_static.CLASSES}:{deps}",
+                    str(SCRIPT_DIR / "fn_harness" / "GenericHarness.java")],
+                   check=True, capture_output=True, text=True)
+    return [str(generic_classes), str(fn_static.CLASSES), deps]
+
+
 def ensure_harness() -> list[str]:
     import fn_static
     fn_static.ensure_compiled()
     deps = (WORK / "deps.txt").read_text().strip()
     HARNESS_CLASSES.mkdir(parents=True, exist_ok=True)
     subprocess.run(["javac", "-nowarn", "-encoding", "UTF-8", "-d", str(HARNESS_CLASSES),
-                    "-cp", f"{CLASSES}:{deps}", str(HERE / "fn_harness" / "FunctionHarness.java")],
+                    "-cp", f"{CLASSES}:{deps}", str(SCRIPT_DIR / "fn_harness" / "FunctionHarness.java")],
                    check=True, capture_output=True, text=True)
     return [f"{HARNESS_CLASSES}", f"{CLASSES}", deps]
 
@@ -536,22 +577,37 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="函数层动态侧：JVM 内反射直调")
     parser.add_argument("--case", action="append", default=[], metavar="CASE_ID",
                         help="只跑指定用例 id，可重复；不带该参数则跑全量")
+    parser.add_argument("--cases-file", default="",
+                        help="用例文件（含打桩与类型别名）；给了就用通用 harness，"
+                             "换项目只换这个文件")
     args = parser.parse_args()
 
-    cases = build_cases()
+    cases_path = args.cases_file or project.path("fn_cases", "")
+    if cases_path and not Path(cases_path).is_absolute():
+        cases_path = str(project.project_dir() / cases_path)
+    if cases_path:
+        spec = json.loads(Path(cases_path).read_text(encoding="utf-8"))
+        cases = spec["cases"]
+        classpath = ensure_generic_harness()
+        main_class = "GenericHarness"
+        CASES_FILE.write_text(json.dumps(spec, ensure_ascii=False), encoding="utf-8")
+    else:
+        cases = build_cases()
+        classpath = ensure_harness()
+        main_class = "FunctionHarness"
+        CASES_FILE.write_text(json.dumps(cases, ensure_ascii=False), encoding="utf-8")
     if args.case:
         known = {c["id"] for c in cases}
         unknown = sorted(set(args.case) - known)
         if unknown:
             raise SystemExit(f"未知用例 id: {unknown}")
         cases = [c for c in cases if c["id"] in set(args.case)]
-    classpath = ensure_harness()
-    CASES_FILE.write_text(json.dumps(cases, ensure_ascii=False))
+        CASES_FILE.write_text(json.dumps(cases, ensure_ascii=False), encoding="utf-8")
     shutil.rmtree(UPLOAD_DIR, ignore_errors=True)
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
     proc = subprocess.run(
-        ["java", "-cp", os.pathsep.join(classpath), "FunctionHarness",
+        ["java", "-cp", os.pathsep.join(classpath), main_class,
          str(CASES_FILE), str(OUT_FILE), str(UPLOAD_DIR)],
         capture_output=True, text=True)
     if proc.returncode != 0:

@@ -13,6 +13,4 @@ pilot/agents.json
 pilot/openapi.json
 __pycache__/
 pilot/__pycache__/
-pilot/class_harness/
-pilot/file_harness/
-pilot/fn_harness/
+pilot/*_harness/**/__pycache__/
