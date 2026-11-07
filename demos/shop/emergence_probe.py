@@ -458,13 +458,21 @@ def run_chain(catalog: emergence.Catalog, db: Db, inv_cfg: dict[str, Any],
     return chain_out
 
 
-def cleanup(db: Db) -> int:
-    """删干净探针数据，返回残留行数（必须为 0）。"""
-    db.exec(f"DELETE FROM shop_order WHERE customer_name LIKE '{PFX}\\_%'")
-    db.exec(f"DELETE FROM shop_customer WHERE name LIKE '{PFX}\\_%'")
-    left = int(db.exec(f"SELECT count(*) FROM shop_order WHERE customer_name LIKE '{PFX}\\_%'") or 0)
-    left += int(db.exec(f"SELECT count(*) FROM shop_customer WHERE name LIKE '{PFX}\\_%'") or 0)
-    return left
+def cleanup(db: Db) -> dict[str, Any]:
+    """删干净探针数据，返回残留情况（rows 必须为 0，ids 便于定位）。
+
+    谓词用 starts_with 而不是 LIKE。理由：探针前缀本身以 `_` 结尾，而 LIKE 里
+    `_` 是「单字符通配」—— 想按字面量匹配就得写 `\\_`，于是图案变成
+    「ai_probe_ + 字面下划线」，要求名字里出现**两个**下划线，删一行都删不掉，
+    而计数照样返回 0：「没有残留」变成假象，还很难发现。
+    starts_with 是纯前缀比较，没有通配语义，写错会立刻暴露成残留行。
+    """
+    db.exec(f"DELETE FROM shop_order WHERE starts_with(customer_name, '{PFX}')")
+    db.exec(f"DELETE FROM shop_customer WHERE starts_with(name, '{PFX}')")
+    left = db.rows(
+        f"SELECT id FROM shop_order WHERE starts_with(customer_name, '{PFX}') "
+        f"UNION ALL SELECT id FROM shop_customer WHERE starts_with(name, '{PFX}')")
+    return {"rows": len(left), "ids": [r["id"] for r in left]}
 
 
 def main() -> int:
@@ -485,7 +493,8 @@ def main() -> int:
         res = executor.alive(chain, inj)
         print(_fmt(res.evidence))
         print(f"{args.alive_check}: {'活' if res.alive else '死'} —— {res.detail}")
-        cleanup(db)
+        left = cleanup(db)
+        print(f"残留校验：探针数据行 {left['rows']} 条（必须为 0）")
         return 0 if res.alive else 1
 
     chains = [c for c in catalog.chains if not args.chain or c.id == args.chain]
@@ -507,8 +516,10 @@ def main() -> int:
             for w in out["warnings"]:
                 print(f"  ⚠ {w}")
     finally:
-        residue = cleanup(db)
-        print(f"残留校验：探针数据行 {residue} 条（必须为 0）")
+        left = cleanup(db)
+        residue = left["rows"]
+        print(f"残留校验：探针数据行 {residue} 条（必须为 0）"
+              + (f" —— 残留 id: {left['ids']}" if left["ids"] else ""))
 
     ARTIFACTS.mkdir(parents=True, exist_ok=True)
     payload = {

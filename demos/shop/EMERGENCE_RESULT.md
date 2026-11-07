@@ -140,13 +140,21 @@ python3 emergence_selftest.py                               # 自证（35 项断
 
 | 约束 | 怎么保证 | 本次实测 |
 |------|----------|----------|
-| DB 无残留 | 探针数据一律 `ai_probe_` 前缀；跑完 `DELETE` 自删；末尾再查一次计数 | **0 行** |
-| 无残留容器 | 本探针**不起任何容器**，只复用已有的 `demo-shop-backend` / `-vip` | 0 新增容器 |
+| DB 无残留 | 探针数据一律 `ai_probe_` 前缀；跑完按 `starts_with(列, 'ai_probe_')` 自删；**用同一个谓词**复查计数，残留时打印残留 id 并以退出码 1 失败 | **0 行**（外部独立复查：探针表 0 行 / 客户表只剩 2 行种子数据） |
+| 无残留容器 | 本探针**不起任何容器**，只复用已有的 `demo-shop-backend` / `-vip` | 0 新增容器；本任务排查期间遗留的调试容器 `demo-dbg`（8092，vip profile）已 `docker rm -f` |
 | 确定性 | 同一输入连跑两次，比对 `decision_fingerprint` | `f10753a38f7ef780` == `f10753a38f7ef780` |
 | 不改被测代码 | 注入只改「请求字段 / 数据行 / 装配上下文」，一行业务代码都没动 | `git diff` 里 demo 业务代码 0 改动 |
 
 > 订单 id（160/161/…）每次跑都会变 —— 那是数据库自增，不进指纹。
 > 指纹只覆盖：verdict / owner / category / 核心集 / 三态 / 每个注入集合的 F 值与偏离量。
+
+**第一次实现的残留校验是假的（已修）**：清理用的谓词是
+`customer_name LIKE 'ai_probe_\_%'`，而探针前缀 `ai_probe_` **本身就以 `_` 结尾**，
+拼上转义的下划线后图案变成「`ai_probe_` + 字面下划线」，要求名字里出现**两个**
+下划线 —— 于是 `DELETE` 一行都删不掉，而计数查询同样匹配不到任何行，
+返回 0，「零残留」就成了自证的假象（实测：库里留了 3 个客户行 + 1 个订单行，
+探针仍然报 0 行）。现改用 `starts_with()`：纯前缀比较，没有通配语义，
+写错会立刻暴露成残留行而不是静默通过。见判断记录 14。
 
 ---
 
@@ -240,8 +248,22 @@ python3 emergence_selftest.py                               # 自证（35 项断
 12. **探针自证用可执行脚本（`emergence_selftest.py`），没有新建 pytest 套件** ——
     仓库的回归资产在 `/Users/june/tests/auto-api`，按要求没动。
 
-13. **已知外部问题（不是本次工作引入的）**：仓库级 `check_engine_purity.py`
-    当前为红，违规文件是 `pilot/engine/store.py`（并发会话正在写的分片存储，
-    硬编码了 jiuyan 的容器名与 SQL 字面量）。本次新增/改动的
-    `pilot/engine/emergence.py`、`pilot/engine/invariants.py` **零违规**
-    （自证脚本里逐文件断言）。提交前应由该文件作者把它挪到项目侧。
+13. **引擎纯度**：本次新增/改动的 `pilot/engine/emergence.py`、
+    `pilot/engine/invariants.py` **零违规**（自证脚本里逐文件断言）。
+    写这份报告期间，仓库级 `check_engine_purity.py` 一度为红，违规文件是
+    `pilot/engine/store.py`（并发会话在写的分片存储，硬编码了 jiuyan 的容器名与
+    SQL 字面量）；那是别的工作的产物，现已由其作者修正，最新一次全仓检查
+    13 个引擎文件**全部通过**。
+
+14. **残留清理的谓词从 `LIKE` 换成 `starts_with`** —— 原来的
+    `LIKE 'ai_probe_\_%'` 是个**静默失败**：前缀 `ai_probe_` 末尾已经有一个下划线，
+    LIKE 里下划线是单字符通配符，要按字面量匹配还得再转义一个，图案最终要求
+    「两个下划线」，`DELETE` 删 0 行、计数也是 0，机器校验看着是绿的，库里其实留着
+    探针数据。判定：**校验必须和删除用同一个谓词，而且谓词不能有通配语义** ——
+    宁可漏删被当场发现，也不能「静默通过」。改完重新跑：
+    外部独立复查 `shop_order` / `shop_customer` 的 `ai_probe_` 行数均为 0。
+
+15. **顺手清掉了本任务排查期间遗留的调试容器 `demo-dbg`**（8092 端口，vip profile，
+    与 `demo-shop-backend-vip` 重复）—— 按「临时容器用完 `docker rm -f`」的约束，
+    它既不在目录（`emergence_injections.json` 的实例表只有 8090/8091）里，
+    也不在文档里，留着就是残留。
