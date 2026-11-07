@@ -518,7 +518,7 @@
     },
     {
       "root_cause_key": "index.idx_products_name_unusable",
-      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.625ms vs 0.011ms，差 693 倍）",
+      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（8.019ms vs 0.013ms，差 617 倍）",
       "severity": "HIGH",
       "owner_layer": "service",
       "categories": [
@@ -709,13 +709,13 @@
       "confidence": 0.92,
       "ground_truth": "verified",
       "repro_cmds": [
-        "curl -X PATCH /api/orders/1200/status",
-        "curl -X PATCH /api/packages/277/status",
-        "curl -X PATCH /api/products/2704239/status",
+        "curl -X PATCH /api/orders/1241/status",
+        "curl -X PATCH /api/packages/284/status",
+        "curl -X PATCH /api/products/2804354/status",
         "curl -X POST /api/packages",
         "curl -X POST /api/products",
-        "curl -X PUT /api/packages/277",
-        "curl -X PUT /api/products/2704239"
+        "curl -X PUT /api/packages/284",
+        "curl -X PUT /api/products/2804354"
       ],
       "violations": [],
       "notes": [],
