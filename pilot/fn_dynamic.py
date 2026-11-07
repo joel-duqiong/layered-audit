@@ -19,6 +19,7 @@ import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+sys.path.insert(0, project.engine_path())
 
 HERE = project.artifact_dir()          # 产物目录（可按目标隔离）
 SCRIPT_DIR = Path(__file__).resolve().parent   # 脚本/源码目录（harness 源码在这）
@@ -400,6 +401,80 @@ def _call_count(counts: dict, method: str) -> int:
     return sum(hit) if hit else 0
 
 
+def _case_fingerprints(cases: list[dict]) -> dict[str, str]:
+    """每条用例的指纹：用例定义 + 目标方法的声明事实 + 工具版本。
+
+    目标方法的声明事实变了（签名/分支/副作用/调用集），这条用例的结论就可能过期。
+    """
+    import store
+
+    decl = {}
+    try:
+        decl = json.loads((project.artifact_dir() / "fn_declaration.json").read_text(
+            encoding="utf-8"))
+    except (OSError, ValueError):
+        decl = {}
+    raw_fns = decl.get("functions") or []
+    fns = {}
+    if isinstance(raw_fns, dict):
+        fns = raw_fns
+    else:
+        for rec in raw_fns:
+            key = f"{rec.get('class')}#{rec.get('method')}"
+            fns[key] = rec
+    out: dict[str, str] = {}
+    for case in cases:
+        target = f"{case.get('class')}#{case.get('method')}"
+        fact = fns.get(target, {})
+        out[case["id"]] = store.sha(
+            {"case": {k: v for k, v in case.items() if k != "label"},
+             "fact": fact,
+             "tool": "fn_dynamic@2"})
+    return out
+
+
+def _stored_fingerprint(case_id: str) -> str | None:
+    """上次跑这个分片时记下的指纹。"""
+    import store
+
+    path = store.shard_dir("fn_observation") / f"{case_id}.json"
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError:
+        return None
+    return data.get("input_fingerprint")
+
+
+def _merge_incremental(raw: list[dict], ran_cases: list[dict],
+                       fingerprints: dict[str, str], stale: set[str]) -> list[dict]:
+    """把重跑的分片写盘，再把没失效的旧分片合回来。
+
+    少一个分片 → 退出码 2（没查完），不是绿。
+    """
+    import store
+
+    fresh: dict[str, dict] = {}
+    for obs in raw:
+        fresh[obs["id"]] = obs
+        store.write_shard("fn_observation", obs["id"], obs,
+                          fingerprints.get(obs["id"], ""),
+                          tool_version="fn_dynamic@2", source="incremental")
+    merged, missing = store.merge("fn_observation", fresh, fingerprints)
+    store.write_index("fn_observation",
+                      {sid: {"input_fingerprint": fingerprints.get(sid, ""),
+                              "generated_at": "",
+                              "source": "incremental"}
+                       for sid in merged}, tool_version="fn_dynamic@2")
+    print(f"增量合并：本次重跑 {len(fresh)} 条，复用 {len(merged) - len(fresh)} 条，"
+          f"缺失 {len(missing)} 条")
+    if missing:
+        print(f"  缺失分片 {len(missing)} 条 -> {missing[:8]}")
+        raise SystemExit(2)
+    return [merged[sid] for sid in sorted(merged)]
+
+
 def evaluate(case_def: dict, obs: dict) -> tuple[bool, str]:
     ch = case_def["check"]
     kind = ch["type"]
@@ -580,11 +655,15 @@ def main() -> None:
     parser.add_argument("--cases-file", default="",
                         help="用例文件（含打桩与类型别名）；给了就用通用 harness，"
                              "换项目只换这个文件")
+    parser.add_argument("--incremental", action="store_true",
+                        help="增量模式：只重跑指纹变了的用例，其余复用上次分片；"
+                             "有分片缺失则退出码 2（没查完，不是绿）")
     args = parser.parse_args()
 
     cases_path = args.cases_file or project.path("fn_cases", "")
     if cases_path and not Path(cases_path).is_absolute():
         cases_path = str(project.project_dir() / cases_path)
+    spec: dict | None = None
     if cases_path:
         spec = json.loads(Path(cases_path).read_text(encoding="utf-8"))
         cases = spec["cases"]
@@ -606,16 +685,40 @@ def main() -> None:
     shutil.rmtree(UPLOAD_DIR, ignore_errors=True)
     UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-    proc = subprocess.run(
-        ["java", "-cp", os.pathsep.join(classpath), main_class,
-         str(CASES_FILE), str(OUT_FILE), str(UPLOAD_DIR)],
-        capture_output=True, text=True)
-    if proc.returncode != 0:
-        print(proc.stdout[-3000:])
-        print(proc.stderr[-3000:], file=sys.stderr)
-        raise SystemExit(f"harness failed: {proc.returncode}")
+    # 增量模式：先算指纹，只重跑失效的用例，其余复用上次分片
+    stale: set[str] | None = None
+    fingerprints: dict[str, str] = {}
+    if args.incremental:
+        fingerprints = _case_fingerprints(cases)
+        stale = {cid for cid, fp in fingerprints.items()
+                 if _stored_fingerprint(cid) != fp}
+        print(f"增量模式：{len(cases)} 条用例，失效 {len(stale)} 条，需重跑 {len(stale)} 条")
 
-    raw = json.loads(OUT_FILE.read_text())
+    if stale is not None and stale:
+        cases = [c for c in cases if c["id"] in stale]
+        if spec is not None:
+            CASES_FILE.write_text(
+                json.dumps({**spec, "cases": cases}, ensure_ascii=False), encoding="utf-8")
+        else:
+            CASES_FILE.write_text(json.dumps(cases, ensure_ascii=False), encoding="utf-8")
+
+    raw: list[dict] = []
+    if stale is None or stale:
+        # 没有失效用例时**根本不启动 JVM**（增量模式的意义就在这）
+        proc = subprocess.run(
+            ["java", "-cp", os.pathsep.join(classpath), main_class,
+             str(CASES_FILE), str(OUT_FILE), str(UPLOAD_DIR)],
+            capture_output=True, text=True)
+        if proc.returncode != 0:
+            print(proc.stdout[-3000:])
+            print(proc.stderr[-3000:], file=sys.stderr)
+            raise SystemExit(f"harness failed: {proc.returncode}")
+        raw = json.loads(OUT_FILE.read_text())
+
+    # 写分片 + 并集合并（增量模式下把复用���分片合回来）
+    if stale is not None:
+        raw = _merge_incremental(raw, cases, fingerprints, stale)
+
     by_id = {c["id"]: c for c in cases}
     results = []
     for obs in raw:

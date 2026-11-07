@@ -14,7 +14,8 @@ fi
 trap 'rmdir "$LOCK_DIR" 2>/dev/null || true' EXIT
 echo "=== 函数层（字节码声明 / JVM 直调 / 差分）==="
 python3 fn_static.py
-python3 fn_dynamic.py
+# 增量：只重跑指纹变了的用例，其余复用分片；缺分片 -> 退出码 2（没查完，不是绿）
+python3 fn_dynamic.py --incremental
 python3 fn_diff.py
 echo "=== 文件层（字节码声明 / 整类实例化实测 / 差分）==="
 python3 file_static.py
