@@ -290,7 +290,7 @@ python3 fn_dynamic.py --case RFP-05     # 单用例重放（repro_cmd 用它）
 
 ---
 
-## 10. 回归资产（另一个仓库 `/Users/june/tests/auto-api`，**尚未提交**）
+## 10. 回归资产（另一个仓库 `/Users/june/tests/auto-api`，**已提交** `3b0fae6`）
 
 | 文件 | 行数 | 作用 |
 |---|---|---|
@@ -313,7 +313,7 @@ python3 fn_dynamic.py --case RFP-05     # 单用例重放（repro_cmd 用它）
 | # | 事项 | 现状 | 建议 |
 |---|---|---|---|
 | A0 | `layered-audit/` 版本控制 | ✅ **本轮完成**：`git init` + `.gitignore`（运行产物不入库），待确认后提交 | 首次提交后，`layers.yaml` 的契约变更才有地方提 |
-| A1 | 提交 harness 仓库的新增文件 | 4 新文件 + README 改动**仍未提交**（别人的仓库，先给 diff 再提交） | 提交，`test:` 前缀 |
+| A1 | 提交 harness 仓库的新增文件 | ✅ **本轮完成**：commit `3b0fae6`（4 新文件 + README，692 行；`test:` 前缀；已扫敏感信息 0 命中；未 push） | — |
 | A2 | 门禁挂 CI / pre-commit | 未做 | 做：让「改前端 mapper 或后端 DTO」必须过门禁再进主干 |
 | A3 | `owner` 字段补标 | ✅ **本轮完成**：86/86 条都有 `owner{layer,relation,basis}`，见 `all_findings.json` | — |
 | A4 | 服务层重复开单 | ✅ **本轮完成**：按 `root_cause_key` 归并，86 条发现 → **52 条根因**（25 条 `INTERNAL_LEAK` 收敛成 1 条） | — |
@@ -438,7 +438,7 @@ agent 还没写 —— 这是 §11-B4 编排化的优先级依据。
   categories 8 / package_types 6 / package_items 40）；非种子上传文件 0（清理删掉 4 个孤儿上传）。
 - `/Users/june/jiuyan` 源码 0 审计改动（`git status` 里 9 个改动文件全是用户自己的 OTel/部署改动，
   已逐项核对无审计痕迹）。
-- `layered-audit/` 已 `git init` + `.gitignore`（运行产物不入库），**首次提交待确认**。
+- `layered-audit/` 已 `git init` + `.gitignore`（运行产物不入库）+ 首次提交 `06ea0ab`（53 文件，22034 行）；harness 仓库提交 `3b0fae6`。两者**均未 push**。
 
 **加入跨层收口层之前（对照）**
 
