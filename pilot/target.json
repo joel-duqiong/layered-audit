@@ -23,6 +23,7 @@
     {"layer": "integration", "file": "integration_findings.json", "key": "findings"},
     {"layer": "service", "file": "perf_findings.json", "key": "service"},
     {"layer": "integration", "file": "perf_findings.json", "key": "integration"},
-    {"layer": "function", "file": "numeric_findings.json", "key": "function"}
+    {"layer": "function", "file": "numeric_findings.json", "key": "function"},
+    {"layer": "service", "file": "concurrency_findings.json", "key": "service"}
   ]
 }

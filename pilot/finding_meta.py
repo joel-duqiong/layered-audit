@@ -231,6 +231,25 @@ SERVICE: dict[str, Meta] = {
         "错误 JSON 类型是否被隐式转换后接受？",
         "service", 0.90, "defect", ("CWE-20",),
         "jackson.lenient_type_coercion"),
+    "SVC-CONCURRENT-WRITE-LOST-UPDATE": _m(
+        "service.data_consistency", "exact",
+        "并发编辑同一订单是否会静默丢掉对方的修改？",
+        "service", 0.95, "defect", ("CWE-362",),
+        "order.update.no_concurrency_control",
+        note="两个并发 PUT 各改一个字段，都返回 200，但最终行只含后写者的完整快照 —— "
+             "先写者的修改凭空消失，两边都以为自己成功了，没有任何冲突提示"),
+    "SVC-FAILED-WRITE-LEAVES-NO-PARTIAL-STATE": _m(
+        "service.data_consistency", "exact",
+        "被拒的写请求会不会在订单行留下部分写入？",
+        "service", 0.90, "positive", (),
+        "order.update.transaction_boundary_holds",
+        note="正面结论：校验失败后订单行与请求前逐字段一致，没有半截写入"),
+    "SVC-POST-NOT-IDEMPOTENT": _m(
+        "service.resilience", "exact",
+        "下单接口在客户端重试时会不会产生重复订单？",
+        "service", 0.92, "defect", ("CWE-799",),
+        "order.create.not_idempotent",
+        note="同一个 POST 发两次 → 两个订单 id、库里 2 行；没有幂等键，也没有业务键去重"),
     "SVC-PAGINATION-COUNT-DISCARDED": _m(
         "service.service_latency", "exact",
         "分页 count(*) 是否每次列表请求都全表扫描，而前端根本不看 total？",

@@ -41,6 +41,8 @@ echo "=== 清理 ==="
 ./cleanup.sh
 echo "=== 函数层 numeric 性质探针（property_based_test）==="
 python3 numeric_props.py
+echo "=== 服务层并发与重复写探针（concurrency_test / chaos_experiment）==="
+python3 concurrency_props.py
 echo "=== 引擎自检（通用引擎不许写回项目专属的东西 + 换绑定可跑）==="
 python3 engine/check_engine_purity.py
 ./test_portability.sh
