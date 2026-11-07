@@ -8,10 +8,10 @@
 - 根因：resolveFinalPrice(boolean, Long, Long) 只校验成交价 >= 0，既不要求成交价 <= 套餐总价，也不要求有折扣依据，于是客户端可以把任意数字直接变成订单最终价。
 - HTTP 可达：是（边界情况：CreateOrderRequest.finalPriceCent 只有 @Min(0)，上界没有任何约束）
 - 证据（4 条实测）：
+  - `APL-15` com.jiuyan.banquet.service.OrderService#apply — 不变量「落库的成交价不得高于套餐总价」→ 期望 finalPriceCent <= 46800，实际 999999
   - `RFP-05` com.jiuyan.banquet.service.OrderService#resolveFinalPrice — 不变量「成交价不得低于套餐总价（客户端不能自降定价权）」→ 期望 >= 46800，实际 1
   - `RFP-06` com.jiuyan.banquet.service.OrderService#resolveFinalPrice — 不变量「成交价不得高于套餐总价」→ 期望 <= 46800，实际 999999
   - `RFP-07` com.jiuyan.banquet.service.OrderService#resolveFinalPrice — 不变量「成交价不得为 0（0 元成交无任何业务依据）」→ 期望 >= 1，实际 0
-  - `APL-15` com.jiuyan.banquet.service.OrderService#apply — 不变量「落库的成交价不得高于套餐总价」→ 期望 finalPriceCent <= 46800，实际 999999
 - 跨层关联：
   - integration 层 `PRICE_CLIENT_CONTROLLED_XL`：集成症状：本层是根因（高层已开单）
   - service 层 `test_create_order_use_final_price`：既有测试把「保留客户端成交价」写成了断言——缺陷被固化成契约
@@ -23,8 +23,8 @@
 - HTTP 可达：是（边界情况：HTTP 契约层看不出内容问题——必须真的写一次文件才暴露）
 - CWE: CWE-434
 - 证据（2 条实测）：
-  - `UPL-04` com.jiuyan.banquet.service.UploadService#uploadProductImage — 不变量「文件内容不是图片时不得落盘（内容必须嗅探，不能只看客户端自报的 contentType）」→ 落盘文件: [{'name': 'products/d553f577-37c5-41b7-8ee3-173a8af8ed25.png', 'size': 27, 'first_bytes_hex': '4d5a900003000000', 'magic_ascii': 'MZ......'}] | 落盘 products/d553f577-37c5-41b7-8ee3-173a8af8ed25.png size=27 head=MZ......
-  - `UPL-07` com.jiuyan.banquet.service.UploadService#uploadProductImage — 不变量「任意字节不得以图片扩展名落盘」→ 落盘文件: [{'name': 'products/3557ed33-bbe4-477b-9e20-e138aad20f63.png', 'size': 40, 'first_bytes_hex': '6a75737420706c61', 'magic_ascii': 'just pla'}] | 落盘 products/3557ed33-bbe4-477b-9e20-e138aad20f63.png size=40 head=just pla
+  - `UPL-04` com.jiuyan.banquet.service.UploadService#uploadProductImage — 不变量「文件内容不是图片时不得落盘（内容必须嗅探，不能只看客户端自报的 contentType）」→ 落盘文件: [{'name': '7808eb5a-8bd8-44c9-bf79-d08b5d865db5.png', 'size': 27}] | 落盘 7808eb5a-8bd8-44c9-bf79-d08b5d865db5.png size=27 head=None
+  - `UPL-07` com.jiuyan.banquet.service.UploadService#uploadProductImage — 不变量「任意字节不得以图片扩展名落盘」→ 落盘文件: [{'name': '7d6c6604-8476-44a8-8579-9cddf83d6a44.png', 'size': 40}] | 落盘 7d6c6604-8476-44a8-8579-9cddf83d6a44.png size=40 head=None
 
 ## [HIGH] FN-ORDER-NO-COLLISION — 订单号每秒只有 1000 个槽位，并发下单必然撞号（唯一键冲突 → 500）
 
@@ -33,7 +33,7 @@
 - HTTP 可达：是（边界情况：无任何边界能挡住并发写；客户端请求速率就是下单速率）
 - CWE: CWE-362
 - 证据（1 条实测）：
-  - `GON-02` # — 不变量「同一秒内生成的订单号必须互不相同（唯一槽位只有 1000 个/秒）」→ 并发生成 3000 个订单号，重复 1452 个 | generated=3000 distinct=1548 elapsed=17ms
+  - `GON-02` com.jiuyan.banquet.service.OrderService#generateOrderNo — 不变量「同一秒内生成的订单号必须互不相同（唯一槽位只有 1000 个/秒）」→ 并发生成 3000 个订单号，重复 2043 个 | generated=3000 distinct=957 elapsed=0ms
 
 ## [HIGH] FN-SNAPSHOT-SEMANTICS — 订单快照：明细归属不校验，空明细静默回退成套餐默认明细
 
@@ -41,10 +41,10 @@
 - 根因：buildPackageSnapshot 用「requestedItems 是否为空」来决定用请求明细还是回退套餐默认明细，「用户明确不要明细」与「用户没传明细」在这里不可区分；同时它只校验商品存在，完全不校验商品是否属于该套餐。
 - HTTP 可达：是（边界情况：DTO 只约束数量 >= 1 与 productId 非空，不约束归属，也不区分空 list 与未传）
 - 证据（4 条实测）：
-  - `BPS-03` com.jiuyan.banquet.service.OrderService#buildPackageSnapshot — 不变量「显式传空明细 = 用户不要明细，不得回退套餐默认明细」→ 期望 0 条明细，实际 {'packageId': 4, 'packageName': '双人精选宴', 'banquetType': 'WEDDING', 'priceCent': 46800, 'imageUrl': '/uploads/seed/packages/package-04.jpg', 'items': [{'productId': 11, 'productName': '花胶鸡汤', 'priceCent': 8800, 'quantity': 2, 'unit': '份', 'imageUrl': '/uploads/seed/products/product-11.jpg', 'categoryName': '汤品'}]}
-  - `BPS-05` com.jiuyan.banquet.service.OrderService#buildPackageSnapshot — 不变量「套餐外商品（29 不在套餐 4 内）必须被拒绝」→ 期望抛异常，实际返回 {'packageId': 4, 'packageName': '双人精选宴', 'banquetType': 'WEDDING', 'priceCent': 46800, 'imageUrl': '/uploads/seed/packages/package-04.jpg', 'items': [{'productId': 29, 'productName': '套餐外商品', 'priceCent': 100, 'quantity': 1, 'unit': '份', 'imageUrl': None, 'categoryName': '汤品'}]}
-  - `BPS-06` com.jiuyan.banquet.service.OrderService#buildPackageSnapshot — 不变量「快照里的数量必须 >= 1」→ 期望 quantity=1，实际 0
   - `APL-17` com.jiuyan.banquet.service.OrderService#apply — 不变量「显式传空明细时，订单快照必须为空而不是套餐默认明细」→ 期望快照 0 条明细，实际 {'packageId': 4, 'packageName': '双人精选宴', 'banquetType': 'WEDDING', 'priceCent': 46800, 'imageUrl': '/uploads/seed/packages/package-04.jpg', 'items': [{'productId': 11, 'productName': '花胶鸡汤', 'priceCent': 8800, 'quantity': 2, 'unit': '份', 'imageUrl': '/uploads/seed/products/product-11.jpg', 'categoryName': '汤品'}]}
+  - `BPS-03` com.jiuyan.banquet.service.OrderService#buildPackageSnapshot — 不变量「显式传空明细 = 用户不要明细，不得回退套餐默认明细」→ 期望 0 条明细，实际 {'packageId': 4, 'packageName': '双人精选宴', 'banquetType': 'WEDDING', 'priceCent': 46800, 'imageUrl': '/uploads/seed/packages/package-04.jpg', 'items': [{'productId': 11, 'productName': '花胶鸡汤', 'priceCent': 8800, 'quantity': 2, 'unit': '份', 'imageUrl': '/uploads/seed/products/product-11.jpg', 'categoryName': '汤品'}]}
+  - `BPS-05` com.jiuyan.banquet.service.OrderService#buildPackageSnapshot — 不变量「套餐外商品（29 不在套餐 4 内）必须被拒绝」→ 期望错误码 PRODUCT_NOT_FOUND，实际 None（抛出的是 java.lang.IllegalArgumentException）
+  - `BPS-06` com.jiuyan.banquet.service.OrderService#buildPackageSnapshot — 不变量「快照里的数量必须 >= 1」→ 期望 quantity=1，实际 0
 - 跨层关联：
   - integration 层 `PACKAGE_ITEM_NOT_VALIDATED`：集成症状：本层是根因（高层已开单）
   - integration 层 `PACKAGE_QUANTITY_NOT_VALIDATED`：集成症状：本层是根因（高层已开单）
@@ -70,7 +70,7 @@
   - `APL-03` com.jiuyan.banquet.service.OrderService#apply — 不变量「customerPhone 为空必须 422，不能是 500」→ 期望 HTTP 422，实际 None / None（抛出的是 java.lang.NullPointerException: Cannot invoke "String.trim()" because "<parameter3>" is null）
   - `APL-04` com.jiuyan.banquet.service.OrderService#apply — 不变量「banquetType 为空必须 422，不能是 500」→ 期望 HTTP 422，实际 None / None（抛出的是 java.lang.NullPointerException: Cannot invoke "String.trim()" because "<parameter5>" is null）
   - `APL-09` com.jiuyan.banquet.service.OrderService#apply — 不变量「status 为空必须 422（DTO 声明 @NotNull）」→ 期望抛异常，实际返回 None
-  - `CTG-02` com.jiuyan.banquet.service.CategoryService#create — 不变量「名称为 null 必须 422（DTO 声明 @NotBlank），不能是 500」→ 期望 HTTP 422，实际 None / None（抛出的是 java.lang.NullPointerException: Cannot invoke "String.trim()" because the return value of "com.jiuyan.banquet.dto.CreateCategoryRequest.name()" is null）
+  - `CTG-02` com.jiuyan.banquet.service.CategoryService#create — 不变量「名称为 null 必须 422（DTO 声明 @NotBlank），不能是 500」→ 期望 HTTP 422，实际 None / None（抛出的是 java.lang.IllegalArgumentException: argument type mismatch）
 
 ## [MEDIUM] FN-ITEM-QUANTITY-NOVALIDATION — 明细归一化只查重复，不查 productId/quantity：数量可为空、为 0、为负
 
@@ -78,14 +78,14 @@
 - 根因：两个归一化函数只做「同一商品重复」检查，productId 为 null 会变成 map 的 null 键、quantity 为 null/0/负数原样入表；quantity 也没有上限。
 - HTTP 可达：是（边界情况：PackageItemRequest/AddedItemRequest 的 @NotNull @Min(1) 在 HTTP 边界已挡住 null/0/负数，但数量上限无任何约束——集成层实测 quantity=99 被接受）
 - 证据（8 条实测）：
-  - `NPI-04` com.jiuyan.banquet.service.OrderService#normalizePackageItems — 不变量「productId 为空必须拒绝（DTO 声明 @NotNull）」→ 实际 {'null': 2}
-  - `NPI-05` com.jiuyan.banquet.service.OrderService#normalizePackageItems — 不变量「quantity 为空必须拒绝（DTO 声明 @NotNull）」→ 实际 {'11': None}
-  - `NPI-06` com.jiuyan.banquet.service.OrderService#normalizePackageItems — 不变量「quantity 必须 >= 1（DTO 声明 @Min(1)）」→ 实际 {'11': 0}
-  - `NPI-07` com.jiuyan.banquet.service.OrderService#normalizePackageItems — 不变量「数量为负必须拒绝」→ 实际 {'11': -3}
-  - `NAI-04` com.jiuyan.banquet.service.OrderService#normalizeAddedItems — 不变量「productId 为空必须拒绝（DTO 声明 @NotNull）」→ 实际 {'null': 2}
+  - `NAI-04` com.jiuyan.banquet.service.OrderService#normalizeAddedItems — 不变量「productId 为空必须拒绝（DTO 声明 @NotNull）」→ 实际 {'empty': False}
   - `NAI-05` com.jiuyan.banquet.service.OrderService#normalizeAddedItems — 不变量「quantity 为空必须拒绝（DTO 声明 @NotNull）」→ 实际 {'11': None}
   - `NAI-06` com.jiuyan.banquet.service.OrderService#normalizeAddedItems — 不变量「quantity 必须 >= 1（DTO 声明 @Min(1)）」→ 实际 {'11': 0}
   - `NAI-07` com.jiuyan.banquet.service.OrderService#normalizeAddedItems — 不变量「数量为负必须拒绝」→ 实际 {'11': -3}
+  - `NPI-04` com.jiuyan.banquet.service.OrderService#normalizePackageItems — 不变量「productId 为空必须拒绝（DTO 声明 @NotNull）」→ 实际 {'empty': False}
+  - `NPI-05` com.jiuyan.banquet.service.OrderService#normalizePackageItems — 不变量「quantity 为空必须拒绝（DTO 声明 @NotNull）」→ 实际 {'11': None}
+  - `NPI-06` com.jiuyan.banquet.service.OrderService#normalizePackageItems — 不变量「quantity 必须 >= 1（DTO 声明 @Min(1)）」→ 实际 {'11': 0}
+  - `NPI-07` com.jiuyan.banquet.service.OrderService#normalizePackageItems — 不变量「数量为负必须拒绝」→ 实际 {'11': -3}
 - 跨层关联：
   - integration 层 `PACKAGE_QUANTITY_NOT_VALIDATED`：集成症状：本层是根因（高层已开单）
 
@@ -96,7 +96,7 @@
 - HTTP 可达：是（边界情况：需要看容器/反向代理是否另有兜底限制——应用层没有）
 - CWE: CWE-770
 - 证据（1 条实测）：
-  - `UPL-06` com.jiuyan.banquet.service.UploadService#uploadProductImage — 不变量「上传体积必须有上限（防止上传放大 DoS）」→ 落盘文件: [{'name': 'products/30125396-9510-4294-bf48-15a0e48fa711.png', 'size': 20971520, 'first_bytes_hex': '4141414141414141', 'magic_ascii': 'AAAAAAAA'}] | 落盘 products/30125396-9510-4294-bf48-15a0e48fa711.png size=20971520 head=AAAAAAAA
+  - `UPL-06` com.jiuyan.banquet.service.UploadService#uploadProductImage — 不变量「上传体积必须有上限（防止上传放大 DoS）」→ 落盘文件: [{'name': 'aa9d5fcb-0756-48a3-8009-4081196d9eac.png', 'size': 20971520}] | 落盘 aa9d5fcb-0756-48a3-8009-4081196d9eac.png size=20971520 head=None
 
 ## 假设裁决
 

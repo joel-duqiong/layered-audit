@@ -422,6 +422,9 @@ def _case_fingerprints(cases: list[dict]) -> dict[str, str]:
         for rec in raw_fns:
             key = f"{rec.get('class')}#{rec.get('method')}"
             fns[key] = rec
+    import env_fingerprint
+
+    env = store.env_fingerprint(env_fingerprint.collect())
     out: dict[str, str] = {}
     for case in cases:
         target = f"{case.get('class')}#{case.get('method')}"
@@ -429,6 +432,7 @@ def _case_fingerprints(cases: list[dict]) -> dict[str, str]:
         out[case["id"]] = store.sha(
             {"case": {k: v for k, v in case.items() if k != "label"},
              "fact": fact,
+             "env": env,
              "tool": "fn_dynamic@2"})
     return out
 

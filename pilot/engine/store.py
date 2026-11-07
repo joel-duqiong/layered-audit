@@ -52,35 +52,13 @@ def sha(*parts: Any) -> str:
     return "sha256:" + h.hexdigest()[:16]
 
 
-def env_fingerprint() -> str | None:
-    """环境指纹：DB schema + 容器镜像 + 种子数据。
+def env_fingerprint(parts: list[Any]) -> str | None:
+    """环境指纹：由调用方把环境事实传进来（引擎不查库、不认识具体数据库）。
 
-    取不到就返回 None —— 调用方必须把它当成「不可复用」，宁可重跑。
+    调用方（项目侧）负责采集：DB schema 摘要、容器镜像 digest、种子数据摘要。
+    采不到就传 None —— 调用方必须把它当成「不可复用」，宁可重跑。
     """
-    parts: list[Any] = []
-    try:
-        out = subprocess.run(
-            ["docker", "exec", "jiuyan-postgres", "psql", "-U", "jiuyan", "-d", "jiuyan",
-             "-tAc",
-             "SELECT md5(string_agg(t, '|' ORDER BY t)) FROM ("
-             "SELECT table_name||':'||column_name||':'||data_type AS t "
-             "FROM information_schema.columns WHERE table_schema='public') s"],
-            capture_output=True, text=True, timeout=60)
-        if out.returncode != 0:
-            return None
-        parts.append(out.stdout.strip())
-    except Exception:
-        return None
-    try:
-        img = subprocess.run(["docker", "inspect", "-f", "{{.Image}}",
-                              findings_schema.load_target().get("paths", {}).get(
-                                  "app_container", "jiuyan-backend")],
-                             capture_output=True, text=True, timeout=60)
-        if img.returncode == 0:
-            parts.append(img.stdout.strip())
-    except Exception:
-        return None
-    if not parts or not parts[0]:
+    if not parts:
         return None
     return sha(parts)
 

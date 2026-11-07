@@ -73,6 +73,11 @@ def base_url() -> str:
     return os.environ.get("JIUYAN_BASE_URL", path("base_url", "http://127.0.0.1:8081"))
 
 
+def engine_path() -> str:
+    """通用引擎目录（pilot/engine）—— 项目侧脚本要用引擎能力时把它加进 sys.path。"""
+    return str(Path(__file__).resolve().parent / "engine")
+
+
 def project_dir() -> Path:
     """项目目录（target.json 所在目录）—— 项目自己的配置都在这。"""
     return Path(os.environ.get(ENV_TARGET, str(TARGET_FILE))).resolve().parent
