@@ -58,6 +58,11 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 2,
+        "container": 3
+      },
       "related_root_causes": [
         "frontend.detail_total_not_surfaced"
       ]
@@ -107,6 +112,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 3
+      },
       "related_root_causes": [
         "order.snapshot.item_ownership_unchecked"
       ]
@@ -151,6 +160,11 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1,
+        "container": 1
+      },
       "related_root_causes": []
     },
     {
@@ -198,6 +212,11 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1,
+        "container": 2
+      },
       "related_root_causes": [
         "order.item_quantity_unvalidated"
       ]
@@ -241,6 +260,11 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1,
+        "container": 1
+      },
       "related_root_causes": []
     },
     {
@@ -280,6 +304,10 @@
       "merges": [
         "service 层同一根因开了 2 条 own，可归并为 1 条根因"
       ],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 2
+      },
       "related_root_causes": []
     },
     {
@@ -321,6 +349,11 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1,
+        "container": 1
+      },
       "related_root_causes": []
     },
     {
@@ -362,6 +395,11 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1,
+        "container": 1
+      },
       "related_root_causes": []
     },
     {
@@ -396,6 +434,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1
+      },
       "related_root_causes": []
     },
     {
@@ -431,6 +473,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 1
+      },
       "related_root_causes": []
     },
     {
@@ -464,6 +510,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 1
+      },
       "related_root_causes": []
     },
     {
@@ -501,6 +551,10 @@
         "合法上提：开单层 ['class'] → owner service（契约 escalation_to 允许）"
       ],
       "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
       "related_root_causes": []
     },
     {
@@ -536,6 +590,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
       "related_root_causes": []
     },
     {
@@ -572,6 +630,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1
+      },
       "related_root_causes": []
     },
     {
@@ -607,6 +669,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
       "related_root_causes": []
     },
     {
@@ -680,6 +746,10 @@
       "merges": [
         "service 层同一根因开了 25 条 own，可归并为 1 条根因"
       ],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 25
+      },
       "related_root_causes": []
     },
     {
@@ -719,6 +789,10 @@
       "merges": [
         "service 层同一根因开了 2 条 own，可归并为 1 条根因"
       ],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 2
+      },
       "related_root_causes": []
     },
     {
@@ -757,6 +831,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 2
+      },
       "related_root_causes": [
         "index.idx_products_name_unusable"
       ]
@@ -794,6 +872,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
       "related_root_causes": []
     },
     {
@@ -827,6 +909,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 1
+      },
       "related_root_causes": []
     },
     {
@@ -863,6 +949,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1
+      },
       "related_root_causes": []
     },
     {
@@ -898,6 +988,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
       "related_root_causes": []
     },
     {
@@ -931,6 +1025,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
       "related_root_causes": []
     },
     {
@@ -966,6 +1064,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1001,6 +1103,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1036,6 +1142,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1069,6 +1179,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1102,6 +1216,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1135,6 +1253,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1168,6 +1290,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1203,6 +1329,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1238,6 +1368,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1271,6 +1405,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1306,6 +1444,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1339,6 +1481,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1372,6 +1518,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1407,6 +1557,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1438,6 +1592,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1471,6 +1629,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1504,6 +1666,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1539,6 +1705,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1572,6 +1742,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1605,6 +1779,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1639,6 +1817,10 @@
       "merges": [
         "class 层同一根因开了 2 条 own，可归并为 1 条根因"
       ],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 2
+      },
       "related_root_causes": []
     },
     {
@@ -1672,6 +1854,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1705,6 +1891,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1738,6 +1928,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1771,6 +1965,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1804,6 +2002,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1837,6 +2039,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1870,6 +2076,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1903,6 +2113,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1936,6 +2150,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
       "related_root_causes": []
     },
     {
@@ -1967,6 +2185,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1
+      },
       "related_root_causes": []
     },
     {
@@ -2000,6 +2222,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1
+      },
       "related_root_causes": []
     },
     {
@@ -2033,6 +2259,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
       "related_root_causes": []
     },
     {
@@ -2066,6 +2296,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1
+      },
       "related_root_causes": []
     },
     {
@@ -2099,6 +2333,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
       "related_root_causes": []
     },
     {
@@ -2132,6 +2370,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 1
+      },
       "related_root_causes": []
     },
     {
@@ -2165,6 +2407,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 1
+      },
       "related_root_causes": []
     },
     {
@@ -2198,6 +2444,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 1
+      },
       "related_root_causes": []
     },
     {
@@ -2231,6 +2481,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
       "related_root_causes": []
     },
     {
@@ -2264,6 +2518,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
       "related_root_causes": []
     },
     {
@@ -2295,6 +2553,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1
+      },
       "related_root_causes": []
     },
     {
@@ -2326,6 +2588,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1
+      },
       "related_root_causes": []
     },
     {
@@ -2359,6 +2625,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1
+      },
       "related_root_causes": []
     },
     {
@@ -2392,6 +2662,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1
+      },
       "related_root_causes": []
     },
     {
@@ -2425,6 +2699,10 @@
       "violations": [],
       "notes": [],
       "merges": [],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 1
+      },
       "related_root_causes": []
     }
   ],

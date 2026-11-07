@@ -101,7 +101,8 @@
         "Spring 代理行为（自调用失效、private/final/static 方法不被织入）",
         "配置注入（@Value）与配置刷新 —— 容器不启动，配置不参与",
         "任何依赖持久化或容器生命周期的语义"
-      ]
+      ],
+      "fidelity": "stubbed"
     },
     "file.jvm_whole_class": {
       "layer": "file",
@@ -117,7 +118,8 @@
         "AOP 切面语义 —— 容器外实例化，代理不参与",
         "依赖注入装配结果 —— 依赖是打桩的",
         "跨文件的 ORM 交互（懒加载 / N+1 / 脏写）"
-      ]
+      ],
+      "fidelity": "stubbed"
     },
     "class.dto_db_contract": {
       "layer": "class",
@@ -133,7 +135,8 @@
       "blind_to": [
         "跨实体的关联加载行为（懒加载时机、N+1）",
         "事务隔离级别下的可见性"
-      ]
+      ],
+      "fidelity": "hybrid"
     },
     "service.http_contract": {
       "layer": "service",
@@ -151,7 +154,8 @@
       "blind_to": [
         "非 HTTP 入口（Dubbo / gRPC / MQ）—— 本项目没有，但下一个项目有的话这里就是盲区",
         "网络层真实超时/熔断/降级（探针在同机同网，测不出真实网络故障）"
-      ]
+      ],
+      "fidelity": "container"
     },
     "integration.e2e_three_source": {
       "layer": "integration",
@@ -166,7 +170,8 @@
       "blind_to": [
         "前端渲染后的最终视觉（本系统只到视图模型，不到像素）",
         "浏览器端状态与本地存储"
-      ]
+      ],
+      "fidelity": "container"
     }
   },
   "features": [
@@ -252,5 +257,12 @@
     "function_case": "python3 fn_dynamic.py --case {case_id}",
     "file_layer": "python3 file_dynamic.py",
     "class_layer": "python3 class_dynamic.py"
+  },
+  "layer_carriers": {
+    "function": "function.jvm_reflection",
+    "file": "file.jvm_whole_class",
+    "class": "class.dto_db_contract",
+    "service": "service.http_contract",
+    "integration": "integration.e2e_three_source"
   }
 }

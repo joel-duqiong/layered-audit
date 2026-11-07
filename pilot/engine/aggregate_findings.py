@@ -40,6 +40,25 @@ def _worst(severities: list[str]) -> str:
     return ""
 
 
+FIDELITY_ORDER = ("container", "hybrid", "stubbed", "static", "unknown")
+
+
+def _weakest_fidelity(values: list[str]) -> str:
+    """一组证据里最弱的那一档 —— 根因的可信度由最弱的证据决定。"""
+    known = [v for v in values if v in FIDELITY_ORDER]
+    if not known:
+        return "unknown"
+    return max(known, key=FIDELITY_ORDER.index)
+
+
+def _fidelity_counts(group: list[dict[str, Any]]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for r in group:
+        f = r.get("runtime_fidelity", "unknown")
+        counts[f] = counts.get(f, 0) + 1
+    return counts
+
+
 def aggregate(records: list[dict[str, Any]],
               targets: dict[str, tuple[str, ...]],
               out_of_scope: dict[str, tuple[str, ...]]) -> list[dict[str, Any]]:
@@ -126,6 +145,8 @@ def aggregate(records: list[dict[str, Any]],
             "violations": violations,
             "notes": notes,
             "merges": merges,
+            "evidence_fidelity": _weakest_fidelity([r["runtime_fidelity"] for r in group]),
+            "fidelity_breakdown": _fidelity_counts(group),
             "related_root_causes": sorted({
                 rc for r in group for rc in r.get("related_root_causes", [])}),
         })
@@ -255,6 +276,21 @@ def _report(payload: dict[str, Any], categories: dict[str, tuple[str, ...]]) -> 
     for rc in rcs:
         if rc["cited_from"] and rc["layers_own"]:
             print(f"  {rc['root_cause_key']:<46} owner={rc['owner_layer']:<7} 被引用层={rc['cited_from']}")
+
+    print("\n[运行时保真度：结论是在什么语义下测出来的]")
+    fid = [rc for rc in rcs]
+    by_fid: dict[str, int] = defaultdict(int)
+    for rc in fid:
+        by_fid[rc.get("evidence_fidelity", "unknown")] += 1
+    for name in FIDELITY_ORDER:
+        if name in by_fid:
+            print(f"  {name:<12} {by_fid[name]} 条根因")
+    weak = [rc for rc in rcs if rc.get("evidence_fidelity") in ("static", "unknown", "stubbed")]
+    print(f"  非容器内验证的根因：{len(weak)} 条"
+          f"（container = 在真容器里测的，DI/切面/代理语义为真；"
+          f"stubbed = 拔离容器测的，不能按容器语义解读）")
+    for rc in weak[:8]:
+        print(f"    {rc['evidence_fidelity']:<10}{rc['root_cause_key']}")
 
     print("\n[跨根因关联：A 与 B 是同一处代码/同一条链上的两件事]")
     related = [(rc["root_cause_key"], dep) for rc in rcs

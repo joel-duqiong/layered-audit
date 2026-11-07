@@ -58,6 +58,22 @@ def class_entities() -> dict[str, str]:
     return _target().get("class_entities", {})
 
 
+def carrier_of(layer: str) -> str:
+    """该层用的载体（来自项目绑定）。"""
+    return _target().get("layer_carriers", {}).get(layer, "")
+
+
+def fidelity_of(layer: str) -> str:
+    """该层载体的运行时保真度：container / stubbed / hybrid / static。
+
+    Java 的动态性（DI 选谁、切面织不织入、代理长什么样）只有在**真容器**里才是真的。
+    打桩直调的那两层看到的是「拔离容器后的纯逻辑」，它的结论不能按容器语义解读。
+    所以每条结论都要带上它是在什么保真度下测出来的。
+    """
+    carriers = _target().get("carriers", {})
+    return carriers.get(carrier_of(layer), {}).get("fidelity", "unknown")
+
+
 def evidence_sources() -> tuple[tuple[str, str, str | None], ...]:
     """证据源清单：(层, 文件名, 取值键)。键为 None 表示文件顶层就是数组。"""
     return tuple((s["layer"], s["file"], s.get("key"))
@@ -366,6 +382,7 @@ def _build(layer: str, rec: dict[str, Any], index: int, source_file: str) -> dic
         "root_cause_key": meta.root_cause_key,
         "related_root_causes": list(meta.related_root_causes),
         "kind": meta.kind,
+        "runtime_fidelity": fidelity_of(layer),
         "severity": rec.get("severity", ""),
         "title": rec.get("title", ""),
         "detail": rec.get("detail", ""),
