@@ -210,6 +210,14 @@ SERVICE: dict[str, Meta] = {
         "错误 JSON 类型是否被隐式转换后接受？",
         "service", 0.90, "defect", ("CWE-20",),
         "jackson.lenient_type_coercion"),
+    "SVC-PAGINATION-COUNT-DISCARDED": _m(
+        "service.service_latency", "exact",
+        "分页 count(*) 是否每次列表请求都全表扫描，而前端根本不看 total？",
+        "service", 0.93, "defect", (),
+        "pagination.count_total_computed_but_discarded",
+        related_root_causes=("index.idx_products_name_unusable",),
+        note="实测 5 万行时 count(*) 占端到端 31%（带 keyword）/ 40%（不带 keyword）；"
+             "前端 listProducts/listPackages/listOrders 三个函数都只取 items，total 从未被读"),
     "INTERNAL_LEAK": _m(
         "service.interface_contract", "stretched",
         "错误响应是否把内部实现细节返回给客户端？",
@@ -325,6 +333,13 @@ INTEGRATION: dict[str, Meta] = {
         relation="cited",
         note="源数据把根因归 service 层；实测唯一决策点在 OrderService.resolveFinalPrice，"
              "函数层已给出可复现证据，故 owner 修正为 function"),
+    "INT-LIST-COUNT-END-TO-END-WASTE": _m(
+        "integration.cross_service_performance", "exact",
+        "三个列表接口是否每次都为前端丢弃的 total 付一次全表扫描？",
+        "service", 0.90, "defect", (),
+        "pagination.count_total_computed_but_discarded",
+        relation="cited",
+        note="链级后果归集成层，根因（后端白算一次 count）归服务层"),
     "INT-PII-MASKED-ONLY-IN-FRONTEND": _m(
         "integration.end_to_end_business", "exact",
         "手机号脱敏是否只做在渲染层，接口与库里都是明文？",

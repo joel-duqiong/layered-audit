@@ -56,6 +56,9 @@ SOURCES: tuple[tuple[str, str, str | None], ...] = (
     ("service", "findings.json", None),
     ("class", "class_findings.json", None),
     ("integration", "integration_findings.json", "findings"),
+    # 负载实验自带 findings：服务层开单根因，集成层引用链级后果
+    ("service", "perf_findings.json", "service"),
+    ("integration", "perf_findings.json", "integration"),
 )
 
 LAYER_REPLAY = {
@@ -254,7 +257,7 @@ def _granularity(layer: str, repro_cmd: str) -> str:
     return "layer"
 
 
-def _build(layer: str, rec: dict[str, Any], index: int) -> dict[str, Any]:
+def _build(layer: str, rec: dict[str, Any], index: int, source_file: str) -> dict[str, Any]:
     fid = rec.get("id", "")
     meta = finding_meta.lookup(layer, fid)
     inferred: list[str] = []
@@ -327,7 +330,7 @@ def _build(layer: str, rec: dict[str, Any], index: int) -> dict[str, Any]:
         "detail": rec.get("detail", ""),
         "related": rec.get("related_findings") or rec.get("related") or [],
         "note": meta.note,
-        "source": {"file": SOURCES_BY_LAYER[layer], "index": index},
+        "source": {"file": source_file, "index": index},
         "meta": {
             "inferred_fields": inferred,
             "confidence_source": "manual" if not inferred else "inferred",
@@ -336,9 +339,6 @@ def _build(layer: str, rec: dict[str, Any], index: int) -> dict[str, Any]:
         },
     }
     return record
-
-
-SOURCES_BY_LAYER = {lay: path for lay, path, _ in SOURCES}
 
 
 def load_layer(layer: str, path: str, key: str | None) -> list[dict[str, Any]]:
@@ -355,7 +355,7 @@ def main() -> None:
     records: list[dict[str, Any]] = []
     for layer, path, key in SOURCES:
         for idx, rec in enumerate(load_layer(layer, path, key)):
-            records.append(_build(layer, rec, idx))
+            records.append(_build(layer, rec, idx, path))
 
     # id 在层内重复 = 契约违规（id 应能唯一标识一条发现），标记出来
     seen: dict[tuple[str, str], int] = {}

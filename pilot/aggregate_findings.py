@@ -123,6 +123,8 @@ def aggregate(records: list[dict[str, Any]],
             "violations": violations,
             "notes": notes,
             "merges": merges,
+            "related_root_causes": sorted({
+                rc for r in group for rc in r.get("related_root_causes", [])}),
         })
     out.sort(key=lambda r: (SEVERITY_ORDER.index(r["severity"]) if r["severity"] in SEVERITY_ORDER else 9,
                              -r["finding_count"], r["root_cause_key"]))
@@ -251,6 +253,14 @@ def _report(payload: dict[str, Any], categories: dict[str, tuple[str, ...]]) -> 
         if rc["cited_from"] and rc["layers_own"]:
             print(f"  {rc['root_cause_key']:<46} owner={rc['owner_layer']:<7} 被引用层={rc['cited_from']}")
 
+    print("\n[跨根因关联：A 与 B 是同一处代码/同一条链上的两件事]")
+    related = [(rc["root_cause_key"], dep) for rc in rcs
+               for dep in rc.get("related_root_causes", [])]
+    if not related:
+        print("  无")
+    for key, dep in related:
+        print(f"  {key:<52} -> {dep}")
+
     print("\n[覆盖度矩阵：层 × 契约声明的 category]")
     for layer in LAYER_ORDER:
         if layer not in cov["matrix"]:
@@ -339,7 +349,16 @@ def _write_md(payload: dict[str, Any], categories: dict[str, tuple[str, ...]]) -
             a(f"| `{rc['root_cause_key']}` | {rc['owner_layer']} | {m} |")
     a("")
 
-    a("## 四、覆盖度矩阵（层 × 契约声明的 category）")
+    a("## 四、跨根因关联")
+    a("")
+    a("| 根因 | 关联到 |")
+    a("|------|--------|")
+    for rc in rcs:
+        for dep in rc.get("related_root_causes", []):
+            a(f"| `{rc['root_cause_key']}` | `{dep}` |")
+    a("")
+
+    a("## 五、覆盖度矩阵（层 × 契约声明的 category）")
     a("")
     for layer in LAYER_ORDER:
         if layer not in cov["matrix"]:
@@ -353,7 +372,7 @@ def _write_md(payload: dict[str, Any], categories: dict[str, tuple[str, ...]]) -
             a(f"| {c} | {n} | {'零覆盖 —— 没人管' if n == 0 else 'ok'} |")
         a("")
 
-    a("## 五、契约缺口（category 装不下）")
+    a("## 六、契约缺口（category 装不下）")
     a("")
     a(f"合计 {len(cov['unmapped_uids'])} 条，按层：{cov['unmapped_by_layer']}")
     a("")
@@ -363,7 +382,7 @@ def _write_md(payload: dict[str, Any], categories: dict[str, tuple[str, ...]]) -
         a(f"| `{uid}` | 见 all_findings.json 的 suggested_category |")
     a("")
 
-    a("## 六、同一文件承载多个根因（文件层内聚信号）")
+    a("## 七、同一文件承载多个根因（文件层内聚信号）")
     a("")
     a("| 文件 | 根因数 | 根因 |")
     a("|------|--------|------|")

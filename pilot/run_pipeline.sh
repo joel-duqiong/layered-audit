@@ -1,7 +1,17 @@
 #!/bin/bash
-# 分层审计流水线：函数层 -> 文件层 -> 服务层 -> 类层 -> 集权层 -> 清理
+# 分层审计流水线：函数层 -> 文件层 -> 服务层 -> 类层 -> 集权层 -> 负载实测 -> 收口 -> 门禁
 set -e
 cd "$(dirname "$0")"
+
+# 并发保护：各层脚本共用固定工作目录（/tmp/jiuyan_fn、/tmp/jiuyan_file），
+# 两个流水线同时跑会互相覆盖 class 文件，表现为 javap 随机失败。
+LOCK_DIR=/tmp/layered_audit.lock
+if ! mkdir "$LOCK_DIR" 2>/dev/null; then
+  echo "已有流水线在跑（锁目录 $LOCK_DIR 存在）。"
+  echo "如确认没有进程在跑，手动 rm -rf $LOCK_DIR 后重试。"
+  exit 2
+fi
+trap 'rmdir "$LOCK_DIR" 2>/dev/null || true' EXIT
 echo "=== 函数层（字节码声明 / JVM 直调 / 差分）==="
 python3 fn_static.py
 python3 fn_dynamic.py
@@ -25,6 +35,8 @@ python3 integration_dynamic.py
 python3 integration_reconcile.py
 python3 integration_chain.py
 python3 integration_diff.py
+echo "=== 负载实测（端到端延迟曲线 + 分页 total 开销）==="
+python3 perf_load.py --scales "${PERF_SCALES:-0,2000,10000,50000}" --rounds "${PERF_ROUNDS:-10}"
 echo "=== 清理 ==="
 ./cleanup.sh
 echo "=== 证据归一化 + 根因聚合（统一 schema / 根因归并 / 覆盖度矩阵）==="
