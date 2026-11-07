@@ -1,23 +1,23 @@
 {
   "counts": {
     "units": 532,
-    "verified_units": 4,
+    "verified_units": 5,
     "observed_only_units": 12,
-    "unknown_units": 516,
-    "verified_ratio": 0.0075,
+    "unknown_units": 515,
+    "verified_ratio": 0.0094,
     "obligations": {
       "satisfied": 0,
-      "violated": 4,
-      "unknown": 2067
+      "violated": 5,
+      "unknown": 2066
     },
     "root_causes_with_multiple_carriers": 0
   },
   "top_blind_spots": [
     {
-      "unit_key": "com.jiuyan.banquet.entity.BanquetOrder",
+      "unit_key": "com.jiuyan.banquet.service.OrderService",
       "layer": "file",
-      "symbol": "BanquetOrder",
-      "centrality": 46,
+      "symbol": "OrderService",
+      "centrality": 5,
       "agents": 3,
       "status": "UNKNOWN",
       "obligations": {
@@ -26,351 +26,14 @@
         "unknown": 3
       },
       "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.entity.Product",
-      "layer": "file",
-      "symbol": "Product",
-      "centrality": 42,
-      "agents": 3,
-      "status": "UNKNOWN",
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 3
+      "logic": {
+        "branches": 56,
+        "side_effects": 16,
+        "null_guards": 9,
+        "is_pure": false,
+        "score": 173
       },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.entity.BanquetPackage",
-      "layer": "file",
-      "symbol": "BanquetPackage",
-      "centrality": 35,
-      "agents": 3,
-      "status": "UNKNOWN",
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 3
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.entity.Category",
-      "layer": "file",
-      "symbol": "Category",
-      "centrality": 18,
-      "agents": 3,
-      "status": "UNKNOWN",
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 3
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.dto.CreateOrderRequest",
-      "layer": "file",
-      "symbol": "CreateOrderRequest",
-      "centrality": 16,
-      "agents": 3,
-      "status": "UNKNOWN",
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 3
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.dto.UpdateOrderRequest",
-      "layer": "file",
-      "symbol": "UpdateOrderRequest",
-      "centrality": 16,
-      "agents": 3,
-      "status": "UNKNOWN",
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 3
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.entity.PackageType",
-      "layer": "file",
-      "symbol": "PackageType",
-      "centrality": 14,
-      "agents": 3,
-      "status": "UNKNOWN",
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 3
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.config.TraceContext",
-      "layer": "file",
-      "symbol": "TraceContext",
-      "centrality": 12,
-      "agents": 3,
-      "status": "UNKNOWN",
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 3
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.config.TraceContext#getTraceId",
-      "layer": "function",
-      "symbol": "TraceContext.getTraceId",
-      "centrality": 10,
-      "agents": 4,
-      "status": "UNKNOWN",
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 4
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.entity.PackageItem",
-      "layer": "file",
-      "symbol": "PackageItem",
-      "centrality": 10,
-      "agents": 3,
-      "status": "UNKNOWN",
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 3
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.entity.Product#getId",
-      "layer": "function",
-      "symbol": "Product.getId",
-      "centrality": 9,
-      "agents": 4,
-      "status": "UNKNOWN",
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 4
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.repository.ProductRepository",
-      "layer": "file",
-      "symbol": "ProductRepository",
-      "centrality": 9,
-      "agents": 3,
-      "status": "UNKNOWN",
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 3
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.exception.ErrorCode",
-      "layer": "file",
-      "symbol": "ErrorCode",
-      "centrality": 8,
-      "agents": 3,
-      "status": "UNKNOWN",
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 3
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.repository.BanquetPackageRepository",
-      "layer": "file",
-      "symbol": "BanquetPackageRepository",
-      "centrality": 8,
-      "agents": 3,
-      "status": "UNKNOWN",
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 3
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.entity.BanquetPackage#getId",
-      "layer": "function",
-      "symbol": "BanquetPackage.getId",
-      "centrality": 7,
-      "agents": 4,
-      "status": "UNKNOWN",
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 4
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.dto.CreatePackageRequest",
-      "layer": "file",
-      "symbol": "CreatePackageRequest",
-      "centrality": 7,
-      "agents": 3,
-      "status": "UNKNOWN",
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 3
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.dto.CreateProductRequest",
-      "layer": "file",
-      "symbol": "CreateProductRequest",
-      "centrality": 7,
-      "agents": 3,
-      "status": "UNKNOWN",
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 3
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.dto.UpdatePackageRequest",
-      "layer": "file",
-      "symbol": "UpdatePackageRequest",
-      "centrality": 7,
-      "agents": 3,
-      "status": "UNKNOWN",
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 3
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.dto.UpdateProductRequest",
-      "layer": "file",
-      "symbol": "UpdateProductRequest",
-      "centrality": 7,
-      "agents": 3,
-      "status": "UNKNOWN",
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 3
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.repository.CategoryRepository",
-      "layer": "file",
-      "symbol": "CategoryRepository",
-      "centrality": 7,
-      "agents": 3,
-      "status": "UNKNOWN",
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 3
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.repository.PackageTypeRepository",
-      "layer": "file",
-      "symbol": "PackageTypeRepository",
-      "centrality": 7,
-      "agents": 3,
-      "status": "UNKNOWN",
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 3
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.entity.Category#getName",
-      "layer": "function",
-      "symbol": "Category.getName",
-      "centrality": 6,
-      "agents": 4,
-      "status": "UNKNOWN",
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 4
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.entity.Product#getName",
-      "layer": "function",
-      "symbol": "Product.getName",
-      "centrality": 6,
-      "agents": 4,
-      "status": "UNKNOWN",
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 4
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.repository.OrderRepository",
-      "layer": "file",
-      "symbol": "OrderRepository",
-      "centrality": 6,
-      "agents": 3,
-      "status": "UNKNOWN",
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 3
-      },
-      "cases": 0,
+      "priority": 870,
       "root_causes": []
     },
     {
@@ -386,10 +49,550 @@
         "unknown": 3
       },
       "cases": 0,
+      "logic": {
+        "branches": 30,
+        "side_effects": 13,
+        "null_guards": 5,
+        "is_pure": false,
+        "score": 119
+      },
+      "priority": 720,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.service.ProductService",
+      "layer": "file",
+      "symbol": "ProductService",
+      "centrality": 5,
+      "agents": 3,
+      "status": "UNKNOWN",
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 3
+      },
+      "cases": 0,
+      "logic": {
+        "branches": 25,
+        "side_effects": 13,
+        "null_guards": 4,
+        "is_pure": false,
+        "score": 103
+      },
+      "priority": 520,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.service.CategoryService",
+      "layer": "file",
+      "symbol": "CategoryService",
+      "centrality": 3,
+      "agents": 3,
+      "status": "UNKNOWN",
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 3
+      },
+      "cases": 0,
+      "logic": {
+        "branches": 4,
+        "side_effects": 9,
+        "null_guards": 0,
+        "is_pure": false,
+        "score": 51
+      },
+      "priority": 156,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.service.PackageTypeService",
+      "layer": "file",
+      "symbol": "PackageTypeService",
+      "centrality": 3,
+      "agents": 3,
+      "status": "UNKNOWN",
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 3
+      },
+      "cases": 0,
+      "logic": {
+        "branches": 4,
+        "side_effects": 9,
+        "null_guards": 0,
+        "is_pure": false,
+        "score": 51
+      },
+      "priority": 156,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.service.UploadService",
+      "layer": "file",
+      "symbol": "UploadService",
+      "centrality": 2,
+      "agents": 3,
+      "status": "UNKNOWN",
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 3
+      },
+      "cases": 0,
+      "logic": {
+        "branches": 11,
+        "side_effects": 7,
+        "null_guards": 3,
+        "is_pure": false,
+        "score": 40
+      },
+      "priority": 82,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.entity.BanquetOrder",
+      "layer": "file",
+      "symbol": "BanquetOrder",
+      "centrality": 46,
+      "agents": 3,
+      "status": "UNKNOWN",
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 3
+      },
+      "cases": 0,
+      "logic": {
+        "branches": 0,
+        "side_effects": 0,
+        "null_guards": 0,
+        "is_pure": true,
+        "score": 0
+      },
+      "priority": 46,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.entity.Product",
+      "layer": "file",
+      "symbol": "Product",
+      "centrality": 42,
+      "agents": 3,
+      "status": "UNKNOWN",
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 3
+      },
+      "cases": 0,
+      "logic": {
+        "branches": 0,
+        "side_effects": 0,
+        "null_guards": 0,
+        "is_pure": true,
+        "score": 0
+      },
+      "priority": 42,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.entity.BanquetPackage",
+      "layer": "file",
+      "symbol": "BanquetPackage",
+      "centrality": 35,
+      "agents": 3,
+      "status": "UNKNOWN",
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 3
+      },
+      "cases": 0,
+      "logic": {
+        "branches": 0,
+        "side_effects": 0,
+        "null_guards": 0,
+        "is_pure": true,
+        "score": 0
+      },
+      "priority": 35,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.service.CategoryService#delete",
+      "layer": "function",
+      "symbol": "CategoryService.delete",
+      "centrality": 1,
+      "agents": 4,
+      "status": "UNKNOWN",
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 4
+      },
+      "cases": 0,
+      "logic": {
+        "branches": 2,
+        "side_effects": 4,
+        "null_guards": 0,
+        "is_pure": false,
+        "score": 19
+      },
+      "priority": 20,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.service.PackageTypeService#delete",
+      "layer": "function",
+      "symbol": "PackageTypeService.delete",
+      "centrality": 1,
+      "agents": 4,
+      "status": "UNKNOWN",
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 4
+      },
+      "cases": 0,
+      "logic": {
+        "branches": 2,
+        "side_effects": 4,
+        "null_guards": 0,
+        "is_pure": false,
+        "score": 19
+      },
+      "priority": 20,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.entity.Category",
+      "layer": "file",
+      "symbol": "Category",
+      "centrality": 18,
+      "agents": 3,
+      "status": "UNKNOWN",
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 3
+      },
+      "cases": 0,
+      "logic": {
+        "branches": 0,
+        "side_effects": 0,
+        "null_guards": 0,
+        "is_pure": true,
+        "score": 0
+      },
+      "priority": 18,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.service.PackageTypeService#create",
+      "layer": "function",
+      "symbol": "PackageTypeService.create",
+      "centrality": 1,
+      "agents": 4,
+      "status": "UNKNOWN",
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 4
+      },
+      "cases": 0,
+      "logic": {
+        "branches": 2,
+        "side_effects": 3,
+        "null_guards": 0,
+        "is_pure": false,
+        "score": 16
+      },
+      "priority": 17,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.service.ProductService#updateStatus",
+      "layer": "function",
+      "symbol": "ProductService.updateStatus",
+      "centrality": 1,
+      "agents": 4,
+      "status": "UNKNOWN",
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 4
+      },
+      "cases": 0,
+      "logic": {
+        "branches": 2,
+        "side_effects": 3,
+        "null_guards": 0,
+        "is_pure": false,
+        "score": 16
+      },
+      "priority": 17,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.dto.CreateOrderRequest",
+      "layer": "file",
+      "symbol": "CreateOrderRequest",
+      "centrality": 16,
+      "agents": 3,
+      "status": "UNKNOWN",
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 3
+      },
+      "cases": 0,
+      "logic": {
+        "branches": 0,
+        "side_effects": 0,
+        "null_guards": 0,
+        "is_pure": true,
+        "score": 0
+      },
+      "priority": 16,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.dto.UpdateOrderRequest",
+      "layer": "file",
+      "symbol": "UpdateOrderRequest",
+      "centrality": 16,
+      "agents": 3,
+      "status": "UNKNOWN",
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 3
+      },
+      "cases": 0,
+      "logic": {
+        "branches": 0,
+        "side_effects": 0,
+        "null_guards": 0,
+        "is_pure": true,
+        "score": 0
+      },
+      "priority": 16,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.mapper.OrderMapper#toResponse",
+      "layer": "function",
+      "symbol": "OrderMapper.toResponse",
+      "centrality": 4,
+      "agents": 4,
+      "status": "UNKNOWN",
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 4
+      },
+      "cases": 0,
+      "logic": {
+        "branches": 2,
+        "side_effects": 0,
+        "null_guards": 1,
+        "is_pure": true,
+        "score": 3
+      },
+      "priority": 16,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.mapper.OrderMapper",
+      "layer": "file",
+      "symbol": "OrderMapper",
+      "centrality": 4,
+      "agents": 3,
+      "status": "UNKNOWN",
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 3
+      },
+      "cases": 0,
+      "logic": {
+        "branches": 2,
+        "side_effects": 0,
+        "null_guards": 1,
+        "is_pure": true,
+        "score": 3
+      },
+      "priority": 16,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.service.ProductService#delete",
+      "layer": "function",
+      "symbol": "ProductService.delete",
+      "centrality": 1,
+      "agents": 4,
+      "status": "UNKNOWN",
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 4
+      },
+      "cases": 0,
+      "logic": {
+        "branches": 1,
+        "side_effects": 3,
+        "null_guards": 0,
+        "is_pure": false,
+        "score": 15
+      },
+      "priority": 16,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.entity.PackageType",
+      "layer": "file",
+      "symbol": "PackageType",
+      "centrality": 14,
+      "agents": 3,
+      "status": "UNKNOWN",
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 3
+      },
+      "cases": 0,
+      "logic": {
+        "branches": 0,
+        "side_effects": 0,
+        "null_guards": 0,
+        "is_pure": true,
+        "score": 0
+      },
+      "priority": 14,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.config.TraceContext",
+      "layer": "file",
+      "symbol": "TraceContext",
+      "centrality": 12,
+      "agents": 3,
+      "status": "UNKNOWN",
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 3
+      },
+      "cases": 0,
+      "logic": {
+        "branches": 0,
+        "side_effects": 0,
+        "null_guards": 0,
+        "is_pure": true,
+        "score": 0
+      },
+      "priority": 12,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.service.OrderService#update",
+      "layer": "function",
+      "symbol": "OrderService.update",
+      "centrality": 1,
+      "agents": 4,
+      "status": "UNKNOWN",
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 4
+      },
+      "cases": 0,
+      "logic": {
+        "branches": 0,
+        "side_effects": 2,
+        "null_guards": 0,
+        "is_pure": false,
+        "score": 11
+      },
+      "priority": 12,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.service.OrderService#updateStatus",
+      "layer": "function",
+      "symbol": "OrderService.updateStatus",
+      "centrality": 1,
+      "agents": 4,
+      "status": "UNKNOWN",
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 4
+      },
+      "cases": 0,
+      "logic": {
+        "branches": 0,
+        "side_effects": 2,
+        "null_guards": 0,
+        "is_pure": false,
+        "score": 11
+      },
+      "priority": 12,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.service.PackageService#create",
+      "layer": "function",
+      "symbol": "PackageService.create",
+      "centrality": 1,
+      "agents": 4,
+      "status": "UNKNOWN",
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 4
+      },
+      "cases": 0,
+      "logic": {
+        "branches": 0,
+        "side_effects": 2,
+        "null_guards": 0,
+        "is_pure": false,
+        "score": 11
+      },
+      "priority": 12,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.service.PackageService#update",
+      "layer": "function",
+      "symbol": "PackageService.update",
+      "centrality": 1,
+      "agents": 4,
+      "status": "UNKNOWN",
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 4
+      },
+      "cases": 0,
+      "logic": {
+        "branches": 0,
+        "side_effects": 2,
+        "null_guards": 0,
+        "is_pure": false,
+        "score": 11
+      },
+      "priority": 12,
       "root_causes": []
     }
   ],
   "root_cause_carriers": {
+    "apply.null_input.npe_instead_of_422": [
+      "com.jiuyan.banquet.service.OrderService#create"
+    ],
     "order.apply.amount_invariants_weak": [
       "com.jiuyan.banquet.service.OrderService#apply"
     ],

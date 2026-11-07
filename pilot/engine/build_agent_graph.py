@@ -184,8 +184,22 @@ def _edges(units: dict[str, list[dict[str, Any]]]) -> list[dict[str, Any]]:
     return edges
 
 
-def _evidence_index() -> tuple[dict[str, list[dict[str, Any]]], dict[str, dict[str, Any]]]:
-    """动态用例按目标函数索引；发现按 unit 索引。"""
+def _evidence_index(units: dict[str, list[dict[str, Any]]]
+                    ) -> tuple[dict[str, list[dict[str, Any]]], dict[str, dict[str, Any]]]:
+    """动态用例按目标函数索引；发现按 unit 索引。
+
+    发现里的 location.symbol 常是「简单类名.方法名」（OrderService.apply），
+    而 unit_key 是全限定名（com.jiuyan.banquet.service.OrderService#apply）。
+    不做简单名→全名的解析，文件层单元就会永远关联不上自己的 finding，
+    在盲区地图里被误标成「完全没查」。
+    """
+    simple_to_fqn: dict[str, str] = {}
+    for layer_units in units.values():
+        for u in layer_units:
+            key = u["unit_key"]
+            simple = key.split("#")[0].rsplit(".", 1)[-1]
+            simple_to_fqn.setdefault(simple, key.split("#")[0])
+
     cases: dict[str, list[dict[str, Any]]] = defaultdict(list)
     fo = _load("fn_observation.json") or {}
     for case in fo.get("cases") or []:
@@ -198,8 +212,11 @@ def _evidence_index() -> tuple[dict[str, list[dict[str, Any]]], dict[str, dict[s
     for rec in af.get("findings") or []:
         loc = rec.get("location") or {}
         sym = loc.get("symbol") or ""
-        cls = sym.split(".")[0] if "." in sym else ""
-        keys = {k for k in (f"{cls}#{sym.split('.')[-1]}", sym, loc.get("file", "")) if k}
+        simple = sym.split(".")[0] if "." in sym else ""
+        method = sym.split(".")[-1] if sym else ""
+        fqn = simple_to_fqn.get(simple, "")
+        keys = {k for k in (f"{fqn}#{method}" if fqn else "", f"{simple}#{method}" if simple else "",
+                            sym, loc.get("file", "")) if k}
         for k in keys:
             findings_by_unit[k].append(rec)
     return cases, findings_by_unit
@@ -207,7 +224,7 @@ def _evidence_index() -> tuple[dict[str, list[dict[str, Any]]], dict[str, dict[s
 
 def _build_instances(roles: dict[str, dict[str, Any]], units: dict[str, list[dict[str, Any]]],
                      templates: dict[str, str]) -> list[dict[str, Any]]:
-    cases, findings_by_unit = _evidence_index()
+    cases, findings_by_unit = _evidence_index(units)
     instances: list[dict[str, Any]] = []
 
     for layer, layer_units in units.items():

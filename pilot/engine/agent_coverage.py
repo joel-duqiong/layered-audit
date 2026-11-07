@@ -68,10 +68,46 @@ def build() -> dict[str, Any]:
     for u in units:
         u["root_causes"] = sorted(u["root_causes"])
 
+    # 逻辑密度：只看「这个单元有多少值得测的分支/副作用/守卫」。
+    # 没有这一步，排序会被 Lombok 生成的 getter 刷屏 —— 中心性高但零分支零副作用，
+    # 测它没有意义。优先级 = 中心性 × 逻辑密度。
+    density: dict[str, dict[str, Any]] = {}
+    fn = json.loads((PROJECT_DIR / "fn_declaration.json").read_text(encoding="utf-8"))
+    for rec in fn.get("functions") or []:
+        key = f"{rec.get('class')}#{rec.get('method')}"
+        branches = int(rec.get("branch_count") or 0)
+        effects = len(rec.get("side_effects") or [])
+        guards = int(rec.get("null_guard_count") or 0)
+        impure = 0 if rec.get("is_pure") else 5
+        density[key] = {
+            "branches": branches,
+            "side_effects": effects,
+            "null_guards": guards,
+            "is_pure": bool(rec.get("is_pure")),
+            "score": branches + effects * 3 + guards + impure,
+        }
+    # 文件/类单元的逻辑密度 = 其成员函数密度之和（实体与 DTO 自己没分支，
+    # 但它们承载的方法有）。否则文件层会因「中心性高但自己零分支」被误判成低优先。
+    member_density: dict[str, dict[str, Any]] = defaultdict(
+        lambda: {"branches": 0, "side_effects": 0, "null_guards": 0,
+                 "is_pure": True, "score": 0})
+    for key, d in density.items():
+        cls = key.split("#")[0]
+        agg = member_density[cls]
+        for f in ("branches", "side_effects", "null_guards", "score"):
+            agg[f] += d[f]
+        agg["is_pure"] = agg["is_pure"] and d["is_pure"]
+
+    for u in units:
+        d = density.get(u["unit_key"]) or member_density.get(u["unit_key"])
+        u["logic"] = d or {"branches": 0, "side_effects": 0, "null_guards": 0,
+                           "is_pure": True, "score": 0}
+        u["priority"] = u["centrality"] * (1 + u["logic"]["score"])
+
     # 最该先验的：中心性高 + 状态 UNKNOWN + 义务多
     candidates = sorted(
         [u for u in units if u["status"] == "UNKNOWN"],
-        key=lambda u: (-u["centrality"], -sum(u["obligations"].values())))
+        key=lambda u: (-u["priority"], -u["centrality"]))
     verified = [u for u in units if u["status"] in ("PASS", "FAIL")]
     observed = [u for u in units if u["status"] == "OBSERVED"]
 
@@ -114,10 +150,12 @@ def main() -> None:
     print(f"  义务三值：满足 {c['obligations'].get('satisfied', 0)} / "
           f"违反 {c['obligations'].get('violated', 0)} / "
           f"未知 {c['obligations'].get('unknown', 0)}")
-    print("  最该先验的单元（中心性高但没验过）：")
-    for u in payload["top_blind_spots"][:8]:
-        print(f"    中心性 {u['centrality']:>4}  {u['layer']:<11}{u['symbol'][:44]:<46}"
-              f"义务 {sum(u['obligations'].values())}")
+    print("  最该先验的单元（优先级 = 中心性 × 逻辑密度）：")
+    for u in payload["top_blind_spots"][:10]:
+        lg = u["logic"]
+        print(f"    优先 {u['priority']:>6}  中心性 {u['centrality']:>4}  "
+              f"分支 {lg['branches']:>2} 副作用 {lg['side_effects']:>2}  "
+              f"{u['layer']:<11}{u['symbol'][:40]}")
 
 
 if __name__ == "__main__":

@@ -148005,11 +148005,11 @@
         ]
       },
       "conclusions": {
-        "agent_status": "UNKNOWN",
+        "agent_status": "FAIL",
         "fulfillment": {
           "satisfied": 0,
-          "violated": 0,
-          "unknown": 4,
+          "violated": 1,
+          "unknown": 3,
           "total": 4,
           "ratio": 0.0
         },
@@ -148018,8 +148018,12 @@
           "total": 4,
           "ratio": 0.0
         },
-        "finding_ids": [],
-        "root_cause_keys": [],
+        "finding_ids": [
+          "function:FN-APPLY-NULL-CONTRACT#5"
+        ],
+        "root_cause_keys": [
+          "apply.null_input.npe_instead_of_422"
+        ],
         "owner_layer": "function"
       },
       "state": {
@@ -148171,11 +148175,11 @@
         ]
       },
       "conclusions": {
-        "agent_status": "UNKNOWN",
+        "agent_status": "FAIL",
         "fulfillment": {
           "satisfied": 0,
-          "violated": 0,
-          "unknown": 4,
+          "violated": 1,
+          "unknown": 3,
           "total": 4,
           "ratio": 0.0
         },
@@ -148184,8 +148188,12 @@
           "total": 4,
           "ratio": 0.0
         },
-        "finding_ids": [],
-        "root_cause_keys": [],
+        "finding_ids": [
+          "function:FN-APPLY-NULL-CONTRACT#5"
+        ],
+        "root_cause_keys": [
+          "apply.null_input.npe_instead_of_422"
+        ],
         "owner_layer": "function"
       },
       "state": {
@@ -148217,11 +148225,13 @@
             "kind": "invariant",
             "oracle": "exception_path",
             "scope": "unit",
-            "status": "unknown",
+            "status": "violated",
             "source": "declared",
-            "gate_eligible": false,
-            "evidence_refs": [],
-            "confidence": 0.0
+            "gate_eligible": true,
+            "evidence_refs": [
+              "function:FN-APPLY-NULL-CONTRACT#5"
+            ],
+            "confidence": 0.93
           }
         ]
       },
@@ -148337,11 +148347,11 @@
         ]
       },
       "conclusions": {
-        "agent_status": "UNKNOWN",
+        "agent_status": "FAIL",
         "fulfillment": {
           "satisfied": 0,
-          "violated": 0,
-          "unknown": 4,
+          "violated": 1,
+          "unknown": 3,
           "total": 4,
           "ratio": 0.0
         },
@@ -148350,8 +148360,12 @@
           "total": 4,
           "ratio": 0.0
         },
-        "finding_ids": [],
-        "root_cause_keys": [],
+        "finding_ids": [
+          "function:FN-APPLY-NULL-CONTRACT#5"
+        ],
+        "root_cause_keys": [
+          "apply.null_input.npe_instead_of_422"
+        ],
         "owner_layer": "function"
       },
       "state": {
@@ -148503,11 +148517,11 @@
         ]
       },
       "conclusions": {
-        "agent_status": "UNKNOWN",
+        "agent_status": "FAIL",
         "fulfillment": {
           "satisfied": 0,
-          "violated": 0,
-          "unknown": 4,
+          "violated": 1,
+          "unknown": 3,
           "total": 4,
           "ratio": 0.0
         },
@@ -148516,8 +148530,12 @@
           "total": 4,
           "ratio": 0.0
         },
-        "finding_ids": [],
-        "root_cause_keys": [],
+        "finding_ids": [
+          "function:FN-APPLY-NULL-CONTRACT#5"
+        ],
+        "root_cause_keys": [
+          "apply.null_input.npe_instead_of_422"
+        ],
         "owner_layer": "function"
       },
       "state": {
