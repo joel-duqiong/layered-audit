@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-08T20:39:08.480524",
+  "generated_at": "2026-11-08T21:10:15.598731",
   "findings": [
     {
       "id": "INT-ANON-WRITE-REWRITES-SNAPSHOT",
@@ -15,12 +15,12 @@
             "method": "POST",
             "path": "/api/orders",
             "status": 200,
-            "evidence": "订单主人创建订单 id=1980（请求里没有任何凭证头）"
+            "evidence": "订单主人创建订单 id=2027（请求里没有任何凭证头）"
           },
           {
             "n": 2,
             "method": "GET",
-            "path": "/api/orders/1980",
+            "path": "/api/orders/2027",
             "status": 200,
             "evidence": "全新连接（无 Cookie / Token）读到 4 个 PII 字段：['customerName', 'customerPhone', 'address', 'remark']"
           },
@@ -34,21 +34,21 @@
           {
             "n": 4,
             "method": "PATCH",
-            "path": "/api/orders/1980/status",
+            "path": "/api/orders/2027/status",
             "status": 200,
             "evidence": "匿名改状态 → DEPOSIT_PAID"
           },
           {
             "n": 5,
             "method": "PUT",
-            "path": "/api/orders/1980",
+            "path": "/api/orders/2027",
             "status": 200,
             "evidence": "匿名全量覆盖订单：改电话 + 把明细数量改成 99"
           },
           {
             "n": 6,
             "method": "DB",
-            "path": "SELECT ... WHERE id=1980",
+            "path": "SELECT ... WHERE id=2027",
             "status": 200,
             "evidence": "库里的快照已被重写：明细数量=99，电话=13900000000，状态=PENDING"
           }
@@ -71,21 +71,21 @@
             "method": "POST",
             "path": "/api/uploads/product-image",
             "status": 200,
-            "evidence": "上传非图片字节 55 字节，自报 image/png、文件名 probe.png → imageUrl=/uploads/products/0b4ecc0a-984d-4233-8d2a-a8b68d9c0dbd.png"
+            "evidence": "上传非图片字节 55 字节，自报 image/png、文件名 probe.png → imageUrl=/uploads/products/4bb9658a-90b5-44a5-850d-2a272ee4135d.png"
           },
           {
             "n": 2,
             "method": "GET",
-            "path": "/uploads/products/0b4ecc0a-984d-4233-8d2a-a8b68d9c0dbd.png",
+            "path": "/uploads/products/4bb9658a-90b5-44a5-850d-2a272ee4135d.png",
             "status": 200,
             "evidence": "匿名连接（无凭证）下载 → 200，字节完全一致=True，Content-Type=image/png"
           },
           {
             "n": 3,
             "method": "FS",
-            "path": "/app/uploads/products/0b4ecc0a-984d-4233-8d2a-a8b68d9c0dbd.png",
+            "path": "/app/uploads/products/4bb9658a-90b5-44a5-850d-2a272ee4135d.png",
             "status": 200,
-            "evidence": "-rw-r--r-- 1 root root 55 Nov  8 12:39 /app/uploads/products/0b4ecc0a-984d-4233-8d2a-a8b68d9c0dbd.png"
+            "evidence": "-rw-r--r-- 1 root root 55 Nov  8 13:10 /app/uploads/products/4bb9658a-90b5-44a5-850d-2a272ee4135d.png"
           }
         ],
         "evidence": "下载字节与上传字节一致=True，Content-Type 由服务端按扩展名给出"
@@ -102,7 +102,7 @@
       "evidence": {
         "final_price_cent": 1,
         "snapshot_price_cent": 46800,
-        "order_id": 1975,
+        "order_id": 2022,
         "root_cause": "OrderService.resolveFinalPrice 直接采纳客户端 finalPriceCent",
         "related_lower_layer": "服务层 test_price_is_not_client_controlled 已报根因，本条只补集成症状"
       },
@@ -122,12 +122,12 @@
             "method": "POST",
             "path": "/api/orders",
             "status": 200,
-            "evidence": "订单主人创建订单 id=1980（请求里没有任何凭证头）"
+            "evidence": "订单主人创建订单 id=2027（请求里没有任何凭证头）"
           },
           {
             "n": 2,
             "method": "GET",
-            "path": "/api/orders/1980",
+            "path": "/api/orders/2027",
             "status": 200,
             "evidence": "全新连接（无 Cookie / Token）读到 4 个 PII 字段：['customerName', 'customerPhone', 'address', 'remark']"
           },
@@ -141,21 +141,21 @@
           {
             "n": 4,
             "method": "PATCH",
-            "path": "/api/orders/1980/status",
+            "path": "/api/orders/2027/status",
             "status": 200,
             "evidence": "匿名改状态 → DEPOSIT_PAID"
           },
           {
             "n": 5,
             "method": "PUT",
-            "path": "/api/orders/1980",
+            "path": "/api/orders/2027",
             "status": 200,
             "evidence": "匿名全量覆盖订单：改电话 + 把明细数量改成 99"
           },
           {
             "n": 6,
             "method": "DB",
-            "path": "SELECT ... WHERE id=1980",
+            "path": "SELECT ... WHERE id=2027",
             "status": 200,
             "evidence": "库里的快照已被重写：明细数量=99，电话=13900000000，状态=PENDING"
           }
@@ -176,14 +176,14 @@
           {
             "n": 1,
             "method": "PUT",
-            "path": "/api/orders/1982",
+            "path": "/api/orders/2029",
             "status": 200,
             "evidence": "匿名把明细数量改成 99，成交价保持 1 分"
           },
           {
             "n": 2,
             "method": "GET",
-            "path": "/api/orders/1982",
+            "path": "/api/orders/2029",
             "status": 200,
             "evidence": "订单金额 0.01 元 / 明细合计 4950.0 元 / 套餐标价 88.88 元 —— 三个数字互不相等"
           },
@@ -233,7 +233,7 @@
             "categoryName": "凉菜"
           }
         ],
-        "order_id": 1976,
+        "order_id": 2023,
         "root_cause": "OrderService.apply 未校验 packageItems 与 packageId 的归属关系"
       },
       "owner": "集权层"
@@ -707,7 +707,7 @@
       "result": "PASS",
       "desc": "package_items.id 是内部主键，接口刻意不外露（前端也用不到）",
       "evidence": {
-        "db_value": 589
+        "db_value": 601
       }
     },
     {
@@ -715,7 +715,7 @@
       "result": "PASS",
       "desc": "package_items.package_id 是内部主键，接口刻意不外露（前端也用不到）",
       "evidence": {
-        "db_value": 397
+        "db_value": 404
       }
     },
     {
@@ -909,14 +909,14 @@
           {
             "n": 2,
             "method": "DB",
-            "path": "SELECT final_price_cent FROM orders WHERE id=1981",
+            "path": "SELECT final_price_cent FROM orders WHERE id=2028",
             "status": 200,
             "evidence": "库里的成交价 = 1 分"
           },
           {
             "n": 3,
             "method": "GET",
-            "path": "/api/orders/1981",
+            "path": "/api/orders/2028",
             "status": 200,
             "evidence": "API 回读成交价 = 1 分"
           },
@@ -945,19 +945,19 @@
             "method": "POST",
             "path": "/api/orders",
             "status": 200,
-            "evidence": "建单 id=1983：PENDING、定金 0、成交价 1 分"
+            "evidence": "建单 id=2030：PENDING、定金 0、成交价 1 分"
           },
           {
             "n": 2,
             "method": "PATCH",
-            "path": "/api/orders/1983/status",
+            "path": "/api/orders/2030/status",
             "status": 200,
             "evidence": "匿名 PENDING → COMPLETED 一次成功；前端渲染状态 = 已完成，定金 = 0 元，订单金额 = 0.01 元"
           },
           {
             "n": 3,
             "method": "DB",
-            "path": "SELECT status, deposit_cent FROM orders WHERE id=1983",
+            "path": "SELECT status, deposit_cent FROM orders WHERE id=2030",
             "status": 200,
             "evidence": "库里的状态 = COMPLETED，定金 = 0 分"
           }

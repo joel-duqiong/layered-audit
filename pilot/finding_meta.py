@@ -373,6 +373,16 @@ SERVICE: dict[str, Meta] = {
         "config.bad_upload_dir_kills_startup",
         note="SeedAssetInitializer（ApplicationRunner）在启动期抛异常 → 上下文起不来 → 容器退出；"
              "失败方向是对的（fail-fast），但运维看到的是「应用启动失败」而不是「上传目录配错了」"),
+    "CFG-BINDING-PRIORITY-SURPRISE": _m(
+        "service.interface_contract", "exact",
+        "同一个属性的两种环境变量写法同时设上时，实际生效的是哪一个？",
+        "service", 0.88, "defect", ("CWE-16",),
+        "config.binding_priority_surprise",
+        note="application.yml 里写的是 ${CORS_ALLOWED_ORIGINS:...}（占位符引用的那个名字），"
+             "但 Spring 的宽松绑定把 APP_CORS_ALLOWED_ORIGINS 也映射到同一个属性，"
+             "而环境变量优先级高于 YAML —— 所以后者会整个盖掉占位符链。"
+             "实测两个同时设上，APP_ 那个赢。部署的人按 yml 里写的名字想事情，"
+             "那个名字可能根本不生效，而且没有任何报错。"),
     "CFG-UPLOAD-ERROR-NO-PATH-LEAK": _m(
         "service.interface_contract", "exact",
         "上传失败时，错误响应会不会泄露服务器文件系统路径？",

@@ -1,0 +1,26 @@
+{
+  "note": "属性绑定探针的属性声明（项目侧）。哪些属性要测、各自有哪些绑定形式、怎么观察生效的值 —— 都是项目知识；绑定形式本身（环境变量 / 宽松绑定变体 / SPRING_APPLICATION_JSON / 系统属性）是 Spring Boot 的语义，通用。",
+  "properties": [
+    {
+      "property": "app.cors-allowed-origins",
+      "canonical_env": "CORS_ALLOWED_ORIGINS",
+      "relaxed_env": "APP_CORS_ALLOWED_ORIGINS",
+      "observer": "cors_allow_origin",
+      "probe_value": "http://probe.example.com",
+      "drop_env": [
+        "CORS_ALLOWED_ORIGINS",
+        "APP_CORS_ALLOWED_ORIGINS"
+      ],
+      "note": "application.yml 里写的是 ${CORS_ALLOWED_ORIGINS:...}（占位符引用的那个名字），但 Spring 的宽松绑定把 APP_CORS_ALLOWED_ORIGINS 也映射到同一个属性 —— 环境变量优先级高于 YAML，所以后者会**整个盖掉**占位符链。部署的人按 yml 里写的名字想事情，那个名字反而可能不生效。"
+    }
+  ],
+  "not_observable": [
+    {
+      "property": "app.file-upload-dir",
+      "why": "同样的形状（yml 写 ${FILE_UPLOAD_DIR:...}，宽松变体 APP_FILE_UPLOAD_DIR 会盖掉它）。但这条属性**行为上观察不到**：目录配成不可用路径会让 SeedAssetInitializer 在启动期抛异常、容器直接起不来；上传失败时错误响应又是干净的（不泄路径）。所以这一条只能记「不可判定」，不硬凑结论。",
+      "canonical_env": "FILE_UPLOAD_DIR",
+      "relaxed_env": "APP_FILE_UPLOAD_DIR"
+    }
+  ],
+  "not_observable_note": "这些属性**行为上观察不到**（配坏会让应用起不来；错误响应又不泄路径），所以不硬凑结论 —— 「不可判定」也是结论。"
+}

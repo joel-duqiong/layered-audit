@@ -8,7 +8,7 @@
 | AOP 切面（代理织入） | `java_feature_scan.py` | service.http_contract, integration.e2e_three_source | function.jvm_reflection, file.jvm_whole_class | partial | 7 条 |
 | 依赖注入装配 | `java_feature_scan.py` | — | function.jvm_reflection, file.jvm_whole_class | blind | 7 条 |
 | RPC 边界（Dubbo / gRPC / Feign / MQ） | `java_feature_scan.py` | — | service.http_contract | blind | 5 条 |
-| 动态配置与运行时行为变更 | `java_feature_scan.py` | — | function.jvm_reflection, file.jvm_whole_class, service.http_contract | blind | 12 条 |
+| 动态配置与运行时行为变更 | `property_binding_probe.py` | service.http_contract | function.jvm_reflection, file.jvm_whole_class | partial | 7 条 |
 | JPA 持久化语义（懒加载 / 脏写 / 查询放大） | `java_feature_scan.py` | class.dto_db_contract, service.http_contract | function.jvm_reflection, file.jvm_whole_class | partial | 7 条 |
 | HTTP 契约与错误码 | `—` | service.http_contract | — | covered | 0 条 |
 

@@ -1,8 +1,8 @@
 {
   "generated_from": "aggregate_findings.py",
   "summary": {
-    "findings": 100,
-    "root_causes": 72,
+    "findings": 101,
+    "root_causes": 73,
     "collapsed": 28,
     "violations": 1
   },
@@ -562,7 +562,7 @@
     },
     {
       "root_cause_key": "index.idx_products_name_unusable",
-      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.378ms vs 0.013ms，差 568 倍）",
+      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.558ms vs 0.012ms，差 630 倍）",
       "severity": "HIGH",
       "owner_layer": "service",
       "categories": [
@@ -753,13 +753,13 @@
       "confidence": 0.92,
       "ground_truth": "verified",
       "repro_cmds": [
-        "curl -X PATCH /api/orders/1957/status",
-        "curl -X PATCH /api/packages/393/status",
-        "curl -X PATCH /api/products/4455999/status",
+        "curl -X PATCH /api/orders/2004/status",
+        "curl -X PATCH /api/packages/400/status",
+        "curl -X PATCH /api/products/4556114/status",
         "curl -X POST /api/packages",
         "curl -X POST /api/products",
-        "curl -X PUT /api/packages/393",
-        "curl -X PUT /api/products/4455999"
+        "curl -X PUT /api/packages/400",
+        "curl -X PUT /api/products/4556114"
       ],
       "violations": [],
       "notes": [],
@@ -975,6 +975,45 @@
       "evidence_fidelity": "stubbed",
       "fidelity_breakdown": {
         "stubbed": 1
+      },
+      "related_root_causes": []
+    },
+    {
+      "root_cause_key": "config.binding_priority_surprise",
+      "title": "app.cors-allowed-origins 的绑定优先级与直觉相反：APP_CORS_ALLOWED_ORIGINS 赢了 CORS_ALLOWED_ORIGINS",
+      "severity": "MEDIUM",
+      "owner_layer": "service",
+      "categories": [
+        "service.interface_contract"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "service:CFG-BINDING-PRIORITY-SURPRISE#0"
+      ],
+      "layers_own": [
+        "service"
+      ],
+      "layers_all": [
+        "service"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-16"
+      ],
+      "confidence": 0.88,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 property_binding_probe.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 1
       },
       "related_root_causes": []
     },
@@ -2861,7 +2900,7 @@
         "inheritance_design": 0
       },
       "service": {
-        "interface_contract": 10,
+        "interface_contract": 11,
         "resilience": 2,
         "authz": 3,
         "data_consistency": 9,
@@ -2985,7 +3024,7 @@
         "price.final_price.upper_bound_unvalidated"
       ]
     },
-    "root_cause_count": 72,
-    "finding_count": 100
+    "root_cause_count": 73,
+    "finding_count": 101
   }
 }

@@ -47,6 +47,9 @@ echo "=== 服务层（静态声明 / 动态实测 / 差分）==="
 run_layer service python3 contract_static.py
 run_layer service python3 contract_probe.py    # 通用版：场景配置在 service_scenarios.json
 run_layer service python3 contract_diff.py
+echo "=== 属性绑定优先级（同一属性的多种绑定形式，谁赢了）==="
+python3 property_binding_probe.py
+
 echo "=== 类层（DDL+实体声明 / DTO反射契约+DB实况 / 数据库实测 / 差分）==="
 run_layer class python3 class_contract.py
 run_layer class python3 class_static.py

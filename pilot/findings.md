@@ -66,7 +66,7 @@ OpenAPI 只声明 200；畸形请求触发 500 INTERNAL_ERROR。GlobalExceptionH
 
 details.message 直接透传框架异常原文（JSON parse error: Cannot deserialize value of type `com.jiuyan.banquet.entity.Or...），泄漏内部类名、框架类型与反序列化细节。
 
-复现：`curl -X PATCH /api/orders/1957/status`
+复现：`curl -X PATCH /api/orders/2004/status`
 
 ```json
 {
@@ -78,7 +78,7 @@ details.message 直接透传框架异常原文（JSON parse error: Cannot deseri
 
 details.message 直接透传框架异常原文（JSON parse error: Cannot deserialize value of type `java.lang.Boolean` from Stri...），泄漏内部类名、框架类型与反序列化细节。
 
-复现：`curl -X PATCH /api/packages/393/status`
+复现：`curl -X PATCH /api/packages/400/status`
 
 ```json
 {
@@ -90,7 +90,7 @@ details.message 直接透传框架异常原文（JSON parse error: Cannot deseri
 
 details.message 直接透传框架异常原文（JSON parse error: Cannot deserialize value of type `java.lang.Boolean` from Stri...），泄漏内部类名、框架类型与反序列化细节。
 
-复现：`curl -X PATCH /api/products/4455999/status`
+复现：`curl -X PATCH /api/products/4556114/status`
 
 ```json
 {
@@ -126,7 +126,7 @@ details.message 直接透传框架异常原文（JSON parse error: Cannot deseri
 
 details.message 直接透传框架异常原文（JSON parse error: Cannot deserialize value of type `java.lang.Long` from String ...），泄漏内部类名、框架类型与反序列化细节。
 
-复现：`curl -X PUT /api/packages/393`
+复现：`curl -X PUT /api/packages/400`
 
 ```json
 {
@@ -138,7 +138,7 @@ details.message 直接透传框架异常原文（JSON parse error: Cannot deseri
 
 details.message 直接透传框架异常原文（JSON parse error: Cannot deserialize value of type `java.lang.Long` from String ...），泄漏内部类名、框架类型与反序列化细节。
 
-复现：`curl -X PUT /api/products/4455999`
+复现：`curl -X PUT /api/products/4556114`
 
 ```json
 {
