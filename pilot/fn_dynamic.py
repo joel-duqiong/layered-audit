@@ -508,6 +508,12 @@ def evaluate(case_def: dict, obs: dict) -> tuple[bool, str]:
         state = obs.get("entity_state") or {}
         got = state.get(ch["field"], "__缺失__")
         return got is None, f"期望 {ch['field']} 为 null，实际 {got!r}"
+    if kind == "entity_field_not_null":
+        # 「这个字段应该被写上」—— 断言**应有行为**，而不是现状。
+        # 断言现状的用例永远 PASS，也就永远开不出单。
+        state = obs.get("entity_state") or {}
+        got = state.get(ch["field"], "__缺失__")
+        return got is not None, f"期望 {ch['field']} 非 null，实际 {got!r}"
     if kind == "returns_null":
         return value is None, f"期望 null，实际 {value!r}"
     if kind == "returns_ge":

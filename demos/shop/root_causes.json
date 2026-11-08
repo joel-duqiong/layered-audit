@@ -1,12 +1,56 @@
 {
   "generated_from": "aggregate_findings.py",
   "summary": {
-    "findings": 18,
-    "root_causes": 14,
-    "collapsed": 4,
+    "findings": 20,
+    "root_causes": 15,
+    "collapsed": 5,
     "violations": 0
   },
   "root_causes": [
+    {
+      "root_cause_key": "order.quota_checked_on_quoted_amount_ledger_on_settled",
+      "title": "OrderService 同一文件里两处对同一个订单金额用了不同口径：额度按报价卡、账按结算记",
+      "severity": "HIGH",
+      "owner_layer": "file",
+      "categories": [
+        "file.contract_alignment",
+        "service.data_consistency"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 2,
+      "finding_uids": [
+        "file:FILE-QUOTA-BASIS-QUOTED-VS-SETTLED#1",
+        "service:BI-QUOTA-LEDGER-PARITY#0"
+      ],
+      "layers_own": [
+        "file"
+      ],
+      "layers_all": [
+        "file",
+        "service"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-682",
+        "CWE-840"
+      ],
+      "confidence": 0.93,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 demos/shop/business_probe.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1,
+        "container": 1
+      },
+      "related_root_causes": []
+    },
     {
       "root_cause_key": "pricing.member_tier_bound_to_deployment_profile",
       "title": "同一请求在两个部署实例上结果不同：settledAmountCent 分叉",
@@ -47,6 +91,43 @@
       "fidelity_breakdown": {
         "hybrid": 1,
         "container": 1
+      },
+      "related_root_causes": []
+    },
+    {
+      "root_cause_key": "cross_repo.fx_fallback_returns_wrong_scale",
+      "title": "FxClient 汇率取不到时兜底成 1（=1%），把结算金额砍到 1/100",
+      "severity": "HIGH",
+      "owner_layer": "file",
+      "categories": [
+        "file.error_handling_pattern"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "file:FILE-FX-FALLBACK-WRONG-SCALE#0"
+      ],
+      "layers_own": [
+        "file"
+      ],
+      "layers_all": [
+        "file"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-682"
+      ],
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "repro_cmds": [],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "evidence_fidelity": "stubbed",
+      "fidelity_breakdown": {
+        "stubbed": 1
       },
       "related_root_causes": []
     },
@@ -121,45 +202,6 @@
       "evidence_fidelity": "hybrid",
       "fidelity_breakdown": {
         "hybrid": 1
-      },
-      "related_root_causes": []
-    },
-    {
-      "root_cause_key": "order.quota_checked_on_quoted_amount_ledger_on_settled",
-      "title": "额度占用额（通过授信额度检查的报价）是否等于账本记录额（实付）？",
-      "severity": "HIGH",
-      "owner_layer": "service",
-      "categories": [
-        "service.data_consistency"
-      ],
-      "category_fit": [
-        "exact"
-      ],
-      "finding_count": 1,
-      "finding_uids": [
-        "service:BI-QUOTA-LEDGER-PARITY#0"
-      ],
-      "layers_own": [
-        "service"
-      ],
-      "layers_all": [
-        "service"
-      ],
-      "cited_from": [],
-      "cwe": [
-        "CWE-840"
-      ],
-      "confidence": 0.93,
-      "ground_truth": "verified",
-      "repro_cmds": [
-        "python3 demos/shop/business_probe.py"
-      ],
-      "violations": [],
-      "notes": [],
-      "merges": [],
-      "evidence_fidelity": "container",
-      "fidelity_breakdown": {
-        "container": 1
       },
       "related_root_causes": []
     },
@@ -546,8 +588,9 @@
       },
       "file": {
         "state_consistency": 0,
-        "error_handling_pattern": 0,
-        "cohesion": 0
+        "error_handling_pattern": 1,
+        "cohesion": 0,
+        "contract_alignment": 1
       },
       "class": {
         "encapsulation_leak": 2,
@@ -577,7 +620,6 @@
       "function.exception_path",
       "function.numeric",
       "file.state_consistency",
-      "file.error_handling_pattern",
       "file.cohesion",
       "service.interface_contract",
       "service.resilience",
@@ -592,6 +634,11 @@
     "unmapped_uids": [],
     "unmapped_by_layer": {},
     "files_with_multiple_root_causes": {
+      "/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/backend/src/main/java/com/demo/shop/service/OrderService.java": [
+        "error.business_error_as_500",
+        "order.quota_checked_on_quoted_amount_ledger_on_settled",
+        "order.quota_ledger_amount_divergence"
+      ],
       "/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/backend/src/main/java/com/demo/shop/entity/ShopOrder.java": [
         "entity.no_value_equality",
         "inheritance.touch_postcondition_changed",
@@ -600,13 +647,9 @@
       "/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/backend/src/main/java/com/demo/shop/service/ProductService.java": [
         "cache.holds_mutable_container",
         "service.product_service_returns_internal_entities"
-      ],
-      "/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/backend/src/main/java/com/demo/shop/service/OrderService.java": [
-        "error.business_error_as_500",
-        "order.quota_ledger_amount_divergence"
       ]
     },
-    "root_cause_count": 14,
-    "finding_count": 18
+    "root_cause_count": 15,
+    "finding_count": 20
   }
 }

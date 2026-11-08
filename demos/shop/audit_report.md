@@ -2,27 +2,28 @@
 
 生成物：/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/root_causes.json　输入：/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/all_findings.json
 
-- 发现 18 条 → 根因 14 条（归并 4 条）
+- 发现 20 条 → 根因 15 条（归并 5 条）
 - 硬违规 0 条；契约缺口（无法归类）0 条
 
 ## 一、修复顺序（按根因）
 
 | # | 严重度 | 归属层 | 根因 | 标题 | 发现数 | 置信 | ground_truth | 可跑复现 |
 |---|--------|--------|------|------|--------|------|---------------|----------|
-| 1 | HIGH | class | `pricing.member_tier_bound_to_deployment_profile` | 同一请求在两个部署实例上结果不同：settledAmountCent 分叉 | 2 | 0.94 | verified | `python3 demos/shop/business_probe.py` |
-| 2 | HIGH | class | `error.business_error_as_500` | 业务规则失败被当成服务器错误抛出去：customerName 不存在（服务层抛异常） -> HTTP 500 | 1 | 0.9 | verified | `—` |
-| 3 | HIGH | class | `inheritance.touch_postcondition_changed` | com.demo.shop.entity.ShopOrder 覆写 com.demo.shop.entity.AuditableEntity.touch 后置条件变了：updatedBy 不再相同 | 1 | 0.95 | verified | `—` |
-| 4 | HIGH | service | `order.quota_checked_on_quoted_amount_ledger_on_settled` | 额度占用额（通过授信额度检查的报价）是否等于账本记录额（实付）？ | 1 | 0.93 | verified | `python3 demos/shop/business_probe.py` |
-| 5 | HIGH | integration | `order.quota_ledger_amount_divergence` | 额度占用额（报价）与账本记录额（实付）在会员链路上口径分裂 | 1 | 0.95 | verified | `python3 demos/shop/emergence_probe.py --chain EMERG-QUOTA…` |
-| 6 | HIGH | class | `rule.missing_in_db_dto_service` | 3 条业务不变量在 DB / DTO / 服务层三层全都不存在 | 1 | 0.85 | verified | `—` |
-| 7 | HIGH | class | `service.product_service_returns_internal_entities` | com.demo.shop.service.ProductService.snapshot 把内部实体集合直接交出去 | 1 | 0.92 | verified | `—` |
-| 8 | MEDIUM | class | `entity.no_value_equality` | ShopOrder 没有值相等：放进集合或当键，语义会变 | 4 | 0.8 | verified | `—` |
-| 9 | MEDIUM | class | `cache.holds_mutable_container` | com.demo.shop.service.ProductService.listCached 缓存里放的是可变容器 | 1 | 0.88 | verified | `—` |
-| 10 | MEDIUM | class | `dto.primitive_hides_missing_required_field` | shop_order.quoted_amount_cent 声明 NOT NULL，DTO 用原始类型 long —— 缺省静默变成 0 | 1 | 0.9 | verified | `—` |
-| 11 | MEDIUM | class | `rule.check_without_dto_counterpart` | 3 条 DB CHECK 在 DTO 层找不到同义约束 | 1 | 0.75 | verified | `—` |
-| 12 | MEDIUM | class | `shop_order.no_data_lifecycle` | shop_order 表没有软删/归档，永久增长（当前 56 kB） | 1 | 0.8 | verified | `—` |
-| 13 | INFO | class | `check.dto_aligned` | 1/4 条 DB CHECK 在 DTO 层都有同义约束，防线链条闭合 | 1 | 0.95 | verified | `—` |
-| 14 | INFO | class | `nullability.three_way_aligned` | 可空性三方一致 1/2 列（同向设防 1 · DTO 更严 0 · 都可空 0） | 1 | 0.95 | verified | `—` |
+| 1 | HIGH | file | `order.quota_checked_on_quoted_amount_ledger_on_settled` | OrderService 同一文件里两处对同一个订单金额用了不同口径：额度按报价卡、账按结算记 | 2 | 0.93 | verified | `python3 demos/shop/business_probe.py` |
+| 2 | HIGH | class | `pricing.member_tier_bound_to_deployment_profile` | 同一请求在两个部署实例上结果不同：settledAmountCent 分叉 | 2 | 0.94 | verified | `python3 demos/shop/business_probe.py` |
+| 3 | HIGH | file | `cross_repo.fx_fallback_returns_wrong_scale` | FxClient 汇率取不到时兜底成 1（=1%），把结算金额砍到 1/100 | 1 | 0.9 | verified | `—` |
+| 4 | HIGH | class | `error.business_error_as_500` | 业务规则失败被当成服务器错误抛出去：customerName 不存在（服务层抛异常） -> HTTP 500 | 1 | 0.9 | verified | `—` |
+| 5 | HIGH | class | `inheritance.touch_postcondition_changed` | com.demo.shop.entity.ShopOrder 覆写 com.demo.shop.entity.AuditableEntity.touch 后置条件变了：updatedBy 不再相同 | 1 | 0.95 | verified | `—` |
+| 6 | HIGH | integration | `order.quota_ledger_amount_divergence` | 额度占用额（报价）与账本记录额（实付）在会员链路上口径分裂 | 1 | 0.95 | verified | `python3 demos/shop/emergence_probe.py --chain EMERG-QUOTA…` |
+| 7 | HIGH | class | `rule.missing_in_db_dto_service` | 3 条业务不变量在 DB / DTO / 服务层三层全都不存在 | 1 | 0.85 | verified | `—` |
+| 8 | HIGH | class | `service.product_service_returns_internal_entities` | com.demo.shop.service.ProductService.snapshot 把内部实体集合直接交出去 | 1 | 0.92 | verified | `—` |
+| 9 | MEDIUM | class | `entity.no_value_equality` | ShopOrder 没有值相等：放进集合或当键，语义会变 | 4 | 0.8 | verified | `—` |
+| 10 | MEDIUM | class | `cache.holds_mutable_container` | com.demo.shop.service.ProductService.listCached 缓存里放的是可变容器 | 1 | 0.88 | verified | `—` |
+| 11 | MEDIUM | class | `dto.primitive_hides_missing_required_field` | shop_order.quoted_amount_cent 声明 NOT NULL，DTO 用原始类型 long —— 缺省静默变成 0 | 1 | 0.9 | verified | `—` |
+| 12 | MEDIUM | class | `rule.check_without_dto_counterpart` | 3 条 DB CHECK 在 DTO 层找不到同义约束 | 1 | 0.75 | verified | `—` |
+| 13 | MEDIUM | class | `shop_order.no_data_lifecycle` | shop_order 表没有软删/归档，永久增长（当前 56 kB） | 1 | 0.8 | verified | `—` |
+| 14 | INFO | class | `check.dto_aligned` | 1/4 条 DB CHECK 在 DTO 层都有同义约束，防线链条闭合 | 1 | 0.95 | verified | `—` |
+| 15 | INFO | class | `nullability.three_way_aligned` | 可空性三方一致 1/2 列（同向设防 1 · DTO 更严 0 · 都可空 0） | 1 | 0.95 | verified | `—` |
 
 ## 二、硬违规（违反 attribution.rule / out_of_scope）
 
@@ -57,8 +58,9 @@
 | category | 命中 | 状态 |
 |----------|------|------|
 | state_consistency | 0 | 零覆盖 —— 没人管 |
-| error_handling_pattern | 0 | 零覆盖 —— 没人管 |
+| error_handling_pattern | 1 | ok |
 | cohesion | 0 | 零覆盖 —— 没人管 |
+| contract_alignment | 1 | ok |
 
 **class**
 
@@ -101,6 +103,6 @@
 
 | 文件 | 根因数 | 根因 |
 |------|--------|------|
+| `/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/backend/src/main/java/com/demo/shop/service/OrderService.java` | 3 | `error.business_error_as_500`, `order.quota_checked_on_quoted_amount_ledger_on_settled`, `order.quota_ledger_amount_divergence` |
 | `/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/backend/src/main/java/com/demo/shop/entity/ShopOrder.java` | 3 | `entity.no_value_equality`, `inheritance.touch_postcondition_changed`, `shop_order.no_data_lifecycle` |
 | `/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/backend/src/main/java/com/demo/shop/service/ProductService.java` | 2 | `cache.holds_mutable_container`, `service.product_service_returns_internal_entities` |
-| `/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/backend/src/main/java/com/demo/shop/service/OrderService.java` | 2 | `error.business_error_as_500`, `order.quota_ledger_amount_divergence` |

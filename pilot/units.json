@@ -52,6 +52,13 @@
       "fidelity": "stubbed"
     },
     {
+      "role_id": "file.contract_alignment",
+      "layer": "file",
+      "category": "contract_alignment",
+      "carrier": "file.jvm_whole_class",
+      "fidelity": "stubbed"
+    },
+    {
       "role_id": "class.encapsulation_leak",
       "layer": "class",
       "category": "encapsulation_leak",
@@ -158,24 +165,6 @@
     }
   ],
   "layer_roles": {
-    "integration": [
-      "integration.cross_layer_correlation",
-      "integration.cross_service_attack_chain",
-      "integration.cross_service_performance",
-      "integration.emergent_masking",
-      "integration.end_to_end_business"
-    ],
-    "class": [
-      "class.contract_violation",
-      "class.encapsulation_leak",
-      "class.inheritance_design",
-      "class.invariant"
-    ],
-    "file": [
-      "file.cohesion",
-      "file.error_handling_pattern",
-      "file.state_consistency"
-    ],
     "function": [
       "function.boundary",
       "function.complexity",
@@ -189,11 +178,30 @@
       "service.resilience",
       "service.resource_leak",
       "service.service_latency"
+    ],
+    "class": [
+      "class.contract_violation",
+      "class.encapsulation_leak",
+      "class.inheritance_design",
+      "class.invariant"
+    ],
+    "integration": [
+      "integration.cross_layer_correlation",
+      "integration.cross_service_attack_chain",
+      "integration.cross_service_performance",
+      "integration.emergent_masking",
+      "integration.end_to_end_business"
+    ],
+    "file": [
+      "file.cohesion",
+      "file.contract_alignment",
+      "file.error_handling_pattern",
+      "file.state_consistency"
     ]
   },
   "counts": {
     "units": 533,
-    "roles": 22,
+    "roles": 23,
     "edges": 786,
     "edges_unresolved": 39,
     "units_with_observations": 17,
@@ -11874,7 +11882,7 @@
       "class": "com.jiuyan.banquet.BanquetApplication",
       "symbol": "BanquetApplication",
       "file": "src/main/java/com/jiuyan/banquet/BanquetApplication.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -11899,7 +11907,7 @@
       "class": "com.jiuyan.banquet.config.ApiResponseAdvice",
       "symbol": "ApiResponseAdvice",
       "file": "src/main/java/com/jiuyan/banquet/config/ApiResponseAdvice.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 0,
       "logic": {
         "branches": 7,
@@ -11924,7 +11932,7 @@
       "class": "com.jiuyan.banquet.config.OpenApiConfig",
       "symbol": "OpenApiConfig",
       "file": "src/main/java/com/jiuyan/banquet/config/OpenApiConfig.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -11949,7 +11957,7 @@
       "class": "com.jiuyan.banquet.config.SeedAssetInitializer",
       "symbol": "SeedAssetInitializer",
       "file": "src/main/java/com/jiuyan/banquet/config/SeedAssetInitializer.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -11974,7 +11982,7 @@
       "class": "com.jiuyan.banquet.config.TraceContext",
       "symbol": "TraceContext",
       "file": "src/main/java/com/jiuyan/banquet/config/TraceContext.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 12,
       "logic": {
         "branches": 0,
@@ -11999,7 +12007,7 @@
       "class": "com.jiuyan.banquet.config.TraceIdFilter",
       "symbol": "TraceIdFilter",
       "file": "src/main/java/com/jiuyan/banquet/config/TraceIdFilter.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 0,
       "logic": {
         "branches": 2,
@@ -12024,7 +12032,7 @@
       "class": "com.jiuyan.banquet.config.WebConfig",
       "symbol": "WebConfig",
       "file": "src/main/java/com/jiuyan/banquet/config/WebConfig.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 0,
       "logic": {
         "branches": 2,
@@ -12049,7 +12057,7 @@
       "class": "com.jiuyan.banquet.controller.CategoryController",
       "symbol": "CategoryController",
       "file": "src/main/java/com/jiuyan/banquet/controller/CategoryController.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -12074,7 +12082,7 @@
       "class": "com.jiuyan.banquet.controller.HealthController",
       "symbol": "HealthController",
       "file": "src/main/java/com/jiuyan/banquet/controller/HealthController.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -12099,7 +12107,7 @@
       "class": "com.jiuyan.banquet.controller.OrderController",
       "symbol": "OrderController",
       "file": "src/main/java/com/jiuyan/banquet/controller/OrderController.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -12124,7 +12132,7 @@
       "class": "com.jiuyan.banquet.controller.PackageController",
       "symbol": "PackageController",
       "file": "src/main/java/com/jiuyan/banquet/controller/PackageController.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -12149,7 +12157,7 @@
       "class": "com.jiuyan.banquet.controller.PackageTypeController",
       "symbol": "PackageTypeController",
       "file": "src/main/java/com/jiuyan/banquet/controller/PackageTypeController.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -12174,7 +12182,7 @@
       "class": "com.jiuyan.banquet.controller.ProductController",
       "symbol": "ProductController",
       "file": "src/main/java/com/jiuyan/banquet/controller/ProductController.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -12199,7 +12207,7 @@
       "class": "com.jiuyan.banquet.controller.UploadController",
       "symbol": "UploadController",
       "file": "src/main/java/com/jiuyan/banquet/controller/UploadController.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -12224,7 +12232,7 @@
       "class": "com.jiuyan.banquet.dto.AddedItemRequest",
       "symbol": "AddedItemRequest",
       "file": "src/main/java/com/jiuyan/banquet/dto/AddedItemRequest.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 2,
       "logic": {
         "branches": 0,
@@ -12249,7 +12257,7 @@
       "class": "com.jiuyan.banquet.dto.ApiResponse",
       "symbol": "ApiResponse",
       "file": "src/main/java/com/jiuyan/banquet/dto/ApiResponse.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 2,
       "logic": {
         "branches": 0,
@@ -12274,7 +12282,7 @@
       "class": "com.jiuyan.banquet.dto.CategoryResponse",
       "symbol": "CategoryResponse",
       "file": "src/main/java/com/jiuyan/banquet/dto/CategoryResponse.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -12299,7 +12307,7 @@
       "class": "com.jiuyan.banquet.dto.CreateCategoryRequest",
       "symbol": "CreateCategoryRequest",
       "file": "src/main/java/com/jiuyan/banquet/dto/CreateCategoryRequest.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 1,
       "logic": {
         "branches": 0,
@@ -12324,7 +12332,7 @@
       "class": "com.jiuyan.banquet.dto.CreateOrderRequest",
       "symbol": "CreateOrderRequest",
       "file": "src/main/java/com/jiuyan/banquet/dto/CreateOrderRequest.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 16,
       "logic": {
         "branches": 0,
@@ -12349,7 +12357,7 @@
       "class": "com.jiuyan.banquet.dto.CreatePackageRequest",
       "symbol": "CreatePackageRequest",
       "file": "src/main/java/com/jiuyan/banquet/dto/CreatePackageRequest.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 7,
       "logic": {
         "branches": 0,
@@ -12374,7 +12382,7 @@
       "class": "com.jiuyan.banquet.dto.CreatePackageTypeRequest",
       "symbol": "CreatePackageTypeRequest",
       "file": "src/main/java/com/jiuyan/banquet/dto/CreatePackageTypeRequest.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 1,
       "logic": {
         "branches": 0,
@@ -12399,7 +12407,7 @@
       "class": "com.jiuyan.banquet.dto.CreateProductRequest",
       "symbol": "CreateProductRequest",
       "file": "src/main/java/com/jiuyan/banquet/dto/CreateProductRequest.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 7,
       "logic": {
         "branches": 0,
@@ -12424,7 +12432,7 @@
       "class": "com.jiuyan.banquet.dto.OrderResponse",
       "symbol": "OrderResponse",
       "file": "src/main/java/com/jiuyan/banquet/dto/OrderResponse.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -12449,7 +12457,7 @@
       "class": "com.jiuyan.banquet.dto.OrderStatusRequest",
       "symbol": "OrderStatusRequest",
       "file": "src/main/java/com/jiuyan/banquet/dto/OrderStatusRequest.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 1,
       "logic": {
         "branches": 0,
@@ -12474,7 +12482,7 @@
       "class": "com.jiuyan.banquet.dto.PackageItemRequest",
       "symbol": "PackageItemRequest",
       "file": "src/main/java/com/jiuyan/banquet/dto/PackageItemRequest.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 4,
       "logic": {
         "branches": 0,
@@ -12499,7 +12507,7 @@
       "class": "com.jiuyan.banquet.dto.PackageItemResponse",
       "symbol": "PackageItemResponse",
       "file": "src/main/java/com/jiuyan/banquet/dto/PackageItemResponse.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -12524,7 +12532,7 @@
       "class": "com.jiuyan.banquet.dto.PackageResponse",
       "symbol": "PackageResponse",
       "file": "src/main/java/com/jiuyan/banquet/dto/PackageResponse.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -12549,7 +12557,7 @@
       "class": "com.jiuyan.banquet.dto.PackageTypeResponse",
       "symbol": "PackageTypeResponse",
       "file": "src/main/java/com/jiuyan/banquet/dto/PackageTypeResponse.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -12574,7 +12582,7 @@
       "class": "com.jiuyan.banquet.dto.PageResponse",
       "symbol": "PageResponse",
       "file": "src/main/java/com/jiuyan/banquet/dto/PageResponse.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -12599,7 +12607,7 @@
       "class": "com.jiuyan.banquet.dto.ProductResponse",
       "symbol": "ProductResponse",
       "file": "src/main/java/com/jiuyan/banquet/dto/ProductResponse.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -12624,7 +12632,7 @@
       "class": "com.jiuyan.banquet.dto.StatusRequest",
       "symbol": "StatusRequest",
       "file": "src/main/java/com/jiuyan/banquet/dto/StatusRequest.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 2,
       "logic": {
         "branches": 0,
@@ -12649,7 +12657,7 @@
       "class": "com.jiuyan.banquet.dto.UpdateOrderRequest",
       "symbol": "UpdateOrderRequest",
       "file": "src/main/java/com/jiuyan/banquet/dto/UpdateOrderRequest.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 16,
       "logic": {
         "branches": 0,
@@ -12674,7 +12682,7 @@
       "class": "com.jiuyan.banquet.dto.UpdatePackageRequest",
       "symbol": "UpdatePackageRequest",
       "file": "src/main/java/com/jiuyan/banquet/dto/UpdatePackageRequest.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 7,
       "logic": {
         "branches": 0,
@@ -12699,7 +12707,7 @@
       "class": "com.jiuyan.banquet.dto.UpdateProductRequest",
       "symbol": "UpdateProductRequest",
       "file": "src/main/java/com/jiuyan/banquet/dto/UpdateProductRequest.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 7,
       "logic": {
         "branches": 0,
@@ -12724,7 +12732,7 @@
       "class": "com.jiuyan.banquet.dto.UploadResponse",
       "symbol": "UploadResponse",
       "file": "src/main/java/com/jiuyan/banquet/dto/UploadResponse.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -12749,7 +12757,7 @@
       "class": "com.jiuyan.banquet.entity.BanquetOrder",
       "symbol": "BanquetOrder",
       "file": "src/main/java/com/jiuyan/banquet/entity/BanquetOrder.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 46,
       "logic": {
         "branches": 0,
@@ -12774,7 +12782,7 @@
       "class": "com.jiuyan.banquet.entity.BanquetPackage",
       "symbol": "BanquetPackage",
       "file": "src/main/java/com/jiuyan/banquet/entity/BanquetPackage.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 35,
       "logic": {
         "branches": 0,
@@ -12799,7 +12807,7 @@
       "class": "com.jiuyan.banquet.entity.BaseEntity",
       "symbol": "BaseEntity",
       "file": "src/main/java/com/jiuyan/banquet/entity/BaseEntity.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -12824,7 +12832,7 @@
       "class": "com.jiuyan.banquet.entity.Category",
       "symbol": "Category",
       "file": "src/main/java/com/jiuyan/banquet/entity/Category.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 18,
       "logic": {
         "branches": 0,
@@ -12849,7 +12857,7 @@
       "class": "com.jiuyan.banquet.entity.OrderStatus",
       "symbol": "OrderStatus",
       "file": "src/main/java/com/jiuyan/banquet/entity/OrderStatus.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 1,
       "logic": {
         "branches": 0,
@@ -12874,7 +12882,7 @@
       "class": "com.jiuyan.banquet.entity.PackageItem",
       "symbol": "PackageItem",
       "file": "src/main/java/com/jiuyan/banquet/entity/PackageItem.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 10,
       "logic": {
         "branches": 0,
@@ -12899,7 +12907,7 @@
       "class": "com.jiuyan.banquet.entity.PackageType",
       "symbol": "PackageType",
       "file": "src/main/java/com/jiuyan/banquet/entity/PackageType.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 14,
       "logic": {
         "branches": 0,
@@ -12924,7 +12932,7 @@
       "class": "com.jiuyan.banquet.entity.Product",
       "symbol": "Product",
       "file": "src/main/java/com/jiuyan/banquet/entity/Product.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 42,
       "logic": {
         "branches": 0,
@@ -12949,7 +12957,7 @@
       "class": "com.jiuyan.banquet.exception.BusinessException",
       "symbol": "BusinessException",
       "file": "src/main/java/com/jiuyan/banquet/exception/BusinessException.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 4,
       "logic": {
         "branches": 0,
@@ -12974,7 +12982,7 @@
       "class": "com.jiuyan.banquet.exception.ErrorCode",
       "symbol": "ErrorCode",
       "file": "src/main/java/com/jiuyan/banquet/exception/ErrorCode.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 8,
       "logic": {
         "branches": 0,
@@ -12999,7 +13007,7 @@
       "class": "com.jiuyan.banquet.exception.GlobalExceptionHandler",
       "symbol": "GlobalExceptionHandler",
       "file": "src/main/java/com/jiuyan/banquet/exception/GlobalExceptionHandler.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 0,
       "logic": {
         "branches": 5,
@@ -13024,7 +13032,7 @@
       "class": "com.jiuyan.banquet.mapper.CategoryMapper",
       "symbol": "CategoryMapper",
       "file": "src/main/java/com/jiuyan/banquet/mapper/CategoryMapper.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 2,
       "logic": {
         "branches": 0,
@@ -13049,7 +13057,7 @@
       "class": "com.jiuyan.banquet.mapper.OrderMapper",
       "symbol": "OrderMapper",
       "file": "src/main/java/com/jiuyan/banquet/mapper/OrderMapper.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 4,
       "logic": {
         "branches": 2,
@@ -13074,7 +13082,7 @@
       "class": "com.jiuyan.banquet.mapper.PackageMapper",
       "symbol": "PackageMapper",
       "file": "src/main/java/com/jiuyan/banquet/mapper/PackageMapper.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 5,
       "logic": {
         "branches": 0,
@@ -13099,7 +13107,7 @@
       "class": "com.jiuyan.banquet.mapper.PackageTypeMapper",
       "symbol": "PackageTypeMapper",
       "file": "src/main/java/com/jiuyan/banquet/mapper/PackageTypeMapper.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 2,
       "logic": {
         "branches": 0,
@@ -13124,7 +13132,7 @@
       "class": "com.jiuyan.banquet.mapper.ProductMapper",
       "symbol": "ProductMapper",
       "file": "src/main/java/com/jiuyan/banquet/mapper/ProductMapper.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 4,
       "logic": {
         "branches": 0,
@@ -13149,7 +13157,7 @@
       "class": "com.jiuyan.banquet.repository.BanquetPackageRepository",
       "symbol": "BanquetPackageRepository",
       "file": "src/main/java/com/jiuyan/banquet/repository/BanquetPackageRepository.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 8,
       "logic": {
         "branches": 0,
@@ -13174,7 +13182,7 @@
       "class": "com.jiuyan.banquet.repository.CategoryRepository",
       "symbol": "CategoryRepository",
       "file": "src/main/java/com/jiuyan/banquet/repository/CategoryRepository.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 7,
       "logic": {
         "branches": 0,
@@ -13199,7 +13207,7 @@
       "class": "com.jiuyan.banquet.repository.OrderRepository",
       "symbol": "OrderRepository",
       "file": "src/main/java/com/jiuyan/banquet/repository/OrderRepository.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 6,
       "logic": {
         "branches": 0,
@@ -13224,7 +13232,7 @@
       "class": "com.jiuyan.banquet.repository.PackageItemRepository",
       "symbol": "PackageItemRepository",
       "file": "src/main/java/com/jiuyan/banquet/repository/PackageItemRepository.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 2,
       "logic": {
         "branches": 0,
@@ -13249,7 +13257,7 @@
       "class": "com.jiuyan.banquet.repository.PackageTypeRepository",
       "symbol": "PackageTypeRepository",
       "file": "src/main/java/com/jiuyan/banquet/repository/PackageTypeRepository.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 7,
       "logic": {
         "branches": 0,
@@ -13274,7 +13282,7 @@
       "class": "com.jiuyan.banquet.repository.ProductRepository",
       "symbol": "ProductRepository",
       "file": "src/main/java/com/jiuyan/banquet/repository/ProductRepository.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 9,
       "logic": {
         "branches": 0,
@@ -13299,7 +13307,7 @@
       "class": "com.jiuyan.banquet.service.CategoryService",
       "symbol": "CategoryService",
       "file": "src/main/java/com/jiuyan/banquet/service/CategoryService.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 3,
       "logic": {
         "branches": 4,
@@ -13324,7 +13332,7 @@
       "class": "com.jiuyan.banquet.service.OrderService",
       "symbol": "OrderService",
       "file": "src/main/java/com/jiuyan/banquet/service/OrderService.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 5,
       "logic": {
         "branches": 56,
@@ -13349,7 +13357,7 @@
       "class": "com.jiuyan.banquet.service.PackageService",
       "symbol": "PackageService",
       "file": "src/main/java/com/jiuyan/banquet/service/PackageService.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 6,
       "logic": {
         "branches": 30,
@@ -13374,7 +13382,7 @@
       "class": "com.jiuyan.banquet.service.PackageTypeService",
       "symbol": "PackageTypeService",
       "file": "src/main/java/com/jiuyan/banquet/service/PackageTypeService.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 3,
       "logic": {
         "branches": 4,
@@ -13399,7 +13407,7 @@
       "class": "com.jiuyan.banquet.service.ProductService",
       "symbol": "ProductService",
       "file": "src/main/java/com/jiuyan/banquet/service/ProductService.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 5,
       "logic": {
         "branches": 25,
@@ -13424,7 +13432,7 @@
       "class": "com.jiuyan.banquet.service.UploadService",
       "symbol": "UploadService",
       "file": "src/main/java/com/jiuyan/banquet/service/UploadService.java",
-      "role_count": 3,
+      "role_count": 4,
       "centrality": 2,
       "logic": {
         "branches": 11,
