@@ -33,6 +33,9 @@ python3 class_static.py
 python3 class_dynamic.py
 python3 class_diff.py
 
+echo "=== 业务不变式（服务层：造场景 → 读行 → 判定 → 开单）==="
+python3 "$DEMO/business_probe.py"
+
 echo "=== 涌现：可执行依赖图（关系网 + 污点 + 入口绑定 + 不变量锚）==="
 python3 engine/relation_net.py
 
@@ -47,17 +50,6 @@ python3 engine/emergence_candidates.py \
 echo "=== 涌现：候选链真跑裁决（真容器 + 真库 + 零残留自证）==="
 python3 "$DEMO/emergence_candidate_run.py"
 
-echo "=== 涌现：FDR 门禁（分母/分子/哈希漂移/分类别 FDR/漏检清单）==="
-gate_rc=0
-python3 engine/emergence_gate.py || gate_rc=$?
-if [ "$gate_rc" -eq 1 ]; then
-  echo "  ↑ 涌现门禁 RED：演示目标里存在「根因只被引用、无人 own 开单」的缺陷"
-  echo "    这是预期状态 —— 门禁判红的意义就是把这种漏归属逼出来"
-elif [ "$gate_rc" -eq 2 ]; then
-  echo "  ↑ 涌现门禁 INCOMPLETE：输入缺失（没查完，不是没问题）"
-  exit 2
-fi
-
 echo "=== 证据归一化 + 根因聚合 ==="
 normalize_rc=0
 python3 engine/normalize_findings.py || normalize_rc=$?
@@ -68,6 +60,17 @@ elif [ "$normalize_rc" -eq 2 ]; then
   echo "  ↑ 契约缺口：category 装不下，需要人工决策是否修订 layers.yaml"
 fi
 python3 engine/aggregate_findings.py
+
+echo "=== 涌现：FDR 门禁（分母/分子/哈希漂移/分类别 FDR/漏检清单）==="
+gate_rc=0
+python3 engine/emergence_gate.py || gate_rc=$?
+if [ "$gate_rc" -eq 1 ]; then
+  echo "  ↑ 涌现门禁 RED：演示目标里存在「根因只被引用、无人 own 开单」的缺陷"
+  echo "    这是预期状态 —— 门禁判红的意义就是把这种漏归属逼出来"
+elif [ "$gate_rc" -eq 2 ]; then
+  echo "  ↑ 涌现门禁 INCOMPLETE：输入缺失（没查完，不是没问题）"
+  exit 2
+fi
 
 echo "=== 残留守卫（探针容器 / ai_ 行 / 非种子上传，必须全 0）==="
 python3 probe_residue_check.py --selftest

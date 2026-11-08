@@ -12,14 +12,15 @@
       "id": "BI-QUOTA-LEDGER-PARITY",
       "entity": "order",
       "severity": "HIGH",
-      "category": "integration.end_to_end_business",
+      "category": "service.data_consistency",
       "claim": "额度占用额（通过授信额度检查的报价）是否等于账本记录额（实付）？",
       "why": "授信额度按客户报价检查并占住，账本按实付记录。两个口径必须相等 —— 不相等就意味着「额度被占住了，却没有对应的账目」，差额就是被白占的额度。",
       "assert": {
         "type": "field_eq_field",
         "left": "quoted_amount_cent",
         "right": "settled_amount_cent"
-      }
+      },
+      "note": "这条不变式的根因在服务层：OrderService.create 里额度检查用 quotedAmountCent，而账本记录用 settled —— 两个口径。服务层是能给可复现证据的最低层，所以 owner 归 service；集成层的端到端语义结论引用它。"
     },
     {
       "id": "BI-VIP-MEMBER-PRICE",
@@ -37,7 +38,8 @@
         "field": "customer_level",
         "op": "eq",
         "value": "VIP"
-      }
+      },
+      "note": "只对 VIP 客户适用（普通客户不走会员价，结算额等于报价额是正常的）"
     }
   ]
 }

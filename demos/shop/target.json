@@ -84,6 +84,11 @@
       "layer": "integration",
       "file": "artifacts/emergence_chains.json",
       "key": "findings"
+    },
+    {
+      "layer": "service",
+      "file": "artifacts/business_findings.json",
+      "key": "service"
     }
   ],
   "unit_sources": {},

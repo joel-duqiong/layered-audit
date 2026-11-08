@@ -56,6 +56,10 @@ run_layer integration python3 integration_dynamic.py
 run_layer integration python3 integration_reconcile.py
 run_layer integration python3 integration_chain.py
 run_layer integration python3 integration_diff.py
+echo "=== 业务不变式（服务层：造场景 -> 读行 -> 判定 -> 开单）==="
+# 放在集成层之后：它复用集成层的会话与清理通道（造出来的单据要走同一套残留清理）
+python3 business_probe.py
+
 echo "=== 清理 ==="
 ./cleanup.sh
 echo "=== 引擎自检（通用引擎不许写回项目专属的东西 + 换绑定可跑 + 增量闸门会跳）==="

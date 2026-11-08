@@ -140,7 +140,35 @@ CLASS: dict[str, Meta] = {
 # 其余三层：demo 目前还没有这三层的 findings，等真跑出来再标注。
 FUNCTION: dict[str, Meta] = {}
 FILE: dict[str, Meta] = {}
-SERVICE: dict[str, Meta] = {}
+
+# 服务层：业务不变式的实测判定（demos/shop/business_probe.py）。
+# 两个不变式、两个不同的归属 —— 这不是随手填的：
+#   · 额度/账本的口径分裂需要两个条件同时成立才出现，服务层能给出可复现的
+#     差分证据（3 个场景，只有「VIP 客户 + 会员装配」这一组违反），
+#     所以 owner = service（own）。
+#   · VIP 拿不到会员价，根因是「业务维度被绑到部署维度」—— 那是类层的结构问题，
+#     类层已经 own（CLASS-CONDITIONAL-ASSEMBLY-DIVERGENCE）。
+#     服务层这��只是行为上的佐证，**不重复开单**（relation = cite）。
+SERVICE: dict[str, Meta] = {
+    "BI-QUOTA-LEDGER-PARITY": _m(
+        "service.data_consistency", "exact",
+        "额度占用额（通过授信额度检查的报价）是否等于账本记录额（实付）？",
+        "service", 0.93, "defect", ("CWE-840",),
+        "order.quota_checked_on_quoted_amount_ledger_on_settled",
+        note="服务层 OrderService.create 里额度检查用 quotedAmountCent、账本记录用 settled —— "
+             "两个口径。单条件都不分裂：普通客户 + 会员装配不分裂，VIP 客户 + 标准装配也不分裂；"
+             "两个条件同时成立才分裂（实测 3 个场景里只有这一组违反）。"
+             "服务层是能给可复现证据的最低层，故 owner 归 service"),
+    "BI-VIP-MEMBER-PRICE": _m(
+        "service.data_consistency", "exact",
+        "VIP 客户的结算额是否享受了会员价（报价的 9/10）？",
+        "class", 0.92, "defect", ("CWE-840",),
+        "pricing.member_tier_bound_to_deployment_profile",
+        relation="cite",
+        note="服务层实测到：VIP 客户在标准装配下拿不到九折（结算额 = 报价额）。"
+             "根因是「业务维度（客户等级）被绑到部署维度（@Profile）」—— 那是类层的结构问题，"
+             "类层已经 own（CLASS-CONDITIONAL-ASSEMBLY-DIVERGENCE）。本层只作行为佐证，不重复开单"),
+}
 
 META: dict[str, dict[str, Meta]] = {
     "function": FUNCTION,
