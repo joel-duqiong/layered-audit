@@ -32,6 +32,7 @@ from pathlib import Path
 from typing import Any
 
 import findings_schema
+from surface import load_surfaces
 
 SEED = 20261107
 
@@ -168,6 +169,17 @@ def _classify(simple: str) -> str | None:
     return None
 
 
+# 出站 HTTP 调用的类标记 —— **按行为判，不按名字判**：
+# 名字叫 Client/Gateway/Invoker 的可能是别的东西，而**真的调了
+# java.net.http 的**才是跨仓库客户端。跨仓库的链要靠它才接得起来。
+_OUTBOUND_HTTP_HINTS = ("java.net.http.", "okhttp3.", "org.apache.http.", "feign.")
+
+
+def _is_http_client(f: dict[str, Any]) -> bool:
+    calls = list(f.get("external_calls") or []) + list(f.get("internal_calls") or [])
+    return any(any(h in c for h in _OUTBOUND_HTTP_HINTS) for c in calls)
+
+
 def _is_write_effect(effect: str) -> bool:
     method = effect.rpartition(".")[2].lower()
     return any(h in method for h in WRITE_HINTS)
@@ -207,7 +219,8 @@ def _dispatch_of(calls: list[str], by_cm: dict[tuple[str, str], dict[str, Any]],
 
 
 def build(fn_decl: dict[str, Any], class_decl: dict[str, Any],
-          openapi: dict[str, Any], invariants: list[dict[str, Any]]) -> dict[str, Any]:
+          openapi: dict[str, Any], invariants: list[dict[str, Any]],
+          surfaces: dict[str, dict[str, Any]] | None = None) -> dict[str, Any]:
     funcs = list(fn_decl.get("functions") or [])
     jpa = class_decl.get("jpa") or {}
     ddl = (class_decl.get("ddl") or {}).get("tables") or {}
@@ -234,6 +247,8 @@ def build(fn_decl: dict[str, Any], class_decl: dict[str, Any],
     for (cls, method), f in by_cm.items():
         simple = _simple(cls)
         ntype = _classify(simple)
+        if not ntype and _is_http_client(f):
+            ntype = "HTTP_CLIENT"
         if not ntype:
             continue
         add_node(f"{cls}#{method}", ntype, cls=cls, method=method, simple=simple,
@@ -334,6 +349,39 @@ def build(fn_decl: dict[str, Any], class_decl: dict[str, Any],
                 add_edge(repo_node, tnode, "WRITES", effect=eff)
             elif _is_read_effect(eff):
                 add_edge(repo_node, tnode, "READS", effect=eff)
+
+    # ---- 跨仓库：把另一个仓库的入口并进图 ----
+    # 跨仓库的合取链（入口在 A、条件在 B）要能自动生成，图上就得有这一跳。
+    # 面的声明里给了调用点（call_site），才知道本仓库哪个方法发起了这次调用。
+    xrepo_edges: list[dict[str, Any]] = []
+    for repo_id, surface in (surfaces or {}).items():
+        for call in surface.get("declared_outbound_calls", []):
+            site = str(call.get("call_site") or "")
+            if "#" not in site:
+                continue
+            cls, _, method = site.partition("#")
+            local_id = f"{cls}#{method}"
+            if local_id not in nodes:
+                continue
+            target = call.get("target_repo_hint") or ""
+            path = call.get("path") or ""
+            for other_id, other in (surfaces or {}).items():
+                if other_id == repo_id:
+                    continue
+                if target and other_id != target:
+                    continue
+                provided = {f"{e.get('method', 'GET').upper()} {e.get('path', '')}"
+                            for e in other.get("http_endpoints", [])}
+                if f"{call.get('method', 'GET').upper()} {path}" not in provided:
+                    continue
+                nid = f"xrepo:{other_id}:{call.get('method', 'GET').upper()} {path}"
+                add_node(nid, "XREPO_ENTRY", repo=other_id, endpoint=f"{path}",
+                         method=call.get("method", "GET").upper(),
+                         cross_repo=True)
+                add_edge(local_id, nid, "CALLS", cross_repo=True, repo=other_id)
+                xrepo_edges.append({"from": local_id, "to": nid, "repo": other_id,
+                                    "method": call.get("method", "GET").upper(),
+                                    "path": path})
 
     # ---- 入口绑定 ----
     bindings, unbound = bind_entries(openapi, nodes)
@@ -511,7 +559,8 @@ def main() -> int:
     net = build(_load(base / "fn_declaration.json"),
                 _load(base / "class_declaration.json"),
                 _load(base / "openapi.json"),
-                load_invariants(project_dir() / "invariants.json"))
+                load_invariants(project_dir() / "invariants.json"),
+                surfaces=load_surfaces(project_dir() / "surfaces"))
     out = Path(args.out) if args.out else base / "relation_net.json"
     out.write_text(json.dumps(net, ensure_ascii=False, indent=2), encoding="utf-8")
     c = net["counts"]

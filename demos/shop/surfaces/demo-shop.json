@@ -1,19 +1,47 @@
 {
   "repo_id": "demo-shop",
   "kind": "java",
-  "base_urls": {"backend": "http://127.0.0.1:8090"},
+  "base_urls": {
+    "backend": "http://127.0.0.1:8090"
+  },
   "http_endpoints": [
-    {"method": "GET", "path": "/api/products"},
-    {"method": "GET", "path": "/api/products/internal"},
-    {"method": "GET", "path": "/api/orders"},
-    {"method": "POST", "path": "/api/orders"},
-    {"method": "GET", "path": "/api/reports/aggregate"}
+    {
+      "method": "GET",
+      "path": "/api/products"
+    },
+    {
+      "method": "GET",
+      "path": "/api/products/internal"
+    },
+    {
+      "method": "GET",
+      "path": "/api/orders"
+    },
+    {
+      "method": "POST",
+      "path": "/api/orders"
+    },
+    {
+      "method": "GET",
+      "path": "/api/reports/aggregate"
+    }
   ],
-  "tables_owned": ["shop_category", "shop_customer", "shop_product", "shop_order"],
+  "tables_owned": [
+    "shop_category",
+    "shop_customer",
+    "shop_product",
+    "shop_order"
+  ],
   "events_published": [],
   "events_consumed": [],
   "agent_tools": [],
   "declared_outbound_calls": [
-    {"target_repo_hint": "python-svc", "method": "GET", "path": "/fx"}
+    {
+      "target_repo_hint": "python-svc",
+      "method": "GET",
+      "path": "/fx",
+      "call_site": "com.demo.shop.client.FxClient#rate",
+      "note": "调用点（哪个本地方法发起的跨仓库调用）。关系网靠它把本地节点连到另一个仓库的入口 —— 否则只有「调了哪个接口」，不知道是本仓库哪个方法调的，链就接不起来。"
+    }
   ]
 }

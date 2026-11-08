@@ -394,6 +394,23 @@ def generate(net: dict[str, Any], anchors: dict[str, Any],
                 for nid in closure:
                     for src in (nodes.get(nid, {}).get("taint", {}) or {}).get("source_fields") or []:
                         conditions.append(f"request:{src}")
+                # 跨仓库条件：链上有一跳是**另一个仓库**的入口。
+                # 少了它，跨仓库的合取链就退化成单仓库链 —— 那个仓库的返回值
+                # 参与了什么，本仓库的图上根本看不见。
+                # 闭包的深度是 1（刻意的剪枝），而跨仓库的入口在**再下一层**
+                # （服务方法 → 客户端方法 → 另一个仓库的入口）——
+                # 所以跨仓库这一项单独多走一步，不动闭包本身的深度。
+                xrepo_nodes = [nid for nid in closure
+                               if nodes.get(nid, {}).get("cross_repo")]
+                for nid in closure:
+                    xrepo_nodes += [n2 for n2 in adj.get(nid, [])
+                                    if nodes.get(n2, {}).get("cross_repo")]
+                xrepo_calls = sorted({str(nodes.get(nid, {}).get("repo") or "")
+                                      for nid in xrepo_nodes})
+                for repo in xrepo_calls:
+                    conditions.append(f"xrepo:{repo}")
+                if xrepo_calls:
+                    patterns.append("T8")   # 跨仓库调用：条件的一端在别的仓库
                 candidates.append({
                     "entry": entry,
                     "endpoint": endpoint,
