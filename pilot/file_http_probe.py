@@ -79,9 +79,13 @@ def around(segment: str, marker: str, before: int = 300, after_lines: int = 0) -
 
 def raw_http(cfg: dict[str, Any], path: str, headers: dict[str, str]) -> dict[str, Any]:
     """裸 socket：能塞进 HTTP 库不允许的控制字符（Tomcat 的边界就靠它测）。"""
-    parts = urllib.parse.urlsplit(cfg.get("base_url", "http://127.0.0.1:8080"))
-    host = parts.hostname or "127.0.0.1"
-    port = parts.port or 80
+    # 目标地址由用例文件给 —— 通用层不写死任何主机名/端口
+    base_url = cfg.get("base_url")
+    if not base_url:
+        raise ValueError("HTTP 探针的用例必须给 base_url")
+    parts = urllib.parse.urlsplit(base_url)
+    host = parts.hostname or ""
+    port = parts.port or (443 if parts.scheme == "https" else 80)
     lines = [f"GET {path} HTTP/1.1", f"Host: {host}:{port}"]
     for k, v in headers.items():
         lines.append(f"{k}: {v}")

@@ -617,6 +617,22 @@ class ClassProbe:
         外键顺序只有项目自己知道，引擎不猜。
         """
         out = []
+        # **清理语句先注册，再造数据** —— 造夹具的过程中一旦出错（第二条语句失败、
+        # 捕获失败），前面的 INSERT 已经落库了；清理晚注册就等于这些行永久留在库里，
+        # 而且一声不吭。零残留是硬约束，不是一个可选优化。
+        declared_cleanup = list(probe.get("cleanup_sql") or [])
+        self._fixture_cleanup.extend(declared_cleanup)
+        fallback = self._fixture_fallback_cleanup(probe)
+        if fallback:
+            self._fixture_cleanup.extend(fallback)
+        if probe.get("statements") and not declared_cleanup and not fallback:
+            # 没有声明清理、也没法从 INSERT 推出兜底 —— 明确记下来，不静默
+            self.errors.append({
+                "probe": probe.get("id"), "kind": "sql_fixture",
+                "error": "夹具没有声明 cleanup_sql，且无法从 INSERT 推出兜底清理 —— "
+                         "夹具行可能留在库里",
+            })
+
         for stmt in probe.get("statements", []):
             sql = self._resolve(stmt["sql"], dict(self.fixtures))
             rows = self.db.cte_rows(sql)
@@ -626,8 +642,34 @@ class ClassProbe:
                 captured[key] = value
                 self.fixtures[key] = value
             out.append({"sql": sql, "rows": rows, "captured": captured})
-        self._fixture_cleanup.extend(probe.get("cleanup_sql", []))
         return {"statements": out, "fixtures": dict(self.fixtures)}
+
+    def _fixture_fallback_cleanup(self, probe: dict) -> list[str]:
+        """夹具没声明 cleanup_sql 时的兜底：从 INSERT 语句推出按前缀删。
+
+        夹具行**自己带探针前缀**（这是模块的规矩），所以「按前缀删」是通用兜底：
+        解析出表名与那个带前缀的列，生成 DELETE ... LIKE '<前缀>%'。
+        推不出来就返回空 —— 由调用方记成显式错误，不静默。
+        """
+        out: list[str] = []
+        for stmt in probe.get("statements", []):
+            raw = str(stmt.get("sql") or "")
+            m = re.search(r"INSERT\s+INTO\s+([A-Za-z_][\w.]*)", raw, re.I)
+            if not m:
+                continue
+            table = m.group(1)
+            cols = re.search(r"\(([^)]*)\)", raw)
+            vals = re.search(r"VALUES\s*\((.*?)\)", raw, re.I | re.S)
+            if not cols or not vals:
+                continue
+            col_list = [c.strip() for c in cols.group(1).split(",")]
+            val_list = [v.strip() for v in vals.group(1).split(",")]
+            for col, val in zip(col_list, val_list):
+                if "{{prefix}}" not in val:
+                    continue
+                out.append(f"DELETE FROM {table} WHERE {col} LIKE '{self.prefix}%'")
+                break
+        return out
 
     def _cleanup_fixtures(self) -> None:
         """夹具行在所有探针跑完之后统一清 —— 夹具要活到最后一刻才能被别的探针用。"""

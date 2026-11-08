@@ -46,14 +46,24 @@ def main() -> None:
     out = Path(project.artifact_dir()) / "class_observation.json"
     out.write_text(json.dumps(res, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    if res.get("_errors"):
+    # 探针失败 / 清理失败 = **没查完**，不是绿。
+    # 以前这里只 print，退出码仍是 0 —— 流水线照样绿，
+    # 「这个探针压根没跑」和「跑过没问题」在结果里长得一模一样。
+    # 按门禁的第三态语义（0 绿 / 1 红 / 2 没查完），这里退出码 2。
+    errors = res.get("_errors") or []
+    if errors:
         print("探针失败（不影响其余探针）：")
-        for e in res["_errors"]:
+        for e in errors:
             print(f"  {e['probe']}: {e['error']}")
     failed = [c for c in res.get("_cleanup", []) if not c.get("ok")]
     print(f"清理：{len(res.get('_cleanup', []))} 条，失败 {len(failed)} 条")
     for c in failed:
         print(f"  清理失败 {c['table']}/{c['id']}: {c.get('error')}")
+
+    if errors or failed:
+        print(f"  ↑ 有 {len(errors)} 个探针失败 / {len(failed)} 条清理失败 —— "
+              "这一维**没查完**（退出码 2），不是绿")
+        raise SystemExit(2)
 
     tr = res.get("transition") or {}
     if tr.get("matrix"):

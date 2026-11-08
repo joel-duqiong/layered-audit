@@ -1037,7 +1037,7 @@
       "runtime_fidelity": "container",
       "severity": "HIGH",
       "title": "基准币种下，额度占用额（报价）与账本记录额（实付）是否相等？",
-      "detail": "授信额度按客户报价检查并占住，账本按实付记录。两个口径必须相等 —— 不相等就意味着「额度被占住了，却没有对应的账目」，差额就是被白占的额度。\n不变式：BI-QUOTA-LEDGER-PARITY　判定原语：field_eq_field\n实测 3 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 807,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 810000,\n    \"ok\": false,\n    \"scenario\": \"vip_on_vip\"\n  }\n]",
+      "detail": "授信额度按客户报价检查并占住，账本按实付记录。两个口径必须相等 —— 不相等就意味着「额度被占住了，却没有对应的账目」，差额就是被白占的额度。\n不变式：BI-QUOTA-LEDGER-PARITY　判定原语：field_eq_field\n实测 3 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 834,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 810000,\n    \"ok\": false,\n    \"scenario\": \"vip_on_vip\"\n  }\n]",
       "related": [],
       "note": "服务层 OrderService.create 里额度检查用 quotedAmountCent、账本记录用 settled —— 两个口径。单条件都不分裂：普通客户 + 会员装配不分裂，VIP 客户 + 标准装配也不分裂；两个条件同时成立才分裂（实测 3 个场景里只有这一组违反）。服务层是能给可复现证据的最低层，故 owner 归 service",
       "source": {
@@ -1086,7 +1086,7 @@
       "runtime_fidelity": "container",
       "severity": "HIGH",
       "title": "VIP 客户的结算额是否享受了会员价（报价的 9/10）？",
-      "detail": "会员价是**客户等级**维度的价格规则：VIP 客户在任何部署环境下都应当拿到九折。这条不变式只对 VIP 客户适用（when 条件），衡量的是「等级条件有没有真的落到定价上」。\n不变式：BI-VIP-MEMBER-PRICE　判定原语：field_eq_field\n实测 2 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 806,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 810000,\n    \"ok\": false,\n    \"scenario\": \"vip_on_default\"\n  }\n]",
+      "detail": "会员价是**客户等级**维度的价格规则：VIP 客户在任何部署环境下都应当拿到九折。这条不变式只对 VIP 客户适用（when 条件），衡量的是「等级条件有没有真的落到定价上」。\n不变式：BI-VIP-MEMBER-PRICE　判定原语：field_eq_field\n实测 2 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 833,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 810000,\n    \"ok\": false,\n    \"scenario\": \"vip_on_default\"\n  }\n]",
       "related": [],
       "note": "服务层实测到：VIP 客户在标准装配下拿不到九折（结算额 = 报价额）。根因是「业务维度（客户等级）被绑到部署维度（@Profile）」—— 那是类层的结构问题，类层已经 own（CLASS-CONDITIONAL-ASSEMBLY-DIVERGENCE）。本层只作行为佐证，不重复开单",
       "source": {
@@ -1135,7 +1135,7 @@
       "runtime_fidelity": "container",
       "severity": "HIGH",
       "title": "非基准币种下，结算额与额度占用额是否还在同一个金额基准上？",
-      "detail": "结算额被乘了**另一个仓库**返回的汇率（demo-shop → python-svc 的 /fx），而额度占用仍按报价口径校验。两个口径一差，差额来自仓库边界之外 —— 单看本仓库的任何一行都看不出问题。\n不变式：BI-FX-BASIS-ALIGNMENT　判定原语：field_eq_field\n实测 2 个业务场景，违反 2 次：\n[\n  {\n    \"row_id\": 808,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 828000,\n    \"ok\": false,\n    \"scenario\": \"fx_on_default\"\n  },\n  {\n    \"row_id\": 809,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 745200,\n    \"ok\": false,\n    \"scenario\": \"fx_on_vip\"\n  }\n]",
+      "detail": "结算额被乘了**另一个仓库**返回的汇率（demo-shop → python-svc 的 /fx），而额度占用仍按报价口径校验。两个口径一差，差额来自仓库边界之外 —— 单看本仓库的任何一行都看不出问题。\n不变式：BI-FX-BASIS-ALIGNMENT　判定原语：field_eq_field\n实测 2 个业务场景，违反 2 次：\n[\n  {\n    \"row_id\": 835,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 828000,\n    \"ok\": false,\n    \"scenario\": \"fx_on_default\"\n  },\n  {\n    \"row_id\": 836,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 745200,\n    \"ok\": false,\n    \"scenario\": \"fx_on_vip\"\n  }\n]",
       "related": [],
       "note": "**跨仓库的缺陷**：结算额被乘了另一个仓库（python-svc 的 /fx）返回的汇率，而额度占用仍按报价口径校验 —— 两个口径的币种不同，限额的含义被汇率悄悄改了。本地汇率若是 1.0（CNY=100），这条根本不会违反 —— 差额来自仓库边界之外。本仓库任何一行代码单独看都没错。",
       "source": {

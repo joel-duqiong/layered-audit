@@ -65,6 +65,20 @@ def _finding(fid: str, sev: str, layer: str, title: str, detail: str,
             "detail": detail, "evidence": evidence}
 
 
+def obs_channel(ctx: dict[str, Any], name: str, rule_id: str = "") -> Any:
+    """取一个观测通道；没有就说清楚是哪条规则要哪个通道。
+
+    规则**用哪个观测通道**是规则本身的一部分（换项目时探针 id 变了，
+    对应规则也要改）。但缺了通道时不该只抛一个裸 KeyError ——
+    要说清「哪条规则要哪个通道」，否则换项目时无从下手。
+    """
+    obs = ctx.get("obs") or {}
+    if name not in obs:
+        where = f"（规则 {rule_id}）" if rule_id else ""
+        raise KeyError(f"观测通道 {name!r} 不存在{where}；"
+                       f"可用通道：{sorted(obs.keys())}")
+    return obs[name]
+
 # ------------------------------------------------------------ 规则：枚举 vs CHECK
 def enum_check_drift(rule: dict, ctx: dict) -> list[dict]:
     """Java 枚举取值 ↔ DB CHECK 白名单。"""
@@ -98,7 +112,7 @@ def enum_check_drift(rule: dict, ctx: dict) -> list[dict]:
 def no_state_machine(rule: dict, ctx: dict) -> list[dict]:
     """实测：状态能不能随便跳。"""
     p = rule["params"]
-    m = ctx["obs"]["transition"]["matrix"]
+    m = obs_channel(ctx, "transition", "state_transition")["matrix"]
     allowed = [k for k, v in m.items() if v["accepted"]]
     backward = [k for k in allowed if k.split("->")[0] > k.split("->")[1]]
     values = {"allowed_n": len(allowed), "total": len(m)}
@@ -113,7 +127,7 @@ def no_state_machine(rule: dict, ctx: dict) -> list[dict]:
 def index_unusable(rule: dict, ctx: dict) -> list[dict]:
     """声明的索引能不能被服务层的查询模式用上。"""
     p = rule["params"]
-    sc = ctx["obs"]["scale_experiment"]
+    sc = obs_channel(ctx, "scale_experiment", "scale_experiment")
     like_ms = float(str(sc[p["like_label"]]["exec_ms"]).split()[0])
     exact_ms = float(str(sc[p["exact_label"]]["exec_ms"]).split()[0])
     ratio = like_ms / max(exact_ms, 0.001)
@@ -131,7 +145,7 @@ def index_unusable(rule: dict, ctx: dict) -> list[dict]:
 def soft_delete_resurrect(rule: dict, ctx: dict) -> list[dict]:
     """软删之后同名重建，命中的是旧行还是新行。"""
     p = rule["params"]
-    sdu = ctx["obs"]["softdelete_unique"]
+    sdu = obs_channel(ctx, "softdelete_unique", "soft_delete_resurrect")
     return [_finding(p["finding_id"], p["severity"], p.get("layer", "class"),
                      render_text(p["title"], {}),
                      render_text(p["detail"], {}),
@@ -145,7 +159,7 @@ def soft_delete_resurrect(rule: dict, ctx: dict) -> list[dict]:
 def no_data_lifecycle(rule: dict, ctx: dict) -> list[dict]:
     """某张表没有软删 / 归档，只增不减。"""
     p = rule["params"]
-    inv = ctx["obs"]["db_invariants"]
+    inv = obs_channel(ctx, "db_invariants", "db_invariants")
     if not inv.get(p["probe_label"]):
         return []
     sizes = dict(inv.get("table_sizes", []))
@@ -164,7 +178,7 @@ def class_shape(rule: dict, ctx: dict) -> list[dict]:
     数据来自 JVM 内反射（class_harness/ClassShape.java），探针不碰 DB、不碰容器。
     """
     p = rule.get("params", {})
-    shape = ctx["obs"].get("class_shape") or {}
+    shape = obs_channel(ctx, "class_shape", "class_shape") or {}
     out: list[dict] = []
     classes = shape.get("classes", [])
 
@@ -245,7 +259,7 @@ def class_shape(rule: dict, ctx: dict) -> list[dict]:
 def instance_pair(rule: dict, ctx: dict) -> list[dict]:
     """两个实例（不同 profile / 不同配置）行为不一致 —— 条件装配用错维度。"""
     p = rule["params"]
-    ip = ctx["obs"].get("instance_pair") or {}
+    ip = obs_channel(ctx, "instance_pair", "instance_pair") or {}
     div = ip.get("divergence") or []
     if not div:
         return []

@@ -165,6 +165,20 @@
     }
   ],
   "layer_roles": {
+    "file": [
+      "file.cohesion",
+      "file.contract_alignment",
+      "file.error_handling_pattern",
+      "file.state_consistency"
+    ],
+    "service": [
+      "service.authz",
+      "service.data_consistency",
+      "service.interface_contract",
+      "service.resilience",
+      "service.resource_leak",
+      "service.service_latency"
+    ],
     "integration": [
       "integration.cross_layer_correlation",
       "integration.cross_service_attack_chain",
@@ -183,20 +197,6 @@
       "function.complexity",
       "function.exception_path",
       "function.numeric"
-    ],
-    "file": [
-      "file.cohesion",
-      "file.contract_alignment",
-      "file.error_handling_pattern",
-      "file.state_consistency"
-    ],
-    "service": [
-      "service.authz",
-      "service.data_consistency",
-      "service.interface_contract",
-      "service.resilience",
-      "service.resource_leak",
-      "service.service_latency"
     ]
   },
   "counts": {

@@ -75,7 +75,10 @@ def main() -> None:
                         "应用层以为有唯一性保护，实际 DB 层没有 —— 并发下会写入重复值。",
                         {"table": t, "column": col}))
 
-    # D2 项目声明的差分规则：配置里的顺序就是报告里的顺序
+    # D2 项目声明的差分规则：**配置里的顺序 = 判定的先后**；
+    # 报告的**呈现顺序**按严重度排（同严重度内保持配置顺序）。
+    # （这两件事不是一回事 —— 早期这里写的是「配置里的顺序就是报告里的顺序」，
+    #   与实际行为相反。）
     ctx = {"decl": decl, "obs": obs, "entity_dir": str(project.entity_dir()),
            "file_detectors": file_carrier.load(D)}
     for rule in cfg.get("diff_rules", []):

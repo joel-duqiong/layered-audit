@@ -259,8 +259,8 @@
     "resolved_ratio": 0.1485,
     "upper_bound_ratio": 0.1485,
     "affected_by_layer": {
-      "file": 5,
-      "function": 74
+      "function": 74,
+      "file": 5
     },
     "affected_root_causes": 8
   },
@@ -275,23 +275,23 @@
     "webconfig.static_root_normalization_env_dependent"
   ],
   "reasons": {
-    "file:com.jiuyan.banquet.controller.OrderController": [
-      "type_use/static/semantic @file:com.jiuyan.banquet.service.OrderService"
+    "fn:com.jiuyan.banquet.controller.OrderController#update": [
+      "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#update"
     ],
     "fn:com.jiuyan.banquet.controller.OrderController#list": [
       "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#list"
     ],
+    "file:com.jiuyan.banquet.controller.OrderController": [
+      "type_use/static/semantic @file:com.jiuyan.banquet.service.OrderService"
+    ],
     "fn:com.jiuyan.banquet.controller.OrderController#create": [
       "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#create"
     ],
-    "fn:com.jiuyan.banquet.controller.OrderController#update": [
-      "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#update"
+    "fn:com.jiuyan.banquet.controller.OrderController#get": [
+      "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#get"
     ],
     "fn:com.jiuyan.banquet.controller.OrderController#updateStatus": [
       "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#updateStatus"
-    ],
-    "fn:com.jiuyan.banquet.controller.OrderController#get": [
-      "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#get"
     ]
   }
 }

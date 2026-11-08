@@ -72,6 +72,9 @@ echo "=== 清理 ==="
 ./cleanup.sh
 echo "=== 引擎自检（通用引擎不许写回项目专属的东西 + 换绑定可跑 + 增量闸门会跳）==="
 python3 engine/check_engine_purity.py
+# 类层与文件层的通用骨架在 pilot/ 下，engine/ 的守卫扫不到 —— 各有各的守卫
+python3 check_class_probe_purity.py
+python3 check_file_probe_purity.py
 python3 engine/incremental_plan.py --selftest
 ./test_portability.sh
 echo "=== 探针作业调度（按 max_agents 闸门分轮 admit，产物并集合并）==="

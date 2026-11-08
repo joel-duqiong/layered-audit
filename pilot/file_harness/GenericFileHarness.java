@@ -41,7 +41,6 @@ import java.util.regex.Pattern;
  *
  * 用例文件结构：
  * {
- *   "types":    {"pkgItemReq": "com.x.PackageItemRequest"},
  *   "fixtures": {"pkg4": {"$entity": "com.x.Package", "fields": {...}}},
  *   "stubs":    {"com.x.YRepo": {"method": <值规格>}},
  *   "stub_labels": {"com.x.YRepo": "yRepo"},
@@ -61,7 +60,6 @@ public class GenericFileHarness extends GenericFileHarnessObserve {
         STUBS = ROOT.path("stubs");
         FIXTURES = ROOT.path("fixtures");
         CTOR = ROOT.path("ctor");
-        TYPES = ROOT.path("types");
         VIEWS = ROOT.path("views");
         var labels = ROOT.path("stub_labels").fields();
         while (labels.hasNext()) {

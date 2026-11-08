@@ -37,7 +37,6 @@ class GenericFileHarnessBase {
     static JsonNode STUBS;
     static JsonNode FIXTURES;
     static JsonNode CTOR;
-    static JsonNode TYPES;
     static JsonNode VIEWS;
     static JsonNode CASE_STUBS;
     static JsonNode CASE_FIXTURES;
