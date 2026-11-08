@@ -36,11 +36,11 @@ run_layer function python3 fn_static.py
 python3 semantic_probe.py
 # 增量：只重跑指纹变了的用例，其余复用分片；缺分片 -> 退出码 2（没查完，不是绿）
 run_layer function python3 fn_dynamic.py --incremental --extra-cases semantic_cases.json
-run_layer function python3 fn_diff.py
+run_layer function python3 engine/fn_diff.py
 echo "=== 文件层（字节码声明 / 整类实例化实测 / 差分）==="
 run_layer file python3 file_static.py
 run_layer file python3 file_dynamic.py
-run_layer file python3 file_diff.py
+run_layer file python3 engine/file_diff.py
 echo "=== 服务层（静态声明 / 动态实测 / 差分）==="
 run_layer service python3 contract_static.py
 run_layer service python3 contract_probe.py    # 通用版：场景配置在 service_scenarios.json
