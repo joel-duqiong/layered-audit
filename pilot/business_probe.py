@@ -14,7 +14,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from engine.invariants import evaluate_all
+from engine import business_verdict
 from integration_chain import BASE, call, cleanup, data_of, order_body, owner_session
 from integration_reconcile import PFX, psql_rows
 
@@ -114,94 +114,36 @@ def main() -> None:
     ctx["package_price_cent"] = (pkgs.get("items") or [{}])[0].get("priceCent") or 24680
 
     scenarios = make_scenarios(ctx)
-    order_ids: list[int] = []
-    scenario_of: dict[int, str] = {}
-    rejected: dict[str, int] = {}
+
+    def post_scenario(sc: dict[str, Any]) -> tuple[int, Any]:
+        """造一笔业务单据 —— 项目侧的事（造什么、造在哪）。"""
+        return call(owner_session, "POST", "/api/orders", body=sc["body"])
+
+    def read_rows(ids: list[int]) -> list[dict[str, Any]]:
+        """把造出来的行读出来 —— 项目侧的事（读哪张表、读什么形状）。"""
+        return psql_rows(cfg["entity"]["read_sql"].format(ids=",".join(str(i) for i in ids)))
+
+    # 判定与开单是通用逻辑，在 engine/business_verdict.py 里
     try:
-        for sc in scenarios:
-            st, payload = call(owner_session, "POST", "/api/orders", body=sc["body"])
-            if st != 200:
-                # 建单被拒 —— 这本身就是证据：该不变式被系统在入口挡住了
-                rejected[sc["tag"]] = st
-                print(f"  场景 {sc['tag']} 建单被拒 http={st}（该不变式由入口结构性保证）")
-                continue
-            oid = data_of(payload)["id"]
-            order_ids.append(oid)
-            scenario_of[oid] = sc["tag"]
-        rows = psql_rows(cfg["entity"]["read_sql"].format(ids=",".join(str(i) for i in order_ids)))
+        payload = business_verdict.run(
+            invariants=invs,
+            scenarios=scenarios,
+            post_scenario=post_scenario,
+            read_rows=read_rows,
+            endpoint="POST /api/orders",
+            repro="python3 business_probe.py",
+        )
     finally:
         cleanup()
 
-    for row in rows:
-        row["_scenario"] = scenario_of.get(row.get("id"), "?")
+    for tag, status in sorted(payload["rejected_scenarios"].items()):
+        print(f"  场景 {tag} 建单被拒 http={status}（该不变式由入口结构性保证）")
 
-    results = evaluate_all(rows, invs)
-    by_id = {r["id"]: r for r in results}
-    findings: list[dict[str, Any]] = []
-    for inv in invs:
-        res = by_id[inv["id"]]
-        if res["ok"]:
-            continue
-        samples = []
-        for f in res["failure_samples"]:
-            row = next((r for r in rows if r.get("id") == f.get("row_id")), {})
-            samples.append({**f, "scenario": row.get("_scenario")})
-        findings.append({
-            "id": f"BI-{inv['id'][3:]}",
-            "severity": inv["severity"],
-            "endpoint": "POST /api/orders",
-            "title": inv["claim"],
-            "detail": (f"{inv['why']}\n"
-                       f"不变式：{inv['id']}　判定原语：{inv['assert']['type']}\n"
-                       f"实测 {res['checked']} 个订单场景，违反 {res['violations']} 次：\n"
-                       + json.dumps(samples, ensure_ascii=False, indent=2)),
-            "repro": "python3 business_probe.py",
-            "evidence": {
-                "invariant": inv,
-                "checked": res["checked"],
-                "violations": res["violations"],
-                "samples": samples,
-                "scenarios": [{"scenario": r.get("_scenario"), "order_id": r.get("id")}
-                              for r in rows],
-            },
-        })
-
-    inv_by_id = {i["id"]: i for i in invs}
-    tag_to_target = {t: sc["tag"] for sc in scenarios for t in sc["targets"]}
-    positives = []
-    for r in results:
-        if not r["ok"]:
-            continue
-        inv = inv_by_id[r["id"]]
-        # 如果这条不变式的违规场景在入口就被拒了，那它是结构性保证
-        guard = tag_to_target.get(r["id"])
-        guard_note = ""
-        guard_evidence: dict[str, Any] = {}
-        if guard and guard in rejected:
-            guard_note = (f"\n特别地：专门构造的违规场景「{guard}」在建单入口就被拒"
-                          f"（HTTP {rejected[guard]}）—— 这条不变式是被结构性保证的，"
-                          f"不是碰巧没触发。")
-            guard_evidence = {"guard_scenario": guard, "rejected_http": rejected[guard]}
-        positives.append({
-            "id": f"BI-{r['id'][3:]}",
-            "severity": "INFO",
-            "endpoint": "POST /api/orders",
-            "title": r["claim"],
-            "detail": (f"{r['why']}\n"
-                       f"不变式：{r['id']}　判定原语：{inv['assert']['type']}\n"
-                       f"在 {r['checked']} 个订单场景（含刻意违规的对照组）上恒成立 —— "
-                       f"这条不变式是被系统守住的。{guard_note}"),
-            "repro": "python3 business_probe.py",
-            "evidence": {"invariant": inv, "checked": r["checked"], **guard_evidence},
-        })
-
-    payload = {"service": findings + positives,
-               "results": results,
-               "rejected_scenarios": rejected,
-               "scenarios": [{"tag": s["tag"], "targets": s["targets"]} for s in scenarios]}
     OUT.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"业务不变式探针 -> {OUT}  {len(findings)} 条违反 + {len(positives)} 条成立")
-    for r in results:
+    violations = len([f for f in payload["service"] if f["severity"] != "INFO"])
+    positives = len(payload["service"]) - violations
+    print(f"业务不变式探针 -> {OUT}  {violations} 条违反 + {positives} 条成立")
+    for r in payload["results"]:
         flag = "违反" if not r["ok"] else "成立"
         print(f"  {flag}  {r['id']:<42}检查 {r['checked']} 场景，违反 {r['violations']} 次")
 

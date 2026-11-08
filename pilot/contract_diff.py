@@ -8,6 +8,10 @@ from collections import defaultdict
 D = str(project.artifact_dir())
 decl = json.load(open(os.path.join(D, "declaration.json")))
 obs = json.load(open(os.path.join(D, "observation.json")))
+# 项目侧声明（service_scenarios.json）：差分口径里需要「项目知识」的部分从这来
+scen_path = os.path.join(project.project_dir(), "service_scenarios.json")
+scen = json.load(open(scen_path)) if os.path.exists(scen_path) else {}
+TARGET_NAME = project.binding().get("target", "") or project.project_dir().name
 g = decl["global"]
 ops = {o["key"]: o for o in decl["operations"]}
 findings = []
@@ -59,7 +63,8 @@ for o in obs["observations"]:
     j = o.get("json") or {}
     det = (j.get("details") or {}).get("message") if isinstance(j.get("details"), dict) else None
     if det and ("JSON parse error" in det or "Cannot deserialize" in det
-                or "com.jiuyan" in det or "java." in det or "org.springframework" in det):
+                or project.java_package() in det or "java." in det
+                or "org.springframework" in det):
         add("INTERNAL_LEAK", "MEDIUM", o["key"],
             "错误响应把内部实现细节返回给客户端",
             f"details.message 直接透传框架异常原文（{det[:80]}...），"
@@ -69,17 +74,24 @@ for o in obs["observations"]:
 
 # F3 鉴权缺失
 if not g["security_annotations"] and not g["security_on_classpath"]:
+    # 「零鉴权」需要一个能读出业务数据的端点作证人 ——
+    # 哪个端点、读到什么，是项目知识，声明在 service_scenarios.json。
+    authz = scen.get("authz_probe") or {}
+    witness = (str(authz["method"]), str(authz["path"])) \
+        if authz.get("method") and authz.get("path") else None
     readable = [o for o in obs["observations"]
                 if o["scenario"] == "valid" and o["status"] == 200
-                and o["key"].startswith("GET /api/orders")]
+                and (witness is None or o["key"].startswith(f"{witness[0]} {witness[1]}"))]
     if readable:
+        noun = authz.get("data_noun", "业务数据")
+        sample = authz.get("data_sample", "HTTP 200 + 返回业务数据")
         add("NO_AUTHZ", "CRITICAL", "ALL",
             "全系统零鉴权：无凭证即可读写全部业务数据",
             f"源码无任何鉴权注解 ({g['security_annotations'] or '空'})、classpath 无 spring-security；"
-            f"动态实测带伪造 Bearer token 仍可成功读取订单 {readable[0]['request']}。"
+            f"动态实测带伪造 Bearer token 仍可成功读取{noun} {readable[0]['request']}。"
             "这里不是实现漏了鉴权，而是授权不变量根本不存在。",
-            f"curl http://127.0.0.1:8081{readable[0]['request']}   # 无任何凭证",
-            {"probe_result": "HTTP 200 + 返回客户姓名/电话",
+            f"curl {project.base_url()}{readable[0]['request']}   # 无任何凭证",
+            {"probe_result": sample,
              "static_evidence": "security_annotations=[] spring_security_on_classpath=False"})
 
 # F4 响应结构漂移（实测 data 字段 vs 声明 schema）
@@ -134,7 +146,7 @@ findings.sort(key=lambda f: sev_order.get(f["severity"], 9))
 json.dump(findings, open(os.path.join(D, "findings.json"), "w"), ensure_ascii=False, indent=2)
 
 # Markdown 报告
-lines = ["# 服务层契约差分报告（jiuyan）", "",
+lines = [f"# 服务层契约差分报告（{TARGET_NAME}）", "",
          f"静态声明 {len(decl['operations'])} 个 operation | 动态实测 {len(obs['observations'])} 次 | "
          f"finding {len(findings)} 条", "",
          "| 级别 | 端点 | 缺陷 |", "|---|---|---|"]

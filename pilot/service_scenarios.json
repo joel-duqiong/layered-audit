@@ -88,5 +88,12 @@
     "package-types": "packageTypeId"
   },
   "prefix_field": "name",
-  "type_probe_field": "priceCent"
+  "type_probe_field": "priceCent",
+  "authz_probe": {
+    "method": "GET",
+    "path": "/api/orders",
+    "data_noun": "订单",
+    "data_sample": "HTTP 200 + 返回客户姓名/电话",
+    "note": "「零鉴权」结论的证人端点：挑一个能读出业务数据的 GET。不配则退回「任意成功的 GET」。"
+  }
 }
