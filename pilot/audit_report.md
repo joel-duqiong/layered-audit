@@ -21,11 +21,11 @@
 | 10 | HIGH | class | `banquet_package.items_exposed` | com.jiuyan.banquet.entity.BanquetPackage.getItems 把内部实体集合直接交出去 | 1 | 0.9 | verified | `python3 class_dynamic.py` |
 | 11 | HIGH | service | `cors.empty_whitelist_fails_open` | CORS 白名单配成空值时反而允许任意来源跨域（fail-open） | 1 | 0.93 | verified | `python3 config_probe.py` |
 | 12 | HIGH | integration | `frontend.list_hardcoded_limit_100` | 前端列表固定只取前 100 条并丢弃 total，超出的数据永远不可见 | 1 | 0.95 | verified | `python3 integration_dynamic.py --scenario SC05_LIST_TRUNC…` |
-| 13 | HIGH | service | `index.idx_products_name_unusable` | DDL 声明的 idx_products_name 对服务层查询模式无效（7.7ms vs 0.011ms，差 700 倍） | 1 | 0.88 | verified | `python3 class_dynamic.py` |
+| 13 | HIGH | service | `index.idx_products_name_unusable` | DDL 声明的 idx_products_name 对服务层查询模式无效（7.378ms vs 0.013ms，差 568 倍） | 1 | 0.88 | verified | `python3 class_dynamic.py` |
 | 14 | HIGH | class | `order.status.transition_unconstrained` | 状态机缺失：9/9 种迁移全部被接受，含回退 | 1 | 0.96 | verified | `python3 class_dynamic.py` |
 | 15 | HIGH | function | `order_no.no_collision_guarantee` | 订单号每秒只有 1000 个槽位，并发下单必然撞号（唯一键冲突 → 500） | 1 | 0.9 | verified | `python3 fn_dynamic.py --case GON-02` |
 | 16 | HIGH | class | `rule.missing_in_db_dto_service` | 4 条业务不变量在 DB / DTO / 服务层三层全都不存在 | 1 | 0.85 | verified | `python3 class_dynamic.py` |
-| 17 | MEDIUM | service | `errhandler.internal_detail_leak` | 错误响应把内部实现细节返回给客户端 | 7 | 0.92 | verified | `curl -X PATCH /api/orders/1863/status` |
+| 17 | MEDIUM | service | `errhandler.internal_detail_leak` | 错误响应把内部实现细节返回给客户端 | 7 | 0.92 | verified | `curl -X PATCH /api/orders/1957/status` |
 | 18 | MEDIUM | class | `entity.no_value_equality` | BanquetOrder 没有值相等：放进集合或当键，语义会变 | 6 | 0.8 | verified | `python3 class_dynamic.py` |
 | 19 | MEDIUM | service | `pagination.count_total_computed_but_discarded` | 分页 total 是纯开销：后端每次列表请求都跑 count(*) 全表扫描，前端从不读这个数 | 2 | 0.93 | verified | `python3 perf_load.py --scales 0,2000,10000,50000` |
 | 20 | MEDIUM | class | `api.put_full_overwrite` | PUT 是全量覆盖：不传的 imageUrl 会被抹成 NULL | 1 | 0.91 | verified | `python3 class_dynamic.py` |

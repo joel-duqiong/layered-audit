@@ -53,8 +53,8 @@
             "unit_hint": ""
           },
           {
-            "task_id": "emergence-graph",
-            "script": "emergence_graph.py",
+            "task_id": "relation-net",
+            "script": "engine/relation_net.py",
             "oracle": "graph_correlation",
             "layer": "integration",
             "argv": [],
@@ -207,8 +207,8 @@
           "stderr_tail": ""
         },
         {
-          "task_id": "emergence-graph",
-          "script": "emergence_graph.py",
+          "task_id": "relation-net",
+          "script": "engine/relation_net.py",
           "oracle": "graph_correlation",
           "returncode": 0,
           "stderr_tail": ""

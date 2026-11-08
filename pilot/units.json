@@ -165,12 +165,17 @@
     }
   ],
   "layer_roles": {
-    "integration": [
-      "integration.cross_layer_correlation",
-      "integration.cross_service_attack_chain",
-      "integration.cross_service_performance",
-      "integration.emergent_masking",
-      "integration.end_to_end_business"
+    "file": [
+      "file.cohesion",
+      "file.contract_alignment",
+      "file.error_handling_pattern",
+      "file.state_consistency"
+    ],
+    "class": [
+      "class.contract_violation",
+      "class.encapsulation_leak",
+      "class.inheritance_design",
+      "class.invariant"
     ],
     "service": [
       "service.authz",
@@ -186,17 +191,12 @@
       "function.exception_path",
       "function.numeric"
     ],
-    "class": [
-      "class.contract_violation",
-      "class.encapsulation_leak",
-      "class.inheritance_design",
-      "class.invariant"
-    ],
-    "file": [
-      "file.cohesion",
-      "file.contract_alignment",
-      "file.error_handling_pattern",
-      "file.state_consistency"
+    "integration": [
+      "integration.cross_layer_correlation",
+      "integration.cross_service_attack_chain",
+      "integration.cross_service_performance",
+      "integration.emergent_masking",
+      "integration.end_to_end_business"
     ]
   },
   "counts": {
@@ -204,7 +204,7 @@
     "roles": 23,
     "edges": 786,
     "edges_unresolved": 39,
-    "units_with_observations": 29,
+    "units_with_observations": 20,
     "units_with_findings": 21
   },
   "units": [
@@ -9999,13 +9999,11 @@
         "score": 3
       },
       "priority": 16,
-      "status": "FAIL",
-      "observations": 1,
+      "status": "UNKNOWN",
+      "observations": 0,
       "satisfied_categories": [],
       "violated_categories": [],
-      "case_ids": [
-        "OB-MODEL-OrderMapper-toResponse-1"
-      ],
+      "case_ids": [],
       "finding_ids": [],
       "root_cause_keys": [],
       "obligation_template": "",
@@ -10656,13 +10654,11 @@
         "score": 19
       },
       "priority": 20,
-      "status": "FAIL",
-      "observations": 1,
+      "status": "UNKNOWN",
+      "observations": 0,
       "satisfied_categories": [],
       "violated_categories": [],
-      "case_ids": [
-        "OB-MODEL-CategoryService-delete-1"
-      ],
+      "case_ids": [],
       "finding_ids": [],
       "root_cause_keys": [],
       "obligation_template": "",
@@ -10826,13 +10822,11 @@
         "score": 11
       },
       "priority": 12,
-      "status": "FAIL",
-      "observations": 1,
+      "status": "UNKNOWN",
+      "observations": 0,
       "satisfied_categories": [],
       "violated_categories": [],
-      "case_ids": [
-        "OB-MODEL-OrderService-update-1"
-      ],
+      "case_ids": [],
       "finding_ids": [],
       "root_cause_keys": [],
       "obligation_template": "",
@@ -10855,13 +10849,11 @@
         "score": 11
       },
       "priority": 12,
-      "status": "FAIL",
-      "observations": 1,
+      "status": "UNKNOWN",
+      "observations": 0,
       "satisfied_categories": [],
       "violated_categories": [],
-      "case_ids": [
-        "OB-MODEL-OrderService-updateStatus-1"
-      ],
+      "case_ids": [],
       "finding_ids": [],
       "root_cause_keys": [],
       "obligation_template": "",
@@ -11656,13 +11648,11 @@
         "score": 11
       },
       "priority": 12,
-      "status": "FAIL",
-      "observations": 1,
+      "status": "UNKNOWN",
+      "observations": 0,
       "satisfied_categories": [],
       "violated_categories": [],
-      "case_ids": [
-        "OB-MODEL-PackageService-create-1"
-      ],
+      "case_ids": [],
       "finding_ids": [],
       "root_cause_keys": [],
       "obligation_template": "",
@@ -11685,13 +11675,11 @@
         "score": 11
       },
       "priority": 12,
-      "status": "FAIL",
-      "observations": 1,
+      "status": "UNKNOWN",
+      "observations": 0,
       "satisfied_categories": [],
       "violated_categories": [],
-      "case_ids": [
-        "OB-MODEL-PackageService-update-1"
-      ],
+      "case_ids": [],
       "finding_ids": [],
       "root_cause_keys": [],
       "obligation_template": "",
@@ -11714,13 +11702,11 @@
         "score": 11
       },
       "priority": 12,
-      "status": "FAIL",
-      "observations": 1,
+      "status": "UNKNOWN",
+      "observations": 0,
       "satisfied_categories": [],
       "violated_categories": [],
-      "case_ids": [
-        "OB-MODEL-PackageService-updateStatus-1"
-      ],
+      "case_ids": [],
       "finding_ids": [],
       "root_cause_keys": [],
       "obligation_template": "",
@@ -11743,13 +11729,11 @@
         "score": 11
       },
       "priority": 12,
-      "status": "FAIL",
-      "observations": 1,
+      "status": "UNKNOWN",
+      "observations": 0,
       "satisfied_categories": [],
       "violated_categories": [],
-      "case_ids": [
-        "OB-MODEL-PackageService-delete-1"
-      ],
+      "case_ids": [],
       "finding_ids": [],
       "root_cause_keys": [],
       "obligation_template": "",
@@ -11803,11 +11787,16 @@
         "score": 18
       },
       "priority": 0,
-      "status": "UNKNOWN",
-      "observations": 0,
-      "satisfied_categories": [],
+      "status": "PASS",
+      "observations": 2,
+      "satisfied_categories": [
+        "function.boundary"
+      ],
       "violated_categories": [],
-      "case_ids": [],
+      "case_ids": [
+        "OB-MODEL-PackageService-applyBase-1",
+        "OB-PRICE-NEGATIVE-MUST-REJECT"
+      ],
       "finding_ids": [],
       "root_cause_keys": [],
       "obligation_template": "",
@@ -11830,11 +11819,16 @@
         "score": 7
       },
       "priority": 0,
-      "status": "UNKNOWN",
-      "observations": 0,
-      "satisfied_categories": [],
+      "status": "PASS",
+      "observations": 2,
+      "satisfied_categories": [
+        "function.boundary"
+      ],
       "violated_categories": [],
-      "case_ids": [],
+      "case_ids": [
+        "OB-MODEL-PackageService-applyItems-1",
+        "OB-PACKAGE-ITEMS-EMPTY-MUST-REJECT"
+      ],
       "finding_ids": [],
       "root_cause_keys": [],
       "obligation_template": "",
@@ -12222,13 +12216,11 @@
         "score": 16
       },
       "priority": 17,
-      "status": "FAIL",
-      "observations": 1,
+      "status": "UNKNOWN",
+      "observations": 0,
       "satisfied_categories": [],
       "violated_categories": [],
-      "case_ids": [
-        "OB-MODEL-PackageTypeService-create-1"
-      ],
+      "case_ids": [],
       "finding_ids": [],
       "root_cause_keys": [],
       "obligation_template": "",
@@ -12251,13 +12243,11 @@
         "score": 19
       },
       "priority": 20,
-      "status": "FAIL",
-      "observations": 1,
+      "status": "UNKNOWN",
+      "observations": 0,
       "satisfied_categories": [],
       "violated_categories": [],
-      "case_ids": [
-        "OB-MODEL-PackageTypeService-delete-1"
-      ],
+      "case_ids": [],
       "finding_ids": [],
       "root_cause_keys": [],
       "obligation_template": "",
@@ -12415,13 +12405,11 @@
         "score": 16
       },
       "priority": 17,
-      "status": "OBSERVED",
-      "observations": 1,
+      "status": "UNKNOWN",
+      "observations": 0,
       "satisfied_categories": [],
       "violated_categories": [],
-      "case_ids": [
-        "OB-MODEL-ProductService-updateStatus-1"
-      ],
+      "case_ids": [],
       "finding_ids": [],
       "root_cause_keys": [],
       "obligation_template": "",
@@ -12444,13 +12432,11 @@
         "score": 15
       },
       "priority": 16,
-      "status": "OBSERVED",
-      "observations": 1,
+      "status": "UNKNOWN",
+      "observations": 0,
       "satisfied_categories": [],
       "violated_categories": [],
-      "case_ids": [
-        "OB-MODEL-ProductService-delete-1"
-      ],
+      "case_ids": [],
       "finding_ids": [],
       "root_cause_keys": [],
       "obligation_template": "",
@@ -12531,11 +12517,13 @@
         "score": 10
       },
       "priority": 0,
-      "status": "UNKNOWN",
-      "observations": 0,
+      "status": "OBSERVED",
+      "observations": 1,
       "satisfied_categories": [],
       "violated_categories": [],
-      "case_ids": [],
+      "case_ids": [
+        "OB-MODEL-ProductService-apply-1"
+      ],
       "finding_ids": [],
       "root_cause_keys": [],
       "obligation_template": "",

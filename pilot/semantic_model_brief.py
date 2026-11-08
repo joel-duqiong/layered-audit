@@ -122,13 +122,35 @@ def build() -> dict[str, Any]:
 
     by_key = {f"{f.get('class')}#{f.get('method')}": f for f in fns.get("functions") or []}
 
+    # 只挑**有写副作用**的单元：业务规则（该拒绝什么、该守住什么不变式）
+    # 住在会改状态的方法里；纯读方法的「职责」多半只是「返回查询结果」，
+    # 提不出有信息量的断言。
+    # 「副作用」把仓储读取也算进去了 —— 真正的写信号是**调用了写方法**
+    # （save / insert / update / delete / set*）。业务规则住在写方法里。
+    _WRITES = ("save", "insert", "update", "delete", "set")
+    fn_all = {f"{f.get('class')}#{f.get('method')}": f
+              for f in (json.loads((project.artifact_dir() / "fn_declaration.json")
+                                   .read_text(encoding="utf-8")).get("functions") or [])}
+
+    def _is_writer(u: dict[str, Any]) -> bool:
+        fn = fn_all.get(u.get("unit_key") or "", {})
+        return any(str(c).rsplit(".", 1)[-1].startswith(_WRITES)
+                   for c in (fn.get("internal_calls") or []))
+
     cands = [u for u in units
              if u.get("layer") == "function"
              and u.get("unit_key") not in have
              and u.get("status") == "UNKNOWN"
-             and (u.get("logic") or {}).get("score", 0) > 0]
+             and (u.get("logic") or {}).get("score", 0) > 0
+             and _is_writer(u)]
     cands.sort(key=lambda u: -u.get("priority", 0))
     picked = cands[:TOP_N]
+
+    # 错误码目录 —— 「拒绝语义」是这个代码库里**可枚举**的业务语义：
+    # 方法抛出 BusinessException(ErrorCode.X, "消息")，错误码与消息都是有限的。
+    # 模型可以据此回答「这个方法应该拒绝什么、给哪个码」。
+    svc_decl = json.loads((project.artifact_dir() / "declaration.json").read_text(encoding="utf-8"))
+    error_codes = list((svc_decl.get("global") or {}).get("error_codes") or [])
 
     # 实体的字段结构 —— 模型要造一个「像样的实体」，缺字段的话
     # MapStruct 映射出来的响应就是 null（又是一次假失败）。
@@ -204,6 +226,12 @@ def build() -> dict[str, Any]:
             "stub_examples": _stub_examples(fn, stub_examples),
             # 这个方法会碰到的实体，它们的字段结构（造实体要用全字段）
             "entity_schemas": _entity_schemas(fn, entity_schemas),
+            # 这个方法里出现的错误消息（业务拒绝的语义线索）
+            "error_messages": [c.get("value") for c in (fn.get("constants") or [])
+                               if isinstance(c, dict) and c.get("kind") == "String"
+                               and ("不存在" in str(c.get("value")) or "已被" in str(c.get("value"))
+                                    or "不能" in str(c.get("value")) or "超出" in str(c.get("value"))
+                                    or "不是" in str(c.get("value")))][:4],
             "existing_cases_on_this_method": existing.get(u["unit_key"], [])[:2],
             "facts": {
                 "internal_calls": fn.get("internal_calls") or [],
@@ -250,6 +278,7 @@ def build() -> dict[str, Any]:
         "generated_from": "semantic_model_brief.py",
         "units": out_units,
         "fixtures": fixture_catalogue,
+        "error_codes": error_codes,
         "worked_example": {
             "note": "一个带打桩的用例长什么样（形状照抄，不要照抄内容）",
             "case": {
@@ -267,6 +296,10 @@ def build() -> dict[str, Any]:
         },
         "catalog": catalog,
         "rules": RULES + [
+        "**这一轮的任务形态**：优先回答「**这个方法在什么输入下应该拒绝、拒绝时给哪个错误码**」"
+        "（用 throws_business_code 模板，错误码从 error_codes 里选）—— "
+        "「应该拒绝什么」是这个代码库里可枚举的业务语义，比「应该返回什么」更贴近职责。"
+        "只有在你确实有把握时才用 returns_* 模板。",
             "**harness 的默认行为**（不写就按这个来）："
             "仓储/客户端方法**不打桩时返回 Optional.empty()** —— "
             "所以任何 `xxxRepository.findById(id).orElseThrow(...)` 的方法在默认打桩下"

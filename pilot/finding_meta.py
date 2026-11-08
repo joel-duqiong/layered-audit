@@ -97,6 +97,21 @@ FUNCTION: dict[str, Meta] = {
         ground_truth="verified",
         note="正面结论：源码复制→注入变异→独立编译→classpath 覆盖→同批用例重跑，"
              "链路跑通且能区分「杀死」与「存活」"),
+    # 模型轨提出、人工复核后冻结的两条职责断言（回归守卫）
+    "FN-SEMANTIC-PRICE-NEGATIVE-REJECT": _m(
+        "function.exception_path", "exact",
+        "套餐金额为负时是否以业务错误 PRICE_INVALID 拒绝？",
+        "function", 0.88, "defect", ("CWE-20",),
+        "price.negative_amount_must_be_rejected",
+        note="模型轨提出（source=model_hint），确定性层跑通后人工冻结；"
+             "现在它是回归守卫 —— 校验被删掉就会红"),
+    "FN-SEMANTIC-PACKAGE-ITEMS-EMPTY-REJECT": _m(
+        "function.exception_path", "exact",
+        "套餐明细为空时是否以业务错误 VALIDATION_ERROR 拒绝？",
+        "function", 0.88, "defect", ("CWE-20",),
+        "package.items_empty_must_be_rejected",
+        note="模型轨提出（source=model_hint），确定性层跑通后人工冻结；"
+             "现在它是回归守卫 —— 校验被删掉就会红"),
     "FN-SEMANTIC-PRICE-UPPER-BOUND": _m(
         "function.boundary", "exact",
         "职责断言：成交价不得高于套餐标价",

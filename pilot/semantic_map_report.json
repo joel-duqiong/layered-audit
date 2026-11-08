@@ -1,6 +1,6 @@
 {
-  "missions_total": 8,
-  "compiled_ok": 20,
+  "missions_total": 10,
+  "compiled_ok": 13,
   "compile_failed": [],
   "rejected_by_validation": [],
   "units_with_mission": [
@@ -9,16 +9,19 @@
     "com.jiuyan.banquet.service.OrderService#parseDateScope",
     "com.jiuyan.banquet.service.OrderService#parseStatus",
     "com.jiuyan.banquet.service.OrderService#resolveFinalPrice",
+    "com.jiuyan.banquet.service.PackageService#applyBase",
+    "com.jiuyan.banquet.service.PackageService#applyItems",
     "com.jiuyan.banquet.service.PackageService#findPackage",
     "com.jiuyan.banquet.service.ProductService#findProduct"
   ],
   "source_mix": {
     "declared": 8,
-    "model_hint": 12
+    "model_hint_promoted": 2,
+    "model_hint": 3
   },
   "model_track": {
-    "missions": 12,
-    "compiled_ok": 12,
+    "missions": 3,
+    "compiled_ok": 3,
     "compile_failed": [],
     "gate_eligible": false,
     "note": "模型轨只产出待验证线索：不进缺陷台账、不进门禁；要进门禁得人工冻结到 semantic_map.json（决议 D3）"

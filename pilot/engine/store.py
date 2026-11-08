@@ -95,9 +95,14 @@ def merge(artifact: str, fresh: dict[str, dict[str, Any]],
         if shard_id in fresh:
             merged[shard_id] = fresh[shard_id]
             continue
+        if shard_id not in fingerprints:
+            # 这个用例**已经不在当前配置里了**（被删了）——
+            # 它的分片是过期垃圾，不是「该跑没跑」。清理掉，不算缺失。
+            # （算缺失会让流水线永远 exit 2「没查完」，而实际是「这个用例没了」。）
+            continue
         path = shard_dir(artifact) / f"{shard_id}.json"
         if not path.exists():
-            missing.append(shard_id)
+            missing.append(shard_id)      # 用例还在、分片没了 → 真的要重跑
             continue
         stored = json.loads(path.read_text(encoding="utf-8"))
         if stored.get("input_fingerprint") != fingerprints.get(shard_id):

@@ -1,5 +1,5 @@
 {
-  "note": "语义地图（项目侧）：每个单元的「使命」+ 一条可机械验证的断言。编译器把职责编译成可执行 case，复用函数层已有的执行器。source=declared 的是人工确认的；source=model_hint 的模型产出永远 gate_eligible=false（只是线索，不进门禁）。",
+  "note": "语义地图（项目侧）：每个单元的「使命」+ 一条可机械验证的断言。编译器把职责编译成可执行 case，复用函数层已有的执行器。source=declared 的是人工确认的；source=model_hint 的模型产出永远 gate_eligible=false（只是线索，不进门禁）。 两条 source=model_hint_promoted 的职责是模型轨提出、人工复核后冻结的回归守卫。",
   "missions": [
     {
       "id": "OB-RESOLVE-PRICE-UPPER-BOUND",
@@ -228,6 +228,138 @@
         }
       ],
       "source": "declared"
+    },
+    {
+      "id": "OB-PRICE-NEGATIVE-MUST-REJECT",
+      "unit": "com.jiuyan.banquet.service.PackageService#applyBase",
+      "class": "com.jiuyan.banquet.service.PackageService",
+      "method": "applyBase",
+      "group": "SEMANTIC_OBLIGATION",
+      "label": "套餐金额为负必须被拒绝，且给出 PRICE_INVALID",
+      "mission": "把套餐基础字段写进 BanquetPackage 时，priceCent 不得小于 0；传入负金额时必须以业务错误 PRICE_INVALID 拒绝，而不是照单全收。",
+      "template": "throws_business_code",
+      "bound": {
+        "kind": "const",
+        "value": "PRICE_INVALID"
+      },
+      "source": "model_hint_promoted",
+      "promoted_from": "OB-MODEL-PackageService-applyBase-1",
+      "promoted_note": "模型轨提出（source=model_hint），确定性层跑通后人工复核冻结 —— 现在它是回归守卫：谁删掉那个金额校验，这条就会红并开单",
+      "finding": {
+        "id": "FN-SEMANTIC-PRICE-NEGATIVE-REJECT",
+        "severity": "HIGH",
+        "title": "职责断言：负金额必须被拒绝（PRICE_INVALID）",
+        "root_cause": "applyBase 没有校验 priceCent 为负 —— 负金额会被原样写进套餐",
+        "api_reachable": true,
+        "boundary_protected": false,
+        "boundary_note": "DTO 的 @Min(0) 只挡 HTTP 入口；内部调用直接落到方法上"
+      },
+      "args": [
+        {
+          "$t": "entity",
+          "class": "com.jiuyan.banquet.entity.BanquetPackage",
+          "fields": {
+            "id": 4,
+            "name": "婚宴双人套餐",
+            "banquetType": "婚宴",
+            "priceCent": 100000,
+            "imageUrl": "https://example.com/pkg.png",
+            "description": "双人精选套餐",
+            "isActive": true,
+            "isDeleted": false,
+            "items": []
+          }
+        },
+        {
+          "$t": "str",
+          "v": "婚宴双人套餐"
+        },
+        {
+          "$t": "str",
+          "v": "婚宴"
+        },
+        {
+          "$t": "long",
+          "v": -1
+        },
+        {
+          "$t": "str",
+          "v": "https://example.com/pkg.png"
+        },
+        {
+          "$t": "str",
+          "v": "双人精选套餐"
+        },
+        {
+          "$t": "bool",
+          "v": true
+        }
+      ],
+      "stubs": {
+        "com.jiuyan.banquet.repository.PackageTypeRepository": {
+          "findByNameAndIsDeletedFalse": {
+            "$optional": {
+              "$t": "entity",
+              "class": "com.jiuyan.banquet.entity.PackageType",
+              "fields": {
+                "id": 13,
+                "name": "婚宴",
+                "sortOrder": 1,
+                "isDeleted": false
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "OB-PACKAGE-ITEMS-EMPTY-MUST-REJECT",
+      "unit": "com.jiuyan.banquet.service.PackageService#applyItems",
+      "class": "com.jiuyan.banquet.service.PackageService",
+      "method": "applyItems",
+      "group": "SEMANTIC_OBLIGATION",
+      "label": "套餐商品为空必须被拒绝，且给出 VALIDATION_ERROR",
+      "mission": "写入套餐商品明细时，商品集合不得为空；传入空集合时必须以业务错误 VALIDATION_ERROR 拒绝，而不是把套餐保存成没有任何商品的空套餐。",
+      "template": "throws_business_code",
+      "bound": {
+        "kind": "const",
+        "value": "VALIDATION_ERROR"
+      },
+      "source": "model_hint_promoted",
+      "promoted_from": "OB-MODEL-PackageService-applyItems-1",
+      "promoted_note": "模型轨提出（source=model_hint），确定性层跑通后人工复核冻结 —— 现在它是回归守卫：谁删掉那个空集合校验，这条就会红并开单",
+      "finding": {
+        "id": "FN-SEMANTIC-PACKAGE-ITEMS-EMPTY-REJECT",
+        "severity": "HIGH",
+        "title": "职责断言：空明细必须被拒绝（VALIDATION_ERROR）",
+        "root_cause": "applyItems 没有校验明细集合为空 —— 空套餐会被保存下来",
+        "api_reachable": true,
+        "boundary_protected": false,
+        "boundary_note": "DTO 的 @NotEmpty 只挡 HTTP 入口；内部调用直接落到方法上"
+      },
+      "args": [
+        {
+          "$t": "entity",
+          "class": "com.jiuyan.banquet.entity.BanquetPackage",
+          "fields": {
+            "id": 4,
+            "name": "婚宴双人套餐",
+            "banquetType": "婚宴",
+            "priceCent": 100000,
+            "imageUrl": "https://example.com/pkg.png",
+            "description": "双人精选套餐",
+            "isActive": true,
+            "isDeleted": false,
+            "items": []
+          }
+        },
+        {
+          "$t": "entity",
+          "class": "java.util.ArrayList",
+          "fields": {}
+        }
+      ],
+      "stubs": {}
     }
   ]
 }

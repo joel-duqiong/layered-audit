@@ -69,7 +69,7 @@
 | **盲区地图** | ✅ 按中心性排序的「最该先验的单元」 | `pilot/engine/agent_coverage.py` → `agent_coverage.json` |
 | **变异测试** | ✅ `ground_truth=mutant_survivor` 从没人实现过 → 现在有真实数据 | `pilot/mutation_test.py` → `mutation_findings.json` |
 | **运行时保真度** | ✅ 每条结论标 container / hybrid / stubbed | `target.json` 的 `carriers.fidelity` |
-| **可执行依赖图** | ✅ 151 节点 / 414 边；25 个 HTTP 入口**全部**绑定到 openapi（0 未绑定） | `pilot/emergence_graph.py` → `emergence_graph.json` |
+| **可执行依赖图** | ✅ 通用构建器 `engine/relation_net.py`：162 节点 / 151 边；含**字段级污点**（客户端可控 → 写汇）与 WRITES/DERIVES 边；候选链生成器吃它的产物 | `pilot/engine/relation_net.py` → `relation_net.json` |
 | **切面生效性探针** | ✅ 静态声明的 24 个 `@Transactional` 与运行时实际生效的**差分为空** | `pilot/transaction_probe.py` → `transaction_findings.json` |
 | **残留守卫** | ✅ 探针容器 / `ai_` 行 / 非种子上传必须全 0，否则流水线红 | `pilot/probe_residue_check.py` |
 | **涌现裁决器** | ✅ 通用引擎（七裁决）+ demo-shop 真跑判出 `EMERGENT_CONJUNCTIVE`：单注都不触发、合起来违反（偏离 90000 分），两次跑指纹一致，35 项自证全过 | `pilot/engine/emergence.py`、`demos/shop/emergence_probe.py` → `demos/shop/artifacts/emergence_chains.json`、`demos/shop/EMERGENCE_RESULT.md` |
@@ -122,7 +122,7 @@
 | **B2** | **载体的「动态侧」还有一层没通用化** | 换项目只能跑静态层，动态层要重写 | 🟡 函数层 / 类层 / 文件层的**探针**已通用化，服务层的 `contract_probe.py` 与 `contract_diff.py` 已通用；**还差**：函数层与文件层的差分判定层仍是项目专属（`fn_diff.py` / `file_diff.py`）|
 | **C** | **涌现目前只有 1 条真链** —— 图 ✅ 裁决器 ✅ **候选链生成 ✅ FDR 门禁 ✅（本轮补上）**：demo-shop 上自动生成的候选已能命中那条真涌现（召回 1/1，真跑仍 `EMERGENT_CONJUNCTIVE`）。但**场景物化还是人给的**（候选只提出条件槽，schema 驱动的造数器没做）、七个模式只命中 T3、jiuyan 尚无注入目录（门禁对 jiuyan 退出码 2） | 系统的存在理由目前兑现了 1/∞ | 🟡 设计 ✅ 裁决 ✅ 链生成 ✅ 门禁 ✅；造数器 ❌ 模式覆盖 ❌ |
 | **B16** | **跨仓库的涌现链** | 🟡 demo 的跨仓库**探针**通了（面清单 + 跨仓库图 + 契约漂移 + 归属），跨仓库的**缺陷**也开出来了（文件层 own 的「汇率兜底量纲错」）；但**跨仓库的涌现链**（两个仓库的条件组合才出问题）还没做 —— 关系网目前只画单仓库 | 与 B10 同一条线：候选链生成器换一张跨仓库的图 |
-| **D** | **语义地图** —— 结构有了，「这个函数是干什么的」要变成**可执行断言** | Agent 的「使命」只有一半 | 🟡 断言编译 + 执行已通（8 条职责 / 7 单元）；**模型轨第一次真跑**（任务书 → 封闭模板目录 → 编译四道闸 → 真跑 → advisory），**隔离性做成了可执行证明**：把模型写的自由文本换成垃圾，编译出的断言逐字节一致（D2）；模型的候选开不出缺陷单（`all_findings` 仍是 100 条，含 OB-MODEL 的 0 条）。**但 5 轮实验下来模型没产出一条可信结论**（可晋升 0 条）—— 机制成立，模型质量不达标 | `pilot/semantic_model_brief.py`、`pilot/semantic_model_report.py`、`pilot/SEMANTIC_MODEL_TRACK.md` |
+| **D** | **语义地图** —— 结构有了，「这个函数是干什么的」要变成**可执行断言** | Agent 的「使命」只有一半 | 🟡 断言编译 + 执行已通（**10 条职责 / 9 单元**，其中 2 条由模型轨提出、人工复核后冻结为**回归守卫**）；**模型轨真跑通了**（任务书 → 封闭模板目录 → 编译四道闸 → 真跑 → advisory），**隔离性做成了可执行证明**：把模型写的自由文本换成垃圾，编译出的断言逐字节一致（D2）；模型的候选开不出缺陷单（`all_findings` 仍是 100 条，含 OB-MODEL 的 0 条）。**关键经验**：任务形态决定质量 —— 问「应该拒绝什么」（错误码可枚举）产出的断言可用，问「应该返回什么」只产出一堆 `not_null` | `pilot/semantic_model_brief.py`、`pilot/semantic_model_report.py`、`pilot/SEMANTIC_MODEL_TRACK.md` |
 | **E** | **跨仓库** —— 只会审一个仓库 | 「两群 Agent 互相调用」未实现 | 🟡 骨架 ✅（面清单 + 跨仓库图 + 契约漂移 + 归属），实测 2 仓库 / 1 条确认边 / 0 漂移；**跨仓库涌现还没做** |
 | **F** | **运行时保真度** | Java 动态性让静态结论不可信 | ✅ 已标注 |
 | **G** | **SAST/SCA 接入** | 「全面发现安全问题」需要外部成熟工具 | ❌ |
@@ -197,7 +197,7 @@ python3 engine/check_engine_purity.py   # 引擎纯净度守卫（退出码 1 = 
   A3 运行时保真度标注                ✅ container/hybrid/stubbed
   A4 变异测试（mutant_survivor）     ✅ engine + mutation_test.py
   A5 盲区地图（投测试的优先级）      ✅ engine/agent_coverage.py
-  A6 可执行依赖图 G_exec             ✅ emergence_graph.py（25/25 入口绑定）
+  A6 可执行依赖图 G_exec             ✅ engine/relation_net.py（25/25 入口绑定；项目专属那版已退役）
   A7 切面生效性差分                  ✅ transaction_probe.py
   A8 预算闸门（max_agents 真消费）   ✅ engine/budget.py + scheduler.py
   A8' 按影响集调度（没波及就复用）    🟡 流水线已有整层跳过（run_layer + incremental_plan）；各层脚本还只支持整层粒度
@@ -283,10 +283,12 @@ Agent 群骨架、变更影响、盲区地图、变异测试、切面生效性�
    不能编）。
 6. **等价性基线从 /tmp 挪进仓库**。原来它们在 /tmp，重启即失，
    「通用化没回归」就成了一句没法复核的话。放进仓库成本 44 KB。
-7. **两个图构建器并存这件事只记录、不合并**。
-   `pilot/emergence_graph.py`（项目专属，151 节点 / 414 边，产物无消费方）与
-   `pilot/engine/relation_net.py`（通用，162 节点 / 151 边，产物被候选生成器消费）
-   形状不同、边数差一倍以上 —— 贸然替换会丢信息。合并是独立的一轮工作。
+7. **两个图构建器已经合并成一个**（原来的判断是错的）。
+   当初以为「通用版 151 边 vs 项目专属版 414 边」是能力差距，其实**项目专属那版
+   的 DERIVES 边是错的** —— 它把一次 setter 调用连到实体的**所有**字段
+   （321 条边的来源），通用版只连到被设的那一个。污点、READS/WRITES/DERIVES
+   通用版一样不少，且产物真的被候选生成器消费。
+   ⇒ 项目专属的 `emergence_graph.py` 已退役，调度任务改用 `engine/relation_net.py`。
 
 ## 10. 进度更新约定
 

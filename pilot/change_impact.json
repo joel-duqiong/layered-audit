@@ -275,11 +275,14 @@
     "webconfig.static_root_normalization_env_dependent"
   ],
   "reasons": {
+    "fn:com.jiuyan.banquet.controller.OrderController#create": [
+      "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#create"
+    ],
+    "fn:com.jiuyan.banquet.controller.OrderController#get": [
+      "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#get"
+    ],
     "fn:com.jiuyan.banquet.controller.OrderController#list": [
       "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#list"
-    ],
-    "file:com.jiuyan.banquet.controller.OrderController": [
-      "type_use/static/semantic @file:com.jiuyan.banquet.service.OrderService"
     ],
     "fn:com.jiuyan.banquet.controller.OrderController#update": [
       "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#update"
@@ -287,11 +290,8 @@
     "fn:com.jiuyan.banquet.controller.OrderController#updateStatus": [
       "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#updateStatus"
     ],
-    "fn:com.jiuyan.banquet.controller.OrderController#create": [
-      "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#create"
-    ],
-    "fn:com.jiuyan.banquet.controller.OrderController#get": [
-      "call/static/behavior @fn:com.jiuyan.banquet.service.OrderService#get"
+    "file:com.jiuyan.banquet.controller.OrderController": [
+      "type_use/static/semantic @file:com.jiuyan.banquet.service.OrderService"
     ]
   }
 }

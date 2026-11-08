@@ -3,26 +3,403 @@
   "generated_from": "semantic_model_brief.py",
   "units": [
     {
-      "unit": "com.jiuyan.banquet.service.CategoryService#delete",
-      "class": "com.jiuyan.banquet.service.CategoryService",
+      "unit": "com.jiuyan.banquet.service.ProductService#create",
+      "class": "com.jiuyan.banquet.service.ProductService",
       "method": null,
       "why_this_one": {
         "centrality": 1,
-        "logic_score": 19,
-        "branches": 2,
-        "side_effects": 4,
+        "logic_score": 11,
+        "branches": 0,
+        "side_effects": 2,
         "null_guards": 0
       },
       "signature": {
-        "returns": "com.jiuyan.banquet.dto.CategoryResponse",
+        "returns": "com.jiuyan.banquet.dto.ProductResponse",
         "params": [
-          "java.lang.Long"
+          "com.jiuyan.banquet.dto.CreateProductRequest"
         ],
         "arity": 1,
         "arg_slots": [
           {
             "index": 0,
+            "type": "com.jiuyan.banquet.dto.CreateProductRequest"
+          }
+        ]
+      },
+      "existing_cases_same_class": [
+        {
+          "id": "PG-PRD-01",
+          "method": "normalizePage",
+          "args": [
+            {
+              "$t": "int",
+              "v": 0
+            }
+          ],
+          "stubs": null,
+          "check": {
+            "type": "returns_eq",
+            "value": 0
+          },
+          "invariant": "第 0 页归一化为 0（0 基）"
+        },
+        {
+          "id": "PG-PRD-02",
+          "method": "normalizePage",
+          "args": [
+            {
+              "$t": "int",
+              "v": -5
+            }
+          ],
+          "stubs": null,
+          "check": {
+            "type": "returns_eq",
+            "value": 0
+          },
+          "invariant": "负页码归一化为 0"
+        },
+        {
+          "id": "PG-PRD-03",
+          "method": "normalizePage",
+          "args": [
+            {
+              "$t": "int",
+              "v": 3
+            }
+          ],
+          "stubs": null,
+          "check": {
+            "type": "returns_eq",
+            "value": 2
+          },
+          "invariant": "第 3 页归一化为 2"
+        }
+      ],
+      "stub_examples": [],
+      "entity_schemas": [
+        {
+          "class": "com.jiuyan.banquet.dto.CreateProductRequest",
+          "fields": [
+            {
+              "field": "name",
+              "java_type": "java.lang.String"
+            },
+            {
+              "field": "categoryId",
+              "java_type": "java.lang.Long"
+            },
+            {
+              "field": "priceCent",
+              "java_type": "java.lang.Long"
+            },
+            {
+              "field": "unit",
+              "java_type": "java.lang.String"
+            },
+            {
+              "field": "imageUrl",
+              "java_type": "java.lang.String"
+            },
+            {
+              "field": "description",
+              "java_type": "java.lang.String"
+            },
+            {
+              "field": "isActive",
+              "java_type": "java.lang.Boolean"
+            }
+          ]
+        },
+        {
+          "class": "com.jiuyan.banquet.entity.Product",
+          "fields": [
+            {
+              "field": "id",
+              "java_type": "java.lang.Long"
+            },
+            {
+              "field": "name",
+              "java_type": "java.lang.String"
+            },
+            {
+              "field": "category",
+              "java_type": "com.jiuyan.banquet.entity.Category"
+            },
+            {
+              "field": "priceCent",
+              "java_type": "java.lang.Long"
+            },
+            {
+              "field": "unit",
+              "java_type": "java.lang.String"
+            },
+            {
+              "field": "imageUrl",
+              "java_type": "java.lang.String"
+            },
+            {
+              "field": "description",
+              "java_type": "java.lang.String"
+            },
+            {
+              "field": "isActive",
+              "java_type": "java.lang.Boolean"
+            },
+            {
+              "field": "isDeleted",
+              "java_type": "java.lang.Boolean"
+            }
+          ]
+        }
+      ],
+      "error_messages": [],
+      "existing_cases_on_this_method": [],
+      "facts": {
+        "internal_calls": [
+          "com.jiuyan.banquet.dto.CreateProductRequest.categoryId",
+          "com.jiuyan.banquet.dto.CreateProductRequest.description",
+          "com.jiuyan.banquet.dto.CreateProductRequest.imageUrl",
+          "com.jiuyan.banquet.dto.CreateProductRequest.isActive",
+          "com.jiuyan.banquet.dto.CreateProductRequest.name",
+          "com.jiuyan.banquet.dto.CreateProductRequest.priceCent",
+          "com.jiuyan.banquet.dto.CreateProductRequest.unit",
+          "com.jiuyan.banquet.entity.Product.getId",
+          "com.jiuyan.banquet.entity.Product.getName",
+          "com.jiuyan.banquet.mapper.ProductMapper.toResponse",
+          "com.jiuyan.banquet.repository.ProductRepository.save"
+        ],
+        "external_calls": [
+          "org.slf4j.Logger.info"
+        ],
+        "side_effects": [
+          "com.jiuyan.banquet.mapper.ProductMapper.toResponse",
+          "com.jiuyan.banquet.repository.ProductRepository.save"
+        ],
+        "entity_field_writes": [],
+        "constants": [
+          {
+            "kind": "String",
+            "value": "created product id={} name={}"
+          }
+        ],
+        "caught_exceptions": [],
+        "throws_business_exception": false,
+        "is_pure": false
+      }
+    },
+    {
+      "unit": "com.jiuyan.banquet.service.ProductService#update",
+      "class": "com.jiuyan.banquet.service.ProductService",
+      "method": null,
+      "why_this_one": {
+        "centrality": 1,
+        "logic_score": 11,
+        "branches": 0,
+        "side_effects": 2,
+        "null_guards": 0
+      },
+      "signature": {
+        "returns": "com.jiuyan.banquet.dto.ProductResponse",
+        "params": [
+          "java.lang.Long",
+          "com.jiuyan.banquet.dto.UpdateProductRequest"
+        ],
+        "arity": 2,
+        "arg_slots": [
+          {
+            "index": 0,
             "type": "java.lang.Long"
+          },
+          {
+            "index": 1,
+            "type": "com.jiuyan.banquet.dto.UpdateProductRequest"
+          }
+        ]
+      },
+      "existing_cases_same_class": [
+        {
+          "id": "PG-PRD-01",
+          "method": "normalizePage",
+          "args": [
+            {
+              "$t": "int",
+              "v": 0
+            }
+          ],
+          "stubs": null,
+          "check": {
+            "type": "returns_eq",
+            "value": 0
+          },
+          "invariant": "第 0 页归一化为 0（0 基）"
+        },
+        {
+          "id": "PG-PRD-02",
+          "method": "normalizePage",
+          "args": [
+            {
+              "$t": "int",
+              "v": -5
+            }
+          ],
+          "stubs": null,
+          "check": {
+            "type": "returns_eq",
+            "value": 0
+          },
+          "invariant": "负页码归一化为 0"
+        },
+        {
+          "id": "PG-PRD-03",
+          "method": "normalizePage",
+          "args": [
+            {
+              "$t": "int",
+              "v": 3
+            }
+          ],
+          "stubs": null,
+          "check": {
+            "type": "returns_eq",
+            "value": 2
+          },
+          "invariant": "第 3 页归一化为 2"
+        }
+      ],
+      "stub_examples": [],
+      "entity_schemas": [
+        {
+          "class": "com.jiuyan.banquet.dto.UpdateProductRequest",
+          "fields": [
+            {
+              "field": "name",
+              "java_type": "java.lang.String"
+            },
+            {
+              "field": "categoryId",
+              "java_type": "java.lang.Long"
+            },
+            {
+              "field": "priceCent",
+              "java_type": "java.lang.Long"
+            },
+            {
+              "field": "unit",
+              "java_type": "java.lang.String"
+            },
+            {
+              "field": "imageUrl",
+              "java_type": "java.lang.String"
+            },
+            {
+              "field": "description",
+              "java_type": "java.lang.String"
+            },
+            {
+              "field": "isActive",
+              "java_type": "java.lang.Boolean"
+            }
+          ]
+        },
+        {
+          "class": "com.jiuyan.banquet.entity.Product",
+          "fields": [
+            {
+              "field": "id",
+              "java_type": "java.lang.Long"
+            },
+            {
+              "field": "name",
+              "java_type": "java.lang.String"
+            },
+            {
+              "field": "category",
+              "java_type": "com.jiuyan.banquet.entity.Category"
+            },
+            {
+              "field": "priceCent",
+              "java_type": "java.lang.Long"
+            },
+            {
+              "field": "unit",
+              "java_type": "java.lang.String"
+            },
+            {
+              "field": "imageUrl",
+              "java_type": "java.lang.String"
+            },
+            {
+              "field": "description",
+              "java_type": "java.lang.String"
+            },
+            {
+              "field": "isActive",
+              "java_type": "java.lang.Boolean"
+            },
+            {
+              "field": "isDeleted",
+              "java_type": "java.lang.Boolean"
+            }
+          ]
+        }
+      ],
+      "error_messages": [],
+      "existing_cases_on_this_method": [],
+      "facts": {
+        "internal_calls": [
+          "com.jiuyan.banquet.dto.UpdateProductRequest.categoryId",
+          "com.jiuyan.banquet.dto.UpdateProductRequest.description",
+          "com.jiuyan.banquet.dto.UpdateProductRequest.imageUrl",
+          "com.jiuyan.banquet.dto.UpdateProductRequest.isActive",
+          "com.jiuyan.banquet.dto.UpdateProductRequest.name",
+          "com.jiuyan.banquet.dto.UpdateProductRequest.priceCent",
+          "com.jiuyan.banquet.dto.UpdateProductRequest.unit",
+          "com.jiuyan.banquet.entity.Product.getId",
+          "com.jiuyan.banquet.entity.Product.getName",
+          "com.jiuyan.banquet.mapper.ProductMapper.toResponse",
+          "com.jiuyan.banquet.repository.ProductRepository.save"
+        ],
+        "external_calls": [
+          "org.slf4j.Logger.info"
+        ],
+        "side_effects": [
+          "com.jiuyan.banquet.mapper.ProductMapper.toResponse",
+          "com.jiuyan.banquet.repository.ProductRepository.save"
+        ],
+        "entity_field_writes": [],
+        "constants": [
+          {
+            "kind": "String",
+            "value": "updated product id={} name={}"
+          }
+        ],
+        "caught_exceptions": [],
+        "throws_business_exception": false,
+        "is_pure": false
+      }
+    },
+    {
+      "unit": "com.jiuyan.banquet.service.CategoryService#lambda$create$0",
+      "class": "com.jiuyan.banquet.service.CategoryService",
+      "method": null,
+      "why_this_one": {
+        "centrality": 0,
+        "logic_score": 8,
+        "branches": 0,
+        "side_effects": 1,
+        "null_guards": 0
+      },
+      "signature": {
+        "returns": "com.jiuyan.banquet.entity.Category",
+        "params": [
+          "java.lang.String"
+        ],
+        "arity": 1,
+        "arg_slots": [
+          {
+            "index": 0,
+            "type": "java.lang.String"
           }
         ]
       },
@@ -83,47 +460,31 @@
           ]
         }
       ],
+      "error_messages": [],
       "existing_cases_on_this_method": [],
       "facts": {
         "internal_calls": [
-          "com.jiuyan.banquet.entity.Category.getId",
-          "com.jiuyan.banquet.entity.Category.getIsDeleted",
-          "com.jiuyan.banquet.entity.Category.getName",
-          "com.jiuyan.banquet.entity.Category.setIsDeleted",
-          "com.jiuyan.banquet.mapper.CategoryMapper.toResponse",
-          "com.jiuyan.banquet.repository.CategoryRepository.findById",
-          "com.jiuyan.banquet.repository.CategoryRepository.save",
-          "com.jiuyan.banquet.repository.ProductRepository.existsByCategoryIdAndIsDeletedFalse"
+          "com.jiuyan.banquet.entity.Category.setName",
+          "com.jiuyan.banquet.entity.Category.setSortOrder",
+          "com.jiuyan.banquet.repository.CategoryRepository.findMaxSortOrder"
         ],
         "external_calls": [
-          "java.lang.Boolean.equals",
-          "java.lang.Boolean.valueOf",
-          "java.util.Optional.orElseThrow",
-          "org.slf4j.Logger.info"
+          "java.lang.Integer.intValue",
+          "java.lang.Integer.valueOf",
+          "org.slf4j.LoggerFactory.getLogger"
         ],
         "side_effects": [
-          "com.jiuyan.banquet.mapper.CategoryMapper.toResponse",
-          "com.jiuyan.banquet.repository.CategoryRepository.findById",
-          "com.jiuyan.banquet.repository.CategoryRepository.save",
-          "com.jiuyan.banquet.repository.ProductRepository.existsByCategoryIdAndIsDeletedFalse"
+          "com.jiuyan.banquet.repository.CategoryRepository.findMaxSortOrder"
         ],
         "entity_field_writes": [],
         "constants": [
           {
-            "kind": "String",
-            "value": "分类不存在"
-          },
-          {
-            "kind": "String",
-            "value": "分类已被商品使用，请先删除或修改相关商品"
-          },
-          {
             "kind": "int",
-            "value": "1"
+            "value": "10"
           },
           {
-            "kind": "String",
-            "value": "deleted category id={} name={}"
+            "kind": "class",
+            "value": "com/jiuyan/banquet/service/CategoryService"
           }
         ],
         "caught_exceptions": [],
@@ -132,256 +493,62 @@
       }
     },
     {
-      "unit": "com.jiuyan.banquet.service.PackageTypeService#delete",
-      "class": "com.jiuyan.banquet.service.PackageTypeService",
+      "unit": "com.jiuyan.banquet.service.PackageService#applyBase",
+      "class": "com.jiuyan.banquet.service.PackageService",
       "method": null,
       "why_this_one": {
-        "centrality": 1,
-        "logic_score": 19,
-        "branches": 2,
-        "side_effects": 4,
-        "null_guards": 0
+        "centrality": 0,
+        "logic_score": 18,
+        "branches": 8,
+        "side_effects": 1,
+        "null_guards": 2
       },
       "signature": {
-        "returns": "com.jiuyan.banquet.dto.PackageTypeResponse",
+        "returns": "void",
         "params": [
-          "java.lang.Long"
-        ],
-        "arity": 1,
-        "arg_slots": [
-          {
-            "index": 0,
-            "type": "java.lang.Long"
-          }
-        ]
-      },
-      "existing_cases_same_class": [],
-      "stub_examples": [],
-      "entity_schemas": [
-        {
-          "class": "com.jiuyan.banquet.entity.PackageType",
-          "fields": [
-            {
-              "field": "id",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "name",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "sortOrder",
-              "java_type": "java.lang.Integer"
-            },
-            {
-              "field": "isDeleted",
-              "java_type": "java.lang.Boolean"
-            }
-          ]
-        }
-      ],
-      "existing_cases_on_this_method": [],
-      "facts": {
-        "internal_calls": [
-          "com.jiuyan.banquet.entity.PackageType.getId",
-          "com.jiuyan.banquet.entity.PackageType.getIsDeleted",
-          "com.jiuyan.banquet.entity.PackageType.getName",
-          "com.jiuyan.banquet.entity.PackageType.setIsDeleted",
-          "com.jiuyan.banquet.mapper.PackageTypeMapper.toResponse",
-          "com.jiuyan.banquet.repository.BanquetPackageRepository.existsByBanquetTypeAndIsDeletedFalse",
-          "com.jiuyan.banquet.repository.PackageTypeRepository.findById",
-          "com.jiuyan.banquet.repository.PackageTypeRepository.save"
-        ],
-        "external_calls": [
-          "java.lang.Boolean.equals",
-          "java.lang.Boolean.valueOf",
-          "java.util.Optional.orElseThrow",
-          "org.slf4j.Logger.info"
-        ],
-        "side_effects": [
-          "com.jiuyan.banquet.mapper.PackageTypeMapper.toResponse",
-          "com.jiuyan.banquet.repository.BanquetPackageRepository.existsByBanquetTypeAndIsDeletedFalse",
-          "com.jiuyan.banquet.repository.PackageTypeRepository.findById",
-          "com.jiuyan.banquet.repository.PackageTypeRepository.save"
-        ],
-        "entity_field_writes": [],
-        "constants": [
-          {
-            "kind": "String",
-            "value": "套餐分类不存在"
-          },
-          {
-            "kind": "String",
-            "value": "套餐分类已被套餐使用，请先删除或修改相关套餐"
-          },
-          {
-            "kind": "int",
-            "value": "1"
-          },
-          {
-            "kind": "String",
-            "value": "deleted package type id={} name={}"
-          }
-        ],
-        "caught_exceptions": [],
-        "throws_business_exception": false,
-        "is_pure": false
-      }
-    },
-    {
-      "unit": "com.jiuyan.banquet.service.PackageTypeService#create",
-      "class": "com.jiuyan.banquet.service.PackageTypeService",
-      "method": null,
-      "why_this_one": {
-        "centrality": 1,
-        "logic_score": 16,
-        "branches": 2,
-        "side_effects": 3,
-        "null_guards": 0
-      },
-      "signature": {
-        "returns": "com.jiuyan.banquet.dto.PackageTypeResponse",
-        "params": [
-          "com.jiuyan.banquet.dto.CreatePackageTypeRequest"
-        ],
-        "arity": 1,
-        "arg_slots": [
-          {
-            "index": 0,
-            "type": "com.jiuyan.banquet.dto.CreatePackageTypeRequest"
-          }
-        ]
-      },
-      "existing_cases_same_class": [],
-      "stub_examples": [],
-      "entity_schemas": [
-        {
-          "class": "com.jiuyan.banquet.dto.CreatePackageTypeRequest",
-          "fields": [
-            {
-              "field": "name",
-              "java_type": "java.lang.String"
-            }
-          ]
-        },
-        {
-          "class": "com.jiuyan.banquet.entity.PackageType",
-          "fields": [
-            {
-              "field": "id",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "name",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "sortOrder",
-              "java_type": "java.lang.Integer"
-            },
-            {
-              "field": "isDeleted",
-              "java_type": "java.lang.Boolean"
-            }
-          ]
-        }
-      ],
-      "existing_cases_on_this_method": [],
-      "facts": {
-        "internal_calls": [
-          "com.jiuyan.banquet.dto.CreatePackageTypeRequest.name",
-          "com.jiuyan.banquet.entity.PackageType.getId",
-          "com.jiuyan.banquet.entity.PackageType.getIsDeleted",
-          "com.jiuyan.banquet.entity.PackageType.getName",
-          "com.jiuyan.banquet.entity.PackageType.setIsDeleted",
-          "com.jiuyan.banquet.mapper.PackageTypeMapper.toResponse",
-          "com.jiuyan.banquet.repository.PackageTypeRepository.findByName",
-          "com.jiuyan.banquet.repository.PackageTypeRepository.save"
-        ],
-        "external_calls": [
-          "java.lang.Boolean.equals",
-          "java.lang.Boolean.valueOf",
-          "java.lang.String.trim",
-          "java.util.Optional.orElseGet",
-          "org.slf4j.Logger.info"
-        ],
-        "side_effects": [
-          "com.jiuyan.banquet.mapper.PackageTypeMapper.toResponse",
-          "com.jiuyan.banquet.repository.PackageTypeRepository.findByName",
-          "com.jiuyan.banquet.repository.PackageTypeRepository.save"
-        ],
-        "entity_field_writes": [],
-        "constants": [
-          {
-            "kind": "int",
-            "value": "0"
-          },
-          {
-            "kind": "String",
-            "value": "{} package type id={} name={}"
-          },
-          {
-            "kind": "int",
-            "value": "3"
-          },
-          {
-            "kind": "int",
-            "value": "0"
-          },
-          {
-            "kind": "String",
-            "value": "restored"
-          },
-          {
-            "kind": "String",
-            "value": "created"
-          },
-          {
-            "kind": "int",
-            "value": "1"
-          },
-          {
-            "kind": "int",
-            "value": "2"
-          }
-        ],
-        "caught_exceptions": [],
-        "throws_business_exception": false,
-        "is_pure": false
-      }
-    },
-    {
-      "unit": "com.jiuyan.banquet.service.ProductService#updateStatus",
-      "class": "com.jiuyan.banquet.service.ProductService",
-      "method": null,
-      "why_this_one": {
-        "centrality": 1,
-        "logic_score": 16,
-        "branches": 2,
-        "side_effects": 3,
-        "null_guards": 0
-      },
-      "signature": {
-        "returns": "com.jiuyan.banquet.dto.ProductResponse",
-        "params": [
+          "com.jiuyan.banquet.entity.BanquetPackage",
+          "java.lang.String",
+          "java.lang.String",
           "java.lang.Long",
+          "java.lang.String",
+          "java.lang.String",
           "java.lang.Boolean"
         ],
-        "arity": 2,
+        "arity": 7,
         "arg_slots": [
           {
             "index": 0,
-            "type": "java.lang.Long"
+            "type": "com.jiuyan.banquet.entity.BanquetPackage"
           },
           {
             "index": 1,
+            "type": "java.lang.String"
+          },
+          {
+            "index": 2,
+            "type": "java.lang.String"
+          },
+          {
+            "index": 3,
+            "type": "java.lang.Long"
+          },
+          {
+            "index": 4,
+            "type": "java.lang.String"
+          },
+          {
+            "index": 5,
+            "type": "java.lang.String"
+          },
+          {
+            "index": 6,
             "type": "java.lang.Boolean"
           }
         ]
       },
       "existing_cases_same_class": [
         {
-          "id": "PG-PRD-01",
+          "id": "PG-PKG-01",
           "method": "normalizePage",
           "args": [
             {
@@ -397,7 +564,7 @@
           "invariant": "第 0 页归一化为 0（0 基）"
         },
         {
-          "id": "PG-PRD-02",
+          "id": "PG-PKG-02",
           "method": "normalizePage",
           "args": [
             {
@@ -413,7 +580,7 @@
           "invariant": "负页码归一化为 0"
         },
         {
-          "id": "PG-PRD-03",
+          "id": "PG-PKG-03",
           "method": "normalizePage",
           "args": [
             {
@@ -431,187 +598,6 @@
       ],
       "stub_examples": [],
       "entity_schemas": [
-        {
-          "class": "com.jiuyan.banquet.entity.Product",
-          "fields": [
-            {
-              "field": "id",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "name",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "category",
-              "java_type": "com.jiuyan.banquet.entity.Category"
-            },
-            {
-              "field": "priceCent",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "unit",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "imageUrl",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "description",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "isActive",
-              "java_type": "java.lang.Boolean"
-            },
-            {
-              "field": "isDeleted",
-              "java_type": "java.lang.Boolean"
-            }
-          ]
-        }
-      ],
-      "existing_cases_on_this_method": [],
-      "facts": {
-        "internal_calls": [
-          "com.jiuyan.banquet.entity.Product.getId",
-          "com.jiuyan.banquet.entity.Product.getIsActive",
-          "com.jiuyan.banquet.entity.Product.setIsActive",
-          "com.jiuyan.banquet.mapper.ProductMapper.toResponse",
-          "com.jiuyan.banquet.repository.PackageItemRepository.existsByProductId",
-          "com.jiuyan.banquet.repository.ProductRepository.save"
-        ],
-        "external_calls": [
-          "java.lang.Boolean.equals",
-          "org.slf4j.Logger.info"
-        ],
-        "side_effects": [
-          "com.jiuyan.banquet.mapper.ProductMapper.toResponse",
-          "com.jiuyan.banquet.repository.PackageItemRepository.existsByProductId",
-          "com.jiuyan.banquet.repository.ProductRepository.save"
-        ],
-        "entity_field_writes": [],
-        "constants": [
-          {
-            "kind": "String",
-            "value": "deactivating product referenced by package items productId={}"
-          },
-          {
-            "kind": "String",
-            "value": "updated product status id={} isActive={}"
-          }
-        ],
-        "caught_exceptions": [],
-        "throws_business_exception": false,
-        "is_pure": false
-      }
-    },
-    {
-      "unit": "com.jiuyan.banquet.mapper.OrderMapper#toResponse",
-      "class": "com.jiuyan.banquet.mapper.OrderMapper",
-      "method": null,
-      "why_this_one": {
-        "centrality": 4,
-        "logic_score": 3,
-        "branches": 2,
-        "side_effects": 0,
-        "null_guards": 1
-      },
-      "signature": {
-        "returns": "static com.jiuyan.banquet.dto.OrderResponse",
-        "params": [
-          "com.jiuyan.banquet.entity.BanquetOrder"
-        ],
-        "arity": 1,
-        "arg_slots": [
-          {
-            "index": 0,
-            "type": "com.jiuyan.banquet.entity.BanquetOrder"
-          }
-        ]
-      },
-      "existing_cases_same_class": [],
-      "stub_examples": [],
-      "entity_schemas": [
-        {
-          "class": "com.jiuyan.banquet.entity.BanquetOrder",
-          "fields": [
-            {
-              "field": "id",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "orderNo",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "customerName",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "customerPhone",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "banquetName",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "banquetType",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "address",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "reservationTime",
-              "java_type": "java.time.OffsetDateTime"
-            },
-            {
-              "field": "tableCount",
-              "java_type": "java.lang.Integer"
-            },
-            {
-              "field": "banquetPackage",
-              "java_type": "com.jiuyan.banquet.entity.BanquetPackage"
-            },
-            {
-              "field": "packageSnapshot",
-              "java_type": "com.fasterxml.jackson.databind.JsonNode"
-            },
-            {
-              "field": "addedItemsSnapshot",
-              "java_type": "com.fasterxml.jackson.databind.JsonNode"
-            },
-            {
-              "field": "planTotalCent",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "useFinalPrice",
-              "java_type": "java.lang.Boolean"
-            },
-            {
-              "field": "finalPriceCent",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "depositCent",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "status",
-              "java_type": "com.jiuyan.banquet.entity.OrderStatus"
-            },
-            {
-              "field": "remark",
-              "java_type": "java.lang.String"
-            }
-          ]
-        },
         {
           "class": "com.jiuyan.banquet.entity.BanquetPackage",
           "fields": [
@@ -652,63 +638,386 @@
               "java_type": "java.util.List<com.jiuyan.banquet.entity.PackageItem>"
             }
           ]
+        },
+        {
+          "class": "com.jiuyan.banquet.entity.PackageType",
+          "fields": [
+            {
+              "field": "id",
+              "java_type": "java.lang.Long"
+            },
+            {
+              "field": "name",
+              "java_type": "java.lang.String"
+            },
+            {
+              "field": "sortOrder",
+              "java_type": "java.lang.Integer"
+            },
+            {
+              "field": "isDeleted",
+              "java_type": "java.lang.Boolean"
+            }
+          ]
         }
+      ],
+      "error_messages": [
+        "金额不能小于 0"
       ],
       "existing_cases_on_this_method": [],
       "facts": {
         "internal_calls": [
-          "com.jiuyan.banquet.entity.BanquetOrder.getAddedItemsSnapshot",
-          "com.jiuyan.banquet.entity.BanquetOrder.getAddress",
-          "com.jiuyan.banquet.entity.BanquetOrder.getBanquetName",
-          "com.jiuyan.banquet.entity.BanquetOrder.getBanquetPackage",
-          "com.jiuyan.banquet.entity.BanquetOrder.getBanquetType",
-          "com.jiuyan.banquet.entity.BanquetOrder.getCreatedAt",
-          "com.jiuyan.banquet.entity.BanquetOrder.getCustomerName",
-          "com.jiuyan.banquet.entity.BanquetOrder.getCustomerPhone",
-          "com.jiuyan.banquet.entity.BanquetOrder.getDepositCent",
-          "com.jiuyan.banquet.entity.BanquetOrder.getFinalPriceCent",
-          "com.jiuyan.banquet.entity.BanquetOrder.getId",
-          "com.jiuyan.banquet.entity.BanquetOrder.getOrderNo",
-          "com.jiuyan.banquet.entity.BanquetOrder.getPackageSnapshot",
-          "com.jiuyan.banquet.entity.BanquetOrder.getPlanTotalCent",
-          "com.jiuyan.banquet.entity.BanquetOrder.getRemark",
-          "com.jiuyan.banquet.entity.BanquetOrder.getReservationTime",
-          "com.jiuyan.banquet.entity.BanquetOrder.getStatus",
-          "com.jiuyan.banquet.entity.BanquetOrder.getTableCount",
-          "com.jiuyan.banquet.entity.BanquetOrder.getUpdatedAt",
-          "com.jiuyan.banquet.entity.BanquetOrder.getUseFinalPrice",
-          "com.jiuyan.banquet.entity.BanquetPackage.getId"
+          "com.jiuyan.banquet.entity.BanquetPackage.setBanquetType",
+          "com.jiuyan.banquet.entity.BanquetPackage.setDescription",
+          "com.jiuyan.banquet.entity.BanquetPackage.setImageUrl",
+          "com.jiuyan.banquet.entity.BanquetPackage.setIsActive",
+          "com.jiuyan.banquet.entity.BanquetPackage.setName",
+          "com.jiuyan.banquet.entity.BanquetPackage.setPriceCent",
+          "com.jiuyan.banquet.entity.PackageType.getName",
+          "com.jiuyan.banquet.repository.PackageTypeRepository.findByNameAndIsDeletedFalse"
         ],
-        "external_calls": [],
+        "external_calls": [
+          "java.lang.Long.longValue",
+          "java.lang.String.trim",
+          "java.util.Optional.orElseThrow",
+          "org.springframework.util.StringUtils.hasText"
+        ],
+        "side_effects": [
+          "com.jiuyan.banquet.repository.PackageTypeRepository.findByNameAndIsDeletedFalse"
+        ],
+        "entity_field_writes": [],
+        "constants": [
+          {
+            "kind": "String",
+            "value": "金额不能小于 0"
+          }
+        ],
+        "caught_exceptions": [],
+        "throws_business_exception": false,
+        "is_pure": false
+      }
+    },
+    {
+      "unit": "com.jiuyan.banquet.service.PackageService#applyItems",
+      "class": "com.jiuyan.banquet.service.PackageService",
+      "method": null,
+      "why_this_one": {
+        "centrality": 0,
+        "logic_score": 7,
+        "branches": 5,
+        "side_effects": 0,
+        "null_guards": 2
+      },
+      "signature": {
+        "returns": "void",
+        "params": [
+          "com.jiuyan.banquet.entity.BanquetPackage",
+          "java.util.List<com.jiuyan.banquet.dto.PackageItemRequest>"
+        ],
+        "arity": 2,
+        "arg_slots": [
+          {
+            "index": 0,
+            "type": "com.jiuyan.banquet.entity.BanquetPackage"
+          },
+          {
+            "index": 1,
+            "type": "java.util.List<com.jiuyan.banquet.dto.PackageItemRequest>"
+          }
+        ]
+      },
+      "existing_cases_same_class": [
+        {
+          "id": "PG-PKG-01",
+          "method": "normalizePage",
+          "args": [
+            {
+              "$t": "int",
+              "v": 0
+            }
+          ],
+          "stubs": null,
+          "check": {
+            "type": "returns_eq",
+            "value": 0
+          },
+          "invariant": "第 0 页归一化为 0（0 基）"
+        },
+        {
+          "id": "PG-PKG-02",
+          "method": "normalizePage",
+          "args": [
+            {
+              "$t": "int",
+              "v": -5
+            }
+          ],
+          "stubs": null,
+          "check": {
+            "type": "returns_eq",
+            "value": 0
+          },
+          "invariant": "负页码归一化为 0"
+        },
+        {
+          "id": "PG-PKG-03",
+          "method": "normalizePage",
+          "args": [
+            {
+              "$t": "int",
+              "v": 3
+            }
+          ],
+          "stubs": null,
+          "check": {
+            "type": "returns_eq",
+            "value": 2
+          },
+          "invariant": "第 3 页归一化为 2"
+        }
+      ],
+      "stub_examples": [],
+      "entity_schemas": [
+        {
+          "class": "com.jiuyan.banquet.entity.BanquetPackage",
+          "fields": [
+            {
+              "field": "id",
+              "java_type": "java.lang.Long"
+            },
+            {
+              "field": "name",
+              "java_type": "java.lang.String"
+            },
+            {
+              "field": "banquetType",
+              "java_type": "java.lang.String"
+            },
+            {
+              "field": "priceCent",
+              "java_type": "java.lang.Long"
+            },
+            {
+              "field": "imageUrl",
+              "java_type": "java.lang.String"
+            },
+            {
+              "field": "description",
+              "java_type": "java.lang.String"
+            },
+            {
+              "field": "isActive",
+              "java_type": "java.lang.Boolean"
+            },
+            {
+              "field": "isDeleted",
+              "java_type": "java.lang.Boolean"
+            },
+            {
+              "field": "items",
+              "java_type": "java.util.List<com.jiuyan.banquet.entity.PackageItem>"
+            }
+          ]
+        },
+        {
+          "class": "com.jiuyan.banquet.entity.PackageItem",
+          "fields": [
+            {
+              "field": "id",
+              "java_type": "java.lang.Long"
+            },
+            {
+              "field": "banquetPackage",
+              "java_type": "com.jiuyan.banquet.entity.BanquetPackage"
+            },
+            {
+              "field": "product",
+              "java_type": "com.jiuyan.banquet.entity.Product"
+            },
+            {
+              "field": "quantity",
+              "java_type": "java.lang.Integer"
+            }
+          ]
+        }
+      ],
+      "error_messages": [
+        "套餐商品不能为空"
+      ],
+      "existing_cases_on_this_method": [],
+      "facts": {
+        "internal_calls": [
+          "com.jiuyan.banquet.entity.BanquetPackage.getItems",
+          "com.jiuyan.banquet.entity.PackageItem.setBanquetPackage",
+          "com.jiuyan.banquet.entity.PackageItem.setProduct",
+          "com.jiuyan.banquet.entity.PackageItem.setQuantity"
+        ],
+        "external_calls": [
+          "java.util.Iterator.hasNext",
+          "java.util.Iterator.next",
+          "java.util.List.add",
+          "java.util.List.isEmpty",
+          "java.util.List.removeIf",
+          "java.util.List.stream",
+          "java.util.Map$Entry.getKey",
+          "java.util.Map$Entry.getValue",
+          "java.util.Map.entrySet",
+          "java.util.Map.get",
+          "java.util.Set.iterator",
+          "java.util.function.Function.identity",
+          "java.util.stream.Collectors.toMap",
+          "java.util.stream.Stream.collect"
+        ],
         "side_effects": [],
         "entity_field_writes": [],
-        "constants": [],
+        "constants": [
+          {
+            "kind": "String",
+            "value": "套餐商品不能为空"
+          }
+        ],
         "caught_exceptions": [],
         "throws_business_exception": false,
         "is_pure": true
       }
     },
     {
-      "unit": "com.jiuyan.banquet.service.ProductService#delete",
-      "class": "com.jiuyan.banquet.service.ProductService",
+      "unit": "com.jiuyan.banquet.service.PackageTypeService#lambda$create$0",
+      "class": "com.jiuyan.banquet.service.PackageTypeService",
       "method": null,
       "why_this_one": {
-        "centrality": 1,
-        "logic_score": 15,
-        "branches": 1,
-        "side_effects": 3,
+        "centrality": 0,
+        "logic_score": 8,
+        "branches": 0,
+        "side_effects": 1,
         "null_guards": 0
       },
       "signature": {
-        "returns": "com.jiuyan.banquet.dto.ProductResponse",
+        "returns": "com.jiuyan.banquet.entity.PackageType",
         "params": [
-          "java.lang.Long"
+          "java.lang.String"
         ],
         "arity": 1,
         "arg_slots": [
           {
             "index": 0,
+            "type": "java.lang.String"
+          }
+        ]
+      },
+      "existing_cases_same_class": [],
+      "stub_examples": [],
+      "entity_schemas": [
+        {
+          "class": "com.jiuyan.banquet.entity.PackageType",
+          "fields": [
+            {
+              "field": "id",
+              "java_type": "java.lang.Long"
+            },
+            {
+              "field": "name",
+              "java_type": "java.lang.String"
+            },
+            {
+              "field": "sortOrder",
+              "java_type": "java.lang.Integer"
+            },
+            {
+              "field": "isDeleted",
+              "java_type": "java.lang.Boolean"
+            }
+          ]
+        }
+      ],
+      "error_messages": [],
+      "existing_cases_on_this_method": [],
+      "facts": {
+        "internal_calls": [
+          "com.jiuyan.banquet.entity.PackageType.setName",
+          "com.jiuyan.banquet.entity.PackageType.setSortOrder",
+          "com.jiuyan.banquet.repository.PackageTypeRepository.findMaxSortOrder"
+        ],
+        "external_calls": [
+          "java.lang.Integer.intValue",
+          "java.lang.Integer.valueOf",
+          "org.slf4j.LoggerFactory.getLogger"
+        ],
+        "side_effects": [
+          "com.jiuyan.banquet.repository.PackageTypeRepository.findMaxSortOrder"
+        ],
+        "entity_field_writes": [],
+        "constants": [
+          {
+            "kind": "int",
+            "value": "10"
+          },
+          {
+            "kind": "class",
+            "value": "com/jiuyan/banquet/service/PackageTypeService"
+          }
+        ],
+        "caught_exceptions": [],
+        "throws_business_exception": false,
+        "is_pure": false
+      }
+    },
+    {
+      "unit": "com.jiuyan.banquet.service.ProductService#apply",
+      "class": "com.jiuyan.banquet.service.ProductService",
+      "method": null,
+      "why_this_one": {
+        "centrality": 0,
+        "logic_score": 10,
+        "branches": 8,
+        "side_effects": 0,
+        "null_guards": 2
+      },
+      "signature": {
+        "returns": "void",
+        "params": [
+          "com.jiuyan.banquet.entity.Product",
+          "com.jiuyan.banquet.entity.Category",
+          "java.lang.String",
+          "java.lang.Long",
+          "java.lang.String",
+          "java.lang.String",
+          "java.lang.String",
+          "java.lang.Boolean"
+        ],
+        "arity": 8,
+        "arg_slots": [
+          {
+            "index": 0,
+            "type": "com.jiuyan.banquet.entity.Product"
+          },
+          {
+            "index": 1,
+            "type": "com.jiuyan.banquet.entity.Category"
+          },
+          {
+            "index": 2,
+            "type": "java.lang.String"
+          },
+          {
+            "index": 3,
             "type": "java.lang.Long"
+          },
+          {
+            "index": 4,
+            "type": "java.lang.String"
+          },
+          {
+            "index": 5,
+            "type": "java.lang.String"
+          },
+          {
+            "index": 6,
+            "type": "java.lang.String"
+          },
+          {
+            "index": 7,
+            "type": "java.lang.Boolean"
           }
         ]
       },
@@ -806,1251 +1115,36 @@
           ]
         }
       ],
+      "error_messages": [
+        "金额不能小于 0"
+      ],
       "existing_cases_on_this_method": [],
       "facts": {
         "internal_calls": [
-          "com.jiuyan.banquet.entity.Product.getId",
-          "com.jiuyan.banquet.entity.Product.getName",
+          "com.jiuyan.banquet.entity.Product.setCategory",
+          "com.jiuyan.banquet.entity.Product.setDescription",
+          "com.jiuyan.banquet.entity.Product.setImageUrl",
           "com.jiuyan.banquet.entity.Product.setIsActive",
-          "com.jiuyan.banquet.entity.Product.setIsDeleted",
-          "com.jiuyan.banquet.mapper.ProductMapper.toResponse",
-          "com.jiuyan.banquet.repository.PackageItemRepository.existsNonDeletedPackageReferenceByProductId",
-          "com.jiuyan.banquet.repository.ProductRepository.save"
+          "com.jiuyan.banquet.entity.Product.setName",
+          "com.jiuyan.banquet.entity.Product.setPriceCent",
+          "com.jiuyan.banquet.entity.Product.setUnit"
         ],
         "external_calls": [
-          "java.lang.Boolean.valueOf",
-          "org.slf4j.Logger.info"
+          "java.lang.Long.longValue",
+          "java.lang.String.trim",
+          "org.springframework.util.StringUtils.hasText"
         ],
-        "side_effects": [
-          "com.jiuyan.banquet.mapper.ProductMapper.toResponse",
-          "com.jiuyan.banquet.repository.PackageItemRepository.existsNonDeletedPackageReferenceByProductId",
-          "com.jiuyan.banquet.repository.ProductRepository.save"
-        ],
+        "side_effects": [],
         "entity_field_writes": [],
         "constants": [
           {
             "kind": "String",
-            "value": "商品已被套餐使用，请先从套餐中移除或删除套餐"
-          },
-          {
-            "kind": "int",
-            "value": "0"
-          },
-          {
-            "kind": "int",
-            "value": "1"
-          },
-          {
-            "kind": "String",
-            "value": "deleted product id={} name={}"
+            "value": "金额不能小于 0"
           }
         ],
         "caught_exceptions": [],
         "throws_business_exception": false,
-        "is_pure": false
-      }
-    },
-    {
-      "unit": "com.jiuyan.banquet.service.OrderService#update",
-      "class": "com.jiuyan.banquet.service.OrderService",
-      "method": null,
-      "why_this_one": {
-        "centrality": 1,
-        "logic_score": 11,
-        "branches": 0,
-        "side_effects": 2,
-        "null_guards": 0
-      },
-      "signature": {
-        "returns": "com.jiuyan.banquet.dto.OrderResponse",
-        "params": [
-          "java.lang.Long",
-          "com.jiuyan.banquet.dto.UpdateOrderRequest"
-        ],
-        "arity": 2,
-        "arg_slots": [
-          {
-            "index": 0,
-            "type": "java.lang.Long"
-          },
-          {
-            "index": 1,
-            "type": "com.jiuyan.banquet.dto.UpdateOrderRequest"
-          }
-        ]
-      },
-      "existing_cases_same_class": [
-        {
-          "id": "RFP-01",
-          "method": "resolveFinalPrice",
-          "args": [
-            {
-              "$t": "bool",
-              "v": false
-            },
-            {
-              "$t": "long",
-              "v": 1
-            },
-            {
-              "$t": "long",
-              "v": 46800
-            }
-          ],
-          "stubs": null,
-          "check": {
-            "type": "returns_eq",
-            "value": 46800
-          },
-          "invariant": "不使用成交价时，价格必须等于套餐总价"
-        },
-        {
-          "id": "RFP-02",
-          "method": "resolveFinalPrice",
-          "args": [
-            {
-              "$t": "bool",
-              "v": false
-            },
-            {
-              "$t": "null"
-            },
-            {
-              "$t": "long",
-              "v": 46800
-            }
-          ],
-          "stubs": null,
-          "check": {
-            "type": "returns_eq",
-            "value": 46800
-          },
-          "invariant": "不使用成交价时忽略客户端传入的成交价"
-        },
-        {
-          "id": "RFP-03",
-          "method": "resolveFinalPrice",
-          "args": [
-            {
-              "$t": "bool",
-              "v": true
-            },
-            {
-              "$t": "null"
-            },
-            {
-              "$t": "long",
-              "v": 46800
-            }
-          ],
-          "stubs": null,
-          "check": {
-            "type": "throws_business",
-            "code": "PRICE_INVALID",
-            "status": 422
-          },
-          "invariant": "成交价缺失必须以 422 拒绝"
-        }
-      ],
-      "stub_examples": [],
-      "entity_schemas": [
-        {
-          "class": "com.jiuyan.banquet.dto.UpdateOrderRequest",
-          "fields": [
-            {
-              "field": "customerName",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "customerPhone",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "banquetName",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "banquetType",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "address",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "reservationTime",
-              "java_type": "java.time.OffsetDateTime"
-            },
-            {
-              "field": "tableCount",
-              "java_type": "java.lang.Integer"
-            },
-            {
-              "field": "packageId",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "packageItems",
-              "java_type": "java.util.List<com.jiuyan.banquet.dto.PackageItemRequest>"
-            },
-            {
-              "field": "addedItems",
-              "java_type": "java.util.List<com.jiuyan.banquet.dto.AddedItemRequest>"
-            },
-            {
-              "field": "planTotalCent",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "useFinalPrice",
-              "java_type": "java.lang.Boolean"
-            },
-            {
-              "field": "finalPriceCent",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "depositCent",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "status",
-              "java_type": "com.jiuyan.banquet.entity.OrderStatus"
-            },
-            {
-              "field": "remark",
-              "java_type": "java.lang.String"
-            }
-          ]
-        },
-        {
-          "class": "com.jiuyan.banquet.entity.BanquetOrder",
-          "fields": [
-            {
-              "field": "id",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "orderNo",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "customerName",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "customerPhone",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "banquetName",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "banquetType",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "address",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "reservationTime",
-              "java_type": "java.time.OffsetDateTime"
-            },
-            {
-              "field": "tableCount",
-              "java_type": "java.lang.Integer"
-            },
-            {
-              "field": "banquetPackage",
-              "java_type": "com.jiuyan.banquet.entity.BanquetPackage"
-            },
-            {
-              "field": "packageSnapshot",
-              "java_type": "com.fasterxml.jackson.databind.JsonNode"
-            },
-            {
-              "field": "addedItemsSnapshot",
-              "java_type": "com.fasterxml.jackson.databind.JsonNode"
-            },
-            {
-              "field": "planTotalCent",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "useFinalPrice",
-              "java_type": "java.lang.Boolean"
-            },
-            {
-              "field": "finalPriceCent",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "depositCent",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "status",
-              "java_type": "com.jiuyan.banquet.entity.OrderStatus"
-            },
-            {
-              "field": "remark",
-              "java_type": "java.lang.String"
-            }
-          ]
-        }
-      ],
-      "existing_cases_on_this_method": [],
-      "facts": {
-        "internal_calls": [
-          "com.jiuyan.banquet.dto.UpdateOrderRequest.addedItems",
-          "com.jiuyan.banquet.dto.UpdateOrderRequest.address",
-          "com.jiuyan.banquet.dto.UpdateOrderRequest.banquetName",
-          "com.jiuyan.banquet.dto.UpdateOrderRequest.banquetType",
-          "com.jiuyan.banquet.dto.UpdateOrderRequest.customerName",
-          "com.jiuyan.banquet.dto.UpdateOrderRequest.customerPhone",
-          "com.jiuyan.banquet.dto.UpdateOrderRequest.depositCent",
-          "com.jiuyan.banquet.dto.UpdateOrderRequest.finalPriceCent",
-          "com.jiuyan.banquet.dto.UpdateOrderRequest.packageId",
-          "com.jiuyan.banquet.dto.UpdateOrderRequest.packageItems",
-          "com.jiuyan.banquet.dto.UpdateOrderRequest.planTotalCent",
-          "com.jiuyan.banquet.dto.UpdateOrderRequest.remark",
-          "com.jiuyan.banquet.dto.UpdateOrderRequest.reservationTime",
-          "com.jiuyan.banquet.dto.UpdateOrderRequest.status",
-          "com.jiuyan.banquet.dto.UpdateOrderRequest.tableCount",
-          "com.jiuyan.banquet.dto.UpdateOrderRequest.useFinalPrice",
-          "com.jiuyan.banquet.entity.BanquetOrder.getId",
-          "com.jiuyan.banquet.entity.BanquetOrder.getOrderNo",
-          "com.jiuyan.banquet.mapper.OrderMapper.toResponse",
-          "com.jiuyan.banquet.repository.OrderRepository.save"
-        ],
-        "external_calls": [
-          "org.slf4j.Logger.info"
-        ],
-        "side_effects": [
-          "com.jiuyan.banquet.mapper.OrderMapper.toResponse",
-          "com.jiuyan.banquet.repository.OrderRepository.save"
-        ],
-        "entity_field_writes": [],
-        "constants": [
-          {
-            "kind": "String",
-            "value": "updated order id={} orderNo={}"
-          }
-        ],
-        "caught_exceptions": [],
-        "throws_business_exception": false,
-        "is_pure": false
-      }
-    },
-    {
-      "unit": "com.jiuyan.banquet.service.OrderService#updateStatus",
-      "class": "com.jiuyan.banquet.service.OrderService",
-      "method": null,
-      "why_this_one": {
-        "centrality": 1,
-        "logic_score": 11,
-        "branches": 0,
-        "side_effects": 2,
-        "null_guards": 0
-      },
-      "signature": {
-        "returns": "com.jiuyan.banquet.dto.OrderResponse",
-        "params": [
-          "java.lang.Long",
-          "com.jiuyan.banquet.entity.OrderStatus"
-        ],
-        "arity": 2,
-        "arg_slots": [
-          {
-            "index": 0,
-            "type": "java.lang.Long"
-          },
-          {
-            "index": 1,
-            "type": "com.jiuyan.banquet.entity.OrderStatus"
-          }
-        ]
-      },
-      "existing_cases_same_class": [
-        {
-          "id": "RFP-01",
-          "method": "resolveFinalPrice",
-          "args": [
-            {
-              "$t": "bool",
-              "v": false
-            },
-            {
-              "$t": "long",
-              "v": 1
-            },
-            {
-              "$t": "long",
-              "v": 46800
-            }
-          ],
-          "stubs": null,
-          "check": {
-            "type": "returns_eq",
-            "value": 46800
-          },
-          "invariant": "不使用成交价时，价格必须等于套餐总价"
-        },
-        {
-          "id": "RFP-02",
-          "method": "resolveFinalPrice",
-          "args": [
-            {
-              "$t": "bool",
-              "v": false
-            },
-            {
-              "$t": "null"
-            },
-            {
-              "$t": "long",
-              "v": 46800
-            }
-          ],
-          "stubs": null,
-          "check": {
-            "type": "returns_eq",
-            "value": 46800
-          },
-          "invariant": "不使用成交价时忽略客户端传入的成交价"
-        },
-        {
-          "id": "RFP-03",
-          "method": "resolveFinalPrice",
-          "args": [
-            {
-              "$t": "bool",
-              "v": true
-            },
-            {
-              "$t": "null"
-            },
-            {
-              "$t": "long",
-              "v": 46800
-            }
-          ],
-          "stubs": null,
-          "check": {
-            "type": "throws_business",
-            "code": "PRICE_INVALID",
-            "status": 422
-          },
-          "invariant": "成交价缺失必须以 422 拒绝"
-        }
-      ],
-      "stub_examples": [],
-      "entity_schemas": [
-        {
-          "class": "com.jiuyan.banquet.entity.BanquetOrder",
-          "fields": [
-            {
-              "field": "id",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "orderNo",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "customerName",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "customerPhone",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "banquetName",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "banquetType",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "address",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "reservationTime",
-              "java_type": "java.time.OffsetDateTime"
-            },
-            {
-              "field": "tableCount",
-              "java_type": "java.lang.Integer"
-            },
-            {
-              "field": "banquetPackage",
-              "java_type": "com.jiuyan.banquet.entity.BanquetPackage"
-            },
-            {
-              "field": "packageSnapshot",
-              "java_type": "com.fasterxml.jackson.databind.JsonNode"
-            },
-            {
-              "field": "addedItemsSnapshot",
-              "java_type": "com.fasterxml.jackson.databind.JsonNode"
-            },
-            {
-              "field": "planTotalCent",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "useFinalPrice",
-              "java_type": "java.lang.Boolean"
-            },
-            {
-              "field": "finalPriceCent",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "depositCent",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "status",
-              "java_type": "com.jiuyan.banquet.entity.OrderStatus"
-            },
-            {
-              "field": "remark",
-              "java_type": "java.lang.String"
-            }
-          ]
-        }
-      ],
-      "existing_cases_on_this_method": [],
-      "facts": {
-        "internal_calls": [
-          "com.jiuyan.banquet.entity.BanquetOrder.getId",
-          "com.jiuyan.banquet.entity.BanquetOrder.getOrderNo",
-          "com.jiuyan.banquet.entity.BanquetOrder.getStatus",
-          "com.jiuyan.banquet.entity.BanquetOrder.setStatus",
-          "com.jiuyan.banquet.mapper.OrderMapper.toResponse",
-          "com.jiuyan.banquet.repository.OrderRepository.save"
-        ],
-        "external_calls": [
-          "org.slf4j.Logger.info"
-        ],
-        "side_effects": [
-          "com.jiuyan.banquet.mapper.OrderMapper.toResponse",
-          "com.jiuyan.banquet.repository.OrderRepository.save"
-        ],
-        "entity_field_writes": [],
-        "constants": [
-          {
-            "kind": "String",
-            "value": "updated order status id={} orderNo={} status={}"
-          },
-          {
-            "kind": "int",
-            "value": "3"
-          },
-          {
-            "kind": "int",
-            "value": "0"
-          },
-          {
-            "kind": "int",
-            "value": "1"
-          },
-          {
-            "kind": "int",
-            "value": "2"
-          }
-        ],
-        "caught_exceptions": [],
-        "throws_business_exception": false,
-        "is_pure": false
-      }
-    },
-    {
-      "unit": "com.jiuyan.banquet.service.PackageService#create",
-      "class": "com.jiuyan.banquet.service.PackageService",
-      "method": null,
-      "why_this_one": {
-        "centrality": 1,
-        "logic_score": 11,
-        "branches": 0,
-        "side_effects": 2,
-        "null_guards": 0
-      },
-      "signature": {
-        "returns": "com.jiuyan.banquet.dto.PackageResponse",
-        "params": [
-          "com.jiuyan.banquet.dto.CreatePackageRequest"
-        ],
-        "arity": 1,
-        "arg_slots": [
-          {
-            "index": 0,
-            "type": "com.jiuyan.banquet.dto.CreatePackageRequest"
-          }
-        ]
-      },
-      "existing_cases_same_class": [
-        {
-          "id": "PG-PKG-01",
-          "method": "normalizePage",
-          "args": [
-            {
-              "$t": "int",
-              "v": 0
-            }
-          ],
-          "stubs": null,
-          "check": {
-            "type": "returns_eq",
-            "value": 0
-          },
-          "invariant": "第 0 页归一化为 0（0 基）"
-        },
-        {
-          "id": "PG-PKG-02",
-          "method": "normalizePage",
-          "args": [
-            {
-              "$t": "int",
-              "v": -5
-            }
-          ],
-          "stubs": null,
-          "check": {
-            "type": "returns_eq",
-            "value": 0
-          },
-          "invariant": "负页码归一化为 0"
-        },
-        {
-          "id": "PG-PKG-03",
-          "method": "normalizePage",
-          "args": [
-            {
-              "$t": "int",
-              "v": 3
-            }
-          ],
-          "stubs": null,
-          "check": {
-            "type": "returns_eq",
-            "value": 2
-          },
-          "invariant": "第 3 页归一化为 2"
-        }
-      ],
-      "stub_examples": [],
-      "entity_schemas": [
-        {
-          "class": "com.jiuyan.banquet.dto.CreatePackageRequest",
-          "fields": [
-            {
-              "field": "name",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "banquetType",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "priceCent",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "imageUrl",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "description",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "isActive",
-              "java_type": "java.lang.Boolean"
-            },
-            {
-              "field": "items",
-              "java_type": "java.util.List<com.jiuyan.banquet.dto.PackageItemRequest>"
-            }
-          ]
-        },
-        {
-          "class": "com.jiuyan.banquet.entity.BanquetPackage",
-          "fields": [
-            {
-              "field": "id",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "name",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "banquetType",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "priceCent",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "imageUrl",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "description",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "isActive",
-              "java_type": "java.lang.Boolean"
-            },
-            {
-              "field": "isDeleted",
-              "java_type": "java.lang.Boolean"
-            },
-            {
-              "field": "items",
-              "java_type": "java.util.List<com.jiuyan.banquet.entity.PackageItem>"
-            }
-          ]
-        }
-      ],
-      "existing_cases_on_this_method": [],
-      "facts": {
-        "internal_calls": [
-          "com.jiuyan.banquet.dto.CreatePackageRequest.banquetType",
-          "com.jiuyan.banquet.dto.CreatePackageRequest.description",
-          "com.jiuyan.banquet.dto.CreatePackageRequest.imageUrl",
-          "com.jiuyan.banquet.dto.CreatePackageRequest.isActive",
-          "com.jiuyan.banquet.dto.CreatePackageRequest.items",
-          "com.jiuyan.banquet.dto.CreatePackageRequest.name",
-          "com.jiuyan.banquet.dto.CreatePackageRequest.priceCent",
-          "com.jiuyan.banquet.entity.BanquetPackage.getId",
-          "com.jiuyan.banquet.entity.BanquetPackage.getName",
-          "com.jiuyan.banquet.mapper.PackageMapper.toResponse",
-          "com.jiuyan.banquet.repository.BanquetPackageRepository.save"
-        ],
-        "external_calls": [
-          "org.slf4j.Logger.info"
-        ],
-        "side_effects": [
-          "com.jiuyan.banquet.mapper.PackageMapper.toResponse",
-          "com.jiuyan.banquet.repository.BanquetPackageRepository.save"
-        ],
-        "entity_field_writes": [],
-        "constants": [
-          {
-            "kind": "String",
-            "value": "created package id={} name={}"
-          }
-        ],
-        "caught_exceptions": [],
-        "throws_business_exception": false,
-        "is_pure": false
-      }
-    },
-    {
-      "unit": "com.jiuyan.banquet.service.PackageService#update",
-      "class": "com.jiuyan.banquet.service.PackageService",
-      "method": null,
-      "why_this_one": {
-        "centrality": 1,
-        "logic_score": 11,
-        "branches": 0,
-        "side_effects": 2,
-        "null_guards": 0
-      },
-      "signature": {
-        "returns": "com.jiuyan.banquet.dto.PackageResponse",
-        "params": [
-          "java.lang.Long",
-          "com.jiuyan.banquet.dto.UpdatePackageRequest"
-        ],
-        "arity": 2,
-        "arg_slots": [
-          {
-            "index": 0,
-            "type": "java.lang.Long"
-          },
-          {
-            "index": 1,
-            "type": "com.jiuyan.banquet.dto.UpdatePackageRequest"
-          }
-        ]
-      },
-      "existing_cases_same_class": [
-        {
-          "id": "PG-PKG-01",
-          "method": "normalizePage",
-          "args": [
-            {
-              "$t": "int",
-              "v": 0
-            }
-          ],
-          "stubs": null,
-          "check": {
-            "type": "returns_eq",
-            "value": 0
-          },
-          "invariant": "第 0 页归一化为 0（0 基）"
-        },
-        {
-          "id": "PG-PKG-02",
-          "method": "normalizePage",
-          "args": [
-            {
-              "$t": "int",
-              "v": -5
-            }
-          ],
-          "stubs": null,
-          "check": {
-            "type": "returns_eq",
-            "value": 0
-          },
-          "invariant": "负页码归一化为 0"
-        },
-        {
-          "id": "PG-PKG-03",
-          "method": "normalizePage",
-          "args": [
-            {
-              "$t": "int",
-              "v": 3
-            }
-          ],
-          "stubs": null,
-          "check": {
-            "type": "returns_eq",
-            "value": 2
-          },
-          "invariant": "第 3 页归一化为 2"
-        }
-      ],
-      "stub_examples": [],
-      "entity_schemas": [
-        {
-          "class": "com.jiuyan.banquet.dto.UpdatePackageRequest",
-          "fields": [
-            {
-              "field": "name",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "banquetType",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "priceCent",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "imageUrl",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "description",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "isActive",
-              "java_type": "java.lang.Boolean"
-            },
-            {
-              "field": "items",
-              "java_type": "java.util.List<com.jiuyan.banquet.dto.PackageItemRequest>"
-            }
-          ]
-        },
-        {
-          "class": "com.jiuyan.banquet.entity.BanquetPackage",
-          "fields": [
-            {
-              "field": "id",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "name",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "banquetType",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "priceCent",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "imageUrl",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "description",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "isActive",
-              "java_type": "java.lang.Boolean"
-            },
-            {
-              "field": "isDeleted",
-              "java_type": "java.lang.Boolean"
-            },
-            {
-              "field": "items",
-              "java_type": "java.util.List<com.jiuyan.banquet.entity.PackageItem>"
-            }
-          ]
-        }
-      ],
-      "existing_cases_on_this_method": [],
-      "facts": {
-        "internal_calls": [
-          "com.jiuyan.banquet.dto.UpdatePackageRequest.banquetType",
-          "com.jiuyan.banquet.dto.UpdatePackageRequest.description",
-          "com.jiuyan.banquet.dto.UpdatePackageRequest.imageUrl",
-          "com.jiuyan.banquet.dto.UpdatePackageRequest.isActive",
-          "com.jiuyan.banquet.dto.UpdatePackageRequest.items",
-          "com.jiuyan.banquet.dto.UpdatePackageRequest.name",
-          "com.jiuyan.banquet.dto.UpdatePackageRequest.priceCent",
-          "com.jiuyan.banquet.entity.BanquetPackage.getId",
-          "com.jiuyan.banquet.entity.BanquetPackage.getName",
-          "com.jiuyan.banquet.mapper.PackageMapper.toResponse",
-          "com.jiuyan.banquet.repository.BanquetPackageRepository.save"
-        ],
-        "external_calls": [
-          "org.slf4j.Logger.info"
-        ],
-        "side_effects": [
-          "com.jiuyan.banquet.mapper.PackageMapper.toResponse",
-          "com.jiuyan.banquet.repository.BanquetPackageRepository.save"
-        ],
-        "entity_field_writes": [],
-        "constants": [
-          {
-            "kind": "String",
-            "value": "updated package id={} name={}"
-          }
-        ],
-        "caught_exceptions": [],
-        "throws_business_exception": false,
-        "is_pure": false
-      }
-    },
-    {
-      "unit": "com.jiuyan.banquet.service.PackageService#updateStatus",
-      "class": "com.jiuyan.banquet.service.PackageService",
-      "method": null,
-      "why_this_one": {
-        "centrality": 1,
-        "logic_score": 11,
-        "branches": 0,
-        "side_effects": 2,
-        "null_guards": 0
-      },
-      "signature": {
-        "returns": "com.jiuyan.banquet.dto.PackageResponse",
-        "params": [
-          "java.lang.Long",
-          "java.lang.Boolean"
-        ],
-        "arity": 2,
-        "arg_slots": [
-          {
-            "index": 0,
-            "type": "java.lang.Long"
-          },
-          {
-            "index": 1,
-            "type": "java.lang.Boolean"
-          }
-        ]
-      },
-      "existing_cases_same_class": [
-        {
-          "id": "PG-PKG-01",
-          "method": "normalizePage",
-          "args": [
-            {
-              "$t": "int",
-              "v": 0
-            }
-          ],
-          "stubs": null,
-          "check": {
-            "type": "returns_eq",
-            "value": 0
-          },
-          "invariant": "第 0 页归一化为 0（0 基）"
-        },
-        {
-          "id": "PG-PKG-02",
-          "method": "normalizePage",
-          "args": [
-            {
-              "$t": "int",
-              "v": -5
-            }
-          ],
-          "stubs": null,
-          "check": {
-            "type": "returns_eq",
-            "value": 0
-          },
-          "invariant": "负页码归一化为 0"
-        },
-        {
-          "id": "PG-PKG-03",
-          "method": "normalizePage",
-          "args": [
-            {
-              "$t": "int",
-              "v": 3
-            }
-          ],
-          "stubs": null,
-          "check": {
-            "type": "returns_eq",
-            "value": 2
-          },
-          "invariant": "第 3 页归一化为 2"
-        }
-      ],
-      "stub_examples": [],
-      "entity_schemas": [
-        {
-          "class": "com.jiuyan.banquet.entity.BanquetPackage",
-          "fields": [
-            {
-              "field": "id",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "name",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "banquetType",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "priceCent",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "imageUrl",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "description",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "isActive",
-              "java_type": "java.lang.Boolean"
-            },
-            {
-              "field": "isDeleted",
-              "java_type": "java.lang.Boolean"
-            },
-            {
-              "field": "items",
-              "java_type": "java.util.List<com.jiuyan.banquet.entity.PackageItem>"
-            }
-          ]
-        }
-      ],
-      "existing_cases_on_this_method": [],
-      "facts": {
-        "internal_calls": [
-          "com.jiuyan.banquet.entity.BanquetPackage.getId",
-          "com.jiuyan.banquet.entity.BanquetPackage.getIsActive",
-          "com.jiuyan.banquet.entity.BanquetPackage.setIsActive",
-          "com.jiuyan.banquet.mapper.PackageMapper.toResponse",
-          "com.jiuyan.banquet.repository.BanquetPackageRepository.save"
-        ],
-        "external_calls": [
-          "org.slf4j.Logger.info"
-        ],
-        "side_effects": [
-          "com.jiuyan.banquet.mapper.PackageMapper.toResponse",
-          "com.jiuyan.banquet.repository.BanquetPackageRepository.save"
-        ],
-        "entity_field_writes": [],
-        "constants": [
-          {
-            "kind": "String",
-            "value": "updated package status id={} isActive={}"
-          }
-        ],
-        "caught_exceptions": [],
-        "throws_business_exception": false,
-        "is_pure": false
-      }
-    },
-    {
-      "unit": "com.jiuyan.banquet.service.PackageService#delete",
-      "class": "com.jiuyan.banquet.service.PackageService",
-      "method": null,
-      "why_this_one": {
-        "centrality": 1,
-        "logic_score": 11,
-        "branches": 0,
-        "side_effects": 2,
-        "null_guards": 0
-      },
-      "signature": {
-        "returns": "com.jiuyan.banquet.dto.PackageResponse",
-        "params": [
-          "java.lang.Long"
-        ],
-        "arity": 1,
-        "arg_slots": [
-          {
-            "index": 0,
-            "type": "java.lang.Long"
-          }
-        ]
-      },
-      "existing_cases_same_class": [
-        {
-          "id": "PG-PKG-01",
-          "method": "normalizePage",
-          "args": [
-            {
-              "$t": "int",
-              "v": 0
-            }
-          ],
-          "stubs": null,
-          "check": {
-            "type": "returns_eq",
-            "value": 0
-          },
-          "invariant": "第 0 页归一化为 0（0 基）"
-        },
-        {
-          "id": "PG-PKG-02",
-          "method": "normalizePage",
-          "args": [
-            {
-              "$t": "int",
-              "v": -5
-            }
-          ],
-          "stubs": null,
-          "check": {
-            "type": "returns_eq",
-            "value": 0
-          },
-          "invariant": "负页码归一化为 0"
-        },
-        {
-          "id": "PG-PKG-03",
-          "method": "normalizePage",
-          "args": [
-            {
-              "$t": "int",
-              "v": 3
-            }
-          ],
-          "stubs": null,
-          "check": {
-            "type": "returns_eq",
-            "value": 2
-          },
-          "invariant": "第 3 页归一化为 2"
-        }
-      ],
-      "stub_examples": [],
-      "entity_schemas": [
-        {
-          "class": "com.jiuyan.banquet.entity.BanquetPackage",
-          "fields": [
-            {
-              "field": "id",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "name",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "banquetType",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "priceCent",
-              "java_type": "java.lang.Long"
-            },
-            {
-              "field": "imageUrl",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "description",
-              "java_type": "java.lang.String"
-            },
-            {
-              "field": "isActive",
-              "java_type": "java.lang.Boolean"
-            },
-            {
-              "field": "isDeleted",
-              "java_type": "java.lang.Boolean"
-            },
-            {
-              "field": "items",
-              "java_type": "java.util.List<com.jiuyan.banquet.entity.PackageItem>"
-            }
-          ]
-        }
-      ],
-      "existing_cases_on_this_method": [],
-      "facts": {
-        "internal_calls": [
-          "com.jiuyan.banquet.entity.BanquetPackage.getId",
-          "com.jiuyan.banquet.entity.BanquetPackage.getName",
-          "com.jiuyan.banquet.entity.BanquetPackage.setIsActive",
-          "com.jiuyan.banquet.entity.BanquetPackage.setIsDeleted",
-          "com.jiuyan.banquet.mapper.PackageMapper.toResponse",
-          "com.jiuyan.banquet.repository.BanquetPackageRepository.save"
-        ],
-        "external_calls": [
-          "java.lang.Boolean.valueOf",
-          "org.slf4j.Logger.info"
-        ],
-        "side_effects": [
-          "com.jiuyan.banquet.mapper.PackageMapper.toResponse",
-          "com.jiuyan.banquet.repository.BanquetPackageRepository.save"
-        ],
-        "entity_field_writes": [],
-        "constants": [
-          {
-            "kind": "int",
-            "value": "0"
-          },
-          {
-            "kind": "int",
-            "value": "1"
-          },
-          {
-            "kind": "String",
-            "value": "deleted package id={} name={}"
-          }
-        ],
-        "caught_exceptions": [],
-        "throws_business_exception": false,
-        "is_pure": false
+        "is_pure": true
       }
     }
   ],
@@ -2084,6 +1178,18 @@
       "sample": null
     }
   },
+  "error_codes": [
+    "VALIDATION_ERROR",
+    "PRODUCT_NOT_FOUND",
+    "PACKAGE_NOT_FOUND",
+    "PACKAGE_TYPE_NOT_FOUND",
+    "ORDER_NOT_FOUND",
+    "CATEGORY_NOT_FOUND",
+    "ORDER_STATUS_INVALID",
+    "PRICE_INVALID",
+    "IMAGE_UPLOAD_FAILED",
+    "INTERNAL_ERROR"
+  ],
   "worked_example": {
     "note": "一个带打桩的用例长什么样（形状照抄，不要照抄内容）",
     "case": {
@@ -2208,6 +1314,7 @@
     "每个单元的 `stub_examples` 是**它要调的仓储/客户端在别处怎么打桩** —— **照抄这个形状**。打桩形状错了断言会假失败：findById 要返回 Optional（给裸实体会让 .orElseThrow 炸掉 → 返回 null → 「期望非 null」永远失败）。",
     "每个单元的 `existing_cases_same_class` 是**同一个类上已经跑得通的用例** —— 照抄它们的**形状**（入参用什么 fixture、仓储怎么打桩），不要照抄内容。打桩不全的断言会假失败（返回全是 null），这是上一轮 12 条候选里 10 条报废的原因。",
     "bound 只在模板需要时给（returns_le_arg / returns_ge_arg / returns_eq_const / throws_business_code）；not_null 与 returns_null **不要给 bound**（写了 {} 也行，编译器会当成没有）。",
+    "**这一轮的任务形态**：优先回答「**这个方法在什么输入下应该拒绝、拒绝时给哪个错误码**」（用 throws_business_code 模板，错误码从 error_codes 里选）—— 「应该拒绝什么」是这个代码库里可枚举的业务语义，比「应该返回什么」更贴近职责。只有在你确实有把握时才用 returns_* 模板。",
     "**harness 的默认行为**（不写就按这个来）：仓储/客户端方法**不打桩时返回 Optional.empty()** —— 所以任何 `xxxRepository.findById(id).orElseThrow(...)` 的方法在默认打桩下会抛异常，你的断言会看到「返回 null」而假失败。要让方法走通，仓储方法必须显式打桩，且 Optional 形状要用 **{\"$optional\": {...}}** 包一层。（实体本身用 {\"$t\": \"entity\", \"class\": ..., \"fields\": {...}}。）"
   ],
   "output_contract": {

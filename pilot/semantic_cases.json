@@ -203,856 +203,290 @@
       "stubs": {}
     },
     {
-      "id": "OB-MODEL-CategoryService-delete-1",
-      "group": "SEMANTIC_OBLIGATION_MODEL",
+      "id": "OB-PRICE-NEGATIVE-MUST-REJECT",
+      "group": "SEMANTIC_OBLIGATION",
       "func": "reflect",
-      "class": "com.jiuyan.banquet.service.CategoryService",
-      "method": "delete",
+      "class": "com.jiuyan.banquet.service.PackageService",
+      "method": "applyBase",
       "args": [
         {
+          "$t": "entity",
+          "class": "com.jiuyan.banquet.entity.BanquetPackage",
+          "fields": {
+            "id": 4,
+            "name": "婚宴双人套餐",
+            "banquetType": "婚宴",
+            "priceCent": 100000,
+            "imageUrl": "https://example.com/pkg.png",
+            "description": "双人精选套餐",
+            "isActive": true,
+            "isDeleted": false,
+            "items": []
+          }
+        },
+        {
+          "$t": "str",
+          "v": "婚宴双人套餐"
+        },
+        {
+          "$t": "str",
+          "v": "婚宴"
+        },
+        {
           "$t": "long",
-          "v": 11
+          "v": -1
+        },
+        {
+          "$t": "str",
+          "v": "https://example.com/pkg.png"
+        },
+        {
+          "$t": "str",
+          "v": "双人精选套餐"
+        },
+        {
+          "$t": "bool",
+          "v": true
         }
       ],
       "check": {
-        "type": "returns_non_null"
+        "type": "throws_business",
+        "value": "PRICE_INVALID"
       },
-      "invariant": "按 id 软删除分类（置 isDeleted=true 并保存），返回被删除分类的响应对象，不得返回 null。",
-      "label": "分类软删除成功后必须返回非 null 的分类响应",
+      "invariant": "把套餐基础字段写进 BanquetPackage 时，priceCent 不得小于 0；传入负金额时必须以业务错误 PRICE_INVALID 拒绝，而不是照单全收。",
+      "label": "套餐金额为负必须被拒绝，且给出 PRICE_INVALID",
       "stubs": {
-        "com.jiuyan.banquet.repository.CategoryRepository": {
-          "findById": {
+        "com.jiuyan.banquet.repository.PackageTypeRepository": {
+          "findByNameAndIsDeletedFalse": {
             "$optional": {
+              "$t": "entity",
+              "class": "com.jiuyan.banquet.entity.PackageType",
+              "fields": {
+                "id": 13,
+                "name": "婚宴",
+                "sortOrder": 1,
+                "isDeleted": false
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "OB-PACKAGE-ITEMS-EMPTY-MUST-REJECT",
+      "group": "SEMANTIC_OBLIGATION",
+      "func": "reflect",
+      "class": "com.jiuyan.banquet.service.PackageService",
+      "method": "applyItems",
+      "args": [
+        {
+          "$t": "entity",
+          "class": "com.jiuyan.banquet.entity.BanquetPackage",
+          "fields": {
+            "id": 4,
+            "name": "婚宴双人套餐",
+            "banquetType": "婚宴",
+            "priceCent": 100000,
+            "imageUrl": "https://example.com/pkg.png",
+            "description": "双人精选套餐",
+            "isActive": true,
+            "isDeleted": false,
+            "items": []
+          }
+        },
+        {
+          "$t": "entity",
+          "class": "java.util.ArrayList",
+          "fields": {}
+        }
+      ],
+      "check": {
+        "type": "throws_business",
+        "value": "VALIDATION_ERROR"
+      },
+      "invariant": "写入套餐商品明细时，商品集合不得为空；传入空集合时必须以业务错误 VALIDATION_ERROR 拒绝，而不是把套餐保存成没有任何商品的空套餐。",
+      "label": "套餐商品为空必须被拒绝，且给出 VALIDATION_ERROR",
+      "stubs": {}
+    },
+    {
+      "id": "OB-MODEL-PackageService-applyBase-1",
+      "group": "SEMANTIC_OBLIGATION_MODEL",
+      "func": "reflect",
+      "class": "com.jiuyan.banquet.service.PackageService",
+      "method": "applyBase",
+      "args": [
+        {
+          "$t": "entity",
+          "class": "com.jiuyan.banquet.entity.BanquetPackage",
+          "fields": {
+            "id": 4,
+            "name": "婚宴双人套餐",
+            "banquetType": "婚宴",
+            "priceCent": 100000,
+            "imageUrl": "https://example.com/pkg.png",
+            "description": "双人精选套餐",
+            "isActive": true,
+            "isDeleted": false,
+            "items": []
+          }
+        },
+        {
+          "$t": "str",
+          "v": "婚宴双人套餐"
+        },
+        {
+          "$t": "str",
+          "v": "婚宴"
+        },
+        {
+          "$t": "long",
+          "v": -1
+        },
+        {
+          "$t": "str",
+          "v": "https://example.com/pkg.png"
+        },
+        {
+          "$t": "str",
+          "v": "双人精选套餐"
+        },
+        {
+          "$t": "bool",
+          "v": true
+        }
+      ],
+      "check": {
+        "type": "throws_business",
+        "value": "PRICE_INVALID"
+      },
+      "invariant": "把套餐基础字段写进 BanquetPackage 时，priceCent 不得小于 0；传入负金额时必须以业务错误 PRICE_INVALID 拒绝，而不是照单全收。",
+      "label": "套餐金额为负必须被拒绝，且给出 PRICE_INVALID",
+      "stubs": {
+        "com.jiuyan.banquet.repository.PackageTypeRepository": {
+          "findByNameAndIsDeletedFalse": {
+            "$optional": {
+              "$t": "entity",
+              "class": "com.jiuyan.banquet.entity.PackageType",
+              "fields": {
+                "id": 13,
+                "name": "婚宴",
+                "sortOrder": 1,
+                "isDeleted": false
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "OB-MODEL-ProductService-apply-1",
+      "group": "SEMANTIC_OBLIGATION_MODEL",
+      "func": "reflect",
+      "class": "com.jiuyan.banquet.service.ProductService",
+      "method": "apply",
+      "args": [
+        {
+          "$t": "entity",
+          "class": "com.jiuyan.banquet.entity.Product",
+          "fields": {
+            "id": 29,
+            "name": "红烧肉",
+            "category": {
               "$t": "entity",
               "class": "com.jiuyan.banquet.entity.Category",
               "fields": {
                 "id": 11,
-                "name": "宴会分类",
+                "name": "热菜",
                 "sortOrder": 1,
                 "isDeleted": false
               }
-            }
-          },
-          "save": {
-            "$t": "entity",
-            "class": "com.jiuyan.banquet.entity.Category",
-            "fields": {
-              "id": 11,
-              "name": "宴会分类",
-              "sortOrder": 1,
-              "isDeleted": true
-            }
+            },
+            "priceCent": 6800,
+            "unit": "份",
+            "imageUrl": "https://example.com/hongshaorou.png",
+            "description": "招牌红烧肉",
+            "isActive": true,
+            "isDeleted": false
           }
         },
-        "com.jiuyan.banquet.repository.ProductRepository": {
-          "existsByCategoryIdAndIsDeletedFalse": {
-            "$t": "bool",
-            "v": false
-          }
-        },
-        "com.jiuyan.banquet.mapper.CategoryMapper": {
-          "toResponse": {
-            "$t": "entity",
-            "class": "com.jiuyan.banquet.dto.CategoryResponse",
-            "fields": {}
-          }
-        }
-      }
-    },
-    {
-      "id": "OB-MODEL-PackageTypeService-delete-1",
-      "group": "SEMANTIC_OBLIGATION_MODEL",
-      "func": "reflect",
-      "class": "com.jiuyan.banquet.service.PackageTypeService",
-      "method": "delete",
-      "args": [
-        {
-          "$t": "long",
-          "v": 13
-        }
-      ],
-      "check": {
-        "type": "returns_non_null"
-      },
-      "invariant": "按 id 软删除套餐分类（置 isDeleted=true 并保存），返回被删除套餐分类的响应对象，不得返回 null。",
-      "label": "套餐分类软删除成功后必须返回非 null 的响应",
-      "stubs": {
-        "com.jiuyan.banquet.repository.PackageTypeRepository": {
-          "findById": {
-            "$optional": {
-              "$t": "entity",
-              "class": "com.jiuyan.banquet.entity.PackageType",
-              "fields": {
-                "id": 13,
-                "name": "婚宴套餐类型",
-                "sortOrder": 1,
-                "isDeleted": false
-              }
-            }
-          },
-          "save": {
-            "$t": "entity",
-            "class": "com.jiuyan.banquet.entity.PackageType",
-            "fields": {
-              "id": 13,
-              "name": "婚宴套餐类型",
-              "sortOrder": 1,
-              "isDeleted": true
-            }
-          }
-        },
-        "com.jiuyan.banquet.repository.BanquetPackageRepository": {
-          "existsByBanquetTypeAndIsDeletedFalse": {
-            "$t": "bool",
-            "v": false
-          }
-        },
-        "com.jiuyan.banquet.mapper.PackageTypeMapper": {
-          "toResponse": {
-            "$t": "entity",
-            "class": "com.jiuyan.banquet.dto.PackageTypeResponse",
-            "fields": {}
-          }
-        }
-      }
-    },
-    {
-      "id": "OB-MODEL-PackageTypeService-create-1",
-      "group": "SEMANTIC_OBLIGATION_MODEL",
-      "func": "reflect",
-      "class": "com.jiuyan.banquet.service.PackageTypeService",
-      "method": "create",
-      "args": [
         {
           "$t": "entity",
-          "class": "com.jiuyan.banquet.dto.CreatePackageTypeRequest",
+          "class": "com.jiuyan.banquet.entity.Category",
           "fields": {
-            "name": "婚宴套餐类型"
-          }
-        }
-      ],
-      "check": {
-        "type": "returns_non_null"
-      },
-      "invariant": "按名称新建套餐分类（若存在同名软删记录则恢复为未删除），保存后返回套餐分类响应对象，不得返回 null。",
-      "label": "新建/恢复套餐分类后必须返回非 null 的响应",
-      "stubs": {
-        "com.jiuyan.banquet.repository.PackageTypeRepository": {
-          "findByName": {
-            "$optional": {
-              "$t": "entity",
-              "class": "com.jiuyan.banquet.entity.PackageType",
-              "fields": {
-                "id": 13,
-                "name": "婚宴套餐类型",
-                "sortOrder": 1,
-                "isDeleted": true
-              }
-            }
-          },
-          "save": {
-            "$t": "entity",
-            "class": "com.jiuyan.banquet.entity.PackageType",
-            "fields": {
-              "id": 13,
-              "name": "婚宴套餐类型",
-              "sortOrder": 1,
-              "isDeleted": false
-            }
+            "id": 11,
+            "name": "热菜",
+            "sortOrder": 1,
+            "isDeleted": false
           }
         },
-        "com.jiuyan.banquet.mapper.PackageTypeMapper": {
-          "toResponse": {
-            "$t": "entity",
-            "class": "com.jiuyan.banquet.dto.PackageTypeResponse",
-            "fields": {}
-          }
-        }
-      }
-    },
-    {
-      "id": "OB-MODEL-ProductService-updateStatus-1",
-      "group": "SEMANTIC_OBLIGATION_MODEL",
-      "func": "reflect",
-      "class": "com.jiuyan.banquet.service.ProductService",
-      "method": "updateStatus",
-      "args": [
+        {
+          "$t": "str",
+          "v": "红烧肉"
+        },
         {
           "$t": "long",
-          "v": 29
+          "v": -1
+        },
+        {
+          "$t": "str",
+          "v": "份"
+        },
+        {
+          "$t": "str",
+          "v": "https://example.com/hongshaorou.png"
+        },
+        {
+          "$t": "str",
+          "v": "招牌红烧肉"
         },
         {
           "$t": "bool",
-          "v": false
+          "v": true
         }
       ],
       "check": {
-        "type": "returns_non_null"
+        "type": "throws_business",
+        "value": "PRICE_INVALID"
       },
-      "invariant": "按 id 修改商品的启用状态并保存，返回更新后的商品响应对象，不得返回 null。",
-      "label": "商品上下架后必须返回非 null 的响应",
-      "stubs": {
-        "com.jiuyan.banquet.repository.ProductRepository": {
-          "findById": {
-            "$optional": {
-              "$t": "entity",
-              "class": "com.jiuyan.banquet.entity.Product",
-              "fields": {
-                "id": 29,
-                "name": "龙虾拼盘",
-                "category": {
-                  "$t": "entity",
-                  "class": "com.jiuyan.banquet.entity.Category",
-                  "fields": {
-                    "id": 11,
-                    "name": "宴会分类",
-                    "sortOrder": 1,
-                    "isDeleted": false
-                  }
-                },
-                "priceCent": 6800,
-                "unit": "份",
-                "imageUrl": "https://example.com/product.png",
-                "description": "精选龙虾拼盘",
-                "isActive": true,
-                "isDeleted": false
-              }
-            }
-          },
-          "save": {
-            "$t": "entity",
-            "class": "com.jiuyan.banquet.entity.Product",
-            "fields": {
-              "id": 29,
-              "name": "龙虾拼盘",
-              "category": {
-                "$t": "entity",
-                "class": "com.jiuyan.banquet.entity.Category",
-                "fields": {
-                  "id": 11,
-                  "name": "宴会分类",
-                  "sortOrder": 1,
-                  "isDeleted": false
-                }
-              },
-              "priceCent": 6800,
-              "unit": "份",
-              "imageUrl": "https://example.com/product.png",
-              "description": "精选龙虾拼盘",
-              "isActive": false,
-              "isDeleted": false
-            }
-          }
-        },
-        "com.jiuyan.banquet.repository.PackageItemRepository": {
-          "existsByProductId": {
-            "$t": "bool",
-            "v": false
-          }
-        },
-        "com.jiuyan.banquet.mapper.ProductMapper": {
-          "toResponse": {
-            "$t": "entity",
-            "class": "com.jiuyan.banquet.dto.ProductResponse",
-            "fields": {}
-          }
-        }
-      }
-    },
-    {
-      "id": "OB-MODEL-OrderMapper-toResponse-1",
-      "group": "SEMANTIC_OBLIGATION_MODEL",
-      "func": "reflect",
-      "class": "com.jiuyan.banquet.mapper.OrderMapper",
-      "method": "toResponse",
-      "args": [
-        {
-          "$t": "null"
-        }
-      ],
-      "check": {
-        "type": "returns_null"
-      },
-      "invariant": "把订单实体映射为订单响应；输入为空（未指定订单）时返回 null，不做过滤也不抛异常。",
-      "label": "订单实体为空时映射必须返回 null 而不抛异常",
+      "invariant": "把商品字段写进 Product 时，priceCent 不得小于 0；传入负金额时必须以业务错误 PRICE_INVALID 拒绝。该方法不触碰仓储，无需打桩。",
+      "label": "商品金额为负必须被拒绝，且给出 PRICE_INVALID",
       "stubs": {}
     },
     {
-      "id": "OB-MODEL-ProductService-delete-1",
-      "group": "SEMANTIC_OBLIGATION_MODEL",
-      "func": "reflect",
-      "class": "com.jiuyan.banquet.service.ProductService",
-      "method": "delete",
-      "args": [
-        {
-          "$t": "long",
-          "v": 29
-        }
-      ],
-      "check": {
-        "type": "returns_non_null"
-      },
-      "invariant": "按 id 软删除商品（置 isDeleted=true、isActive=false 并保存），返回被删除商品的响应对象，不得返回 null。",
-      "label": "商品软删除成功后必须返回非 null 的响应",
-      "stubs": {
-        "com.jiuyan.banquet.repository.ProductRepository": {
-          "findById": {
-            "$optional": {
-              "$t": "entity",
-              "class": "com.jiuyan.banquet.entity.Product",
-              "fields": {
-                "id": 29,
-                "name": "龙虾拼盘",
-                "category": {
-                  "$t": "entity",
-                  "class": "com.jiuyan.banquet.entity.Category",
-                  "fields": {
-                    "id": 11,
-                    "name": "宴会分类",
-                    "sortOrder": 1,
-                    "isDeleted": false
-                  }
-                },
-                "priceCent": 6800,
-                "unit": "份",
-                "imageUrl": "https://example.com/product.png",
-                "description": "精选龙虾拼盘",
-                "isActive": true,
-                "isDeleted": false
-              }
-            }
-          },
-          "save": {
-            "$t": "entity",
-            "class": "com.jiuyan.banquet.entity.Product",
-            "fields": {
-              "id": 29,
-              "name": "龙虾拼盘",
-              "category": {
-                "$t": "entity",
-                "class": "com.jiuyan.banquet.entity.Category",
-                "fields": {
-                  "id": 11,
-                  "name": "宴会分类",
-                  "sortOrder": 1,
-                  "isDeleted": false
-                }
-              },
-              "priceCent": 6800,
-              "unit": "份",
-              "imageUrl": "https://example.com/product.png",
-              "description": "精选龙虾拼盘",
-              "isActive": false,
-              "isDeleted": true
-            }
-          }
-        },
-        "com.jiuyan.banquet.repository.PackageItemRepository": {
-          "existsNonDeletedPackageReferenceByProductId": {
-            "$t": "bool",
-            "v": false
-          }
-        },
-        "com.jiuyan.banquet.mapper.ProductMapper": {
-          "toResponse": {
-            "$t": "entity",
-            "class": "com.jiuyan.banquet.dto.ProductResponse",
-            "fields": {}
-          }
-        }
-      }
-    },
-    {
-      "id": "OB-MODEL-OrderService-update-1",
-      "group": "SEMANTIC_OBLIGATION_MODEL",
-      "func": "reflect",
-      "class": "com.jiuyan.banquet.service.OrderService",
-      "method": "update",
-      "args": [
-        {
-          "$t": "long",
-          "v": 4
-        },
-        {
-          "$t": "entity",
-          "class": "com.jiuyan.banquet.dto.UpdateOrderRequest",
-          "fields": {
-            "customerName": "张三",
-            "customerPhone": "13800000000",
-            "banquetName": "婚宴包厢",
-            "banquetType": "婚宴",
-            "address": "某酒店宴会厅",
-            "reservationTime": null,
-            "tableCount": 10,
-            "packageId": 4,
-            "packageItems": [],
-            "addedItems": [],
-            "planTotalCent": 300000,
-            "useFinalPrice": true,
-            "finalPriceCent": 200000,
-            "depositCent": 100000,
-            "status": null,
-            "remark": "少盐"
-          }
-        }
-      ],
-      "check": {
-        "type": "returns_non_null"
-      },
-      "invariant": "用更新请求覆盖订单字段并保存，返回更新后的订单响应对象，不得返回 null。",
-      "label": "订单更新后必须返回非 null 的订单响应",
-      "stubs": {
-        "com.jiuyan.banquet.repository.OrderRepository": {
-          "findById": {
-            "$optional": {
-              "$t": "entity",
-              "class": "com.jiuyan.banquet.entity.BanquetOrder",
-              "fields": {
-                "id": 4,
-                "orderNo": "BJ20261108000001",
-                "customerName": "张三",
-                "customerPhone": "13800000000",
-                "banquetName": "婚宴包厢",
-                "banquetType": "婚宴",
-                "address": "某酒店宴会厅",
-                "reservationTime": null,
-                "tableCount": 10,
-                "banquetPackage": {
-                  "$t": "entity",
-                  "class": "com.jiuyan.banquet.entity.BanquetPackage",
-                  "fields": {
-                    "id": 4,
-                    "name": "婚宴双人套餐",
-                    "banquetType": "婚宴",
-                    "priceCent": 100000,
-                    "imageUrl": "https://example.com/pkg.png",
-                    "description": "双人精选套餐",
-                    "isActive": true,
-                    "isDeleted": false,
-                    "items": []
-                  }
-                },
-                "packageSnapshot": null,
-                "addedItemsSnapshot": null,
-                "planTotalCent": 300000,
-                "useFinalPrice": true,
-                "finalPriceCent": 200000,
-                "depositCent": 100000,
-                "status": null,
-                "remark": ""
-              }
-            }
-          },
-          "save": {
-            "$t": "entity",
-            "class": "com.jiuyan.banquet.entity.BanquetOrder",
-            "fields": {
-              "id": 4,
-              "orderNo": "BJ20261108000001",
-              "customerName": "张三",
-              "customerPhone": "13800000000",
-              "banquetName": "婚宴包厢",
-              "banquetType": "婚宴",
-              "address": "某酒店宴会厅",
-              "reservationTime": null,
-              "tableCount": 10,
-              "banquetPackage": {
-                "$t": "entity",
-                "class": "com.jiuyan.banquet.entity.BanquetPackage",
-                "fields": {
-                  "id": 4,
-                  "name": "婚宴双人套餐",
-                  "banquetType": "婚宴",
-                  "priceCent": 100000,
-                  "imageUrl": "https://example.com/pkg.png",
-                  "description": "双人精选套餐",
-                  "isActive": true,
-                  "isDeleted": false,
-                  "items": []
-                }
-              },
-              "packageSnapshot": null,
-              "addedItemsSnapshot": null,
-              "planTotalCent": 300000,
-              "useFinalPrice": true,
-              "finalPriceCent": 200000,
-              "depositCent": 100000,
-              "status": null,
-              "remark": "少盐"
-            }
-          }
-        },
-        "com.jiuyan.banquet.mapper.OrderMapper": {
-          "toResponse": {
-            "$t": "entity",
-            "class": "com.jiuyan.banquet.dto.OrderResponse",
-            "fields": {}
-          }
-        }
-      }
-    },
-    {
-      "id": "OB-MODEL-OrderService-updateStatus-1",
-      "group": "SEMANTIC_OBLIGATION_MODEL",
-      "func": "reflect",
-      "class": "com.jiuyan.banquet.service.OrderService",
-      "method": "updateStatus",
-      "args": [
-        {
-          "$t": "long",
-          "v": 4
-        },
-        {
-          "$t": "null"
-        }
-      ],
-      "check": {
-        "type": "returns_non_null"
-      },
-      "invariant": "按 id 修改订单状态并保存，返回更新后的订单响应对象，不得返回 null。（注：OrderStatus 枚举常量名在事实里无从得知，状态入参只能取空值规格，断言范围因此收窄到「保存并映射后仍返回非 null」）",
-      "label": "订单状态变更后必须返回非 null 的订单响应",
-      "stubs": {
-        "com.jiuyan.banquet.repository.OrderRepository": {
-          "findById": {
-            "$optional": {
-              "$t": "entity",
-              "class": "com.jiuyan.banquet.entity.BanquetOrder",
-              "fields": {
-                "id": 4,
-                "orderNo": "BJ20261108000001",
-                "customerName": "张三",
-                "customerPhone": "13800000000",
-                "banquetName": "婚宴包厢",
-                "banquetType": "婚宴",
-                "address": "某酒店宴会厅",
-                "reservationTime": null,
-                "tableCount": 10,
-                "banquetPackage": {
-                  "$t": "entity",
-                  "class": "com.jiuyan.banquet.entity.BanquetPackage",
-                  "fields": {
-                    "id": 4,
-                    "name": "婚宴双人套餐",
-                    "banquetType": "婚宴",
-                    "priceCent": 100000,
-                    "imageUrl": "https://example.com/pkg.png",
-                    "description": "双人精选套餐",
-                    "isActive": true,
-                    "isDeleted": false,
-                    "items": []
-                  }
-                },
-                "packageSnapshot": null,
-                "addedItemsSnapshot": null,
-                "planTotalCent": 300000,
-                "useFinalPrice": true,
-                "finalPriceCent": 200000,
-                "depositCent": 100000,
-                "status": null,
-                "remark": ""
-              }
-            }
-          },
-          "save": {
-            "$t": "entity",
-            "class": "com.jiuyan.banquet.entity.BanquetOrder",
-            "fields": {
-              "id": 4,
-              "orderNo": "BJ20261108000001",
-              "customerName": "张三",
-              "customerPhone": "13800000000",
-              "banquetName": "婚宴包厢",
-              "banquetType": "婚宴",
-              "address": "某酒店宴会厅",
-              "reservationTime": null,
-              "tableCount": 10,
-              "banquetPackage": {
-                "$t": "entity",
-                "class": "com.jiuyan.banquet.entity.BanquetPackage",
-                "fields": {
-                  "id": 4,
-                  "name": "婚宴双人套餐",
-                  "banquetType": "婚宴",
-                  "priceCent": 100000,
-                  "imageUrl": "https://example.com/pkg.png",
-                  "description": "双人精选套餐",
-                  "isActive": true,
-                  "isDeleted": false,
-                  "items": []
-                }
-              },
-              "packageSnapshot": null,
-              "addedItemsSnapshot": null,
-              "planTotalCent": 300000,
-              "useFinalPrice": true,
-              "finalPriceCent": 200000,
-              "depositCent": 100000,
-              "status": null,
-              "remark": ""
-            }
-          }
-        },
-        "com.jiuyan.banquet.mapper.OrderMapper": {
-          "toResponse": {
-            "$t": "entity",
-            "class": "com.jiuyan.banquet.dto.OrderResponse",
-            "fields": {}
-          }
-        }
-      }
-    },
-    {
-      "id": "OB-MODEL-PackageService-create-1",
+      "id": "OB-MODEL-PackageService-applyItems-1",
       "group": "SEMANTIC_OBLIGATION_MODEL",
       "func": "reflect",
       "class": "com.jiuyan.banquet.service.PackageService",
-      "method": "create",
+      "method": "applyItems",
       "args": [
         {
           "$t": "entity",
-          "class": "com.jiuyan.banquet.dto.CreatePackageRequest",
+          "class": "com.jiuyan.banquet.entity.BanquetPackage",
           "fields": {
+            "id": 4,
             "name": "婚宴双人套餐",
             "banquetType": "婚宴",
             "priceCent": 100000,
             "imageUrl": "https://example.com/pkg.png",
             "description": "双人精选套餐",
             "isActive": true,
+            "isDeleted": false,
             "items": []
           }
-        }
-      ],
-      "check": {
-        "type": "returns_non_null"
-      },
-      "invariant": "按创建请求新建套餐并保存，返回新建套餐的响应对象，不得返回 null。",
-      "label": "新建套餐后必须返回非 null 的响应",
-      "stubs": {
-        "com.jiuyan.banquet.repository.BanquetPackageRepository": {
-          "save": {
-            "$t": "entity",
-            "class": "com.jiuyan.banquet.entity.BanquetPackage",
-            "fields": {
-              "id": 4,
-              "name": "婚宴双人套餐",
-              "banquetType": "婚宴",
-              "priceCent": 100000,
-              "imageUrl": "https://example.com/pkg.png",
-              "description": "双人精选套餐",
-              "isActive": true,
-              "isDeleted": false,
-              "items": []
-            }
-          }
-        },
-        "com.jiuyan.banquet.mapper.PackageMapper": {
-          "toResponse": {
-            "$t": "entity",
-            "class": "com.jiuyan.banquet.dto.PackageResponse",
-            "fields": {}
-          }
-        }
-      }
-    },
-    {
-      "id": "OB-MODEL-PackageService-update-1",
-      "group": "SEMANTIC_OBLIGATION_MODEL",
-      "func": "reflect",
-      "class": "com.jiuyan.banquet.service.PackageService",
-      "method": "update",
-      "args": [
-        {
-          "$t": "long",
-          "v": 4
         },
         {
           "$t": "entity",
-          "class": "com.jiuyan.banquet.dto.UpdatePackageRequest",
-          "fields": {
-            "name": "婚宴双人套餐",
-            "banquetType": "婚宴",
-            "priceCent": 100000,
-            "imageUrl": "https://example.com/pkg.png",
-            "description": "双人精选套餐",
-            "isActive": true,
-            "items": []
-          }
+          "class": "java.util.ArrayList",
+          "fields": {}
         }
       ],
       "check": {
-        "type": "returns_non_null"
+        "type": "throws_business",
+        "value": "VALIDATION_ERROR"
       },
-      "invariant": "用更新请求覆盖套餐字段并保存，返回更新后的套餐响应对象，不得返回 null。",
-      "label": "套餐更新后必须返回非 null 的响应",
-      "stubs": {
-        "com.jiuyan.banquet.repository.BanquetPackageRepository": {
-          "findById": {
-            "$optional": {
-              "$t": "entity",
-              "class": "com.jiuyan.banquet.entity.BanquetPackage",
-              "fields": {
-                "id": 4,
-                "name": "婚宴双人套餐",
-                "banquetType": "婚宴",
-                "priceCent": 100000,
-                "imageUrl": "https://example.com/pkg.png",
-                "description": "双人精选套餐",
-                "isActive": true,
-                "isDeleted": false,
-                "items": []
-              }
-            }
-          },
-          "save": {
-            "$t": "entity",
-            "class": "com.jiuyan.banquet.entity.BanquetPackage",
-            "fields": {
-              "id": 4,
-              "name": "婚宴双人套餐",
-              "banquetType": "婚宴",
-              "priceCent": 100000,
-              "imageUrl": "https://example.com/pkg.png",
-              "description": "双人精选套餐",
-              "isActive": true,
-              "isDeleted": false,
-              "items": []
-            }
-          }
-        },
-        "com.jiuyan.banquet.mapper.PackageMapper": {
-          "toResponse": {
-            "$t": "entity",
-            "class": "com.jiuyan.banquet.dto.PackageResponse",
-            "fields": {}
-          }
-        }
-      }
-    },
-    {
-      "id": "OB-MODEL-PackageService-updateStatus-1",
-      "group": "SEMANTIC_OBLIGATION_MODEL",
-      "func": "reflect",
-      "class": "com.jiuyan.banquet.service.PackageService",
-      "method": "updateStatus",
-      "args": [
-        {
-          "$t": "long",
-          "v": 4
-        },
-        {
-          "$t": "bool",
-          "v": false
-        }
-      ],
-      "check": {
-        "type": "returns_non_null"
-      },
-      "invariant": "按 id 修改套餐的启用状态并保存，返回更新后的套餐响应对象，不得返回 null。",
-      "label": "套餐上下架后必须返回非 null 的响应",
-      "stubs": {
-        "com.jiuyan.banquet.repository.BanquetPackageRepository": {
-          "findById": {
-            "$optional": {
-              "$t": "entity",
-              "class": "com.jiuyan.banquet.entity.BanquetPackage",
-              "fields": {
-                "id": 4,
-                "name": "婚宴双人套餐",
-                "banquetType": "婚宴",
-                "priceCent": 100000,
-                "imageUrl": "https://example.com/pkg.png",
-                "description": "双人精选套餐",
-                "isActive": true,
-                "isDeleted": false,
-                "items": []
-              }
-            }
-          },
-          "save": {
-            "$t": "entity",
-            "class": "com.jiuyan.banquet.entity.BanquetPackage",
-            "fields": {
-              "id": 4,
-              "name": "婚宴双人套餐",
-              "banquetType": "婚宴",
-              "priceCent": 100000,
-              "imageUrl": "https://example.com/pkg.png",
-              "description": "双人精选套餐",
-              "isActive": false,
-              "isDeleted": false,
-              "items": []
-            }
-          }
-        },
-        "com.jiuyan.banquet.mapper.PackageMapper": {
-          "toResponse": {
-            "$t": "entity",
-            "class": "com.jiuyan.banquet.dto.PackageResponse",
-            "fields": {}
-          }
-        }
-      }
-    },
-    {
-      "id": "OB-MODEL-PackageService-delete-1",
-      "group": "SEMANTIC_OBLIGATION_MODEL",
-      "func": "reflect",
-      "class": "com.jiuyan.banquet.service.PackageService",
-      "method": "delete",
-      "args": [
-        {
-          "$t": "long",
-          "v": 4
-        }
-      ],
-      "check": {
-        "type": "returns_non_null"
-      },
-      "invariant": "按 id 软删除套餐（置 isDeleted=true、isActive=false 并保存），返回被删除套餐的响应对象，不得返回 null。",
-      "label": "套餐软删除成功后必须返回非 null 的响应",
-      "stubs": {
-        "com.jiuyan.banquet.repository.BanquetPackageRepository": {
-          "findById": {
-            "$optional": {
-              "$t": "entity",
-              "class": "com.jiuyan.banquet.entity.BanquetPackage",
-              "fields": {
-                "id": 4,
-                "name": "婚宴双人套餐",
-                "banquetType": "婚宴",
-                "priceCent": 100000,
-                "imageUrl": "https://example.com/pkg.png",
-                "description": "双人精选套餐",
-                "isActive": true,
-                "isDeleted": false,
-                "items": []
-              }
-            }
-          },
-          "save": {
-            "$t": "entity",
-            "class": "com.jiuyan.banquet.entity.BanquetPackage",
-            "fields": {
-              "id": 4,
-              "name": "婚宴双人套餐",
-              "banquetType": "婚宴",
-              "priceCent": 100000,
-              "imageUrl": "https://example.com/pkg.png",
-              "description": "双人精选套餐",
-              "isActive": false,
-              "isDeleted": true,
-              "items": []
-            }
-          }
-        },
-        "com.jiuyan.banquet.mapper.PackageMapper": {
-          "toResponse": {
-            "$t": "entity",
-            "class": "com.jiuyan.banquet.dto.PackageResponse",
-            "fields": {}
-          }
-        }
-      }
+      "invariant": "写入套餐商品明细时，商品集合不得为空；传入空集合时必须以业务错误 VALIDATION_ERROR 拒绝，而不是把套餐保存成没有任何商品的空套餐。该方法不触碰仓储，无需打桩。",
+      "label": "套餐商品为空必须被拒绝，且给出 VALIDATION_ERROR",
+      "stubs": {}
     }
   ]
 }

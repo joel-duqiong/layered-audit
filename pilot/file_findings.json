@@ -59,7 +59,7 @@
       },
       "real_container": {
         "spoofed_ip_in_logs": true,
-        "log_segment": "2026-11-08T12:14:47.266Z  INFO 1 --- [banquet-backend] [io-8080-exec-32] c.jiuyan.banquet.config.TraceIdFilter    : request end traceId=aee46311-4fe9-4b4f-89a5-f36779fafe6d method=GET path=/api/health status=200 durationMs=0 clientIp=9.9.9.9 userAgent=Python-urllib/3.14 errorCode=null\n"
+        "log_segment": "2026-11-08T12:38:56.048Z  INFO 1 --- [banquet-backend] [io-8080-exec-20] c.jiuyan.banquet.config.TraceIdFilter    : request end traceId=12cddea1-7683-478c-99c7-9cf0be79d23a method=GET path=/api/health status=200 durationMs=0 clientIp=9.9.9.9 userAgent=Python-urllib/3.14 errorCode=null\n"
       },
       "implementation": "TraceIdFilter.clientIp: forwardedFor.split(\",\")[0].trim()"
     },
@@ -75,7 +75,7 @@
     "detail": "handleBadRequest 用 Map.of(\"message\", ex.getMessage()) 把 Jackson 的解析错误信息原样送出，而 Jackson 的解析错误里**带着请求体的原始片段**。\n实测：请求体 {\"password\":\"hunter2\"} 格式错误 → 400 响应体里原样出现 \"password\":\"hunter2\"。\n影响：客户端往任何接口发错一个 JSON，body 就被回显回来。响应体是最容易被中间层（网关、APM、前端埋点、错误上报 SDK）记录的地方 —— 密码、token、身份证号只要在出错的那次请求里，就会从「一个错误响应」变成「一条被长期留存的日志」。同一个 handleBadRequest 还把解析器内部细节（字符码、行列号）一起送出去了。",
     "evidence": {
       "http_status": 400,
-      "body": "{\"success\":false,\"code\":\"VALIDATION_ERROR\",\"message\":\"参数错误\",\"details\":{\"message\":\"JSON parse error: Unexpected character ('s' (code 115)) in JSON string: {\\\"password\\\":\\\"hunter2\\\"} at [Source: (String)\\\"; line: 1, column: 20]\"},\"timestamp\":1794140081.861789000}",
+      "body": "{\"success\":false,\"code\":\"VALIDATION_ERROR\",\"message\":\"参数错误\",\"details\":{\"message\":\"JSON parse error: Unexpected character ('s' (code 115)) in JSON string: {\\\"password\\\":\\\"hunter2\\\"} at [Source: (String)\\\"; line: 1, column: 20]\"},\"timestamp\":1794141530.367545000}",
       "body_contains_raw_fragment": true,
       "implementation": "GlobalExceptionHandler.handleBadRequest -> Map.of(\"message\", ex.getMessage())"
     },
@@ -95,7 +95,7 @@
     "detail": "handleDataIntegrity 把 ex.getMostSpecificCause().getMessage() 原样放进响应 details。实测：返回体里直接出现 PostgreSQL 的约束名 uk_orders_order_no、「could not execute statement [ERROR: duplicate key value violates unique constraint ...]」。\n归属说明：服务层把这一现象记成了 24 条 INTERNAL_LEAK（每个接口一条）。按 owner = 能给出可复现证据的最低层，根因就在这一个文件的一行代码上，所以开单收敛到这里；服务层的 24 条是同一根因在 24 个端点上的投影，不是 24 个独立缺陷。\n暴露面：约束名 → 表结构 → 唯一键语义 → 可枚举的订单号空间，对攻击者来说这就是一张可用的 schema 地图。",
     "evidence": {
       "http_status": 409,
-      "body": "{\"success\":false,\"code\":\"VALIDATION_ERROR\",\"message\":\"数据约束冲突\",\"details\":{\"message\":\"could not execute statement [ERROR: duplicate key value violates unique constraint \\\"uk_orders_order_no\\\"]\"},\"timestamp\":1794140081.854189000}",
+      "body": "{\"success\":false,\"code\":\"VALIDATION_ERROR\",\"message\":\"数据约束冲突\",\"details\":{\"message\":\"could not execute statement [ERROR: duplicate key value violates unique constraint \\\"uk_orders_order_no\\\"]\"},\"timestamp\":1794141530.360159000}",
       "body_contains_constraint_name": true,
       "body_contains_db_vendor_detail": true,
       "implementation": "GlobalExceptionHandler.handleDataIntegrity -> ex.getMostSpecificCause().getMessage()"
@@ -240,7 +240,7 @@
     "detail": "参数校验被拆在两个文件里，两边各自选了不同的状态码：\n  · DTO 文件声明的约束（数量 @Min(1)、价格 @Min(0)）走 Bean Validation → MethodArgumentNotValidException → handleValidation → 400；\n  · 服务文件自己做的校验（明细为空、明细重复）抛 BusinessException → 422。\n实测同一个接口 PUT /api/packages/4：数量=0 → 400；明细为空 → 422。两者在语义上都是「请求参数不合法」，前端却要写两个分支才能区分，监控按状态码分类时也会把一类错误拆成两堆。\n根因不是某一处写错，而是校验责任分散在 DTO 与 service 两个文件、且没有统一的错误语义约定。",
     "evidence": {
       "dto_validation_status": 400,
-      "dto_validation_body": "{\"success\":false,\"code\":\"VALIDATION_ERROR\",\"message\":\"参数错误\",\"details\":{\"items[0].quantity\":\"must be greater than or equal to 1\"},\"traceId\":\"04349acb-cd91-4a9f-a1ec-8014f038b438\",\"timestamp\":\"2026-11-08T20:14:48.350704795+08:00\"}",
+      "dto_validation_body": "{\"success\":false,\"code\":\"VALIDATION_ERROR\",\"message\":\"参数错误\",\"details\":{\"items[0].quantity\":\"must be greater than or equal to 1\"},\"traceId\":\"6e5cb488-5964-40d0-99b7-c5c28e2512c6\",\"timestamp\":\"2026-11-08T20:38:57.179038424+08:00\"}",
       "service_validation_status": 422,
       "service_validation_code": "VALIDATION_ERROR",
       "split_check": {
@@ -332,7 +332,7 @@
       "unknown_handler": {
         "id": "ERR-UNKNOWN-NO-LEAK",
         "http_status": 500,
-        "body": "{\"success\":false,\"code\":\"INTERNAL_ERROR\",\"message\":\"系统异常，请稍后重试\",\"timestamp\":1794140081.862733000}",
+        "body": "{\"success\":false,\"code\":\"INTERNAL_ERROR\",\"message\":\"系统异常，请稍后重试\",\"timestamp\":1794141530.368427000}",
         "body_contains_internal_detail": false,
         "repo_calls": []
       },
@@ -349,7 +349,7 @@
     "title": "null 响应体也被包成 success=true 的信封（data 字段缺失）",
     "detail": "ApiResponseAdvice.beforeBodyWrite 对 body==null 也照样包一层，产出 {success:true, code:OK, message:成功, traceId, timestamp}，data 因为 NON_NULL 被省略。前端拿到 success=true 但没有 data 字段，只能靠「data 存不存在」判断有无结果，与其它接口「data 一定有值」的假设冲突。\n实际链路无害：499 那条走 ResponseEntity<Void>，协商不出 JSON content type，不会走到包装分支。所以这是 INFO 级的契约不一致，不是现网故障。\n顺带两条正向结论：supports() 对 ResponseEntity<ApiResponse<...>> 返回 false（声明类型是 ResponseEntity），但 beforeBodyWrite 的 instanceof ApiResponse 守卫仍然挡住了二次包装；已经包好的信封不会被改写（already_envelope_unchanged=true）。",
     "evidence": {
-      "null_body_json": "{\"success\":true,\"code\":\"OK\",\"message\":\"成功\",\"traceId\":\"FILELAYER-CONTEXT-TRACE\",\"timestamp\":1794140081.871510000}",
+      "null_body_json": "{\"success\":true,\"code\":\"OK\",\"message\":\"成功\",\"traceId\":\"FILELAYER-CONTEXT-TRACE\",\"timestamp\":1794141530.377317000}",
       "supports": {
         "plain": true,
         "enveloped": false,

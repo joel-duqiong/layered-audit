@@ -141,12 +141,13 @@
       "priority": 82
     },
     {
-      "task_id": "emergence-graph",
-      "script": "emergence_graph.py",
+      "task_id": "relation-net",
+      "script": "engine/relation_net.py",
       "oracle": "graph_correlation",
       "layer": "integration",
       "argv": [],
-      "priority": 87
+      "priority": 87,
+      "note": "通用可执行依赖图（候选链生成的输入）。原来的项目专属 emergence_graph.py 已退役：它的 DERIVES 边会连到实体的**所有**字段（不是被设的那一个），通用构建器只连到具体字段，且污点/READS/WRITES/DERIVES 一样不少"
     },
     {
       "task_id": "orm-query-amplification",
