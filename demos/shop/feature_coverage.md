@@ -7,8 +7,8 @@
 |---|---|---|---|---|---|
 | 跨仓库调用边界（HTTP / MQ / RPC） | `xrepo_probe.py` | integration.e2e_three_source | function.jvm_reflection, file.jvm_whole_class | partial | 2 条 |
 | AOP 切面（代理织入） | `java_feature_scan.py` | integration.e2e_three_source | function.jvm_reflection, file.jvm_whole_class | partial | 2 条 |
-| 依赖注入装配 | `java_feature_scan.py` | class.dto_db_contract, integration.e2e_three_source | function.jvm_reflection, file.jvm_whole_class | partial | 2 条 |
-| 动态配置注入（@Value / 配置绑定 / 配置刷新） | `java_feature_scan.py` | — | function.jvm_reflection, file.jvm_whole_class, service.http_contract | blind | 3 条 |
+| 依赖注入装配 | `spring_ctx_probe.py` | service.http_contract | function.jvm_reflection, file.jvm_whole_class | partial | 2 条 |
+| 动态配置注入（@Value / 配置绑定 / 配置刷新） | `java_feature_scan.py` | — | function.jvm_reflection, file.jvm_whole_class, service.http_contract | blind | 4 条 |
 | JPA 持久化（懒加载 / N+1 / 脏写） | `java_feature_scan.py` | class.dto_db_contract, service.http_contract | function.jvm_reflection, file.jvm_whole_class | partial | 2 条 |
 | HTTP 契约（请求/响应形状 / 错误码） | `—` | service.http_contract | — | covered | 0 条 |
 

@@ -3,15 +3,15 @@
   "contract": "/Users/june/.cc-weixin/workspace/layered-audit/layers.yaml",
   "target": "/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/target.json",
   "counts": {
-    "total": 23,
+    "total": 25,
     "by_layer": {
       "file": 2,
       "class": 17,
       "integration": 1,
-      "service": 3
+      "service": 5
     },
     "by_kind": {
-      "defect": 21,
+      "defect": 23,
       "positive": 2,
       "observation": 0
     }
@@ -1037,7 +1037,7 @@
       "runtime_fidelity": "container",
       "severity": "HIGH",
       "title": "基准币种下，额度占用额（报价）与账本记录额（实付）是否相等？",
-      "detail": "授信额度按客户报价检查并占住，账本按实付记录。两个口径必须相等 —— 不相等就意味着「额度被占住了，却没有对应的账目」，差额就是被白占的额度。\n不变式：BI-QUOTA-LEDGER-PARITY　判定原语：field_eq_field\n实测 3 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 700,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 810000,\n    \"ok\": false,\n    \"scenario\": \"vip_on_vip\"\n  }\n]",
+      "detail": "授信额度按客户报价检查并占住，账本按实付记录。两个口径必须相等 —— 不相等就意味着「额度被占住了，却没有对应的账目」，差额就是被白占的额度。\n不变式：BI-QUOTA-LEDGER-PARITY　判定原语：field_eq_field\n实测 3 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 780,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 810000,\n    \"ok\": false,\n    \"scenario\": \"vip_on_vip\"\n  }\n]",
       "related": [],
       "note": "服务层 OrderService.create 里额度检查用 quotedAmountCent、账本记录用 settled —— 两个口径。单条件都不分裂：普通客户 + 会员装配不分裂，VIP 客户 + 标准装配也不分裂；两个条件同时成立才分裂（实测 3 个场景里只有这一组违反）。服务层是能给可复现证据的最低层，故 owner 归 service",
       "source": {
@@ -1086,7 +1086,7 @@
       "runtime_fidelity": "container",
       "severity": "HIGH",
       "title": "VIP 客户的结算额是否享受了会员价（报价的 9/10）？",
-      "detail": "会员价是**客户等级**维度的价格规则：VIP 客户在任何部署环境下都应当拿到九折。这条不变式只对 VIP 客户适用（when 条件），衡量的是「等级条件有没有真的落到定价上」。\n不变式：BI-VIP-MEMBER-PRICE　判定原语：field_eq_field\n实测 2 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 699,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 810000,\n    \"ok\": false,\n    \"scenario\": \"vip_on_default\"\n  }\n]",
+      "detail": "会员价是**客户等级**维度的价格规则：VIP 客户在任何部署环境下都应当拿到九折。这条不变式只对 VIP 客户适用（when 条件），衡量的是「等级条件有没有真的落到定价上」。\n不变式：BI-VIP-MEMBER-PRICE　判定原语：field_eq_field\n实测 2 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 779,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 810000,\n    \"ok\": false,\n    \"scenario\": \"vip_on_default\"\n  }\n]",
       "related": [],
       "note": "服务层实测到：VIP 客户在标准装配下拿不到九折（结算额 = 报价额）。根因是「业务维度（客户等级）被绑到部署维度（@Profile）」—— 那是类层的结构问题，类层已经 own（CLASS-CONDITIONAL-ASSEMBLY-DIVERGENCE）。本层只作行为佐证，不重复开单",
       "source": {
@@ -1135,7 +1135,7 @@
       "runtime_fidelity": "container",
       "severity": "HIGH",
       "title": "非基准币种下，结算额与额度占用额是否还在同一个金额基准上？",
-      "detail": "结算额被乘了**另一个仓库**返回的汇率（demo-shop → python-svc 的 /fx），而额度占用仍按报价口径校验。两个口径一差，差额来自仓库边界之外 —— 单看本仓库的任何一行都看不出问题。\n不变式：BI-FX-BASIS-ALIGNMENT　判定原语：field_eq_field\n实测 2 个业务场景，违反 2 次：\n[\n  {\n    \"row_id\": 701,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 828000,\n    \"ok\": false,\n    \"scenario\": \"fx_on_default\"\n  },\n  {\n    \"row_id\": 702,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 745200,\n    \"ok\": false,\n    \"scenario\": \"fx_on_vip\"\n  }\n]",
+      "detail": "结算额被乘了**另一个仓库**返回的汇率（demo-shop → python-svc 的 /fx），而额度占用仍按报价口径校验。两个口径一差，差额来自仓库边界之外 —— 单看本仓库的任何一行都看不出问题。\n不变式：BI-FX-BASIS-ALIGNMENT　判定原语：field_eq_field\n实测 2 个业务场景，违反 2 次：\n[\n  {\n    \"row_id\": 781,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 828000,\n    \"ok\": false,\n    \"scenario\": \"fx_on_default\"\n  },\n  {\n    \"row_id\": 782,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 745200,\n    \"ok\": false,\n    \"scenario\": \"fx_on_vip\"\n  }\n]",
       "related": [],
       "note": "**跨仓库的缺陷**：结算额被乘了另一个仓库（python-svc 的 /fx）返回的汇率，而额度占用仍按报价口径校验 —— 两个口径的币种不同，限额的含义被汇率悄悄改了。本地汇率若是 1.0（CNY=100），这条根本不会违反 —— 差额来自仓库边界之外。本仓库任何一行代码单独看都没错。",
       "source": {
@@ -1147,6 +1147,104 @@
         "confidence_source": "manual",
         "ground_truth_source": "manual",
         "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "SPRING-BUSINESS-BOUND-TO-PROFILE",
+      "uid": "service:SPRING-BUSINESS-BOUND-TO-PROFILE#0",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "",
+        "endpoint": ""
+      },
+      "claim": "会员价这个**业务维度**，是不是被绑到了部署维度上？",
+      "evidence_refs": [
+        "artifacts/spring_ctx_findings.json#SPRING-BUSINESS-BOUND-TO-PROFILE"
+      ],
+      "repro_cmd": "python3 spring_ctx_probe.py",
+      "repro_granularity": "layer",
+      "confidence": 0.94,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-840"
+      ],
+      "owner": {
+        "layer": "class",
+        "relation": "cite",
+        "basis": "根因归 class；本层拥有链级后果"
+      },
+      "root_cause_key": "pricing.member_tier_bound_to_deployment_profile",
+      "related_root_causes": [],
+      "kind": "defect",
+      "runtime_fidelity": "container",
+      "severity": "HIGH",
+      "title": "客户等级（VIP） 被绑到了部署维度：default profile 装配的是 standardPricingStrategy，vip profile 装配的是 ['memberPricingStrategy']",
+      "detail": "**运行时证据**：两个 profile 各起了一个容器，读装配日志对比 bean 清单 ——\n   default profile：standardPricingStrategy\n       vip profile：memberPricingStrategy\n两者只差这 1 个 bean ⇒ 装配结果确实随部署环境变。\n问题在于：客户等级（VIP） 是**业务维度**，不是部署维度。用 @Profile（部署环境）来表达它，意味着换一套部署环境，这个业务语义就变了 —— 而且没有任何报错。\n会员价是**客户等级**决定的业务语义，却用 @Profile（部署环境）装配 —— 非 vip 部署里会员客户全部按标准价结算。",
+      "related": [],
+      "note": "**运行时证据**：两个 profile 各起一个容器读装配日志，bean 清单只差 standardPricingStrategy / memberPricingStrategy ⇒ 装配结果确实随部署环境变。根因（业务维度被绑到部署维度）归类层 own（CLASS-CONDITIONAL-ASSEMBLY-DIVERGENCE），本条只是运行时佐证，不重复开单",
+      "source": {
+        "file": "artifacts/spring_ctx_findings.json",
+        "index": 0
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
+      "id": "SPRING-BUSINESS-BOUND-TO-PROFILE",
+      "uid": "service:SPRING-BUSINESS-BOUND-TO-PROFILE#1",
+      "layer": "service",
+      "category": "service.interface_contract",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "",
+        "endpoint": ""
+      },
+      "claim": "会员价这个**业务维度**，是不是被绑到了部署维度上？",
+      "evidence_refs": [
+        "artifacts/spring_ctx_findings.json#SPRING-BUSINESS-BOUND-TO-PROFILE"
+      ],
+      "repro_cmd": "python3 spring_ctx_probe.py",
+      "repro_granularity": "layer",
+      "confidence": 0.94,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-840"
+      ],
+      "owner": {
+        "layer": "class",
+        "relation": "cite",
+        "basis": "根因归 class；本层拥有链级后果"
+      },
+      "root_cause_key": "pricing.member_tier_bound_to_deployment_profile",
+      "related_root_causes": [],
+      "kind": "defect",
+      "runtime_fidelity": "container",
+      "severity": "HIGH",
+      "title": "客户等级（VIP） 被绑到了部署维度：vip profile 装配的是 memberPricingStrategy，default profile 装配的是 ['standardPricingStrategy']",
+      "detail": "**运行时证据**：两个 profile 各起了一个容器，读装配日志对比 bean 清单 ——\n       vip profile：memberPricingStrategy\n   default profile：standardPricingStrategy\n两者只差这 1 个 bean ⇒ 装配结果确实随部署环境变。\n问题在于：客户等级（VIP） 是**业务维度**，不是部署维度。用 @Profile（部署环境）来表达它，意味着换一套部署环境，这个业务语义就变了 —— 而且没有任何报错。\n同上：vip 部署里所有客户都拿到九折，不管他是不是 VIP。",
+      "related": [],
+      "note": "**运行时证据**：两个 profile 各起一个容器读装配日志，bean 清单只差 standardPricingStrategy / memberPricingStrategy ⇒ 装配结果确实随部署环境变。根因（业务维度被绑到部署维度）归类层 own（CLASS-CONDITIONAL-ASSEMBLY-DIVERGENCE），本条只是运行时佐证，不重复开单",
+      "source": {
+        "file": "artifacts/spring_ctx_findings.json",
+        "index": 1
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
       }
     }
   ]

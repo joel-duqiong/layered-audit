@@ -181,6 +181,16 @@ SERVICE: dict[str, Meta] = {
              "两个口径。单条件都不分裂：普通客户 + 会员装配不分裂，VIP 客户 + 标准装配也不分裂；"
              "两个条件同时成立才分裂（实测 3 个场景里只有这一组违反）。"
              "服务层是能给可复现证据的最低层，故 owner 归 service"),
+    "SPRING-BUSINESS-BOUND-TO-PROFILE": _m(
+        "service.interface_contract", "exact",
+        "会员价这个**业务维度**，是不是被绑到了部署维度上？",
+        "class", 0.94, "defect", ("CWE-840",),
+        "pricing.member_tier_bound_to_deployment_profile",
+        relation="cite",
+        note="**运行时证据**：两个 profile 各起一个容器读装配日志，bean 清单只差 "
+             "standardPricingStrategy / memberPricingStrategy ⇒ 装配结果确实随部署环境变。"
+             "根因（业务维度被绑到部署维度）归类层 own"
+             "（CLASS-CONDITIONAL-ASSEMBLY-DIVERGENCE），本条只是运行时佐证，不重复开单"),
     "BI-FX-BASIS-ALIGNMENT": _m(
         "service.data_consistency", "exact",
         "非基准币种下，结算额与额度占用额是否还在同一个金额基准上？",

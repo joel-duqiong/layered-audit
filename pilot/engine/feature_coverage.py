@@ -24,6 +24,13 @@ import findings_schema
 
 HERE = Path(__file__).resolve().parent
 PROJECT_DIR = findings_schema.target_path().parent
+
+
+def artifacts_dir() -> Path:
+    """产物目录（跟别的层一致）—— 换目标时落到目标自己的目录。"""
+    target = findings_schema.load_target()
+    raw = (target.get("paths") or {}).get("artifacts_dir")
+    return Path(raw) if raw else PROJECT_DIR
 # 工具目录：pilot/ —— 各层探针脚本的家（engine/ 的上一级）
 TOOL_DIR = Path(__file__).resolve().parent.parent
 
@@ -114,11 +121,11 @@ def build() -> dict[str, Any]:
 
 def main() -> None:
     payload = build()
-    (PROJECT_DIR / "feature_coverage.json").write_text(
+    (artifacts_dir() / "feature_coverage.json").write_text(
         json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     _write_md(payload)
     s = payload["summary"]
-    print(f"特性覆盖矩阵 -> {PROJECT_DIR / 'feature_coverage.json'}")
+    print(f"特性覆盖矩阵 -> {artifacts_dir() / 'feature_coverage.json'}")
     print(f"  特性 {s['features']} 个：覆盖 {s['covered']} / 部分 {s['partial']} / 盲区 {s['blind']}")
     if s["detectors_failing"]:
         print(f"  检测器失败：{s['detectors_failing']}")

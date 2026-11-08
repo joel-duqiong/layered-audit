@@ -7,7 +7,7 @@
     "verified_ratio": 0.0677,
     "obligations": {
       "satisfied": 24,
-      "violated": 63,
+      "violated": 65,
       "unknown": 2065
     },
     "root_causes_with_multiple_carriers": 12
@@ -644,6 +644,9 @@
     "config.bad_upload_dir_kills_startup": [
       "service:api"
     ],
+    "config.binding_priority_surprise": [
+      "service:api"
+    ],
     "cors.allowed_origin_patterns_too_broad": [
       "com.jiuyan.banquet.config.WebConfig",
       "service:api"
@@ -748,6 +751,9 @@
     ],
     "traceid.client_controlled_no_validation": [
       "com.jiuyan.banquet.config.TraceIdFilter"
+    ],
+    "unannotated.service.SPRING-ASSEMBLY-UNAMBIGUOUS": [
+      "service:api"
     ],
     "upload.error.no_path_leak": [
       "service:api"

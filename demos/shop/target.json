@@ -94,6 +94,11 @@
       "layer": "service",
       "file": "artifacts/business_findings.json",
       "key": "service"
+    },
+    {
+      "layer": "service",
+      "file": "artifacts/spring_ctx_findings.json",
+      "key": "service"
     }
   ],
   "unit_sources": {},
@@ -163,17 +168,16 @@
     {
       "id": "dependency_injection",
       "label": "依赖注入装配",
-      "detector": "java_feature_scan.py",
-      "detector_layer": "class",
+      "detector": "spring_ctx_probe.py",
+      "detector_layer": "service",
       "covered_by": [
-        "class.dto_db_contract",
-        "integration.e2e_three_source"
+        "service.http_contract"
       ],
       "blind_carriers": [
         "function.jvm_reflection",
         "file.jvm_whole_class"
       ],
-      "note": "类层的类形状探针能看见 @Profile/@Primary/@Qualifier 注解，集成层能看见**装配结果**（两个实例行为分叉）；但「装配图本身」（327 个 bean 谁注入谁）仍然没有运行时证据 ——Spring 上下文探针还没做（DESIGN §6.4 第 3 项）。"
+      "note": "装配结果有运行时证据：两个 profile 各起一个容器读装配日志，bean 清单只差 standardPricingStrategy / memberPricingStrategy —— 业务维度（VIP）确实被绑在部署维度上。仍盲的部分：注入点的类型映射"
     },
     {
       "id": "dynamic_config",
@@ -213,6 +217,42 @@
       ],
       "blind_carriers": [],
       "note": "demo 的服务层差分跑在真实容器上（demo-shop-backend / -vip 两个实例）。"
+    }
+  ],
+  "spring_ctx_instances": [
+    {
+      "profile": "default",
+      "instance": "demo-shop-backend"
+    },
+    {
+      "profile": "vip",
+      "instance": "demo-shop-backend-vip"
+    }
+  ],
+  "probe_health_path": "/api/products",
+  "probe_entrypoint": [
+    "java"
+  ],
+  "probe_cmd": [
+    "-jar",
+    "/app/app.jar"
+  ],
+  "probe_app_volumes": [
+    "/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/backend/target/demo-shop-backend-0.0.1-SNAPSHOT.jar:/app/app.jar:ro"
+  ],
+  "probe_app_volumes_note": "demo 的应用 jar 是**挂进容器**的，不在镜像里 —— 探针克隆时必须挂同一个 jar，否则跑的是镜像里的另一个应用。",
+  "spring_ctx_business_bindings": [
+    {
+      "profile": "default",
+      "bean": "standardPricingStrategy",
+      "business_dimension": "客户等级（VIP）",
+      "note": "会员价是**客户等级**决定的业务语义，却用 @Profile（部署环境）装配 —— 非 vip 部署里会员客户全部按标准价结算。"
+    },
+    {
+      "profile": "vip",
+      "bean": "memberPricingStrategy",
+      "business_dimension": "客户等级（VIP）",
+      "note": "同上：vip 部署里所有客户都拿到九折，不管他是不是 VIP。"
     }
   ]
 }

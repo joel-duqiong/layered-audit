@@ -5,7 +5,7 @@ JPA 实体 7 个 | DDL 表 6 张 | 索引 22 个 | finding 23 条
 | 级别 | 层 | 缺陷 |
 |---|---|---|
 | HIGH | class | 状态机缺失：9/9 种迁移全部被接受，含回退 |
-| HIGH | class→service | DDL 声明的 idx_products_name 对服务层查询模式无效（7.558ms vs 0.012ms，差 630 倍） |
+| HIGH | class→service | DDL 声明的 idx_products_name 对服务层查询模式无效（8.253ms vs 0.013ms，差 635 倍） |
 | HIGH | class | com.jiuyan.banquet.entity.BanquetPackage.getItems 把内部实体集合直接交出去 |
 | HIGH | class | 4 条业务不变量在 DB / DTO / 服务层三层全都不存在 |
 | MEDIUM | class | 软删除的行会被同名重建「复活」，id 与 sort_order 沿用旧值 |
@@ -54,14 +54,14 @@ DDL 只有取值白名单 CHECK (status IN (...))，没有任何迁移约束；�
 }
 ```
 
-## [HIGH] DDL 声明的 idx_products_name 对服务层查询模式无效（7.558ms vs 0.012ms，差 630 倍）
+## [HIGH] DDL 声明的 idx_products_name 对服务层查询模式无效（8.253ms vs 0.013ms，差 635 倍）
 
 迁移文件建了 products(name) 索引，但服务层关键词搜索写的是 lower(name) LIKE '%kw%'：lower() 让索引无法用于定位，前导 % 让 btree 本来也用不上。EXPLAIN 显示走 Filter 全量过滤而非 Index Cond。类层把索引交给服务层，但服务层不知道该怎么用它 —— 声明没有传递下去。
 
 ```json
 {
-  "like_prefix_lower_ms": 7.558,
-  "exact_equal_ms": 0.012,
+  "like_prefix_lower_ms": 8.253,
+  "exact_equal_ms": 0.013,
   "index_cond_present": true,
   "like_has_index_cond": false,
   "scale_rows": 50000
@@ -138,13 +138,13 @@ public 方法返回 java.util.List<com.jiuyan.banquet.entity.PackageItem>，元�
 
 ```json
 {
-  "category": "ai_probe_cat_6f42d7",
+  "category": "ai_probe_cat_fb33aa",
   "create": 200,
   "delete": 200,
   "recreate": 200,
   "db_rows": [
     [
-      "291",
+      "299",
       "f"
     ]
   ]
@@ -357,7 +357,7 @@ UpdateProductRequest.imageUrl 没有任何约束（可缺省），但 PUT 的语
 ```json
 {
   "entity": "products",
-  "id": 4606119,
+  "id": 4806349,
   "changed_columns": [
     "description",
     "image_url",
@@ -368,15 +368,15 @@ UpdateProductRequest.imageUrl 没有任何约束（可缺省），但 PUT 的语
     "updated_at"
   ],
   "final_row": {
-    "id": 4606119,
+    "id": 4806349,
     "name": "ai_probe_fp2",
     "unit": "克",
     "image_url": null,
     "is_active": false,
-    "created_at": "2026-11-08T13:10:13.59774+00:00",
+    "created_at": "2026-11-08T14:09:52.977644+00:00",
     "is_deleted": true,
     "price_cent": 9999,
-    "updated_at": "2026-11-08T13:10:13.960528+00:00",
+    "updated_at": "2026-11-08T14:09:53.322354+00:00",
     "category_id": 2,
     "description": "changed"
   }

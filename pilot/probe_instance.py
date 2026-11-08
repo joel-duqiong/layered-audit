@@ -19,6 +19,11 @@ import requests
 import project
 
 
+def health_path() -> str:
+    """探针容器「起来了」的判据 —— 项目绑定里声明（不同项目的健康端点不一样）。"""
+    return str((project.binding().get("probe_health_path") or "/api/health"))
+
+
 def source_container_name() -> str:
     """被克隆的源容器 —— 项目绑定里声明（app_container），不写死。"""
     return project.path("app_container", "jiuyan-backend")
@@ -86,6 +91,14 @@ class ProbeInstance:
         docker("rm", "-f", self.name)
         args = ["run", "-d", "--name", self.name, "--network", network,
                 "-p", f"127.0.0.1:{self.port}:{self.port}"]
+        # 入口与命令**由项目声明**：不同项目的镜像启动方式不一样
+        # （jiuyan 的镜像自带 javaagent 入口，demo 是 java -jar /app/app.jar）。
+        entry = (project.binding().get("probe_entrypoint") or [])
+        cmd = (project.binding().get("probe_cmd") or [])
+        if entry:
+            args += ["--entrypoint", entry[0]]
+            if len(entry) > 1:
+                args += entry[1:]
         skip = ("OTEL_", "LANG", "LANGUAGE", "LC_ALL", "HOSTNAME")
         for k, v in env.items():
             if k.startswith(skip) or k in skip or k in self.drop_env:
@@ -96,14 +109,20 @@ class ProbeInstance:
         for k, v in self.default_env.items():
             if k not in self.env_overrides:
                 args += ["-e", f"{k}={v.replace('{name}', self.name)}"]
+        # 被测应用的产物挂载（如果它是挂进去的，不在镜像里）。
+        # 不挂的话，探针克隆出来跑的是**镜像里的另一个应用** —— 探的不是同一个系统。
+        for vol in (project.binding().get("probe_app_volumes") or []):
+            args += ["-v", vol]
         args += ["-e", f"SERVER_PORT={self.port}"]
         if self.java_tool_options:
             args += ["-e", f"JAVA_TOOL_OPTIONS={self.java_tool_options}"]
         args.append(image)
+        # 命令与参数要放在**镜像名之后**（放在前面会被 docker 当成自己的 flag）
+        args += cmd
         docker(*args)
         for _ in range(90):
             try:
-                if requests.get(f"{self.base}/api/health", timeout=2).status_code == 200:
+                if requests.get(f"{self.base}{health_path()}", timeout=2).status_code == 200:
                     return self
             except requests.RequestException:
                 pass

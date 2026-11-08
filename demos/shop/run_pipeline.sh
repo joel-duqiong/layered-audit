@@ -38,6 +38,9 @@ python3 file_static.py
 python3 file_dynamic.py
 python3 engine/file_diff.py
 
+echo "=== Spring 上下文（装配结果：bean 清单 / 按名解析 / profile 差异）==="
+python3 "$PILOT/spring_ctx_probe.py"
+
 echo "=== 业务不变式（服务层：造场景 → 读行 → 判定 → 开单）==="
 python3 "$DEMO/business_probe.py"
 

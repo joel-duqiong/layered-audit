@@ -95,6 +95,11 @@
       "layer": "service",
       "file": "property_binding_findings.json",
       "key": "service"
+    },
+    {
+      "layer": "service",
+      "file": "spring_ctx_findings.json",
+      "key": "service"
     }
   ],
   "carriers": {
@@ -208,14 +213,16 @@
     {
       "id": "dependency_injection",
       "label": "依赖注入装配",
-      "detector": "java_feature_scan.py",
-      "detector_layer": "class",
-      "covered_by": [],
+      "detector": "spring_ctx_probe.py",
+      "detector_layer": "service",
+      "covered_by": [
+        "service.http_contract"
+      ],
       "blind_carriers": [
         "function.jvm_reflection",
         "file.jvm_whole_class"
       ],
-      "note": "本项目全是构造器注入 + 4 处 @Value，没有字段注入。但装配结果（@Primary/@Qualifier/@Profile/@Conditional 选了谁）没有任何检查器 —— 换实现时行为变化不会被这套审计发现。"
+      "note": "装配结果现在有运行时证据了：读容器装配日志拿到 bean 清单与按名解析的注入点，再与静态声明对账。实测 327 个 bean、0 处按名解析。"
     },
     {
       "id": "rpc_boundary",
@@ -332,5 +339,6 @@
   "probe_default_env": {
     "FILE_UPLOAD_DIR": "/tmp/{name}-uploads"
   },
-  "probe_default_env_note": "探针容器默认注入的环境变量（{name} = 探针实例名）。之前写死在 probe_instance.py 里，既是项目耦合，也让「属性绑定优先级」这类探针观察不到默认值 —— 现在由项目声明。"
+  "probe_default_env_note": "探针容器默认注入的环境变量（{name} = 探针实例名）。之前写死在 probe_instance.py 里，既是项目耦合，也让「属性绑定优先级」这类探针观察不到默认值 —— 现在由项目声明。",
+  "probe_health_path": "/api/health"
 }

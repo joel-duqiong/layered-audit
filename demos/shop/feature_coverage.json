@@ -76,11 +76,10 @@
     {
       "feature": "dependency_injection",
       "label": "依赖注入装配",
-      "detector": "java_feature_scan.py",
+      "detector": "spring_ctx_probe.py",
       "detector_ok": true,
       "covered_by": [
-        "class.dto_db_contract",
-        "integration.e2e_three_source"
+        "service.http_contract"
       ],
       "blind_carriers": [
         "function.jvm_reflection",
@@ -92,7 +91,7 @@
         "file.error_handling_pattern"
       ],
       "affected_count": 2,
-      "note": "类层的类形状探针能看见 @Profile/@Primary/@Qualifier 注解，集成层能看见**装配结果**（两个实例行为分叉）；但「装配图本身」（327 个 bean 谁注入谁）仍然没有运行时证据 ——Spring 上下文探针还没做（DESIGN §6.4 第 3 项）。"
+      "note": "装配结果有运行时证据：两个 profile 各起一个容器读装配日志，bean 清单只差 standardPricingStrategy / memberPricingStrategy —— 业务维度（VIP）确实被绑在部署维度上。仍盲的部分：注入点的类型映射"
     },
     {
       "feature": "dynamic_config",
@@ -109,9 +108,10 @@
       "affected_findings": [
         "file.contract_alignment",
         "file.error_handling_pattern",
-        "service.data_consistency"
+        "service.data_consistency",
+        "service.interface_contract"
       ],
-      "affected_count": 3,
+      "affected_count": 4,
       "note": "demo 的 @Value 只有一个（app.fx-base-url），且它的兜底值写错了量纲 —— 但**那不是配置绑定的问题，是兜底常量的问题**。属性溯源与宽松绑定矩阵还没做（DESIGN §6.4 第 4 项）。"
     },
     {

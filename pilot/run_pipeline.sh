@@ -47,6 +47,9 @@ echo "=== 服务层（静态声明 / 动态实测 / 差分）==="
 run_layer service python3 contract_static.py
 run_layer service python3 contract_probe.py    # 通用版：场景配置在 service_scenarios.json
 run_layer service python3 contract_diff.py
+echo "=== Spring 上下文（装配结果：bean 清单 / 按名解析 / profile 差异）==="
+python3 spring_ctx_probe.py
+
 echo "=== 属性绑定优先级（同一属性的多种绑定形式，谁赢了）==="
 python3 property_binding_probe.py
 

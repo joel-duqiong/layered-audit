@@ -2,15 +2,15 @@
 
 生成物：/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/root_causes.json　输入：/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/all_findings.json
 
-- 发现 23 条 → 根因 18 条（归并 5 条）
+- 发现 25 条 → 根因 18 条（归并 7 条）
 - 硬违规 0 条；契约缺口（无法归类）2 条
 
 ## 一、修复顺序（按根因）
 
 | # | 严重度 | 归属层 | 根因 | 标题 | 发现数 | 置信 | ground_truth | 可跑复现 |
 |---|--------|--------|------|------|--------|------|---------------|----------|
-| 1 | HIGH | file | `order.quota_checked_on_quoted_amount_ledger_on_settled` | OrderService 同一文件里两处对同一个订单金额用了不同口径：额度按报价卡、账按结算记 | 2 | 0.93 | verified | `python3 demos/shop/business_probe.py` |
-| 2 | HIGH | class | `pricing.member_tier_bound_to_deployment_profile` | 同一请求在两个部署实例上结果不同：settledAmountCent 分叉 | 2 | 0.94 | verified | `python3 demos/shop/business_probe.py` |
+| 1 | HIGH | class | `pricing.member_tier_bound_to_deployment_profile` | 同一请求在两个部署实例上结果不同：settledAmountCent 分叉 | 4 | 0.94 | verified | `python3 demos/shop/business_probe.py` |
+| 2 | HIGH | file | `order.quota_checked_on_quoted_amount_ledger_on_settled` | OrderService 同一文件里两处对同一个订单金额用了不同口径：额度按报价卡、账按结算记 | 2 | 0.93 | verified | `python3 demos/shop/business_probe.py` |
 | 3 | HIGH | file | `cross_repo.fx_fallback_returns_wrong_scale` | FxClient 汇率取不到时兜底成 1（=1%），把结算金额砍到 1/100 | 1 | 0.9 | verified | `—` |
 | 4 | HIGH | class | `error.business_error_as_500` | 业务规则失败被当成服务器错误抛出去：customerName 不存在（服务层抛异常） -> HTTP 500 | 1 | 0.9 | verified | `—` |
 | 5 | HIGH | class | `inheritance.touch_postcondition_changed` | com.demo.shop.entity.ShopOrder 覆写 com.demo.shop.entity.AuditableEntity.touch 后置条件变了：updatedBy 不再相同 | 1 | 0.95 | verified | `—` |
@@ -78,7 +78,7 @@
 
 | category | 命中 | 状态 |
 |----------|------|------|
-| interface_contract | 0 | 零覆盖 —— 没人管 |
+| interface_contract | 2 | ok |
 | resilience | 0 | 零覆盖 —— 没人管 |
 | authz | 0 | 零覆盖 —— 没人管 |
 | data_consistency | 3 | ok |

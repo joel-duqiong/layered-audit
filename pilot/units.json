@@ -165,31 +165,6 @@
     }
   ],
   "layer_roles": {
-    "class": [
-      "class.contract_violation",
-      "class.encapsulation_leak",
-      "class.inheritance_design",
-      "class.invariant"
-    ],
-    "integration": [
-      "integration.cross_layer_correlation",
-      "integration.cross_service_attack_chain",
-      "integration.cross_service_performance",
-      "integration.emergent_masking",
-      "integration.end_to_end_business"
-    ],
-    "function": [
-      "function.boundary",
-      "function.complexity",
-      "function.exception_path",
-      "function.numeric"
-    ],
-    "file": [
-      "file.cohesion",
-      "file.contract_alignment",
-      "file.error_handling_pattern",
-      "file.state_consistency"
-    ],
     "service": [
       "service.authz",
       "service.data_consistency",
@@ -197,6 +172,31 @@
       "service.resilience",
       "service.resource_leak",
       "service.service_latency"
+    ],
+    "function": [
+      "function.boundary",
+      "function.complexity",
+      "function.exception_path",
+      "function.numeric"
+    ],
+    "class": [
+      "class.contract_violation",
+      "class.encapsulation_leak",
+      "class.inheritance_design",
+      "class.invariant"
+    ],
+    "file": [
+      "file.cohesion",
+      "file.contract_alignment",
+      "file.error_handling_pattern",
+      "file.state_consistency"
+    ],
+    "integration": [
+      "integration.cross_layer_correlation",
+      "integration.cross_service_attack_chain",
+      "integration.cross_service_performance",
+      "integration.emergent_masking",
+      "integration.end_to_end_business"
     ]
   },
   "counts": {
@@ -14934,6 +14934,7 @@
       "root_cause_keys": [
         "authz.no_authorization_layer",
         "config.bad_upload_dir_kills_startup",
+        "config.binding_priority_surprise",
         "cors.allowed_origin_patterns_too_broad",
         "cors.empty_whitelist_fails_open",
         "errhandler.client_error_mapped_to_500",
@@ -14952,6 +14953,7 @@
         "pagination.count_total_computed_but_discarded",
         "price.final_price.upper_bound_unvalidated",
         "spring.transaction_effectiveness_verified",
+        "unannotated.service.SPRING-ASSEMBLY-UNAMBIGUOUS",
         "upload.error.no_path_leak"
       ],
       "obligation_template": "",

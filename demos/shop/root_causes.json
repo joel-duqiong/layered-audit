@@ -1,12 +1,59 @@
 {
   "generated_from": "aggregate_findings.py",
   "summary": {
-    "findings": 23,
+    "findings": 25,
     "root_causes": 18,
-    "collapsed": 5,
+    "collapsed": 7,
     "violations": 0
   },
   "root_causes": [
+    {
+      "root_cause_key": "pricing.member_tier_bound_to_deployment_profile",
+      "title": "同一请求在两个部署实例上结果不同：settledAmountCent 分叉",
+      "severity": "HIGH",
+      "owner_layer": "class",
+      "categories": [
+        "class.invariant",
+        "service.data_consistency",
+        "service.interface_contract"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 4,
+      "finding_uids": [
+        "class:CLASS-CONDITIONAL-ASSEMBLY-DIVERGENCE#3",
+        "service:BI-VIP-MEMBER-PRICE#1",
+        "service:SPRING-BUSINESS-BOUND-TO-PROFILE#0",
+        "service:SPRING-BUSINESS-BOUND-TO-PROFILE#1"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class",
+        "service"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-840"
+      ],
+      "confidence": 0.94,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 demos/shop/business_probe.py",
+        "python3 spring_ctx_probe.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1,
+        "container": 3
+      },
+      "related_root_causes": []
+    },
     {
       "root_cause_key": "order.quota_checked_on_quoted_amount_ledger_on_settled",
       "title": "OrderService 同一文件里两处对同一个订单金额用了不同口径：额度按报价卡、账按结算记",
@@ -47,49 +94,6 @@
       "evidence_fidelity": "stubbed",
       "fidelity_breakdown": {
         "stubbed": 1,
-        "container": 1
-      },
-      "related_root_causes": []
-    },
-    {
-      "root_cause_key": "pricing.member_tier_bound_to_deployment_profile",
-      "title": "同一请求在两个部署实例上结果不同：settledAmountCent 分叉",
-      "severity": "HIGH",
-      "owner_layer": "class",
-      "categories": [
-        "class.invariant",
-        "service.data_consistency"
-      ],
-      "category_fit": [
-        "exact"
-      ],
-      "finding_count": 2,
-      "finding_uids": [
-        "class:CLASS-CONDITIONAL-ASSEMBLY-DIVERGENCE#3",
-        "service:BI-VIP-MEMBER-PRICE#1"
-      ],
-      "layers_own": [
-        "class"
-      ],
-      "layers_all": [
-        "class",
-        "service"
-      ],
-      "cited_from": [],
-      "cwe": [
-        "CWE-840"
-      ],
-      "confidence": 0.94,
-      "ground_truth": "verified",
-      "repro_cmds": [
-        "python3 demos/shop/business_probe.py"
-      ],
-      "violations": [],
-      "notes": [],
-      "merges": [],
-      "evidence_fidelity": "hybrid",
-      "fidelity_breakdown": {
-        "hybrid": 1,
         "container": 1
       },
       "related_root_causes": []
@@ -704,7 +708,7 @@
         "inheritance_design": 1
       },
       "service": {
-        "interface_contract": 0,
+        "interface_contract": 2,
         "resilience": 0,
         "authz": 0,
         "data_consistency": 3,
@@ -726,7 +730,6 @@
       "function.numeric",
       "file.state_consistency",
       "file.cohesion",
-      "service.interface_contract",
       "service.resilience",
       "service.authz",
       "service.resource_leak",
@@ -760,6 +763,6 @@
       ]
     },
     "root_cause_count": 18,
-    "finding_count": 23
+    "finding_count": 25
   }
 }
