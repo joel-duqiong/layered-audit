@@ -78,7 +78,7 @@
 | **函数层 / 文件层的差分判定层通用化** | ✅ 五层的差分判定层至此全部通用。函数层：8 条缺陷语义（严重度/根因函数/边界挡没挡住）从代码搬进项目配置 `fn_groups.json`；文件层：19 条 finding 的判定内容 + 四类证据取值机制搬进 `file_findings_config.json` + 通用引擎 `engine/{fn,file}_diff.py`（派生事实用 filter/select/slice/sum_len/group_by 等通用算子）。**等价性**：jiuyan 的 fn_findings 与 file_findings 的 JSON 与 Markdown **逐字节一致** | `pilot/engine/fn_diff.py`、`pilot/engine/file_diff.py`、`pilot/fn_groups.json`、`pilot/file_findings_config.json` |
 | **demo-shop 的文件层接上 + 归属翻转到最低层** | ✅ demo 的文件层用例原先断言的是**现状**（把缺陷写成了期望），所以 24 条判定全 PASS、开不出单。改成断言**应有行为**后两条变 FAIL，demo 拿到了 2 条真实发现：额度口径不一致（file.contract_alignment）+ 跨仓库汇率兜底量纲错（file.error_handling_pattern）。**归属随之翻转**：`order.quota_checked_on_quoted_amount_ledger_on_settled` 由**文件层 own**（最低层能证明它）、服务层改为 **cite** —— 与 jiuyan 的先例一致。门禁原话：「在 file 层认领，层序最低、类别合法」 | `demos/shop/file_cases.json`、`demos/shop/file_findings_config.json`、`demos/shop/finding_meta.py`、`demos/shop/run_pipeline.sh` |
 | **契约变更：文件层新增 `contract_alignment` 类别** | ✅ 「同一文件内两处对同一业务量的口径不一致」这个粒度只有文件层看得见（单看两个函数各自都对，类层又跨了两个类）—— 之前只能塞进 UNMAPPED 等人决策。现在给它正式的家。**顺带修掉一个潜伏 bug**：契约解析器是逐行正则，`categories` 块里出现注释行会让**后面的类别静默丢失** —— 已修在解析器里 | `layers.yaml`（file 层 + `agents.total_roles` 22→23）、`pilot/engine/findings_schema.py` |
-| **覆盖率指标修正：项目最关键的那个数字之前是错的** | ✅ 两个原因都不是数据问题，是**指标没把已有结论算进去**：① 单元状态只看「有没有用例」，不看判定结果 —— 17 条全 PASS 的用例被记成「有观测但义务未定」，「满足」恒为 0；② **只有函数层的结论能关联到单元** —— 文件层/类层/服务层那 70 条结论一条都没被记（文件单元按路径后缀、类单元按文件名反查类名、服务单元按层归集）。修法：用例文件声明「每个分组验的是哪一类义务」，fn_dynamic 把类别盖到用例上，Agent 图构建器按判定结果定状态、按层归集结论。**已判定 6 → 34（1.13% → 6.39%）**，「有观测但义务未定」13 → 0，义务满足 0 → 22、违反 5 → 63。护栏：义务类别必须与单元所属层一致 | `pilot/fn_cases.json`、`pilot/fn_dynamic.py`、`pilot/engine/build_agent_graph.py`、`pilot/engine/agent_coverage.py` |
+| **覆盖率指标修正：项目最关键的那个数字之前是错的** | ✅ 两个原因都不是数据问题，是**指标没把已有结论算进去**：① 单元状态只看「有没有用例」，不看判定结果 —— 17 条全 PASS 的用例被记成「有观测但义务未定」，「满足」恒为 0；② **只有函数层的结论能关联到单元** —— 文件层/类层/服务层那 70 条结论一条都没被记（文件单元按路径后缀、类单元按文件名反查类名、服务单元按层归集）。修法：用例文件声明「每个分组验的是哪一类义务」，fn_dynamic 把类别盖到用例上，Agent 图构建器按判定结果定状态、按层归集结论。**已判定 6 → 36（1.13% → 6.77%）**，「有观测但义务未定」13 → 0，义务满足 0 → 24、违反 5 → 65。护栏：义务类别必须与单元所属层一致 | `pilot/fn_cases.json`、`pilot/fn_dynamic.py`、`pilot/engine/build_agent_graph.py`、`pilot/engine/agent_coverage.py` |
 | **属性绑定优先级探针（DESIGN §6.4 第 4 项）** | ✅ 同一个属性可以有多种绑定形式（环境变量 / 宽松绑定变体 / `SPRING_APPLICATION_JSON` / 系统属性），**谁赢了只有真起一次容器才知道**。探针把各种形式**同时**设成可区分的值，再行为观测实际生效的是哪个。实测在 jiuyan 抓到一条真缺陷：`application.yml` 写的是 `${CORS_ALLOWED_ORIGINS:...}`，但 Spring 的宽松绑定把 `APP_CORS_ALLOWED_ORIGINS` 也映射到同一属性、环境变量优先级又高于 YAML —— **两个同时设上，`APP_` 那个赢**，yml 里写的名字可能根本不生效且无任何报错。特性覆盖 `dynamic_config` 从 blind 变 partial | `pilot/property_binding_probe.py`、`pilot/property_binding_scenarios.json` |
 | **跨仓库缺陷第一次有了明确归属（B16 的落地部分）** | ✅ demo 的跨仓库缺陷（结算额乘了**另一个仓库** python-svc 返回的汇率，而额度占用仍按报价口径校验 —— 本地汇率若是 1.0 就根本不会发生）现在是一条**服务层 own** 的发现（`BI-FX-BASIS-ALIGNMENT` → 根因 `order.fx_rate_applied_to_settlement_without_quota_alignment`）。为让「差额来自仓库边界之外」在数据里说得清，demo 的订单加记了币种（V2 迁移 + 实体字段）；三条不变式的**适用行集合互斥**（基准币种 / VIP∧基准币种 / 非基准币种），所以每个违反只有一个原因。**涌现门禁的三个注入现在全部 attributed**（含跨仓库那个 INJ-FX-NONBASE），结论 GREEN | `demos/shop/invariants.json`、`demos/shop/business_probe.py`、`pilot/engine/invariants.py`（`when` 支持合取） |
 | **跨仓库的合取链能自动生成了（B16 收尾）** | ✅ 关系网把**另一个仓库**的入口并进来（`XREPO_ENTRY` 节点 + `CALLS` 跨仓库边），候选生成器给出**跨仓库条件**（`xrepo:python-svc`）与新模式 **T8**。实测 demo 的候选链条件变成 `instance + data + request×3 + xrepo:python-svc`，召回仍 1/1。两个配套改动：① 出站 HTTP 的类**按行为识别**（真的调了 `java.net.http` 就算客户端，不按名字猜）；② 面清单里声明**调用点**（`call_site`）—— 只有「调了哪个接口」不够，还得知道是本仓库哪个方法调的，链才接得起来 | `pilot/engine/relation_net.py`、`pilot/engine/emergence_candidates.py`、`demos/shop/surfaces/demo-shop.json` |
@@ -114,7 +114,7 @@
 >    （文件单元按路径后缀关联、类单元按文件名反查类名、服务单元按层归集），
 >    于是那 70 条结论对应的单元在盲区地图里全是「完全没查」。
 > 修的是指标，不是数据：**这 5.6 倍不是新查出来的，是本来就在那儿、之前没被算进去。**
-> 现在：已判定 6 → **34**（1.13% → **6.39%**），义务满足 0 → 22、违反 5 → 63。
+> 现在：已判定 6 → **36**（1.13% → **6.77%**），义务满足 0 → 24、违反 5 → 65。
 > 按层：函数 19 / 文件 11 / 类 3 / 服务 1。
 
 ### 明确还没做的（就是本项目的主战场）
@@ -130,7 +130,7 @@
 | **E** | **跨仓库** —— 只会审一个仓库 | 「两群 Agent 互相调用」未实现 | 🟡 骨架 ✅（面清单 + 跨仓库图 + 契约漂移 + 归属），实测 2 仓库 / 1 条确认边 / 0 漂移；**跨仓库涌现还没做** |
 | **F** | **运行时保真度** | Java 动态性让静态结论不可信 | ✅ 已标注 |
 | **G** | **SAST/SCA 接入** | 「全面发现安全问题」需要外部成熟工具 | ❌ |
-| **H** | **动态验证覆盖率 0.94%**（532 单元里已判定 5 个） | 上面所有能力都建立在「测过的单元」之上，这个数不涨，一切都是空转 | ❌ **最高优先级** |
+| **H** | **动态验证覆盖率 6.77%**（532 单元里已判定 36 个） | 上面所有能力都建立在「测过的单元」之上，这个数不涨，一切都是空转 | ❌ **最高优先级** |
 | **I** | **Java 特性还有 8 类没补**（事务/装配/属性绑定/语言索引/N+1 全量/Jackson/实体相等/优雅停机） | 设计已出（`DESIGN.md` §6.4），前 5 项 8.5 人日 | ❌（`#1` 自调用漏检已修 ✅，`#2` 事务生效性已做 ✅） |
 
 ## 4. 硬约束（违反就是做错了）
