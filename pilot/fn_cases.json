@@ -3177,5 +3177,25 @@
       "invariant": "超大每页条数不得溢出",
       "label": ""
     }
-  ]
+  ],
+  "group_categories": {
+    "APPLY_AMOUNT_INVARIANTS": "function.boundary",
+    "APPLY_NULL_CONTRACT": "function.exception_path",
+    "CATEGORY_IDEMPOTENT": "function.boundary",
+    "DATE_SCOPE": "function.boundary",
+    "ITEM_QUANTITY_UNVALIDATED": "function.boundary",
+    "MUTATION_HARNESS": "function.boundary",
+    "NUMERIC_BIGINT_PRECISION": "function.numeric",
+    "NUMERIC_MONEY_INPUT": "function.numeric",
+    "NUMERIC_MONEY_ROUNDTRIP": "function.numeric",
+    "ORDER_NO_COLLISION": "function.boundary",
+    "PAGINATION": "function.boundary",
+    "PRICE_CLIENT_CONTROLLED": "function.boundary",
+    "SEMANTIC_OBLIGATION": "function.boundary",
+    "SNAPSHOT_SEMANTICS": "function.boundary",
+    "STATUS_PARSE": "function.exception_path",
+    "UPLOAD_CONTENT_NOT_VERIFIED": "function.boundary",
+    "UPLOAD_NO_SIZE_LIMIT": "function.boundary"
+  },
+  "group_categories_note": "每个用例分组验的是哪一类义务（layers.yaml 的 category）。分组里 FAIL 的用例 -> 该类别被违反；全 PASS -> 该类别被满足。用途：让单元的义务三值能记「满足」—— 否则 PASS 的单元永远算「有观测但义务未定」，覆盖率被系统性低估。"
 }

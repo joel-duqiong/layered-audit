@@ -284,8 +284,32 @@ def _build_units(roles: dict[str, dict[str, Any]],
             unit_findings = findings_by_unit.get(key, []) or findings_by_unit.get(unit["symbol"], [])
             violated = [f for f in unit_findings if f.get("kind") != "positive"]
             positive = [f for f in unit_findings if f.get("kind") == "positive"]
-            if violated:
+            # 单元状态要看**用例的判定结果**，不能只看「有没有用例」——
+            # 否则一组全 PASS 的用例会被记成「有观测但义务未定」，
+            # 覆盖率被系统性低估（实测 13 个单元受影响）。
+            verdicts = {c.get("verdict") for c in unit_cases}
+            failing = [c for c in unit_cases if c.get("verdict") == "FAIL"]
+            passing = [c for c in unit_cases if c.get("verdict") == "PASS"]
+            # 该单元「被判定为满足」与「被判定为违反」的义务类别。
+            # 类别来自用例文件声明的分组映射（用例带 category）。
+            # 义务是 (层, 类别) 对：函数层单元的义务只能是 function.* 类别。
+            # 别的层的类别（比如类层的 inheritance_design）不能记到函数层单元头上 ——
+            # 那是别的层的义务，这一层只是提供了一个观测。
+            def _own(cat: str) -> bool:
+                return bool(cat) and cat.partition(".")[0] == layer
+
+            satisfied_categories = sorted({c["category"] for c in passing
+                                           if c.get("category") and _own(c["category"])})
+            violated_categories = sorted({c["category"] for c in failing
+                                          if c.get("category") and _own(c["category"])}
+                                         | {f.get("category") for f in violated
+                                            if f.get("category")
+                                            and f.get("category") != "UNMAPPED"
+                                            and _own(f.get("category"))})
+            if violated or failing:
                 status = "FAIL"
+            elif passing:
+                status = "PASS"
             elif unit_cases:
                 status = "OBSERVED"
             elif positive:
@@ -308,6 +332,8 @@ def _build_units(roles: dict[str, dict[str, Any]],
                 "priority": centrality.get(agent_id(unit["unit_kind"], key), 0) * (1 + lg["score"]),
                 "status": status,
                 "observations": len(unit_cases),
+                "satisfied_categories": satisfied_categories,
+                "violated_categories": violated_categories,
                 "case_ids": [c["id"] for c in unit_cases][:20],
                 "finding_ids": [f["uid"] for f in unit_findings][:20],
                 "root_cause_keys": sorted({f.get("root_cause_key", "") for f in unit_findings

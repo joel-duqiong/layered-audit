@@ -43,12 +43,19 @@ def build() -> dict[str, Any]:
             "status": u["status"],
             "observations": u["observations"],
             "agents": u["role_count"],
-            # 义务三值：该单元有 role_count 条义务；有结论的是 satisfied/violated，
-            # 其余 unknown（没被任何判定手段验过）。没被验过 ≠ 满足。
+            # 义务三值：该单元有 role_count 条义务；被判定为成立的是 satisfied，
+            # 被判定为违反的是 violated，其余 unknown（没被任何判定手段验过）。
+            # 没被验过 ≠ 满足。
+            # satisfied 来自**通过的用例**（用例文件声明了每个分组验的是哪类义务），
+            # violated 来自失败的用例与违规结论。
             "obligations": {
-                "satisfied": 0,
-                "violated": len(u["root_cause_keys"]),
-                "unknown": max(0, u["role_count"] - len(u["root_cause_keys"])),
+                "satisfied": len(u.get("satisfied_categories") or []),
+                "violated": max(len(u.get("violated_categories") or []),
+                                len(u["root_cause_keys"])),
+                "unknown": max(0, u["role_count"]
+                               - len(u.get("satisfied_categories") or [])
+                               - max(len(u.get("violated_categories") or []),
+                                     len(u["root_cause_keys"]))),
             },
             "cases": u["observations"],
             "root_causes": u["root_cause_keys"],

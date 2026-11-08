@@ -677,9 +677,11 @@ def main() -> None:
     if cases_path and not Path(cases_path).is_absolute():
         cases_path = str(project.project_dir() / cases_path)
     spec: dict | None = None
+    group_categories: dict[str, str] = {}
     if cases_path:
         spec = json.loads(Path(cases_path).read_text(encoding="utf-8"))
         cases = spec["cases"]
+        group_categories = dict(spec.get("group_categories") or {})
         classpath = ensure_generic_harness()
         main_class = "GenericHarness"
         CASES_FILE.write_text(json.dumps(spec, ensure_ascii=False), encoding="utf-8")
@@ -694,6 +696,8 @@ def main() -> None:
             extra_path = project.project_dir() / extra_path
         extra = json.loads(extra_path.read_text(encoding="utf-8"))
         extra_cases = extra.get("cases", extra) if isinstance(extra, dict) else extra
+        if isinstance(extra, dict):
+            group_categories.update(extra.get("group_categories") or {})
         cases = list(cases) + list(extra_cases)
         print(f"合并额外用例 {len(extra_cases)} 条（语义地图职责断言）")
         # 用例文件必须重新写 —— 上面那份还是合并前的
@@ -753,6 +757,12 @@ def main() -> None:
     if stale is not None:
         raw = _merge_incremental(raw, cases_to_run, fingerprints, stale)
 
+    # 每条用例盖上「它验的是哪一类义务」—— 分组 -> 义务类别的映射由用例文件声明。
+    # 没有映射的用例不算「验证过任何义务」，不给覆盖率算 credit。
+    for c in all_cases:
+        cat = group_categories.get(c.get("group", ""))
+        if cat:
+            c["category"] = cat
     by_id = {c["id"]: c for c in all_cases}
     results = []
     for obs in raw:
@@ -764,6 +774,7 @@ def main() -> None:
                 "id": cdef["id"], "group": cdef["group"], "func": cdef["func"],
                 "target": obs.get("target", ""), "label": cdef.get("label", ""),
                 "invariant": cdef["invariant"], "check": cdef["check"],
+                "category": cdef.get("category", ""),
                 "verdict": "INVALID", "reason": "用例构造错误：参数类型与方法签名对不上",
                 "observation": obs,
             })
@@ -773,6 +784,7 @@ def main() -> None:
             "id": cdef["id"], "group": cdef["group"], "func": cdef["func"],
             "target": obs.get("target", ""), "label": cdef.get("label", ""),
             "invariant": cdef["invariant"], "check": cdef["check"],
+            "category": cdef.get("category", ""),
             "verdict": "PASS" if ok else "FAIL", "reason": reason,
             "observation": obs,
         })
