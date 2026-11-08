@@ -1,0 +1,19 @@
+{
+  "repo_id": "demo-shop",
+  "kind": "java",
+  "base_urls": {"backend": "http://127.0.0.1:8090"},
+  "http_endpoints": [
+    {"method": "GET", "path": "/api/products"},
+    {"method": "GET", "path": "/api/products/internal"},
+    {"method": "GET", "path": "/api/orders"},
+    {"method": "POST", "path": "/api/orders"},
+    {"method": "GET", "path": "/api/reports/aggregate"}
+  ],
+  "tables_owned": ["shop_category", "shop_customer", "shop_product", "shop_order"],
+  "events_published": [],
+  "events_consumed": [],
+  "agent_tools": [],
+  "declared_outbound_calls": [
+    {"target_repo_hint": "python-svc", "method": "GET", "path": "/fx"}
+  ]
+}

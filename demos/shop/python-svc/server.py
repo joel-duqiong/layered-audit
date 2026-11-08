@@ -9,6 +9,8 @@ import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 
+CALLS: dict[str, int] = {}
+
 CAPABILITIES = {
     "service": "fx",
     "endpoints": [{"method": "GET", "path": "/fx"}],
@@ -21,8 +23,17 @@ class Handler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         if parsed.path == "/fx":
             currency = (parse_qs(parsed.query).get("currency") or ["CNY"])[0]
+            CALLS[currency] = CALLS.get(currency, 0) + 1
             rate = 100 if currency == "CNY" else 92
             body = json.dumps({"currency": currency, "rate": rate}).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        if parsed.path == "/stats":
+            body = json.dumps({"calls": CALLS}).encode()
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", str(len(body)))
