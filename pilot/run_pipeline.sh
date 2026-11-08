@@ -83,6 +83,20 @@ python3 engine/feature_coverage.py
 echo "=== 集权层门禁（与基线比对，回归即失败退出码 1）==="
 python3 integration_gate.py
 
+echo "=== 涌现 FDR 门禁（第三态：0 绿 / 1 红 / 2 没查完）==="
+# 本目标没有注入目录 -> 涌现这一维**没查完**。这不等于「没问题」，
+# 所以单独报出来（覆盖度矩阵里 integration.emergent_masking 也是零覆盖）。
+# 门禁的第三态语义见 layers.yaml 决议 D8：没查完必须与查了没问题区分开。
+emergence_rc=0
+python3 engine/emergence_gate.py || emergence_rc=$?
+if [ "$emergence_rc" -eq 1 ]; then
+  echo "  ↑ 涌现门禁 RED：有注入的涌现链没被检出或没被正确归属"
+  exit 1
+elif [ "$emergence_rc" -eq 2 ]; then
+  echo "  ↑ 涌现维度 INCOMPLETE：本目标没有注入目录，这一维尚未检查（不是绿灯）"
+  echo "    涌现能力在 demo-shop 上是跑通的（demos/shop/run_pipeline.sh）"
+fi
+
 echo "=== 残留守卫（探针容器 / ai_ 行 / 非种子上传，必须全 0）==="
 # 先自检：守卫必须能证明自己抓得到（谓词写错时「0 行」是假的）
 python3 probe_residue_check.py --selftest
