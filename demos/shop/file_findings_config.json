@@ -1,0 +1,52 @@
+{
+  "note": "demo-shop 的文件层判定内容声明（项目侧）。通用机制在 pilot/engine/file_diff.py。demo 的文件层看到两处「同一文件内两处口径不一致」的缺陷：额度检查用报价、记账用结算（归 file.contract_alignment），以及跨仓库汇率不可达时的兜底值量纲错（归 file.error_handling_pattern）。证据里的 {{...}} 是取值路径：raw/http/check/static/decl/derived。",
+  "target_name": "demo-shop",
+  "findings": [
+    {
+      "id": "FILE-QUOTA-BASIS-QUOTED-VS-SETTLED",
+      "severity": "HIGH",
+      "kind": "defect",
+      "layer": "file",
+      "cwe": "CWE-682 (Incorrect Calculation)",
+      "title": "OrderService 同一文件里两处对同一个订单金额用了不同口径：额度按报价卡、账按结算记",
+      "detail": "OrderService.create 一个方法里，额度检查与记账用了**两个不同的金额**：\n  · quotaService.withinLimit(customer, request.quotedAmountCent()) —— 按**报价**卡；\n  · ledgerService.record(order, settled) —— 按**结算额**记。\n报价 10000、会员九折后结算 9000、客户额度 9500：结算口径下这笔单过得去，报价口径下过不去 —— 结果是**能成交的单被拒了**，而且额度被按一个更大的数占住。\n字节码证据：{{static:OrderService#create.calls_external_ordered}}\n两个口径单独看各自都对（额度检查没错、记账也没错），错在同一个文件里两处用了不同的量。",
+      "evidence": {
+        "call_order_quota_vs_ledger": "{{static:OrderService#create.calls_external_ordered}}",
+        "actual_result": "{{raw:ORDER-QUOTA-CHECKS-QUOTED-NOT-SETTLED.result}}",
+        "actual_error_message": "{{raw:ORDER-QUOTA-CHECKS-QUOTED-NOT-SETTLED.error_message}}",
+        "quota_check_on_settled_amount": "{{raw:ORDER-QUOTA-CHECKS-QUOTED-NOT-SETTLED.quota_result}}",
+        "settled_amount_within_limit": "{{raw:ORDER-QUOTA-CHECKS-QUOTED-NOT-SETTLED.settled_within_limit}}",
+        "failed_check": "{{check:ORDER-QUOTA-CHECKS-QUOTED-NOT-SETTLED.result}}"
+      },
+      "root_cause_file": "service/OrderService.java",
+      "related": [
+        "BI-QUOTA-LEDGER-PARITY（服务层：同一根因的端到端差分证据 —— 单条件不违反、双条件才违反）"
+      ],
+      "note": "函数层看不到它（额度检查与记账各自单看都对），类层也看不到（跨了两个类）—— 只有文件层能同时看见这两处。"
+    },
+    {
+      "id": "FILE-FX-FALLBACK-WRONG-SCALE",
+      "severity": "HIGH",
+      "kind": "defect",
+      "layer": "file",
+      "cwe": "CWE-682 (Incorrect Calculation)",
+      "title": "FxClient 汇率取不到时兜底成 1（=1%），把结算金额砍到 1/100",
+      "detail": "FxClient.rate 从**另一个仓库**（python-svc）取汇率，正常刻度是 100（=1.0）。取不到时 catch 分支返回 **1** —— 但调用方是按 `settled * rate / 100` 折算的，所以 rate=1 意味着「结算额只剩 1%」。\n实测：报价 10000、会员九折 9000、汇率服务不可达 -> 结算额只有 {{raw:ORDER-FX-FALLBACK-SCALE.settled}}，而不是 9000。\n跨仓库契约的两端都没说清刻度：调用方默默假设「100 = 1.0」，被调用方返回 100/92，而**兜底值的刻度写错了** —— 正常刻度 100，兜底写成了 1。\n这一条里跨仓库的那一半是「不可达」，不是「返回了别的值」—— 但根因同样在量纲上。",
+      "evidence": {
+        "quoted": "{{raw:ORDER-FX-FALLBACK-SCALE.quoted}}",
+        "actual_settled": "{{raw:ORDER-FX-FALLBACK-SCALE.settled}}",
+        "expected_settled": 9000,
+        "actual_result": "{{raw:ORDER-FX-FALLBACK-SCALE.result}}",
+        "failed_check": "{{check:ORDER-FX-FALLBACK-SCALE.settled}}",
+        "fx_outbound_calls": "{{static:FxClient#rate.calls_external}}",
+        "cross_repo_base_url_field": "{{static:FxClient.fields.baseUrl}}"
+      },
+      "root_cause_file": "client/FxClient.java",
+      "related": [
+        "跨仓库：python-svc 的 /fx 契约未声明刻度，调用方默默假设 100 = 1.0"
+      ],
+      "note": "兜底值与正常值的刻度不一致，是量纲错而不是边界错 —— 编译期与运行期都不报错，只有在对方不可达时才现形。"
+    }
+  ],
+  "derived": {}
+}

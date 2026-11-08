@@ -76,6 +76,11 @@
   },
   "evidence_sources": [
     {
+      "layer": "file",
+      "file": "artifacts/file_findings.json",
+      "key": null
+    },
+    {
       "layer": "class",
       "file": "artifacts/class_findings.json",
       "key": null

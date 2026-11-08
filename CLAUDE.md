@@ -75,6 +75,9 @@
 | **涌现裁决器** | ✅ 通用引擎（七裁决）+ demo-shop 真跑判出 `EMERGENT_CONJUNCTIVE`：单注都不触发、合起来违反（偏离 90000 分），两次跑指纹一致，35 项自证全过 | `pilot/engine/emergence.py`、`demos/shop/emergence_probe.py` → `demos/shop/artifacts/emergence_chains.json`、`demos/shop/EMERGENCE_RESULT.md` |
 | **服务层通用化 + 业务不变式判定通用化** | ✅ ① `contract_diff.py` 的 4 处项目耦合清零（包前缀 / 证人端点 / base_url / 报告标题全部走 target.json 与 `service_scenarios.json`），jiuyan 的 10 条 finding **逐条一致**；② 业务不变式的「调用 → 读行 → 判定 → 开单」抽成通用引擎 `engine/business_verdict.py`，项目侧只留「造什么场景、读哪张表」；③ 顺带补上一个可复现性缺口：jiuyan 的流水线**原先根本没跑业务不变式探针**，它的产物是手工跑的 | `pilot/contract_diff.py`、`pilot/engine/business_verdict.py`、`pilot/business_probe.py`、`pilot/service_scenarios.json` |
 | **demo-shop 拿到服务层 → 涌现门禁 RED 转 GREEN** | ✅ demo 补上业务不变式探针（3 个差分场景：普通客户+会员装配 / VIP 客户+标准装配 / **VIP 客户+会员装配**）—— 前两个是「单条件不违反」的对照组，第三个才违反，**证明这个缺陷需要两个条件同时成立**。归属：口径分裂归 **service**（own，差分证据）、VIP 拿不到会员价归 **class**（cite，不重复开单）。门禁 **FDR_inj 1.000 / Attr_acc 1.000 → GREEN**，demo 流水线 exit 0。**阳性对照**：抽掉服务层那两条 finding，门禁立刻变回 RED（FDR 0.500）—— 这个绿是挣来的 | `demos/shop/business_probe.py`、`demos/shop/invariants.json`、`demos/shop/finding_meta.py`、`demos/shop/run_pipeline.sh` |
+| **函数层 / 文件层的差分判定层通用化** | ✅ 五层的差分判定层至此全部通用。函数层：8 条缺陷语义（严重度/根因函数/边界挡没挡住）从代码搬进项目配置 `fn_groups.json`；文件层：19 条 finding 的判定内容 + 四类证据取值机制搬进 `file_findings_config.json` + 通用引擎 `engine/{fn,file}_diff.py`（派生事实用 filter/select/slice/sum_len/group_by 等通用算子）。**等价性**：jiuyan 的 fn_findings 与 file_findings 的 JSON 与 Markdown **逐字节一致** | `pilot/engine/fn_diff.py`、`pilot/engine/file_diff.py`、`pilot/fn_groups.json`、`pilot/file_findings_config.json` |
+| **demo-shop 的文件层接上 + 归属翻转到最低层** | ✅ demo 的文件层用例原先断言的是**现状**（把缺陷写成了期望），所以 24 条判定全 PASS、开不出单。改成断言**应有行为**后两条变 FAIL，demo 拿到了 2 条真实发现：额度口径不一致（file.contract_alignment）+ 跨仓库汇率兜底量纲错（file.error_handling_pattern）。**归属随之翻转**：`order.quota_checked_on_quoted_amount_ledger_on_settled` 由**文件层 own**（最低层能证明它）、服务层改为 **cite** —— 与 jiuyan 的先例一致。门禁原话：「在 file 层认领，层序最低、类别合法」 | `demos/shop/file_cases.json`、`demos/shop/file_findings_config.json`、`demos/shop/finding_meta.py`、`demos/shop/run_pipeline.sh` |
+| **契约变更：文件层新增 `contract_alignment` 类别** | ✅ 「同一文件内两处对同一业务量的口径不一致」这个粒度只有文件层看得见（单看两个函数各自都对，类层又跨了两个类）—— 之前只能塞进 UNMAPPED 等人决策。现在给它正式的家。**顺带修掉一个潜伏 bug**：契约解析器是逐行正则，`categories` 块里出现注释行会让**后面的类别静默丢失** —— 已修在解析器里 | `layers.yaml`（file 层 + `agents.total_roles` 22→23）、`pilot/engine/findings_schema.py` |
 | **类层补齐：接入类形状通用探针 + 第二载体复核** | ✅ ① `class_shape` 通用探针（继承/覆写后置条件/值相等/封装泄漏/缓存可变，纯反射不碰 DB）接进 **jiuyan** —— 类层 16 → 23 条，**新开 7 条真实发现**（6 实体缺值相等 + 1 封装泄漏），类别与归属都正确；② **第二载体复核**：文件载体（字节码）的 6 个通用检查器原本检出的是**类层类别**、无人消费 —— 现在把它的观测挂到类层结论上（同一结论被两个独立载体复现），没人认领的观测写成**覆盖缺口**（`class_carrier_gap.json`），项目可声明「已知不适用」并留理由。jiuyan：10 观测 → 复现 7 + 声明不适用 3 + **真缺口 0**；demo：10 观测 → 复现 7 + **真缺口 3** | `pilot/class_shape_probe.py`、`pilot/file_carrier.py`、`pilot/class_rules.py`、`pilot/class_diff.py`、`pilot/class_carrier_gap.json` |
 | **涌现维度接进流水线** | ✅ demo-shop 有了自己的流水线（类层 → 关系网 → 候选链 → 真跑裁决 → FDR 门禁 → 收口 → 残留守卫）；jiuyan 的流水线显式报告涌现维度（退出码 2 = 没查完，不是绿灯）。demo 流水线 exit 1 是**预期**：门禁把「根因只被引用、无人 own」的漏归属逼出来了 | `demos/shop/run_pipeline.sh`、`pilot/run_pipeline.sh` |
 | **涌现候选链生成器 + FDR 门禁** | ✅ 候选链生成（关系网 + 不变式 → **锚定已声明不变式**的可执行候选链：八条剪枝硬约束 + 枢纽度四维合成 + Monte-Carlo 级联估计，固定种子 20261107）；FDR 门禁（分母/分子/分母哈希/集合哈希/分类别 FDR/漏检清单，退出码 0 绿 / 1 红 / 2 没查完）。**demo-shop 实测**：生成候选 **2 条**（T3 ×2），已知链召回 **1/1 条件覆盖 full**，候选真跑裁决仍 `EMERGENT_CONJUNCTIVE`（核心集 INJ-TIER-VIP+INJ-PROFILE-VIP），门禁第一轮 **FDR_inj=0.500 / Attr_acc=0.500**（分母 2 / 检出 2 / 归属正确 1），漏检 `INJ-PROFILE-VIP`（service 层根因只被引用、无人 own 开单）→ 判红退出码 1；删掉检不出来的注入 FDR 会变 1.0，但分母哈希漂移照样判红。**第二轮补上 demo 的服务层后：FDR_inj=1.000 / Attr_acc=1.000 → GREEN**（见上一行） | `pilot/engine/emergence_candidates.py`、`pilot/engine/emergence_gate.py`、`demos/shop/emergence_candidate_run.py`、`pilot/emergence_baseline.json`、`pilot/EMERGENCE_CANDIDATES_RESULT.md` |
@@ -85,8 +88,8 @@
 - 10 个必填字段结构齐备 **100/100**；`owner` 标注 **100/100**
 - `ground_truth`：**verified 97 / unverified 2 / mutant_survivor 1**（三档都有真实数据了）
 - `repro_cmd` 不可直接执行的从 14 条降到 **3** 条
-- 契约类别零覆盖 **5** 个（其中 3 个对当前项目无意义：函数太简单 / 继承只有一层 /
-  跨层关联只在 demo 上有）
+- 契约类别零覆盖 **6** 个（其中 4 个对当前项目无意义：函数太简单 / 继承只有一层 /
+  跨层关联只在 demo 上有 / 文件层口径一致性在 jiuyan 上没查过）
 - 硬违规 1 条（越界开单）、归并提示 4 条、契约缺口 9 条（待人工决策）
 
 ### ⚠️ 盲区地图给出的最硬的一个数字
@@ -106,6 +109,7 @@
 | **B** | **增量更新** —— 影响分析能算了，但各层脚本还不能只跑受影响的靶区 | 「改一处只动一处」只完成一半 | 🟡 分析 ✅，调度 ❌（设计已出 `DESIGN.md` §5） |
 | **B2** | **载体的「动态侧」还有一层没通用化** | 换项目只能跑静态层，动态层要重写 | 🟡 函数层 / 类层 / 文件层的**探针**已通用化，服务层的 `contract_probe.py` 与 `contract_diff.py` 已通用；**还差**：函数层与文件层的差分判定层仍是项目专属（`fn_diff.py` / `file_diff.py`）|
 | **C** | **涌现目前只有 1 条真链** —— 图 ✅ 裁决器 ✅ **候选链生成 ✅ FDR 门禁 ✅（本轮补上）**：demo-shop 上自动生成的候选已能命中那条真涌现（召回 1/1，真跑仍 `EMERGENT_CONJUNCTIVE`）。但**场景物化还是人给的**（候选只提出条件槽，schema 驱动的造数器没做）、七个模式只命中 T3、jiuyan 尚无注入目录（门禁对 jiuyan 退出码 2） | 系统的存在理由目前兑现了 1/∞ | 🟡 设计 ✅ 裁决 ✅ 链生成 ✅ 门禁 ✅；造数器 ❌ 模式覆盖 ❌ |
+| **B16** | **跨仓库的涌现链** | 🟡 demo 的跨仓库**探针**通了（面清单 + 跨仓库图 + 契约漂移 + 归属），跨仓库的**缺陷**也开出来了（文件层 own 的「汇率兜底量纲错」）；但**跨仓库的涌现链**（两个仓库的条件组合才出问题）还没做 —— 关系网目前只画单仓库 | 与 B10 同一条线：候选链生成器换一张跨仓库的图 |
 | **D** | **语义地图** —— 结构有了，「这个函数是干什么的」要变成**可执行断言** | Agent 的「使命」只有一半 | 🟡 断言编译 + 执行已通（8 条职责 / 7 单元），但**模型轨一条都没跑**（8 条全是人工 declared），双轨只落地了确定性那一轨 |
 | **E** | **跨仓库** —— 只会审一个仓库 | 「两群 Agent 互相调用」未实现 | 🟡 骨架 ✅（面清单 + 跨仓库图 + 契约漂移 + 归属），实测 2 仓库 / 1 条确认边 / 0 漂移；**跨仓库涌现还没做** |
 | **F** | **运行时保真度** | Java 动态性让静态结论不可信 | ✅ 已标注 |

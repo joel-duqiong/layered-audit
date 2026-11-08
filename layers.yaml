@@ -38,6 +38,11 @@ layers:
       - {id: state_consistency,      desc: "文件内共享状态读写不一致/初始化顺序依赖", oracle: [static_analysis, order_permutation_experiment]}
       - {id: error_handling_pattern, desc: "同文件异常处理风格分裂/资源泄漏模式",     oracle: [static_analysis, mutation_test]}
       - {id: cohesion,              desc: "文件承担多重职责/命名与实现不符",          oracle: [static_analysis]}
+      # 同一文件里两处对**同一个业务量**的口径不一致（校验用报价、记账用实付）。
+      # 这个粒度只有文件层看得见：单个函数单独看都正确（额度检查没错、记账也没错），
+      # 错在同一个文件里两处用了不同的量。之前这一类只能塞进 UNMAPPED 堆着，
+      # 等人决策 —— 现在给它一个正式的家。
+      - {id: contract_alignment,    desc: "同一文件内两处对同一业务量的口径不一致",   oracle: [static_analysis, differential_injection]}
     out_of_scope: [class_contract, service_latency]
     escalation_to: [class, service]
 
@@ -92,9 +97,9 @@ attribution:
 
 agents:
   # 角色数 = 层契约里 category 的总数（每种 category 是一种判定角色的绑定）。
-  # 最初写 9 是按层分的粗估，实测类别数 22 —— 数字本身不重要，
+  # 最初写 9 是按层分的粗估，实测类别数 23 —— 数字本身不重要，
   # 重要的是「角色」指判定手段的绑定，不是代码单元。
-  total_roles: 22
+  total_roles: 23
   constraint:
     # 一轮最多 admit 多少个「判定作业」。**不是 Agent 实例总数** ——
     # 实例数随代码规模线性增长（533 单元 × 21 角色 = 2071），

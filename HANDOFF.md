@@ -721,7 +721,9 @@ python3 perf_load.py                    # 负载实测（延迟曲线 + 分页 t
 | B10 | **涌现裁决器 + 候选链生成 + FDR 门禁** | ✅ 裁决器；✅ 候选链生成 + FDR 门禁（demo 实测召回 1/1、FDR_inj=0.500、漏检 INJ-PROFILE-VIP）；✅ **已接进流水线**（demo 全链；jiuyan 如实报「没查完」）。**还缺**：schema 驱动的造数器（候选只提出条件槽，场景还是人给的）、七个模式只命中 T3、**jiuyan 尚无注入目录** | 先给 jiuyan 写注入目录（需要真的找出 jiuyan 的涌现链，不能编），再造数器 |
 | B11 | **服务层差分判定层通用化** | ✅ **已完成**：`contract_diff.py` 的 4 处项目耦合清零（jiuyan 的 10 条 finding 逐条一致）；业务不变式的判定层抽成通用引擎 `engine/business_verdict.py`；**demo-shop 的服务层已跑起来**（3 个差分场景）→ 涌现门禁的漏检归因补上了，FDR 0.500 → **1.000，门禁 RED → GREEN** | — |
 | B12 | **两个可执行依赖图构建器并存** | 🟡 `pilot/emergence_graph.py`（项目专属，151 节点 / 414 边，**产物无任何消费方**）与 `pilot/engine/relation_net.py`（通用，162 节点 / 151 边，产物被候选生成器消费）。形状不同、边数差一倍以上，合并会丢信息 | 独立一轮：先定「要哪一张图」，再合并。**不要顺手删** —— 现在删会把 jiuyan 的 414 条边丢掉 |
-| B15 | **函数层 / 文件层的差分判定层通用化** | 🟡 `fn_diff.py`（6 处项目字面量）、`file_diff.py`（4 处）仍是项目专属 —— **五层里最后两块没通用的差分层**。连带后果：demo 跑不了函数层与文件层的判定（能跑探针，但开不出单） | 按类层/服务层的做法：判定规则派发化 + 项目侧配置。类层已有现成范式（`class_rules.RULES` 派发 + `class_scenarios.json`），照抄即可 |
+| B15 | **函数层 / 文件层的差分判定层通用化** | ✅ **已完成**：`engine/fn_diff.py` + `pilot/fn_groups.json`、`engine/file_diff.py` + `pilot/file_findings_config.json`；**等价性**：jiuyan 的 fn/file findings 的 JSON 与 Markdown **逐字节一致**。**连带后果也解决了**：demo 的函数层用例分 4 组（PRICING/QUOTA/ORDER/LSP），与 jiuyan 的 8 组**完全不重叠** —— 原来即使把 demo 的函数层跑起来也开不出任何单 | — |
+| B16 | **跨仓库的涌现链** | 🟡 跨仓库**探针**通了（面清单 + 跨仓库图 + 契约漂移 + 归属），跨仓库**缺陷**也开出来了（文件层 own 的「汇率兜底量纲错」）；但**跨仓库的涌现**（两个仓库的条件组合才出问题）没做 —— 关系网目前只画单仓库 | 候选链生成器换一张跨仓库的图：把另一个仓库的入口并进关系网，链的模板要能跨 HTTP 边界 |
+| B17 | **demo 的用例断言的是现状而不是应有行为** | ✅ **已修**（demo 的文件层两条用例）：断言现状的用例永远 PASS，也就永远开不出单。改成断言应有行为后，两条用例变 FAIL，demo 拿到 2 条真实发现 | 其它目标照此自查：每个用例的 `expect` 是不是「应该是什么样」 |
 | B13 | **跨仓库涌现** | 🟡 跨仓库探针骨架已通（面清单 / 跨仓库图 / 契约漂移 / 归属，实测 2 仓库 1 条确认边 0 漂移）；**跨仓库涌现（两个仓库的条件组合才出问题）没做** | 与 B10 同一条线：候选链生成器目前只在单仓库的关系网上找链，跨仓库链是同一个机制换一张图 |
 | B14 | **demo 的 3 条覆盖缺口** | 🟡 文件载体看到、没人认领：`profile_assembly` ×2（@Profile 互斥装配的静态形态）、`outbound_http` ×1（FxClient 里写死了 `http://127.0.0.1:8098`）。列在 `demos/shop/artifacts/class_carrier_gap.json` | `profile_assembly` 可以补成类层的静态判定（同一接口多实现用 @Profile 互斥装配 —— 业务维度被绑到部署维度）；`outbound_http` 属于跨仓库配置面 |
 | B9 | **`repro_cmd` 从 reference 升级成可跑** | ✅ **本轮完成**：14 → **3 条**（函数层 `--case`、集成层 `--scenario` / `--chain`）。剩下 3 条是操作步骤描述或数据文件指针，不硬编 | 剩余 34 条 `layer` 级复现（file / class 层）还可继续降维到用例级 |
@@ -851,6 +853,42 @@ agent 还没写 —— 这是 §11-B4 编排化的优先级依据。
 
 ## 14. 最近一次验证记录（2026-11-08）
 
+**第三轮：五层差分判定层全部通用化 + demo 文件层接上 + 归属翻转到最低层**
+
+- **jiuyan 流水线** `bash pilot/run_pipeline.sh` → **exit 0**；集权层门禁 GREEN；
+  涌现维度如实报 INCOMPLETE；残留守卫通过。发现 100 → 根因 72（未变），
+  硬违规 1（未变），契约缺口 9（未变）。
+- **demo 流水线** `bash demos/shop/run_pipeline.sh` → **exit 0**；
+  涌现 FDR 门禁 **GREEN**（FDR_inj 1.000 / Attr_acc 1.000）；残留守卫通过。
+  发现 16 → **20** 条 → 根因 13 → **15** 条，硬违规 **0**，契约缺口 **0**。
+- **等价性（两份都逐字节一致）**：
+  · 函数层：`engine/fn_diff.py` + `fn_groups.json` 接管后，jiuyan 的
+    `fn_findings.json` / `.md` 逐字节一致。
+  · 文件层：`engine/file_diff.py` + `file_findings_config.json` 接管后，jiuyan 的
+    `file_findings.json` / `.md` 逐字节一致。
+  过程中被等价性判据抓到 7 个问题并全部改正（排序时点、HTTP 子场景路径语义、
+  布尔值的字符串化写法、positive() 补的四个空字段、`http.get` 的两种语义等）。
+- **归属翻转（这轮最实质的变化）**：demo 的
+  `order.quota_checked_on_quoted_amount_ledger_on_settled` 由**文件层 own**、
+  服务层改为 **cite**。理由：额度检查与记账在**同一个文件**里，但跨了两个类 ——
+  函数层看不到（两处单看都对）、类层也看不到，只有文件层能同时看见。
+  这与 jiuyan 的先例一致（`FN-APPLY-AMOUNT-INVARIANTS` own /
+  `BI-DEPOSIT-LTE-FINAL-AMOUNT` cite）。门禁的原话：
+  「own 单 FILE-QUOTA-BASIS-QUOTED-VS-SETTLED 在 **file 层**认领，层序最低、类别合法」。
+- **契约变更**：`layers.yaml` 的文件层新增 `contract_alignment` 类别
+  （「同一文件内两处对同一业务量的口径不一致」）；`agents.total_roles` 22 → 23。
+  jiuyan 这一侧如实报该类别零覆盖（它没查过这个面）。
+- **顺带修掉一个潜伏 bug**：契约解析器（`engine/findings_schema.py`）是逐行正则，
+  `categories` 块里出现**注释行**会让它后面的类别**静默丢失** ——
+  在 layers.yaml 里加一行注释就能悄悄改掉契约。已修在解析器里（注释行跳过）。
+- **demo 的两条文件层用例改成断言「应有行为」**：原先断言的是现状（把缺陷写成了期望），
+  所以 24 条判定全 PASS、开不出单。改成应有行为后两条变 FAIL，demo 拿到 2 条真实发现：
+  额度口径不一致（file.contract_alignment）+ 跨仓库汇率兜底量纲错（file.error_handling_pattern）。
+
+---
+
+## 14.1 第二轮验证记录（2026-11-08 中午）
+
 **第二轮：服务层通用化 + demo 拿到服务层 → 涌现门禁 RED 转 GREEN**
 
 - **demo-shop 流水线** `bash demos/shop/run_pipeline.sh` → **exit 0**；
@@ -884,7 +922,7 @@ agent 还没写 —— 这是 §11-B4 编排化的优先级依据。
 
 ---
 
-## 14.1 第一轮验证记录（2026-11-08 上午）
+## 14.2 第一轮验证记录（2026-11-08 上午）
 
 **本轮（2026-11-08）：接手被上下文撑爆中断的会话后继续**
 
@@ -919,7 +957,7 @@ agent 还没写 —— 这是 §11-B4 编排化的优先级依据。
 
 ---
 
-## 14.2 更早一轮验证记录（2026-11-07）
+## 14.3 更早一轮验证记录（2026-11-07）
 
 **涌现候选链 + FDR 门禁（2026-11-08，详见 `pilot/EMERGENCE_CANDIDATES_RESULT.md`）**
 

@@ -139,7 +139,28 @@ CLASS: dict[str, Meta] = {
 
 # 其余三层：demo 目前还没有这三层的 findings，等真跑出来再标注。
 FUNCTION: dict[str, Meta] = {}
-FILE: dict[str, Meta] = {}
+
+# 文件层（demos/shop/file_findings_config.json）。demo 之前没有文件层的开单，
+# 因为差分判定层还是 jiuyan 专属的。现在判定层通用化了，demo 自己的语义在这里声明。
+FILE: dict[str, Meta] = {
+    "FILE-QUOTA-BASIS-QUOTED-VS-SETTLED": _m(
+        "file.contract_alignment", "exact",
+        "OrderService 同一文件里，额度检查与记账是否用了同一个订单金额？",
+        "file", 0.93, "defect", ("CWE-682",),
+        "order.quota_checked_on_quoted_amount_ledger_on_settled",
+        note="额度按报价卡、账按结算记 —— 结算口径下过得去的单被拒了。"
+             "函数层看不到（两处单看都对），类层也看不到（跨了两个类）—— 只有文件层能同时看见。"
+             "服务层的 BI-QUOTA-LEDGER-PARITY 是同一根因的端到端差分证据（单条件不违反、"
+             "双条件才违反），它引用本条不开单"),
+    "FILE-FX-FALLBACK-WRONG-SCALE": _m(
+        "file.error_handling_pattern", "exact",
+        "跨仓库汇率取不到时的兜底值，与正常刻度是不是同一个量纲？",
+        "file", 0.90, "defect", ("CWE-682",),
+        "cross_repo.fx_fallback_returns_wrong_scale",
+        note="正常刻度 100（=1.0），catch 分支兜底成 1 —— 按 settled*rate/100 折算，"
+             "rate=1 意味着结算额只剩 1%。跨仓库契约没声明刻度，调用方默默假设，"
+             "兜底值又写错了量纲。对方不可达时才现形，编译期与运行期都不报错"),
+}
 
 # 服务层：业务不变式的实测判定（demos/shop/business_probe.py）。
 # 两个不变式、两个不同的归属 —— 这不是随手填的：
@@ -153,8 +174,9 @@ SERVICE: dict[str, Meta] = {
     "BI-QUOTA-LEDGER-PARITY": _m(
         "service.data_consistency", "exact",
         "额度占用额（通过授信额度检查的报价）是否等于账本记录额（实付）？",
-        "service", 0.93, "defect", ("CWE-840",),
+        "file", 0.93, "defect", ("CWE-840",),
         "order.quota_checked_on_quoted_amount_ledger_on_settled",
+        relation="cite",
         note="服务层 OrderService.create 里额度检查用 quotedAmountCent、账本记录用 settled —— "
              "两个口径。单条件都不分裂：普通客户 + 会员装配不分裂，VIP 客户 + 标准装配也不分裂；"
              "两个条件同时成立才分裂（实测 3 个场景里只有这一组违反）。"

@@ -33,6 +33,11 @@ python3 class_static.py
 python3 class_dynamic.py
 python3 class_diff.py
 
+echo "=== 文件层（字节码声明 / 整类实例化实测 / 差分）==="
+python3 file_static.py
+python3 file_dynamic.py
+python3 engine/file_diff.py
+
 echo "=== 业务不变式（服务层：造场景 → 读行 → 判定 → 开单）==="
 python3 "$DEMO/business_probe.py"
 

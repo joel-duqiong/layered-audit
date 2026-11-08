@@ -98,6 +98,7 @@ LAYERED_AUDIT_TARGET=.../demos/shop/target.json   python3 ../../pilot/fn_dynamic
 
 | 层 | 状态 | 关键结论 |
 |---|---|---|
+| 文件层 | ✅ | 2 条发现 —— **额度口径不一致**（file.contract_alignment，own）+ **跨仓库汇率兜底量纲错**（file.error_handling_pattern，own） |
 | 类层 | ✅ | 15 条发现（含里氏替换违反、条件装配用错维度、封装泄漏、实体缺值相等） |
 | 服务层 | ✅ | 2 条业务不变式判定 —— **口径分裂**（service own）+ **VIP 拿不到会员价**（class cite） |
 | 集成层 | ✅ | 涌现裁决 `EMERGENT_CONJUNCTIVE`，核心集 INJ-TIER-VIP + INJ-PROFILE-VIP |
@@ -109,9 +110,18 @@ LAYERED_AUDIT_TARGET=.../demos/shop/target.json   python3 ../../pilot/fn_dynamic
 阳性对照：抽掉服务层那两条 finding，门禁立刻变回红（FDR 0.500）——
 **这个绿是挣来的，不是把阈值调松换来的**。
 
-**函数层 / 文件层的差分判定层还是 jiuyan 专属**（`fn_diff.py` / `file_diff.py`
-里还有项目字面量），所以 demo 目前开不出这两层的单 —— 已知缺口，见
-`HANDOFF.md` §11-B15。
+**归属：低层 own、高层 cite**。额度口径那条根因
+`order.quota_checked_on_quoted_amount_ledger_on_settled` 由**文件层 own**
+—— 额度检查与记账在同一个文件里，但跨了两个类：函数层看不到（两处单看都对），
+类层也看不到，只有文件层能同时看见。服务层的 `BI-QUOTA-LEDGER-PARITY`
+是同一根因的端到端差分证据（单条件不违反、双条件才违反），它**引用**这条、不重复开单。
+涌现门禁的原话：「own 单 FILE-QUOTA-BASIS-QUOTED-NOT-SETTLED 在 **file 层**认领，
+层序最低、类别合法」。
+
+**函数层的差分判定层**也已通用化（`engine/fn_diff.py` + `fn_groups.json`），
+但 demo 的函数层用例组（PRICING/QUOTA/ORDER/LSP）当前全 PASS ——
+单看每个函数都是对的，这正是涌现的前提；缺陷全被类层与服务层以更低/更高的
+合适粒度认领了。
 
 **函数层载体已经通用化**：`pilot/fn_harness/GenericHarness.java` 里零项目字面量 ——
 目标类、依赖打桩、样本、用例、类型别名全部来自用例文件（`fn_cases.json`）。
