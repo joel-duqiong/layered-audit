@@ -1,44 +1,114 @@
 {
   "note": "模型轨报告：候选断言的真跑结果 + 隔离性自证。结论是线索，不进缺陷台账、不进门禁。",
-  "candidates": 3,
-  "executed": 3,
-  "passed": 2,
+  "candidates": 10,
+  "executed": 10,
+  "passed": 9,
   "violated": 0,
   "promotion_candidates": [],
   "isolation_check": {
-    "checked": 3,
+    "checked": 10,
     "assertions_identical_after_poisoning_text": true,
     "note": "承重字段只有 template/args/bound/stubs；mission 与 label 是自由文本"
   },
   "rows": [
     {
-      "id": "OB-MODEL-PackageService-applyBase-1",
-      "unit": "com.jiuyan.banquet.service.PackageService#applyBase",
+      "id": "OB-MODEL-CategoryService-delete-1",
+      "unit": "com.jiuyan.banquet.service.CategoryService#delete",
       "template": "throws_business_code",
-      "mission": "把套餐基础字段写进 BanquetPackage 时，priceCent 不得小于 0；传入负金额时必须以业务错误 PRICE_INVALID 拒绝，而不是照单全收。",
+      "mission": "按 id 删除分类时先加载分类；分类不存在必须以业务错误 CATEGORY_NOT_FOUND 拒绝，不能当作空操作成功返回。加载用的 findById 刻意不打桩（harness 默认返回 Optional.empty()）。",
       "compiled": true,
       "verdict": "PASS",
-      "reason": "PRICE_INVALID / HTTP 422",
+      "reason": "CATEGORY_NOT_FOUND / HTTP 404",
       "gate_eligible": false
     },
     {
-      "id": "OB-MODEL-ProductService-apply-1",
-      "unit": "com.jiuyan.banquet.service.ProductService#apply",
+      "id": "OB-MODEL-PackageTypeService-delete-1",
+      "unit": "com.jiuyan.banquet.service.PackageTypeService#delete",
       "template": "throws_business_code",
-      "mission": "把商品字段写进 Product 时，priceCent 不得小于 0；传入负金额时必须以业务错误 PRICE_INVALID 拒绝。该方法不触碰仓储，无需打桩。",
+      "mission": "按 id 删除套餐分类时先加载套餐分类；不存在必须以业务错误 PACKAGE_TYPE_NOT_FOUND 拒绝，不能当作空操作成功返回。加载用的 findById 刻意不打桩。",
+      "compiled": true,
+      "verdict": "PASS",
+      "reason": "PACKAGE_TYPE_NOT_FOUND / HTTP 404",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-ProductService-delete-1",
+      "unit": "com.jiuyan.banquet.service.ProductService#delete",
+      "template": "throws_business_code",
+      "mission": "商品仍被套餐明细引用时不允许删除，必须以业务错误 VALIDATION_ERROR 拒绝并提示先从套餐中移除。存在性桩给「商品存在」，引用检查桩给「仍被引用」，保证走到引用检查分支。",
       "compiled": true,
       "verdict": "INVALID",
       "reason": "用例构造错误：参数类型与方法签名对不上",
       "gate_eligible": false
     },
     {
-      "id": "OB-MODEL-PackageService-applyItems-1",
-      "unit": "com.jiuyan.banquet.service.PackageService#applyItems",
+      "id": "OB-MODEL-OrderService-update-1",
+      "unit": "com.jiuyan.banquet.service.OrderService#update",
       "template": "throws_business_code",
-      "mission": "写入套餐商品明细时，商品集合不得为空；传入空集合时必须以业务错误 VALIDATION_ERROR 拒绝，而不是把套餐保存成没有任何商品的空套餐。该方法不触碰仓储，无需打桩。",
+      "mission": "修改订单前必须先加载订单；订单不存在必须以业务错误 ORDER_NOT_FOUND 拒绝，不能凭空造一条订单。加载用的仓储方法刻意不打桩（harness 默认返回 Optional.empty()）；请求里的价格取合法值，避免价格校验先于加载触发。",
       "compiled": true,
       "verdict": "PASS",
-      "reason": "VALIDATION_ERROR / HTTP 422",
+      "reason": "ORDER_NOT_FOUND / HTTP 404",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-OrderService-updateStatus-1",
+      "unit": "com.jiuyan.banquet.service.OrderService#updateStatus",
+      "template": "throws_business_code",
+      "mission": "改订单状态前必须先加载订单；订单不存在必须以业务错误 ORDER_NOT_FOUND 拒绝。加载用的仓储方法刻意不打桩；目标状态传 null，因为异常在加载阶段就会抛出，状态值不应被消费。",
+      "compiled": true,
+      "verdict": "PASS",
+      "reason": "ORDER_NOT_FOUND / HTTP 404",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-PackageService-update-1",
+      "unit": "com.jiuyan.banquet.service.PackageService#update",
+      "template": "throws_business_code",
+      "mission": "修改套餐前必须先加载套餐；套餐不存在必须以业务错误 PACKAGE_NOT_FOUND 拒绝。加载用的仓储方法刻意不打桩；请求里的价格取合法值，宴会类型给出存在桩，避免金额/类型校验先于加载触发。",
+      "compiled": true,
+      "verdict": "PASS",
+      "reason": "PACKAGE_NOT_FOUND / HTTP 404",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-PackageService-updateStatus-1",
+      "unit": "com.jiuyan.banquet.service.PackageService#updateStatus",
+      "template": "throws_business_code",
+      "mission": "改套餐启停状态前必须先加载套餐；套餐不存在必须以业务错误 PACKAGE_NOT_FOUND 拒绝。加载用的仓储方法刻意不打桩。",
+      "compiled": true,
+      "verdict": "PASS",
+      "reason": "PACKAGE_NOT_FOUND / HTTP 404",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-PackageService-delete-1",
+      "unit": "com.jiuyan.banquet.service.PackageService#delete",
+      "template": "throws_business_code",
+      "mission": "按 id 删除套餐前必须先加载套餐；套餐不存在必须以业务错误 PACKAGE_NOT_FOUND 拒绝，不能当作空操作成功返回。加载用的仓储方法刻意不打桩。",
+      "compiled": true,
+      "verdict": "PASS",
+      "reason": "PACKAGE_NOT_FOUND / HTTP 404",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-ProductService-update-1",
+      "unit": "com.jiuyan.banquet.service.ProductService#update",
+      "template": "throws_business_code",
+      "mission": "修改商品前必须先加载商品；商品不存在必须以业务错误 PRODUCT_NOT_FOUND 拒绝。加载用的仓储方法刻意不打桩；请求里的价格取合法值、分类给存在桩，避免金额/分类校验先于加载触发。",
+      "compiled": true,
+      "verdict": "PASS",
+      "reason": "PRODUCT_NOT_FOUND / HTTP 404",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-ProductService-updateStatus-1",
+      "unit": "com.jiuyan.banquet.service.ProductService#updateStatus",
+      "template": "throws_business_code",
+      "mission": "改商品启停状态前必须先加载商品；商品不存在必须以业务错误 PRODUCT_NOT_FOUND 拒绝。加载用的仓储方法刻意不打桩；套餐明细引用检查给 false（该检查若先执行也不应提前抛错），避免走到别的拒绝分支。",
+      "compiled": true,
+      "verdict": "PASS",
+      "reason": "PRODUCT_NOT_FOUND / HTTP 404",
       "gate_eligible": false
     }
   ]

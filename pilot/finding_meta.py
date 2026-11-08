@@ -98,6 +98,69 @@ FUNCTION: dict[str, Meta] = {
         note="正面结论：源码复制→注入变异→独立编译→classpath 覆盖→同批用例重跑，"
              "链路跑通且能区分「杀死」与「存活」"),
     # 模型轨提出、人工复核后冻结的两条职责断言（回归守卫）
+    "FN-SEMANTIC-CATEGORYSERVICE-DELETE-NOT-FOUND-REJECT": _m(
+        "function.exception_path", "exact",
+        "CategoryService.delete 在目标不存在时，是否以业务错误 CATEGORY_NOT_FOUND 拒绝？",
+        "function", 0.86, "defect", ("CWE-20",),
+        "CategoryService.delete_not_found_must_be_rejected".replace("-", "_"),
+        note="模型轨提出、确定性层跑通、人工复核源码后冻结 —— 回归守卫："
+             "那个校验被删掉就会红"),
+    "FN-SEMANTIC-PACKAGETYPESERVICE-DELETE-NOT-FOUND-REJECT": _m(
+        "function.exception_path", "exact",
+        "PackageTypeService.delete 在目标不存在时，是否以业务错误 PACKAGE_TYPE_NOT_FOUND 拒绝？",
+        "function", 0.86, "defect", ("CWE-20",),
+        "PackageTypeService.delete_not_found_must_be_rejected".replace("-", "_"),
+        note="模型轨提出、确定性层跑通、人工复核源码后冻结 —— 回归守卫："
+             "那个校验被删掉就会红"),
+    "FN-SEMANTIC-ORDERSERVICE-UPDATE-NOT-FOUND-REJECT": _m(
+        "function.exception_path", "exact",
+        "OrderService.update 在目标不存在时，是否以业务错误 ORDER_NOT_FOUND 拒绝？",
+        "function", 0.86, "defect", ("CWE-20",),
+        "OrderService.update_not_found_must_be_rejected".replace("-", "_"),
+        note="模型轨提出、确定性层跑通、人工复核源码后冻结 —— 回归守卫："
+             "那个校验被删掉就会红"),
+    "FN-SEMANTIC-ORDERSERVICE-UPDATESTATUS-NOT-FOUND-REJECT": _m(
+        "function.exception_path", "exact",
+        "OrderService.updateStatus 在目标不存在时，是否以业务错误 ORDER_NOT_FOUND 拒绝？",
+        "function", 0.86, "defect", ("CWE-20",),
+        "OrderService.updatestatus_not_found_must_be_rejected".replace("-", "_"),
+        note="模型轨提出、确定性层跑通、人工复核源码后冻结 —— 回归守卫："
+             "那个校验被删掉就会红"),
+    "FN-SEMANTIC-PACKAGESERVICE-UPDATE-NOT-FOUND-REJECT": _m(
+        "function.exception_path", "exact",
+        "PackageService.update 在目标不存在时，是否以业务错误 PACKAGE_NOT_FOUND 拒绝？",
+        "function", 0.86, "defect", ("CWE-20",),
+        "PackageService.update_not_found_must_be_rejected".replace("-", "_"),
+        note="模型轨提出、确定性层跑通、人工复核源码后冻结 —— 回归守卫："
+             "那个校验被删掉就会红"),
+    "FN-SEMANTIC-PACKAGESERVICE-UPDATESTATUS-NOT-FOUND-REJECT": _m(
+        "function.exception_path", "exact",
+        "PackageService.updateStatus 在目标不存在时，是否以业务错误 PACKAGE_NOT_FOUND 拒绝？",
+        "function", 0.86, "defect", ("CWE-20",),
+        "PackageService.updatestatus_not_found_must_be_rejected".replace("-", "_"),
+        note="模型轨提出、确定性层跑通、人工复核源码后冻结 —— 回归守卫："
+             "那个校验被删掉就会红"),
+    "FN-SEMANTIC-PACKAGESERVICE-DELETE-NOT-FOUND-REJECT": _m(
+        "function.exception_path", "exact",
+        "PackageService.delete 在目标不存在时，是否以业务错误 PACKAGE_NOT_FOUND 拒绝？",
+        "function", 0.86, "defect", ("CWE-20",),
+        "PackageService.delete_not_found_must_be_rejected".replace("-", "_"),
+        note="模型轨提出、确定性层跑通、人工复核源码后冻结 —— 回归守卫："
+             "那个校验被删掉就会红"),
+    "FN-SEMANTIC-PRODUCTSERVICE-UPDATE-NOT-FOUND-REJECT": _m(
+        "function.exception_path", "exact",
+        "ProductService.update 在目标不存在时，是否以业务错误 PRODUCT_NOT_FOUND 拒绝？",
+        "function", 0.86, "defect", ("CWE-20",),
+        "ProductService.update_not_found_must_be_rejected".replace("-", "_"),
+        note="模型轨提出、确定性层跑通、人工复核源码后冻结 —— 回归守卫："
+             "那个校验被删掉就会红"),
+    "FN-SEMANTIC-PRODUCTSERVICE-UPDATESTATUS-NOT-FOUND-REJECT": _m(
+        "function.exception_path", "exact",
+        "ProductService.updateStatus 在目标不存在时，是否以业务错误 PRODUCT_NOT_FOUND 拒绝？",
+        "function", 0.86, "defect", ("CWE-20",),
+        "ProductService.updatestatus_not_found_must_be_rejected".replace("-", "_"),
+        note="模型轨提出、确定性层跑通、人工复核源码后冻结 —— 回归守卫："
+             "那个校验被删掉就会红"),
     "FN-SEMANTIC-PRICE-NEGATIVE-REJECT": _m(
         "function.exception_path", "exact",
         "套餐金额为负时是否以业务错误 PRICE_INVALID 拒绝？",

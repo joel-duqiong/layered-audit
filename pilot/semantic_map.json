@@ -360,6 +360,678 @@
         }
       ],
       "stubs": {}
+    },
+    {
+      "id": "OB-CATEGORYSERVICE-DELETE-MUST-REJECT",
+      "unit": "com.jiuyan.banquet.service.CategoryService#delete",
+      "class": "com.jiuyan.banquet.service.CategoryService",
+      "method": "delete",
+      "group": "SEMANTIC_OBLIGATION",
+      "label": "CategoryService.delete 找不到时必须以 CATEGORY_NOT_FOUND 拒绝",
+      "mission": "CategoryService.delete 在目标不存在时，必须以业务错误 CATEGORY_NOT_FOUND 拒绝，而不是静默成功或抛出非业务异常。",
+      "template": "throws_business_code",
+      "args": [
+        {
+          "$t": "long",
+          "v": 999999
+        }
+      ],
+      "bound": {
+        "kind": "const",
+        "value": "CATEGORY_NOT_FOUND"
+      },
+      "stubs": {
+        "com.jiuyan.banquet.repository.CategoryRepository": {
+          "save": {
+            "$t": "entity",
+            "class": "com.jiuyan.banquet.entity.Category",
+            "fields": {
+              "id": 999999,
+              "name": "宴会分类",
+              "sortOrder": 1,
+              "isDeleted": true
+            }
+          }
+        },
+        "com.jiuyan.banquet.repository.ProductRepository": {
+          "existsByCategoryIdAndIsDeletedFalse": {
+            "$t": "bool",
+            "v": false
+          }
+        },
+        "com.jiuyan.banquet.mapper.CategoryMapper": {
+          "toResponse": {
+            "$t": "entity",
+            "class": "com.jiuyan.banquet.dto.CategoryResponse",
+            "fields": {}
+          }
+        }
+      },
+      "source": "model_hint_promoted",
+      "promoted_from": "OB-MODEL-CategoryService-delete-1",
+      "promoted_note": "模型轨提出（source=model_hint），确定性层跑通 + 人工复核源码后冻结 —— 现在它是回归守卫：那个「找不到就拒绝」的校验被删掉，这条就会红并开单",
+      "finding": {
+        "id": "FN-SEMANTIC-CATEGORYSERVICE-DELETE-NOT-FOUND-REJECT",
+        "severity": "MEDIUM",
+        "title": "职责断言：CategoryService.delete 找不到时必须以 CATEGORY_NOT_FOUND 拒绝",
+        "root_cause": "CategoryService.delete 没有在目标不存在时以 CATEGORY_NOT_FOUND 拒绝 —— 要么静默成功，要么抛出非业务异常（客户端拿不到可判定的错误码）",
+        "api_reachable": true,
+        "boundary_protected": false,
+        "boundary_note": "内部调用没有 DTO 边界挡着，函数自身必须守住"
+      }
+    },
+    {
+      "id": "OB-PACKAGETYPESERVICE-DELETE-MUST-REJECT",
+      "unit": "com.jiuyan.banquet.service.PackageTypeService#delete",
+      "class": "com.jiuyan.banquet.service.PackageTypeService",
+      "method": "delete",
+      "group": "SEMANTIC_OBLIGATION",
+      "label": "PackageTypeService.delete 找不到时必须以 PACKAGE_TYPE_NOT_FOUND 拒绝",
+      "mission": "PackageTypeService.delete 在目标不存在时，必须以业务错误 PACKAGE_TYPE_NOT_FOUND 拒绝，而不是静默成功或抛出非业务异常。",
+      "template": "throws_business_code",
+      "args": [
+        {
+          "$t": "long",
+          "v": 999999
+        }
+      ],
+      "bound": {
+        "kind": "const",
+        "value": "PACKAGE_TYPE_NOT_FOUND"
+      },
+      "stubs": {
+        "com.jiuyan.banquet.repository.PackageTypeRepository": {
+          "save": {
+            "$t": "entity",
+            "class": "com.jiuyan.banquet.entity.PackageType",
+            "fields": {
+              "id": 999999,
+              "name": "婚宴套餐分类",
+              "sortOrder": 1,
+              "isDeleted": true
+            }
+          }
+        },
+        "com.jiuyan.banquet.repository.BanquetPackageRepository": {
+          "existsByBanquetTypeAndIsDeletedFalse": {
+            "$t": "bool",
+            "v": false
+          }
+        },
+        "com.jiuyan.banquet.mapper.PackageTypeMapper": {
+          "toResponse": {
+            "$t": "entity",
+            "class": "com.jiuyan.banquet.dto.PackageTypeResponse",
+            "fields": {}
+          }
+        }
+      },
+      "source": "model_hint_promoted",
+      "promoted_from": "OB-MODEL-PackageTypeService-delete-1",
+      "promoted_note": "模型轨提出（source=model_hint），确定性层跑通 + 人工复核源码后冻结 —— 现在它是回归守卫：那个「找不到就拒绝」的校验被删掉，这条就会红并开单",
+      "finding": {
+        "id": "FN-SEMANTIC-PACKAGETYPESERVICE-DELETE-NOT-FOUND-REJECT",
+        "severity": "MEDIUM",
+        "title": "职责断言：PackageTypeService.delete 找不到时必须以 PACKAGE_TYPE_NOT_FOUND 拒绝",
+        "root_cause": "PackageTypeService.delete 没有在目标不存在时以 PACKAGE_TYPE_NOT_FOUND 拒绝 —— 要么静默成功，要么抛出非业务异常（客户端拿不到可判定的错误码）",
+        "api_reachable": true,
+        "boundary_protected": false,
+        "boundary_note": "内部调用没有 DTO 边界挡着，函数自身必须守住"
+      }
+    },
+    {
+      "id": "OB-ORDERSERVICE-UPDATE-MUST-REJECT",
+      "unit": "com.jiuyan.banquet.service.OrderService#update",
+      "class": "com.jiuyan.banquet.service.OrderService",
+      "method": "update",
+      "group": "SEMANTIC_OBLIGATION",
+      "label": "OrderService.update 找不到时必须以 ORDER_NOT_FOUND 拒绝",
+      "mission": "OrderService.update 在目标不存在时，必须以业务错误 ORDER_NOT_FOUND 拒绝，而不是静默成功或抛出非业务异常。",
+      "template": "throws_business_code",
+      "args": [
+        {
+          "$t": "long",
+          "v": 999999
+        },
+        {
+          "$t": "entity",
+          "class": "com.jiuyan.banquet.dto.UpdateOrderRequest",
+          "fields": {
+            "customerName": "张三",
+            "customerPhone": "13800000000",
+            "banquetName": "婚宴",
+            "banquetType": "婚宴",
+            "address": "示例地址",
+            "reservationTime": null,
+            "tableCount": 10,
+            "packageId": 4,
+            "packageItems": [],
+            "addedItems": [],
+            "planTotalCent": 46800,
+            "useFinalPrice": false,
+            "finalPriceCent": null,
+            "depositCent": 10000,
+            "status": null,
+            "remark": ""
+          }
+        }
+      ],
+      "bound": {
+        "kind": "const",
+        "value": "ORDER_NOT_FOUND"
+      },
+      "stubs": {
+        "com.jiuyan.banquet.repository.OrderRepository": {
+          "save": {
+            "$t": "entity",
+            "class": "com.jiuyan.banquet.entity.BanquetOrder",
+            "fields": {
+              "id": 4,
+              "orderNo": "ORD-0004",
+              "customerName": "张三",
+              "customerPhone": "13800000000",
+              "banquetName": "婚宴",
+              "banquetType": "婚宴",
+              "address": "示例地址",
+              "reservationTime": null,
+              "tableCount": 10,
+              "banquetPackage": null,
+              "packageSnapshot": null,
+              "addedItemsSnapshot": null,
+              "planTotalCent": 46800,
+              "useFinalPrice": false,
+              "finalPriceCent": null,
+              "depositCent": 10000,
+              "status": null,
+              "remark": ""
+            }
+          }
+        },
+        "com.jiuyan.banquet.repository.BanquetPackageRepository": {
+          "findById": {
+            "$optional": {
+              "$t": "entity",
+              "class": "com.jiuyan.banquet.entity.BanquetPackage",
+              "fields": {
+                "id": 4,
+                "name": "婚宴双人套餐",
+                "banquetType": "婚宴",
+                "priceCent": 100000,
+                "imageUrl": "https://example.com/pkg.png",
+                "description": "双人精选套餐",
+                "isActive": true,
+                "isDeleted": false,
+                "items": []
+              }
+            }
+          }
+        },
+        "com.jiuyan.banquet.mapper.OrderMapper": {
+          "toResponse": {
+            "$t": "entity",
+            "class": "com.jiuyan.banquet.dto.OrderResponse",
+            "fields": {}
+          }
+        }
+      },
+      "source": "model_hint_promoted",
+      "promoted_from": "OB-MODEL-OrderService-update-1",
+      "promoted_note": "模型轨提出（source=model_hint），确定性层跑通 + 人工复核源码后冻结 —— 现在它是回归守卫：那个「找不到就拒绝」的校验被删掉，这条就会红并开单",
+      "finding": {
+        "id": "FN-SEMANTIC-ORDERSERVICE-UPDATE-NOT-FOUND-REJECT",
+        "severity": "MEDIUM",
+        "title": "职责断言：OrderService.update 找不到时必须以 ORDER_NOT_FOUND 拒绝",
+        "root_cause": "OrderService.update 没有在目标不存在时以 ORDER_NOT_FOUND 拒绝 —— 要么静默成功，要么抛出非业务异常（客户端拿不到可判定的错误码）",
+        "api_reachable": true,
+        "boundary_protected": false,
+        "boundary_note": "内部调用没有 DTO 边界挡着，函数自身必须守住"
+      }
+    },
+    {
+      "id": "OB-ORDERSERVICE-UPDATESTATUS-MUST-REJECT",
+      "unit": "com.jiuyan.banquet.service.OrderService#updateStatus",
+      "class": "com.jiuyan.banquet.service.OrderService",
+      "method": "updateStatus",
+      "group": "SEMANTIC_OBLIGATION",
+      "label": "OrderService.updateStatus 找不到时必须以 ORDER_NOT_FOUND 拒绝",
+      "mission": "OrderService.updateStatus 在目标不存在时，必须以业务错误 ORDER_NOT_FOUND 拒绝，而不是静默成功或抛出非业务异常。",
+      "template": "throws_business_code",
+      "args": [
+        {
+          "$t": "long",
+          "v": 999999
+        },
+        {
+          "$t": "null"
+        }
+      ],
+      "bound": {
+        "kind": "const",
+        "value": "ORDER_NOT_FOUND"
+      },
+      "stubs": {
+        "com.jiuyan.banquet.repository.OrderRepository": {
+          "save": {
+            "$t": "entity",
+            "class": "com.jiuyan.banquet.entity.BanquetOrder",
+            "fields": {
+              "id": 4,
+              "orderNo": "ORD-0004",
+              "customerName": "张三",
+              "customerPhone": "13800000000",
+              "banquetName": "婚宴",
+              "banquetType": "婚宴",
+              "address": "示例地址",
+              "reservationTime": null,
+              "tableCount": 10,
+              "banquetPackage": null,
+              "packageSnapshot": null,
+              "addedItemsSnapshot": null,
+              "planTotalCent": 46800,
+              "useFinalPrice": false,
+              "finalPriceCent": null,
+              "depositCent": 10000,
+              "status": null,
+              "remark": ""
+            }
+          }
+        },
+        "com.jiuyan.banquet.mapper.OrderMapper": {
+          "toResponse": {
+            "$t": "entity",
+            "class": "com.jiuyan.banquet.dto.OrderResponse",
+            "fields": {}
+          }
+        }
+      },
+      "source": "model_hint_promoted",
+      "promoted_from": "OB-MODEL-OrderService-updateStatus-1",
+      "promoted_note": "模型轨提出（source=model_hint），确定性层跑通 + 人工复核源码后冻结 —— 现在它是回归守卫：那个「找不到就拒绝」的校验被删掉，这条就会红并开单",
+      "finding": {
+        "id": "FN-SEMANTIC-ORDERSERVICE-UPDATESTATUS-NOT-FOUND-REJECT",
+        "severity": "MEDIUM",
+        "title": "职责断言：OrderService.updateStatus 找不到时必须以 ORDER_NOT_FOUND 拒绝",
+        "root_cause": "OrderService.updateStatus 没有在目标不存在时以 ORDER_NOT_FOUND 拒绝 —— 要么静默成功，要么抛出非业务异常（客户端拿不到可判定的错误码）",
+        "api_reachable": true,
+        "boundary_protected": false,
+        "boundary_note": "内部调用没有 DTO 边界挡着，函数自身必须守住"
+      }
+    },
+    {
+      "id": "OB-PACKAGESERVICE-UPDATE-MUST-REJECT",
+      "unit": "com.jiuyan.banquet.service.PackageService#update",
+      "class": "com.jiuyan.banquet.service.PackageService",
+      "method": "update",
+      "group": "SEMANTIC_OBLIGATION",
+      "label": "PackageService.update 找不到时必须以 PACKAGE_NOT_FOUND 拒绝",
+      "mission": "PackageService.update 在目标不存在时，必须以业务错误 PACKAGE_NOT_FOUND 拒绝，而不是静默成功或抛出非业务异常。",
+      "template": "throws_business_code",
+      "args": [
+        {
+          "$t": "long",
+          "v": 999999
+        },
+        {
+          "$t": "entity",
+          "class": "com.jiuyan.banquet.dto.UpdatePackageRequest",
+          "fields": {
+            "name": "婚宴双人套餐",
+            "banquetType": "婚宴",
+            "priceCent": 100000,
+            "imageUrl": "https://example.com/pkg.png",
+            "description": "双人精选套餐",
+            "isActive": true,
+            "items": []
+          }
+        }
+      ],
+      "bound": {
+        "kind": "const",
+        "value": "PACKAGE_NOT_FOUND"
+      },
+      "stubs": {
+        "com.jiuyan.banquet.repository.BanquetPackageRepository": {
+          "save": {
+            "$t": "entity",
+            "class": "com.jiuyan.banquet.entity.BanquetPackage",
+            "fields": {
+              "id": 4,
+              "name": "婚宴双人套餐",
+              "banquetType": "婚宴",
+              "priceCent": 100000,
+              "imageUrl": "https://example.com/pkg.png",
+              "description": "双人精选套餐",
+              "isActive": false,
+              "isDeleted": true,
+              "items": []
+            }
+          }
+        },
+        "com.jiuyan.banquet.repository.PackageTypeRepository": {
+          "findByNameAndIsDeletedFalse": {
+            "$optional": {
+              "$t": "entity",
+              "class": "com.jiuyan.banquet.entity.PackageType",
+              "fields": {
+                "id": 13,
+                "name": "婚宴",
+                "sortOrder": 1,
+                "isDeleted": false
+              }
+            }
+          }
+        },
+        "com.jiuyan.banquet.mapper.PackageMapper": {
+          "toResponse": {
+            "$t": "entity",
+            "class": "com.jiuyan.banquet.dto.PackageResponse",
+            "fields": {}
+          }
+        }
+      },
+      "source": "model_hint_promoted",
+      "promoted_from": "OB-MODEL-PackageService-update-1",
+      "promoted_note": "模型轨提出（source=model_hint），确定性层跑通 + 人工复核源码后冻结 —— 现在它是回归守卫：那个「找不到就拒绝」的校验被删掉，这条就会红并开单",
+      "finding": {
+        "id": "FN-SEMANTIC-PACKAGESERVICE-UPDATE-NOT-FOUND-REJECT",
+        "severity": "MEDIUM",
+        "title": "职责断言：PackageService.update 找不到时必须以 PACKAGE_NOT_FOUND 拒绝",
+        "root_cause": "PackageService.update 没有在目标不存在时以 PACKAGE_NOT_FOUND 拒绝 —— 要么静默成功，要么抛出非业务异常（客户端拿不到可判定的错误码）",
+        "api_reachable": true,
+        "boundary_protected": false,
+        "boundary_note": "内部调用没有 DTO 边界挡着，函数自身必须守住"
+      }
+    },
+    {
+      "id": "OB-PACKAGESERVICE-UPDATESTATUS-MUST-REJECT",
+      "unit": "com.jiuyan.banquet.service.PackageService#updateStatus",
+      "class": "com.jiuyan.banquet.service.PackageService",
+      "method": "updateStatus",
+      "group": "SEMANTIC_OBLIGATION",
+      "label": "PackageService.updateStatus 找不到时必须以 PACKAGE_NOT_FOUND 拒绝",
+      "mission": "PackageService.updateStatus 在目标不存在时，必须以业务错误 PACKAGE_NOT_FOUND 拒绝，而不是静默成功或抛出非业务异常。",
+      "template": "throws_business_code",
+      "args": [
+        {
+          "$t": "long",
+          "v": 999999
+        },
+        {
+          "$t": "bool",
+          "v": false
+        }
+      ],
+      "bound": {
+        "kind": "const",
+        "value": "PACKAGE_NOT_FOUND"
+      },
+      "stubs": {
+        "com.jiuyan.banquet.repository.BanquetPackageRepository": {
+          "save": {
+            "$t": "entity",
+            "class": "com.jiuyan.banquet.entity.BanquetPackage",
+            "fields": {
+              "id": 4,
+              "name": "婚宴双人套餐",
+              "banquetType": "婚宴",
+              "priceCent": 100000,
+              "imageUrl": "https://example.com/pkg.png",
+              "description": "双人精选套餐",
+              "isActive": false,
+              "isDeleted": true,
+              "items": []
+            }
+          }
+        },
+        "com.jiuyan.banquet.mapper.PackageMapper": {
+          "toResponse": {
+            "$t": "entity",
+            "class": "com.jiuyan.banquet.dto.PackageResponse",
+            "fields": {}
+          }
+        }
+      },
+      "source": "model_hint_promoted",
+      "promoted_from": "OB-MODEL-PackageService-updateStatus-1",
+      "promoted_note": "模型轨提出（source=model_hint），确定性层跑通 + 人工复核源码后冻结 —— 现在它是回归守卫：那个「找不到就拒绝」的校验被删掉，这条就会红并开单",
+      "finding": {
+        "id": "FN-SEMANTIC-PACKAGESERVICE-UPDATESTATUS-NOT-FOUND-REJECT",
+        "severity": "MEDIUM",
+        "title": "职责断言：PackageService.updateStatus 找不到时必须以 PACKAGE_NOT_FOUND 拒绝",
+        "root_cause": "PackageService.updateStatus 没有在目标不存在时以 PACKAGE_NOT_FOUND 拒绝 —— 要么静默成功，要么抛出非业务异常（客户端拿不到可判定的错误码）",
+        "api_reachable": true,
+        "boundary_protected": false,
+        "boundary_note": "内部调用没有 DTO 边界挡着，函数自身必须守住"
+      }
+    },
+    {
+      "id": "OB-PACKAGESERVICE-DELETE-MUST-REJECT",
+      "unit": "com.jiuyan.banquet.service.PackageService#delete",
+      "class": "com.jiuyan.banquet.service.PackageService",
+      "method": "delete",
+      "group": "SEMANTIC_OBLIGATION",
+      "label": "PackageService.delete 找不到时必须以 PACKAGE_NOT_FOUND 拒绝",
+      "mission": "PackageService.delete 在目标不存在时，必须以业务错误 PACKAGE_NOT_FOUND 拒绝，而不是静默成功或抛出非业务异常。",
+      "template": "throws_business_code",
+      "args": [
+        {
+          "$t": "long",
+          "v": 999999
+        }
+      ],
+      "bound": {
+        "kind": "const",
+        "value": "PACKAGE_NOT_FOUND"
+      },
+      "stubs": {
+        "com.jiuyan.banquet.repository.BanquetPackageRepository": {
+          "save": {
+            "$t": "entity",
+            "class": "com.jiuyan.banquet.entity.BanquetPackage",
+            "fields": {
+              "id": 4,
+              "name": "婚宴双人套餐",
+              "banquetType": "婚宴",
+              "priceCent": 100000,
+              "imageUrl": "https://example.com/pkg.png",
+              "description": "双人精选套餐",
+              "isActive": false,
+              "isDeleted": true,
+              "items": []
+            }
+          }
+        },
+        "com.jiuyan.banquet.mapper.PackageMapper": {
+          "toResponse": {
+            "$t": "entity",
+            "class": "com.jiuyan.banquet.dto.PackageResponse",
+            "fields": {}
+          }
+        }
+      },
+      "source": "model_hint_promoted",
+      "promoted_from": "OB-MODEL-PackageService-delete-1",
+      "promoted_note": "模型轨提出（source=model_hint），确定性层跑通 + 人工复核源码后冻结 —— 现在它是回归守卫：那个「找不到就拒绝」的校验被删掉，这条就会红并开单",
+      "finding": {
+        "id": "FN-SEMANTIC-PACKAGESERVICE-DELETE-NOT-FOUND-REJECT",
+        "severity": "MEDIUM",
+        "title": "职责断言：PackageService.delete 找不到时必须以 PACKAGE_NOT_FOUND 拒绝",
+        "root_cause": "PackageService.delete 没有在目标不存在时以 PACKAGE_NOT_FOUND 拒绝 —— 要么静默成功，要么抛出非业务异常（客户端拿不到可判定的错误码）",
+        "api_reachable": true,
+        "boundary_protected": false,
+        "boundary_note": "内部调用没有 DTO 边界挡着，函数自身必须守住"
+      }
+    },
+    {
+      "id": "OB-PRODUCTSERVICE-UPDATE-MUST-REJECT",
+      "unit": "com.jiuyan.banquet.service.ProductService#update",
+      "class": "com.jiuyan.banquet.service.ProductService",
+      "method": "update",
+      "group": "SEMANTIC_OBLIGATION",
+      "label": "ProductService.update 找不到时必须以 PRODUCT_NOT_FOUND 拒绝",
+      "mission": "ProductService.update 在目标不存在时，必须以业务错误 PRODUCT_NOT_FOUND 拒绝，而不是静默成功或抛出非业务异常。",
+      "template": "throws_business_code",
+      "args": [
+        {
+          "$t": "long",
+          "v": 999999
+        },
+        {
+          "$t": "entity",
+          "class": "com.jiuyan.banquet.dto.UpdateProductRequest",
+          "fields": {
+            "name": "红烧肉",
+            "categoryId": 11,
+            "priceCent": 6800,
+            "unit": "份",
+            "imageUrl": "https://example.com/hongshaorou.png",
+            "description": "招牌红烧肉",
+            "isActive": true
+          }
+        }
+      ],
+      "bound": {
+        "kind": "const",
+        "value": "PRODUCT_NOT_FOUND"
+      },
+      "stubs": {
+        "com.jiuyan.banquet.repository.ProductRepository": {
+          "save": {
+            "$t": "entity",
+            "class": "com.jiuyan.banquet.entity.Product",
+            "fields": {
+              "id": 29,
+              "name": "红烧肉",
+              "category": {
+                "$t": "entity",
+                "class": "com.jiuyan.banquet.entity.Category",
+                "fields": {
+                  "id": 11,
+                  "name": "热菜",
+                  "sortOrder": 1,
+                  "isDeleted": false
+                }
+              },
+              "priceCent": 6800,
+              "unit": "份",
+              "imageUrl": "https://example.com/hongshaorou.png",
+              "description": "招牌红烧肉",
+              "isActive": false,
+              "isDeleted": true
+            }
+          }
+        },
+        "com.jiuyan.banquet.repository.CategoryRepository": {
+          "findById": {
+            "$optional": {
+              "$t": "entity",
+              "class": "com.jiuyan.banquet.entity.Category",
+              "fields": {
+                "id": 11,
+                "name": "热菜",
+                "sortOrder": 1,
+                "isDeleted": false
+              }
+            }
+          }
+        },
+        "com.jiuyan.banquet.mapper.ProductMapper": {
+          "toResponse": {
+            "$t": "entity",
+            "class": "com.jiuyan.banquet.dto.ProductResponse",
+            "fields": {}
+          }
+        }
+      },
+      "source": "model_hint_promoted",
+      "promoted_from": "OB-MODEL-ProductService-update-1",
+      "promoted_note": "模型轨提出（source=model_hint），确定性层跑通 + 人工复核源码后冻结 —— 现在它是回归守卫：那个「找不到就拒绝」的校验被删掉，这条就会红并开单",
+      "finding": {
+        "id": "FN-SEMANTIC-PRODUCTSERVICE-UPDATE-NOT-FOUND-REJECT",
+        "severity": "MEDIUM",
+        "title": "职责断言：ProductService.update 找不到时必须以 PRODUCT_NOT_FOUND 拒绝",
+        "root_cause": "ProductService.update 没有在目标不存在时以 PRODUCT_NOT_FOUND 拒绝 —— 要么静默成功，要么抛出非业务异常（客户端拿不到可判定的错误码）",
+        "api_reachable": true,
+        "boundary_protected": false,
+        "boundary_note": "内部调用没有 DTO 边界挡着，函数自身必须守住"
+      }
+    },
+    {
+      "id": "OB-PRODUCTSERVICE-UPDATESTATUS-MUST-REJECT",
+      "unit": "com.jiuyan.banquet.service.ProductService#updateStatus",
+      "class": "com.jiuyan.banquet.service.ProductService",
+      "method": "updateStatus",
+      "group": "SEMANTIC_OBLIGATION",
+      "label": "ProductService.updateStatus 找不到时必须以 PRODUCT_NOT_FOUND 拒绝",
+      "mission": "ProductService.updateStatus 在目标不存在时，必须以业务错误 PRODUCT_NOT_FOUND 拒绝，而不是静默成功或抛出非业务异常。",
+      "template": "throws_business_code",
+      "args": [
+        {
+          "$t": "long",
+          "v": 999999
+        },
+        {
+          "$t": "bool",
+          "v": false
+        }
+      ],
+      "bound": {
+        "kind": "const",
+        "value": "PRODUCT_NOT_FOUND"
+      },
+      "stubs": {
+        "com.jiuyan.banquet.repository.ProductRepository": {
+          "save": {
+            "$t": "entity",
+            "class": "com.jiuyan.banquet.entity.Product",
+            "fields": {
+              "id": 29,
+              "name": "红烧肉",
+              "category": {
+                "$t": "entity",
+                "class": "com.jiuyan.banquet.entity.Category",
+                "fields": {
+                  "id": 11,
+                  "name": "热菜",
+                  "sortOrder": 1,
+                  "isDeleted": false
+                }
+              },
+              "priceCent": 6800,
+              "unit": "份",
+              "imageUrl": "https://example.com/hongshaorou.png",
+              "description": "招牌红烧肉",
+              "isActive": false,
+              "isDeleted": true
+            }
+          }
+        },
+        "com.jiuyan.banquet.repository.PackageItemRepository": {
+          "existsByProductId": {
+            "$t": "bool",
+            "v": false
+          }
+        },
+        "com.jiuyan.banquet.mapper.ProductMapper": {
+          "toResponse": {
+            "$t": "entity",
+            "class": "com.jiuyan.banquet.dto.ProductResponse",
+            "fields": {}
+          }
+        }
+      },
+      "source": "model_hint_promoted",
+      "promoted_from": "OB-MODEL-ProductService-updateStatus-1",
+      "promoted_note": "模型轨提出（source=model_hint），确定性层跑通 + 人工复核源码后冻结 —— 现在它是回归守卫：那个「找不到就拒绝」的校验被删掉，这条就会红并开单",
+      "finding": {
+        "id": "FN-SEMANTIC-PRODUCTSERVICE-UPDATESTATUS-NOT-FOUND-REJECT",
+        "severity": "MEDIUM",
+        "title": "职责断言：ProductService.updateStatus 找不到时必须以 PRODUCT_NOT_FOUND 拒绝",
+        "root_cause": "ProductService.updateStatus 没有在目标不存在时以 PRODUCT_NOT_FOUND 拒绝 —— 要么静默成功，要么抛出非业务异常（客户端拿不到可判定的错误码）",
+        "api_reachable": true,
+        "boundary_protected": false,
+        "boundary_note": "内部调用没有 DTO 边界挡着，函数自身必须守住"
+      }
     }
   ]
 }

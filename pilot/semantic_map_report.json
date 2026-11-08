@@ -1,27 +1,36 @@
 {
-  "missions_total": 10,
-  "compiled_ok": 13,
+  "missions_total": 19,
+  "compiled_ok": 29,
   "compile_failed": [],
   "rejected_by_validation": [],
   "units_with_mission": [
     "com.jiuyan.banquet.service.CategoryService#create",
+    "com.jiuyan.banquet.service.CategoryService#delete",
     "com.jiuyan.banquet.service.OrderService#normalizePackageItems",
     "com.jiuyan.banquet.service.OrderService#parseDateScope",
     "com.jiuyan.banquet.service.OrderService#parseStatus",
     "com.jiuyan.banquet.service.OrderService#resolveFinalPrice",
+    "com.jiuyan.banquet.service.OrderService#update",
+    "com.jiuyan.banquet.service.OrderService#updateStatus",
     "com.jiuyan.banquet.service.PackageService#applyBase",
     "com.jiuyan.banquet.service.PackageService#applyItems",
+    "com.jiuyan.banquet.service.PackageService#delete",
     "com.jiuyan.banquet.service.PackageService#findPackage",
-    "com.jiuyan.banquet.service.ProductService#findProduct"
+    "com.jiuyan.banquet.service.PackageService#update",
+    "com.jiuyan.banquet.service.PackageService#updateStatus",
+    "com.jiuyan.banquet.service.PackageTypeService#delete",
+    "com.jiuyan.banquet.service.ProductService#findProduct",
+    "com.jiuyan.banquet.service.ProductService#update",
+    "com.jiuyan.banquet.service.ProductService#updateStatus"
   ],
   "source_mix": {
     "declared": 8,
-    "model_hint_promoted": 2,
-    "model_hint": 3
+    "model_hint_promoted": 11,
+    "model_hint": 10
   },
   "model_track": {
-    "missions": 3,
-    "compiled_ok": 3,
+    "missions": 10,
+    "compiled_ok": 10,
     "compile_failed": [],
     "gate_eligible": false,
     "note": "模型轨只产出待验证线索：不进缺陷台账、不进门禁；要进门禁得人工冻结到 semantic_map.json（决议 D3）"

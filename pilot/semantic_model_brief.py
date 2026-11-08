@@ -31,7 +31,7 @@ from obligations import SUPPORTED_CHECK_TYPES, TEMPLATES  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 OUT = HERE / "semantic_model_brief.json"
-TOP_N = 12
+TOP_N = 15
 
 # 每种模板的参数形状 —— 模型照着填，填错了编译器会拒
 ARG_SHAPES = {

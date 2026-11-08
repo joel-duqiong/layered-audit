@@ -53,7 +53,7 @@
       "severity": "INFO",
       "endpoint": "POST /api/uploads/product-image",
       "title": "上传失败时错误响应不泄露服务器文件系统路径",
-      "detail": "把上传目录破坏掉（products 目录换成一个普通文件，Files.createDirectories 必然失败）后，接口返回的是固定的业务错误，响应体里没有任何路径片段：\n{\"success\": false, \"code\": \"IMAGE_UPLOAD_FAILED\", \"message\": \"图片上传失败\", \"traceId\": \"6a0a9848-4088-447c-bc35-ee357912c393\", \"timestamp\": \"2026-11-08T22:10:46.882092044+08:00\"}\n扫描的片段：[]（空 = 没泄露）。\n对照：文件层已开的 INTERNAL_LEAK（25 处）是**其它**接口把框架异常原文透传，上传这条是干净的。",
+      "detail": "把上传目录破坏掉（products 目录换成一个普通文件，Files.createDirectories 必然失败）后，接口返回的是固定的业务错误，响应体里没有任何路径片段：\n{\"success\": false, \"code\": \"IMAGE_UPLOAD_FAILED\", \"message\": \"图片上传失败\", \"traceId\": \"0104e4c1-2c06-47d9-8bea-a75ecea89c52\", \"timestamp\": \"2026-11-08T22:29:25.277387714+08:00\"}\n扫描的片段：[]（空 = 没泄露）。\n对照：文件层已开的 INTERNAL_LEAK（25 处）是**其它**接口把框架异常原文透传，上传这条是干净的。",
       "repro": "python3 config_probe.py",
       "evidence": {
         "probe": {
@@ -62,8 +62,8 @@
             "success": false,
             "code": "IMAGE_UPLOAD_FAILED",
             "message": "图片上传失败",
-            "traceId": "6a0a9848-4088-447c-bc35-ee357912c393",
-            "timestamp": "2026-11-08T22:10:46.882092044+08:00"
+            "traceId": "0104e4c1-2c06-47d9-8bea-a75ecea89c52",
+            "timestamp": "2026-11-08T22:29:25.277387714+08:00"
           },
           "path_leaks": []
         }
