@@ -40,7 +40,7 @@
 **「涌现」是这套系统的存在理由**：单点测试全过 ≠ 系统是对的。外部研究同此结论
 （单 Agent 的评估不能外推为群体的评估，见 `EMERGENCE.md` §1.1）。
 
-## 3. 当前进度（截至 2026-11-07）
+## 3. 当前进度（截至 2026-11-08）
 
 ### 已建成并跑通的
 
@@ -48,19 +48,20 @@
 |---|---|---|
 | 五层契约（function/file/class/service/integration）+ 归属规则 + 证据 schema | 完成 | `layers.yaml` |
 | 五层「静态声明 → 动态实测 → 差分出单」 | 完成 | `pilot/`（30+ 脚本） |
-| 跨层收口引擎（schema 校验 / 归一化 / 根因归并 / 覆盖度矩阵 / 特性覆盖 / 不变式原语） | 完成，**零项目字面量** | `pilot/engine/`（5 文件） |
+| 跨层收口引擎（schema 校验 / 归一化 / 根因归并 / 覆盖度矩阵 / 特性覆盖 / 不变式原语 / 涌现候选链 / FDR 门禁 / 关系网 / 跨仓库面） | 完成，**零项目字面量** | `pilot/engine/`（19 文件，纯净度守卫实测通过） |
 | 项目绑定 + 人工标注表 | 完成 | `pilot/target.json`、`pilot/finding_meta.py` |
 | 常驻门禁（基线比对，回归即红） | 完成 | `pilot/integration_gate.py` |
 | 回归资产（pytest：7 闭合不变量真绿 + 7 攻击链 xfail strict） | 完成 | `/Users/june/tests/auto-api` |
 | 负载实测 / 并发 / 配置失败模式 / ORM 查询放大 / Java 特性扫描 / 业务不变式 | 完成 | `pilot/*_probe.py` |
 
-### 本轮（2026-11-07 晚）新增
+### 本轮新增（2026-11-07 晚那一轮 + 2026-11-08 这一轮）
 
 | 块 | 状态 | 位置 |
 |---|---|---|
 | **Agent 群骨架** | ✅ unit / role / instance 三级分离，533 单元 / 21 角色 / 786 条边，契约违规 0 | `pilot/engine/agent_schema.py`、`build_agent_graph.py` → `units.json` / `edges.json` |
 | **执行预算闸门** | ✅ `max_agents: 12` 第一次被真正消费（分轮 admit + oracle 多样性保底 + 产物并集合并） | `pilot/engine/budget.py`、`scheduler.py` → `schedule_report.json` |
 | **函数层载体通用化** | ✅ **通用反射 harness**：目标类、依赖、打桩、用例、类型别名全部来自用例文件，harness 里零项目字面量。jiuyan 92 条用例判定 **0 条不同**（64/28 与原版一致）；demo-shop 6 条全过 | `pilot/fn_harness/GenericHarness.java`、`pilot/fn_cases.json`、`demos/shop/fn_cases.json` |
+| **文件层载体通用化** | ✅ **通用反射 harness + 通用容器探针**：目标类、依赖、打桩、样例、期望全部来自用例文件，harness 里零项目字面量；6 个通用检查器（覆写后置条件 / 条件装配 / 实体值相等 / 缓存值形状 / 封装泄漏 / 跨仓库 HTTP）。jiuyan 22 用例 / 58 判定、18 条 finding **结论级 0 差异**；demo-shop 9 用例 / 25 判定全过、埋的 6 类缺陷命中 5 类（另挖出 2 个真缺陷）| `pilot/file_harness/GenericFileHarness*.java`、`pilot/file_http_probe.py`、`pilot/file_cases.json`、`demos/shop/file_cases.json`、`pilot/FILE_GENERIC_RESULT.md` |
 | **涌现裁决器** | ✅ 七种裁决落成可执行引擎。**demo-shop 真跑判出 `EMERGENT_CONJUNCTIVE`**：F(∅)=0、F({A})=0、F({B})=0、F({A,B})=1，偏离 90000 分；35 项自证断言全过 | `pilot/engine/emergence.py`、`demos/shop/EMERGENCE_RESULT.md` |
 | **分片存储 + 增量重跑** | ✅ 「改一处只动受影响的那几个」的第一个可用增量：第 2 次跑 **0 重跑 / 92 复用 / 1.5 秒**；删 1 个分片只重跑 1 条；改工具版本全失效 | `pilot/engine/store.py`、`pilot/fn_dynamic.py --incremental` |
 | **服务层载体通用化** | ✅ 场景配置搬到 `service_scenarios.json`；**顺带挖出原版一个真 bug**：解析 `{id}` 时用复数资源名查单数键 → 24 条请求打的是 `/api/xxx/None` → 所有带路径参数的接口「合法请求」场景**从来没真正测过**。通用版修好后，那 20 条假缺陷消失 | `pilot/contract_probe.py`、`pilot/service_scenarios.json` |
@@ -72,20 +73,24 @@
 | **切面生效性探针** | ✅ 静态声明的 24 个 `@Transactional` 与运行时实际生效的**差分为空** | `pilot/transaction_probe.py` → `transaction_findings.json` |
 | **残留守卫** | ✅ 探针容器 / `ai_` 行 / 非种子上传必须全 0，否则流水线红 | `pilot/probe_residue_check.py` |
 | **涌现裁决器** | ✅ 通用引擎（七裁决）+ demo-shop 真跑判出 `EMERGENT_CONJUNCTIVE`：单注都不触发、合起来违反（偏离 90000 分），两次跑指纹一致，35 项自证全过 | `pilot/engine/emergence.py`、`demos/shop/emergence_probe.py` → `demos/shop/artifacts/emergence_chains.json`、`demos/shop/EMERGENCE_RESULT.md` |
+| **类层补齐：接入类形状通用探针 + 第二载体复核** | ✅ ① `class_shape` 通用探针（继承/覆写后置条件/值相等/封装泄漏/缓存可变，纯反射不碰 DB）接进 **jiuyan** —— 类层 16 → 23 条，**新开 7 条真实发现**（6 实体缺值相等 + 1 封装泄漏），类别与归属都正确；② **第二载体复核**：文件载体（字节码）的 6 个通用检查器原本检出的是**类层类别**、无人消费 —— 现在把它的观测挂到类层结论上（同一结论被两个独立载体复现），没人认领的观测写成**覆盖缺口**（`class_carrier_gap.json`），项目可声明「已知不适用」并留理由。jiuyan：10 观测 → 复现 7 + 声明不适用 3 + **真缺口 0**；demo：10 观测 → 复现 7 + **真缺口 3** | `pilot/class_shape_probe.py`、`pilot/file_carrier.py`、`pilot/class_rules.py`、`pilot/class_diff.py`、`pilot/class_carrier_gap.json` |
+| **涌现维度接进流水线** | ✅ demo-shop 有了自己的流水线（类层 → 关系网 → 候选链 → 真跑裁决 → FDR 门禁 → 收口 → 残留守卫）；jiuyan 的流水线显式报告涌现维度（退出码 2 = 没查完，不是绿灯）。demo 流水线 exit 1 是**预期**：门禁把「根因只被引用、无人 own」的漏归属逼出来了 | `demos/shop/run_pipeline.sh`、`pilot/run_pipeline.sh` |
+| **涌现候选链生成器 + FDR 门禁** | ✅ 候选链生成（关系网 + 不变式 → **锚定已声明不变式**的可执行候选链：八条剪枝硬约束 + 枢纽度四维合成 + Monte-Carlo 级联估计，固定种子 20261107）；FDR 门禁（分母/分子/分母哈希/集合哈希/分类别 FDR/漏检清单，退出码 0 绿 / 1 红 / 2 没查完）。**demo-shop 实测**：生成候选 **2 条**（T3 ×2），已知链召回 **1/1 条件覆盖 full**，候选真跑裁决仍 `EMERGENT_CONJUNCTIVE`（核心集 INJ-TIER-VIP+INJ-PROFILE-VIP），门禁 **FDR_inj=0.500 / Attr_acc=0.500**（分母 2 / 检出 2 / 归属正确 1），漏检 `INJ-PROFILE-VIP`（service 层根因只被引用、无人 own 开单）→ 判红退出码 1；删掉检不出来的注入 FDR 会变 1.0，但分母哈希漂移照样判红 | `pilot/engine/emergence_candidates.py`、`pilot/engine/emergence_gate.py`、`demos/shop/emergence_candidate_run.py`、`pilot/emergence_baseline.json`、`pilot/EMERGENCE_CANDIDATES_RESULT.md` |
 
 ### 规模数字（以 `pilot/root_causes.json` 为准）
 
-- 发现 **111** 条 → 根因 **71** 条
-- 10 个必填字段结构齐备 **110/110**；`owner` 标注 **110/110**
-- `ground_truth`：**verified 108 / unverified 2 / mutant_survivor 1**（三档都有真实数据了）
+- 发现 **100** 条 → 根因 **72** 条（归并 28 条）
+- 10 个必填字段结构齐备 **100/100**；`owner` 标注 **100/100**
+- `ground_truth`：**verified 97 / unverified 2 / mutant_survivor 1**（三档都有真实数据了）
 - `repro_cmd` 不可直接执行的从 14 条降到 **3** 条
-- 契约类别零覆盖 **4** 个（其中 3 个对当前项目无意义：函数太简单 / 继承只有一层）
+- 契约类别零覆盖 **5** 个（其中 3 个对当前项目无意义：函数太简单 / 继承只有一层 /
+  跨层关联只在 demo 上有）
 - 硬违规 1 条（越界开单）、归并提示 4 条、契约缺口 9 条（待人工决策）
 
 ### ⚠️ 盲区地图给出的最硬的一个数字
 
-**532 个单元里，被真正判定过的只有 5 个（0.94%）**；有动态观测但义务未定的 12 个；
-**完全没查的 515 个**。义务三值：满足 0 / 违反 5 / 未知 2066。
+**532 个单元里，被真正判定过的只有 6 个（1.13%）**；有动态观测但义务未定的 13 个；
+**完全没查的 513 个**。义务三值：满足 0 / 违反 6 / 未知 2062。
 
 > 这个数字的含义：**这个项目真正的稀缺资源不是模型额度，是「被动态验证过的单元数」。**
 > 任何架构如果不先把这个数字涨上去，得到的都只是空壳。
@@ -97,10 +102,10 @@
 |---|---|---|---|
 | **A** | **Agent 群不是真的「群」** —— 骨架有了，但没有编排/调度/并发 | 「有关系才调用，没关系不调用」未落地 | 🟡 骨架 ✅，编排 ❌ |
 | **B** | **增量更新** —— 影响分析能算了，但各层脚本还不能只跑受影响的靶区 | 「改一处只动一处」只完成一半 | 🟡 分析 ✅，调度 ❌（设计已出 `DESIGN.md` §5） |
-| **B2** | **函数层之外的三层载体仍是项目专属**（file/class/service 的动态脚本、探针） | 换项目只能跑静态层，动态层要重写 | ❌ 函数层已通，其余三层待通用化 |
-| **C** | **涌现只做了 5 条手写攻击链** —— 图与判定式已设计（图 ✅），**裁决器已实现**（`pilot/engine/emergence.py`，demo-shop 上判出 1 条真涌现 ✅），但候选链生成、按枢纽排序、FDR 门禁未做 | 系统的存在理由只兑现了 5/∞ | 🟡 设计 ✅，裁决 ✅，链生成 ❌ |
-| **D** | **语义地图** —— 只有结构特征，没有「这个函数是干什么的」 | Agent 的「使命」只有一半 | ❌（设计已出，见 §8） |
-| **E** | **跨仓库** —— 只会审一个仓库 | 「两群 Agent 互相调用」未实现 | ❌（设计已出，见 §8） |
+| **B2** | **载体的「动态侧」还有一层没通用化** | 换项目只能跑静态层，动态层要重写 | 🟡 函数层 / 类层 / 文件层的**探针**已通用化（各自有结果文件），服务层的 `contract_probe.py` 已通用；**差分判定层**仍是项目专属（`fn_diff.py` / `file_diff.py` / `contract_diff.py`）|
+| **C** | **涌现目前只有 1 条真链** —— 图 ✅ 裁决器 ✅ **候选链生成 ✅ FDR 门禁 ✅（本轮补上）**：demo-shop 上自动生成的候选已能命中那条真涌现（召回 1/1，真跑仍 `EMERGENT_CONJUNCTIVE`）。但**场景物化还是人给的**（候选只提出条件槽，schema 驱动的造数器没做）、七个模式只命中 T3、jiuyan 尚无注入目录（门禁对 jiuyan 退出码 2） | 系统的存在理由目前兑现了 1/∞ | 🟡 设计 ✅ 裁决 ✅ 链生成 ✅ 门禁 ✅；造数器 ❌ 模式覆盖 ❌ |
+| **D** | **语义地图** —— 结构有了，「这个函数是干什么的」要变成**可执行断言** | Agent 的「使命」只有一半 | 🟡 断言编译 + 执行已通（8 条职责 / 7 单元），但**模型轨一条都没跑**（8 条全是人工 declared），双轨只落地了确定性那一轨 |
+| **E** | **跨仓库** —— 只会审一个仓库 | 「两群 Agent 互相调用」未实现 | 🟡 骨架 ✅（面清单 + 跨仓库图 + 契约漂移 + 归属），实测 2 仓库 / 1 条确认边 / 0 漂移；**跨仓库涌现还没做** |
 | **F** | **运行时保真度** | Java 动态性让静态结论不可信 | ✅ 已标注 |
 | **G** | **SAST/SCA 接入** | 「全面发现安全问题」需要外部成熟工具 | ❌ |
 | **H** | **动态验证覆盖率 0.94%**（532 单元里已判定 5 个） | 上面所有能力都建立在「测过的单元」之上，这个数不涨，一切都是空转 | ❌ **最高优先级** |
@@ -127,7 +132,12 @@
 
 ```bash
 cd /Users/june/.cc-weixin/workspace/layered-audit/pilot
-bash run_pipeline.sh        # 全量流水线，exit 0 = 全绿
+bash run_pipeline.sh        # jiuyan 全量流水线，exit 0 = 全绿
+                              # （涌现维度会单独报「没查完」，不是绿灯）
+
+cd /Users/june/.cc-weixin/workspace/layered-audit/demos/shop
+bash run_pipeline.sh        # demo-shop 流水线：类层 + 涌现全链 + FDR 门禁
+                              # exit 1 = 涌现门禁判红（演示目标的预期状态）
 python3 engine/normalize_findings.py    # 只跑归一化（exit 1 结构性违规 / 2 契约缺口）
 python3 engine/aggregate_findings.py    # 只跑根因聚合 + 覆盖度矩阵
 python3 engine/feature_coverage.py      # 只跑特性覆盖矩阵
@@ -151,6 +161,10 @@ python3 engine/check_engine_purity.py   # 引擎纯净度守卫（退出码 1 = 
 | `pilot/agents.json` / `edges.json` | **Agent 群全集** + 全局边表（unit/role/instance 三级） |
 | `pilot/change_impact.json` | 变更影响（resolved / 保守上界双报） |
 | `pilot/agent_coverage.json` | **盲区地图**：哪些单元没验过、按中心性排序 |
+| `pilot/file_carrier.py` | **第二载体复核**：把文件载体的观测挂到类层结论上，并算出「有观测但没人开单」的覆盖缺口 |
+| `pilot/class_carrier_gap.json` | 覆盖缺口清单（无人认领的观测 + 项目声明不适用的观测及理由） |
+| `pilot/engine/emergence_candidates.py` / `emergence_gate.py` / `relation_net.py` / `surface.py` | 涌现候选链生成 / FDR 门禁 / 通用可执行依赖图 / 跨仓库面清单与归属 |
+| `pilot/baselines/` | **等价性基线**：通用化改造前的结论快照，让「通用化没回归」永远可复核 |
 | `pilot/mutation_findings.json` | 变异测试结果（killed / survived） |
 | `pilot/target.json` 的 `carriers` | 每个载体「能观察到什么 / 观察不到什么」+ 保真度 |
 | `pilot/target.json` 的 `obligation_templates` | 每个契约类别对应的义务表述（项目知识，非通用） |
@@ -168,10 +182,10 @@ python3 engine/check_engine_purity.py   # 引擎纯净度守卫（退出码 1 = 
   A6 可执行依赖图 G_exec             ✅ emergence_graph.py（25/25 入口绑定）
   A7 切面生效性差分                  ✅ transaction_probe.py
   A8 预算闸门（max_agents 真消费）   ✅ engine/budget.py + scheduler.py
-  A8' 按影响集调度（没波及就复用）    ⬜ 各层脚本加 --scope
-  A9 候选链生成 + 枢纽排序 + FDR 门禁 ⬜ emergence_chain.py + emergence_gate.py
+  A8' 按影响集调度（没波及就复用）    🟡 流水线已有整层跳过（run_layer + incremental_plan）；各层脚本还只支持整层粒度
+  A9 候选链生成 + 枢纽排序 + FDR 门禁 ✅ engine/emergence_candidates.py + engine/emergence_gate.py（demo 实测召回 1/1、FDR_inj=0.500）
 阶段 2（引模型，双轨）
-  B1 语义地图：职责 → 可验证断言    ⬜ 模型只出断言草案，确定性层判定
+  B1 语义地图：职责 → 可验证断言    🟡 断言编译与执行已通（8 条职责，违反 2 条开单）；模型轨未接（source_mix 全是 declared）
   B2 递归委派 + token 预算          ⬜
 阶段 3
   C1 跨仓库 Agent 群 + 跨仓库涌现    ⬜
@@ -203,6 +217,8 @@ python3 engine/check_engine_purity.py   # 引擎纯净度守卫（退出码 1 = 
 | **D12** | **产物合并是并集，永不缩集** | 少一个分片 = 退出码 2（没查完），不是 0。这是门禁红/绿语义不被增量破坏的唯一保证 | ✅ 决议已定 + 门禁已实现第三态 |
 | **D9** | **模型通道的可复现性靠内容哈希缓存，不靠 temperature/seed** | 本环境的模型通道是 subagent，拿不到 temperature/seed；同 `cache_key` 二次调用必须命中缓存、禁止重采样 | 记录：账本降级为 (brief_hash, model_id, response_hash) |
 | **D10** | **classpath 覆盖可行** → 变异测试证明力完整 | `fn_dynamic` 的 classpath 是 `[harness, CLASSES, deps]`，变异目录插到最前即可 | ✅ 已实现 `mutation_test.py` |
+| **D15** | **两个载体看到同一件事时，结论由「契约里类别所属的层」开单，另一个载体只做复核** | 文件层载体检出的类别（封装泄漏/不变式/继承设计/契约违反）全属类层 —— 让文件层开单是越界开单，让两层都开单违反「不得重复开单」。所以低层观测挂到高层结论的证据上（两个独立载体复现同一结论），**没人认领的观测必须变成覆盖缺口清单，不能让它悄悄消失** | ✅ `pilot/file_carrier.py` + `class_carrier_gap.json` |
+| **D16** | **「没查完」要能被看见，且不能伪装成绿灯** | jiuyan 没有注入目录 ⇒ 涌现维度根本没检查过。决议 D8 要求「没查完」与「查了没问题」区分开：流水线显式打出来 + 覆盖度矩阵里该类别零覆盖 + 门禁第三态退出码 2，三处口径一致 | ✅ `pilot/run_pipeline.sh` 涌现步骤 |
 
 ## 9. 我砍掉了什么（独立判断记录）
 
@@ -212,13 +228,47 @@ python3 engine/check_engine_purity.py   # 引擎纯净度守卫（退出码 1 = 
 | 砍掉 / 降级 | 理由 |
 |---|---|
 | **物化 2071 个 Agent 实例**（`agents.json` 8.4 MB） | 实测 95% 以上是占位符：mission.statement 非占位 **0** 条、义务 satisfied **0** 条、state 非 fresh **0** 条。**没人消费它**。改成 `units.json`（533 条轻单元，398 KB）+ 覆盖度按需实时算。行为等价、体积 21×↓ |
-| 涌现的**七种裁决式** | 设计完整，但当前只有 5 条手写链，判定式跑不出更多结论 —— 先不实现，等候选链生成器先出来 |
+| 涌现的**七种裁决式** | 已实现（`engine/emergence.py`）。七种裁决之外，**跨仓库涌现**还没做 |
 | 跨仓库 Agent 群 | **没有第二个仓库**。没有真实目标就写跨仓库实现 = 空转 |
-| token 预算 / 递归委派 / 语义地图 | 都依赖模型，而模型**还没接**。先把确定性层做厚 |
+| token 预算 / 递归委派 | 都依赖模型，而模型**还没接**。先把确定性层做厚 |
 | 剩下 3 个零覆盖类别 | 这个项目本身没有那些面（函数太简单 / 继承只有一层 / 无缓存无消息队列）。**查不出东西是事实，不是不作为** |
 
 **保留的**（每个都产出了可用的数字或真判定）：
 Agent 群骨架、变更影响、盲区地图、变异测试、切面生效性、可执行依赖图、残留守卫、预算闸门。
+
+## 9.5 本轮（2026-11-08）的判断记录
+
+> 这一轮是接手一个被上下文撑爆中断的会话后继续做的。判断记录如下，
+> 下一个人可以推翻，但要给理由。
+
+1. **不重写已有成果，只做「让它可复现、可交接」**。中断时三块工作（文件层通用化 /
+   类层通用化 / 涌现候选链 + FDR 门禁）已经跑通但**一笔没提交**，且文档数字与产物
+   对不上。优先做的是拆分提交 + 同步文档，而不是推倒重来。
+2. **文件层的 6 个通用检查器接成「第二载体」而不是「第二份开单」**。
+   它们检出的是**类层类别**（封装泄漏/不变式/继承设计/契约违反），而文件层的契约
+   类别只有 state_consistency / error_handling_pattern / cohesion —— 让文件层开单会
+   越界，让类层重复开单会违反「不得重复开单」。所以：文件载体观测挂到类层结论上
+   （两个独立载体复现同一结论），没人认领的观测写成覆盖缺口清单。
+   **代价**：类层结论的 evidence 里多了一个 `file_carrier` 段。
+3. **jiuyan 补上 `class_shape` 探针，而不是新建一套类层检查**。
+   类形状（继承/值相等/封装泄漏/缓存）是语言级判断，探针本来就是通用的 ——
+   jiuyan 只是没启用它。换项目只改配置这件事，在第二个目标上兑现了。
+4. **涌现门禁在 demo 上判红是预期状态，不去「修绿它」**。
+   它红是因为演示目标里真有「根因只被引用、无人 own 开单」的缺陷
+   （INJ-PROFILE-VIP）。把门禁调绿 = 把真缺陷藏起来。
+   demo 流水线的退出码因此是 1 —— 这是设计，不是故障。
+5. **jiuyan 的涌现维度如实报「没查完」，不假装绿灯**。
+   jiuyan 没有注入目录，涌现这一维根本没检查过。决议 D8 要求「没查完」与
+   「查了没问题」区分开，所以流水线里显式打出来，覆盖度矩阵里
+   `integration.emergent_masking` 对 jiuyan 也是零覆盖 —— 两处口径一致。
+   **没做的事**：给 jiuyan 编写注入目录（那需要真的找出 jiuyan 的涌现链，
+   不能编）。
+6. **等价性基线从 /tmp 挪进仓库**。原来它们在 /tmp，重启即失，
+   「通用化没回归」就成了一句没法复核的话。放进仓库成本 44 KB。
+7. **两个图构建器并存这件事只记录、不合并**。
+   `pilot/emergence_graph.py`（项目专属，151 节点 / 414 边，产物无消费方）与
+   `pilot/engine/relation_net.py`（通用，162 节点 / 151 边，产物被候选生成器消费）
+   形状不同、边数差一倍以上 —— 贸然替换会丢信息。合并是独立的一轮工作。
 
 ## 10. 进度更新约定
 

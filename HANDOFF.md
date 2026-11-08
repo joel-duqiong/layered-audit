@@ -41,12 +41,15 @@
 
 ## 2. 一句话现状
 
-五层全部落地并跑通；共 **88 条 finding，按根因归并后 53 条根因**，其中 6 条 CRITICAL。
+五层全部落地并跑通；共 **100 条 finding，按根因归并后 72 条根因**。
 集权层已升级为「真三方对账 + 攻击链 + 常驻门禁」，全部缺陷已固化成 pytest 回归资产。
-**跨层收口层也已落地**：五层输出统一到 layers.yaml 的 10 字段证据 schema（88/88 结构齐备），
-`owner` 补齐到 88/88，根因归并 88→53，产出 category×层 覆盖度矩阵（8 个类别零覆盖）。
+**跨层收口层也已落地**：五层输出统一到 layers.yaml 的 10 字段证据 schema（100/100 结构齐备），
+`owner` 补齐到 100/100，根因归并 100→72，产出 category×层 覆盖度矩阵（5 个类别零覆盖）。
 **负载实测层已落地**：端到端延迟曲线 + 分页 total 开销量化，把 `service.service_latency`
 与 `integration.cross_service_performance` 两个零覆盖类别填上了。
+**涌现这条链也落地了**：候选链生成（固定种子）+ FDR 门禁 + 回归流水线，
+demo-shop 上自动生成的候选能命中那条真涌现（召回 1/1），门禁判红并指出漏归属。
+**最硬的数字没变**：532 个单元里被真正动态判定过的只有 **6 个（1.13%）**。
 
 ---
 
@@ -551,7 +554,7 @@ cd targets/acme-banquet
 | 层 | 静态 | 动态实测 | 差分出单 | 产物 |
 |---|---|---|---|---|
 | 函数层 | `fn_static.py` | `fn_dynamic.py` | `fn_diff.py` | `fn_declaration.json` / `fn_observation.json` / `fn_findings.json` |
-| 文件层 | `file_static.py` | `file_dynamic.py` | `file_diff.py` | `file_declaration.json` / `file_observation.json` / `file_findings.json` |
+| 文件层 | `file_static.py` | `file_dynamic.py`（**通用 harness**：`file_harness/GenericFileHarness*.java` + `file_http_probe.py`，用例在 `file_cases.json`） | `file_diff.py`（**仍项目专属**，未改） | `file_declaration.json` / `file_observation.json` / `file_findings.json` / `file_detectors.json` |
 | 服务层 | `contract_static.py` | `contract_dynamic.py` | `contract_diff.py` | `declaration.json` / `observation.json` / **`findings.json`**（注意不叫 contract_findings.json） |
 | 类层 | `class_static.py` | `class_contract.py` | `class_dynamic.py` → `class_diff.py` | `class_declaration.json` / `class_contract.json` / `class_observation.json` / `class_findings.json` |
 | 集权层 | `integration_static.py` | `integration_dynamic.py` | `integration_reconcile.py` → `integration_chain.py` → `integration_diff.py` → `integration_gate.py` | `integration_declaration.json` / `integration_observation.json` / `integration_reconciliation.json` / `integration_chains.json` / `integration_findings.json` / `integration_gate_report.md` |
@@ -587,6 +590,8 @@ cd targets/acme-banquet
 | `feature_coverage.py` | `target.json` 的 carriers/features + 各项目侧检测器 | `feature_coverage.json`、`feature_coverage.md` | 特性 × 载体覆盖矩阵 + 盲区清单 + 受影响结论数 |
 | `check_engine_purity.py` | `target.json` + 引擎源码 | — | 引擎纯净度守卫：出现项目字面量就退出码 1 |
 | `emergence.py` | 注入目录（项目配置）+ 场景执行器（项目侧） | 裁决结论 + finding | **涌现裁决器**：F(注入集合) → 七种裁决之一（合起来错/单独对 = 涌现）；活性门控 + leave-one-out 求最小核心集 |
+| `emergence_candidates.py` | 关系网 `relation_net.json` + 不变式声明 +（可选）注入目录 | `emergence_candidates.json` | **涌现候选链生成器**：八条剪枝硬约束（链首 HTTP_ENTRY / 深度 ≤4 / 无环 / 每写汇 ≤3 路径 / 三元组去重 / 必含写汇 / **必锚定已声明不变式** / 全局 ≤500）+ 枢纽度四维合成 + Monte-Carlo 级联估计（2000 采样，固定种子）+ 配额与集中度防塌缩 + 未跑链全记录 + 对已知链算召回 |
+| `emergence_gate.py` | 注入目录 + 裁决产物 + `all_findings.json` + 基线 | `emergence_gate.json` / `.md` | **涌现 FDR 门禁**：分母 = 目录 active=true 减活性不过的（告警并记录，不静默剔除）；分子 = own 单正确归属最低层（只被引用不算检出）；输出 FDR_inj / Attr_acc / 分母哈希 / 集合哈希 / 分类别 FDR / 漏检清单；退出码 0 绿 / 1 红 / 2 没查完；基线 `pilot/emergence_baseline.json` 按目标分节 |
 
 配套：`pilot/target.json`（项目绑定，含 `carriers` / `features` / `repro_templates`）、
 `pilot/finding_meta.py`（人工标注表，含 `CLASS_FILE_HINTS` / `COLUMN_FILE_HINTS` 定位提示）、
@@ -713,7 +718,11 @@ python3 perf_load.py                    # 负载实测（延迟曲线 + 分页 t
 | B6 | **推广到第二个项目** | 🟡 **接缝已补（本轮）**：引擎零项目字面量 + `target.json` 绑定 + 纯净度守卫 + 换绑定冒烟测试。**但还没在真实第二个项目上跑过** —— 那需要为新项目重写 agent 脚本 | 等有第二个项目时做；agent 脚本本来就该重写，不是「通用性缺口」 |
 | B7 | **被测系统自身修复闭环** | 发现 6 条 CRITICAL，但没走「修复 → 门禁转绿 → 摘 xfail」流程 | 挑 1 条（推荐 `NO_AUTHZ`，收益最大）走完整闭环，验证回归资产真的能守住 |
 | B8 | **契约缺口的结构性修法** | 9 条发现装不进现有 category，靠 `UNMAPPED` 标记 | 不是加类别就完事：要能区分「类别表太窄」与「发现开错层」，后者靠 `out_of_scope` 校验自动判（已实现 1 例） |
-| B10 | **涌现裁决器** | ✅ **本轮完成**：`pilot/engine/emergence.py`（七裁决 + 活性门控 + leave-one-out）+ demo-shop 真跑判出 1 条 `EMERGENT_CONJUNCTIVE`（偏离 90000 分）；候选链生成 / FDR 门禁仍未做 | 先做链生成（图驱动），再谈 FDR |
+| B10 | **涌现裁决器 + 候选链生成 + FDR 门禁** | ✅ 裁决器；✅ 候选链生成 + FDR 门禁（demo 实测召回 1/1、FDR_inj=0.500、漏检 INJ-PROFILE-VIP）；✅ **已接进流水线**（demo 全链；jiuyan 如实报「没查完」）。**还缺**：schema 驱动的造数器（候选只提出条件槽，场景还是人给的）、七个模式只命中 T3、**jiuyan 尚无注入目录** | 先给 jiuyan 写注入目录（需要真的找出 jiuyan 的涌现链，不能编），再造数器 |
+| B11 | **服务层差分判定层通用化** | ❌ `contract_diff.py` 仍有项目字面量；连带后果：**demo-shop 跑不了服务层** → 涌现门禁漏检的 `INJ-PROFILE-VIP`（service 层根因只被引用、无人 own）正是这个缺口的产物 | 先通用化 `contract_diff` 的判定规则，再让 demo 跑服务层 —— 这一条解开，涌现门禁的漏检归因才有可能是绿的 |
+| B12 | **两个可执行依赖图构建器并存** | 🟡 `pilot/emergence_graph.py`（项目专属，151 节点 / 414 边，**产物无任何消费方**）与 `pilot/engine/relation_net.py`（通用，162 节点 / 151 边，产物被候选生成器消费）。形状不同、边数差一倍以上，合并会丢信息 | 独立一轮：先定「要哪一张图」，再合并。**不要顺手删** —— 现在删会把 jiuyan 的 414 条边丢掉 |
+| B13 | **跨仓库涌现** | 🟡 跨仓库探针骨架已通（面清单 / 跨仓库图 / 契约漂移 / 归属，实测 2 仓库 1 条确认边 0 漂移）；**跨仓库涌现（两个仓库的条件组合才出问题）没做** | 与 B10 同一条线：候选链生成器目前只在单仓库的关系网上找链，跨仓库链是同一个机制换一张图 |
+| B14 | **demo 的 3 条覆盖缺口** | 🟡 文件载体看到、没人认领：`profile_assembly` ×2（@Profile 互斥装配的静态形态）、`outbound_http` ×1（FxClient 里写死了 `http://127.0.0.1:8098`）。列在 `demos/shop/artifacts/class_carrier_gap.json` | `profile_assembly` 可以补成类层的静态判定（同一接口多实现用 @Profile 互斥装配 —— 业务维度被绑到部署维度）；`outbound_http` 属于跨仓库配置面 |
 | B9 | **`repro_cmd` 从 reference 升级成可跑** | ✅ **本轮完成**：14 → **3 条**（函数层 `--case`、集成层 `--scenario` / `--chain`）。剩下 3 条是操作步骤描述或数据文件指针，不硬编 | 剩余 34 条 `layer` 级复现（file / class 层）还可继续降维到用例级 |
 
 ### C. 明确暂缓（别做）
@@ -726,14 +735,18 @@ python3 perf_load.py                    # 负载实测（延迟曲线 + 分页 t
 
 ## 12. 当前缺陷台账（速查；完整明细看各层 `*_findings.json`）
 
-| 层 | 条目 | 分布 | 通过项 | 产物 |
-|---|---|---|---|---|
-| 函数层 | 8 | 2C/2H/4M | 50 | `fn_findings.json` |
-| 文件层 | 18 | 2H/7M/3L/6I | — | `file_findings.json` |
-| 服务层 | 31 | 1C/2H/28M | — | `findings.json` + `perf_findings.json` |
-| 类层 | 16 | 3H/5M/4L/4I | — | `class_findings.json` |
-| 集权层 | 15 | 3C/5H/6M/1L | 31 | `integration_findings.json` + `perf_findings.json` |
-| **合计** | **88 → 根因 53** | 6C/14H/49M/8L/10I | | |
+| 层 | 条目 | 产物 |
+|---|---|---|
+| 函数层 | 15 | `fn_findings.json` |
+| 文件层 | 18 | `file_findings.json` |
+| 服务层 | 27 | `findings.json` + `perf_findings.json` |
+| 类层 | 25 | `class_findings.json` |
+| 集权层 | 15 | `integration_findings.json` + `perf_findings.json` |
+| **合计** | **100 → 根因 72**（归并 28） | `all_findings.json` + `root_causes.json` |
+
+> 分布与严重度逐条见 `audit_report.md`；`owner` 100/100 齐备，
+> `ground_truth` verified 97 / unverified 2 / mutant_survivor 1。
+> 这一轮类层从 16 条涨到 25 条（接入 `class_shape` 通用探针，新开 7 条真实发现）。
 
 ### 6 条 CRITICAL
 
@@ -762,7 +775,7 @@ python3 perf_load.py                    # 负载实测（延迟曲线 + 分页 t
 | `order.snapshot.item_ownership_unchecked` | HIGH | function | 2 |
 | `column.default_declared_in_three_places` | LOW | class | 2 |
 
-### 12.2 覆盖度：4 个类别零命中
+### 12.2 覆盖度：5 个类别零命中
 
 | 层 | 零覆盖的 category | 契约给的 oracle | 状态 |
 |---|---|---|---|
@@ -770,6 +783,7 @@ python3 perf_load.py                    # 负载实测（延迟曲线 + 分页 t
 | class | `inheritance_design` | `static_analysis` / `property_based_test` | 未做 |
 | service | `resource_leak` | `load_test` | 未做 |
 | integration | `cross_layer_correlation` | `graph_correlation` | 未做（机制已在聚合器里，见下） |
+| integration | `emergent_masking` | `e2e_scenario` / `differential_injection` | 🟡 涌现裁决器 + FDR 门禁已做，**但只对 demo-shop 生效**；jiuyan 没有注入目录，这一维对它仍是「没查完」（流水线里如实报 INCOMPLETE） |
 | ~~function~~ | ~~`numeric`~~ | `property_based_test` | ✅ 补上（`numeric_props.py`，3 条） |
 | ~~service~~ | ~~`data_consistency`~~ | `concurrency_test` | ✅ 补上（`concurrency_props.py`，2 条） |
 | ~~service~~ | ~~`resilience`~~ | `chaos_experiment` | ✅ 补上（幂等性，1 条） |
@@ -834,7 +848,92 @@ agent 还没写 —— 这是 §11-B4 编排化的优先级依据。
 
 ---
 
-## 14. 最近一次验证记录（2026-11-07）
+## 14. 最近一次验证记录（2026-11-08）
+
+**本轮（2026-11-08）：接手被上下文撑爆中断的会话后继续**
+
+- **jiuyan 全量流水线** `bash pilot/run_pipeline.sh` → **exit 0**；
+  集权层门禁 **GREEN**（红 0 / 绿 0 / 没查完 0；对齐项 52→52，攻击链确认 5→5）；
+  残留守卫通过（容器 0 / `ai_` 行 0 / 非种子上传 0）。
+  涌现维度**如实报 INCOMPLETE**（本目标无注入目录 —— 没查完，不是绿灯）。
+- **demo-shop 流水线** `bash demos/shop/run_pipeline.sh` → **exit 1**（预期）：
+  涌现 FDR 门禁判红（演示目标里确实有「根因只被引用、无人 own 开单」的缺陷
+  INJ-PROFILE-VIP）；候选集指纹 `4ad5d478ba218655`、裁决指纹 `b146ff57eb2fd281`、
+  门禁指纹 `b89aa52606d938f9`，全部两轮一致；残留守卫通过。
+- **类层补齐**：jiuyan 接入 `class_shape` 通用探针 → 类层 16 → 23 条，
+  新开 7 条真实发现（6 实体缺值相等 + 1 封装泄漏），类别与归属都正确；
+  收口后 jiuyan 总发现 **93 → 100**、根因 **70 → 72**，UNMAPPED 仍是 9 条、
+  硬违规仍是 1 条（没有新增越界开单或重复开单）。
+- **第二载体复核**：文件载体 10 条观测 → 被类层结论独立复现 7 条、
+  项目声明不适用 3 条（Spring Data 仓储方法返回实体是框架既定用法）、
+  **真缺口 0 条**（jiuyan）；demo 侧真缺口 3 条（`profile_assembly` ×2、
+  `outbound_http` ×1），已列进 `class_carrier_gap.json` 等下一轮定夺。
+- **等价性独立复核**（不是读文档，是拿基线逐条比）：
+  文件层 18→18、类层 16→16，结论级字段（id/severity/layer/detail/title/
+  category/claim）**0 差异**；仅有的两处差异是实测值（EXPLAIN 耗时 ms、
+  日志截取方式）。基线已从 `/tmp` 挪进 `pilot/baselines/`，永远可复核。
+- **涌现链三态与防作弊独立实测**：
+  demo 退出码 1（红）/ jiuyan 退出码 2（没查完）；
+  删掉检不出来的注入后 FDR 跳到 1.0，但分母哈希与集合哈希双双漂移 → 照样判红。
+- **守卫**：`engine/check_engine_purity.py` 通过（19 个引擎文件零项目耦合）；
+  `check_class_probe_purity.py` 通过（10 个类层通用文件零项目耦合）；
+  `probe_residue_check.py --selftest` 通过；Java harness 编译零错误零警告。
+- **中断本身没有造成损坏**：所有 Python 过 `py_compile`、所有 JSON 可解析、
+  无 stash、无遗留进程、`xrepo_probe.py` 实跑通过。
+
+---
+
+## 14.1 上一轮验证记录（2026-11-07）
+
+**涌现候选链 + FDR 门禁（2026-11-08，详见 `pilot/EMERGENCE_CANDIDATES_RESULT.md`）**
+
+- 候选生成（`pilot/engine/emergence_candidates.py`，固定种子 20261107）：demo 关系网
+  37 节点 / 29 边 + 2 条不变式锚 → **候选 2 条**（模式 T3 ×2，T1/T2/T4/T5/T6/T7 = 0），
+  选中 2 / 没跑 0；候选集指纹 `4ad5d478ba218655`（两轮一致）。
+- 召回：注入目录里的已知链 `EMERG-QUOTA-LEDGER-DIVERGENCE` **命中 1/1，
+  条件覆盖 full**（候选 `C0000` 的条件槽 data + instance + request 全覆盖真链需要）。
+- 真跑（`demos/shop/emergence_candidate_run.py`，真容器 + 真库）：裁决
+  **`EMERGENT_CONJUNCTIVE`**，owner=`integration`(own)，category=`integration.end_to_end_business`，
+  最小核心集 `INJ-TIER-VIP+INJ-PROFILE-VIP`；裁决指纹 `f10753a38f7ef780`
+  （与人工链那一轮**逐位相同**）；探针残留 **0 行**。
+- FDR 门禁（`pilot/engine/emergence_gate.py`）：分母 **2**（active ∧ 活性通过；inactive 1 条
+  不进分母）｜检出 **2**｜归属正确 **1** → **FDR_inj = 0.500**、**Attr_acc = 0.500**，
+  分类别 `layer:service` FDR 0.500；分母哈希 `6cd68a40b6a5d3b9`、集合哈希 `8661e3c30899ed59`、
+  门禁指纹 `b89aa52606d938f9`（两轮一致）；**结论 RED，退出码 1**。
+- 漏检 1 条：`INJ-PROFILE-VIP`（根因 `order.quota_checked_on_quoted_amount_ledger_on_settled`）
+  —— service 层根因**只被集成层引用、没有任何 own 单**，按「可归属」口径不算检出。
+- 防作弊实测：删掉 `INJ-PROFILE-VIP` 后 FDR 跳到 1.0，但分母哈希与集合哈希双双漂移 → 判红；
+  `--init` 拒绝静默重钉（须 `--accept`）。
+- 三态语义：jiuyan 绑定无注入目录 → **退出码 2（没查完，不是没问题）**。
+- 守卫：`engine/check_engine_purity.py` 通过（19 个引擎文件零项目耦合）；
+  `probe_residue_check.py --selftest` 通过；demo 残留 0 行
+  （容器 0 / `ai_` 行 0 / 非种子上传 0）。
+
+**文件层载体通用化（2026-11-08，详见 `pilot/FILE_GENERIC_RESULT.md`）**
+
+- 通用 harness（`file_harness/GenericFileHarness*.java` 2829 行）+ 通用容器探针
+  （`file_http_probe.py`）：**零项目字面量**（自查 grep 零命中）；项目知识全在
+  `pilot/file_cases.json`（jiuyan 21 场景）/ `demos/shop/file_cases.json`（demo 8 场景）。
+- **等价性**：jiuyan 22 用例 / 58 判定，判定值逐条一致；18 条 finding 的 id 集合与
+  结论级 10 字段 **0 差异**；整条不同的只有 1 条（`FILE-XFF-CLIENT-IP-SPOOF` 的
+  `evidence.log_segment` 截取方式变了：日志尾巴 → 围绕标记的行，含 `clientIp=9.9.9.9`，
+  结论不变）。连续两次跑归一化后 **0 差异**（确定性）。
+- **demo-shop**：9 用例 / 25 判定 / **不符 0 条**（没崩）；埋的 6 类缺陷命中 5 类
+  （「缓存放可变对象」实测不成立，如实记为负结果），另挖出 2 个真缺陷
+  （额度校验拿报价去比、汇率回退量纲错）；容器侧两个部署结算 888888 vs 799999
+  证明「客户等级被绑到部署 profile」。
+- 通用化顺带修掉 6 个真问题（其中 **2 个是通用件本身的缺陷**）：
+  ① `Method.invoke` 虚分派 ⇒ 覆写后置条件检查器恒空（改用 `MethodHandles` 非虚调用）；
+  ② `docker logs --since` 毫秒/微秒竞态 ⇒ 日志探针时好时坏（窗口回看 2 秒）；
+  ③ 日志证据取尾巴可能取不到目标（改围绕标记截）；
+  ④ class 文件正则扫 URL 带出二进制尾巴（新增 `ClassConstPool` 解析常量池）；
+  ⑤ `file_static.py` 产物写死脚本目录 ⇒ 换目标会覆盖别人的产物（改 `artifact_dir()`）；
+  ⑥ cleanup 把 psql 的 `DELETE 0` 标签行当成删了 1 行。
+- 守卫：`engine/check_engine_purity.py` 通过；`probe_residue_check.py --selftest` 通过；
+  jiuyan 与 demo 两边残留均 **0**（容器 0 / `ai_` 行 0 / 非种子上传 0）；
+  demo 的 `shop_order` 回到探针前水位（16 行 / max(id)=268）。
+- **未做**：判定层 `file_diff.py` 仍是 jiuyan 专属（demo 跑它会 `KeyError`）——
+  下一步若要 demo 出缺陷单，把差分规则配置化（类层已有 `diff_rules` 派发做法可抄）。
 
 **负载实测层加入后重跑（最新）**
 
