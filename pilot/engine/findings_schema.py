@@ -102,6 +102,10 @@ def load_layer_categories(path: Path | None = None) -> dict[str, tuple[str, ...]
             in_categories = True
             continue
         if in_categories:
+            # 注释行要跳过 —— 否则在 categories 里加一行注释，
+            # 就会让它后面的类别**静默丢失**（解析器退出 categories 块）。
+            if line.strip().startswith("#"):
+                continue
             m_cat = re.match(r"^      - \{id: (\w+),", line)
             if m_cat:
                 if current is None:
