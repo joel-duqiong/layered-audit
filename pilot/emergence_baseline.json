@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "engine": "emergence_gate",
+  "thresholds": {
+    "fdr_inj": 0.85,
+    "attr_acc": 0.95,
+    "category_min_count": 3,
+    "category_min_fdr": 0.0
+  },
+  "targets": {
+    "demo-shop": {
+      "denominator_hash": "6cd68a40b6a5d3b9",
+      "set_hash": "8661e3c30899ed59",
+      "denominator": [
+        "INJ-TIER-VIP",
+        "INJ-PROFILE-VIP"
+      ],
+      "alive_dropped": [],
+      "chains": [
+        "EMERG-QUOTA-LEDGER-DIVERGENCE"
+      ],
+      "catalog": "emergence_injections.json",
+      "created_at": "2026-11-07T22:08:07+00:00"
+    }
+  }
+}
