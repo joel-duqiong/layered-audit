@@ -70,7 +70,17 @@ docker run -d --name demo-shop-backend --network jiuyan-acceptance_default \
 
 # 5. 审计它（换目标 = 换 LAYERED_AUDIT_TARGET，脚本一行不改）
 LAYERED_AUDIT_TARGET=$PWD/target.json python3 ../../pilot/fn_static.py
+
+# 6. 或者一把梭：demo-shop 有自己的完整流水线
+#    类层 -> 业务不变式（服务层）-> 关系网 -> 候选链 -> 真跑裁决
+#    -> 归一化 + 聚合 -> 涌现 FDR 门禁 -> 残留守卫
+bash run_pipeline.sh
+#  exit 0 = 全绿；涌现门禁此时是 GREEN（FDR_inj 1.000 / Attr_acc 1.000）
 ```
+
+> demo 的健康检查探的是 8080，而应用跑在 8090 —— 所以
+> `docker ps` 里这两个容器显示 unhealthy。**不影响运行**（实测都返 200），
+> 是探针端口写错了。
 
 ## 关键：换项目不改编脚本
 
@@ -83,6 +93,25 @@ LAYERED_AUDIT_TARGET=.../demos/shop/target.json   python3 ../../pilot/fn_dynamic
 ```
 
 所有路径来自 `target.json` 的 `paths` 段；`pilot/project.py` 是唯一读它的地方。
+
+## 这个 demo 现在跑通了什么
+
+| 层 | 状态 | 关键结论 |
+|---|---|---|
+| 类层 | ✅ | 15 条发现（含里氏替换违反、条件装配用错维度、封装泄漏、实体缺值相等） |
+| 服务层 | ✅ | 2 条业务不变式判定 —— **口径分裂**（service own）+ **VIP 拿不到会员价**（class cite） |
+| 集成层 | ✅ | 涌现裁决 `EMERGENT_CONJUNCTIVE`，核心集 INJ-TIER-VIP + INJ-PROFILE-VIP |
+| 涌现 FDR 门禁 | ✅ **GREEN** | FDR_inj 1.000 / Attr_acc 1.000（分母 2 / 检出 2 / 归属正确 2） |
+
+**涌现门禁为什么先是红的**：demo 最初只有类层和集成层，
+`INJ-PROFILE-VIP` 的根因没有任何一层能开单（只被引用）——
+门禁把它**指名道姓地报了出来**。补上服务层的差分证据后转绿。
+阳性对照：抽掉服务层那两条 finding，门禁立刻变回红（FDR 0.500）——
+**这个绿是挣来的，不是把阈值调松换来的**。
+
+**函数层 / 文件层的差分判定层还是 jiuyan 专属**（`fn_diff.py` / `file_diff.py`
+里还有项目字面量），所以 demo 目前开不出这两层的单 —— 已知缺口，见
+`HANDOFF.md` §11-B15。
 
 **函数层载体已经通用化**：`pilot/fn_harness/GenericHarness.java` 里零项目字面量 ——
 目标类、依赖打桩、样本、用例、类型别名全部来自用例文件（`fn_cases.json`）。
