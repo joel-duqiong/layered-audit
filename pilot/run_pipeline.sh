@@ -36,6 +36,8 @@ run_layer function python3 fn_static.py
 python3 semantic_probe.py
 # 增量：只重跑指纹变了的用例，其余复用分片；缺分片 -> 退出码 2（没查完，不是绿）
 run_layer function python3 fn_dynamic.py --incremental --extra-cases semantic_cases.json
+# 模型轨报告：候选断言跑完后的线索汇总 + 隔离性自证（只作线索，不进门禁）
+python3 semantic_model_report.py
 run_layer function python3 engine/fn_diff.py
 echo "=== 文件层（字节码声明 / 整类实例化实测 / 差分）==="
 run_layer file python3 file_static.py

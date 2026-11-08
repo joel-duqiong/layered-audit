@@ -1,0 +1,236 @@
+{
+  "note": "模型轨报告：候选断言的真跑结果 + 隔离性自证。结论是线索，不进缺陷台账、不进门禁。",
+  "candidates": 12,
+  "executed": 12,
+  "passed": 0,
+  "violated": 10,
+  "promotion_candidates": [
+    {
+      "id": "OB-MODEL-CategoryService-delete-1",
+      "unit": "com.jiuyan.banquet.service.CategoryService#delete",
+      "template": "not_null",
+      "mission": "按 id 软删除分类（置 isDeleted=true 并保存），返回被删除分类的响应对象，不得返回 null。",
+      "compiled": true,
+      "verdict": "FAIL",
+      "reason": "期望非 null，实际 None",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-PackageTypeService-delete-1",
+      "unit": "com.jiuyan.banquet.service.PackageTypeService#delete",
+      "template": "not_null",
+      "mission": "按 id 软删除套餐分类（置 isDeleted=true 并保存），返回被删除套餐分类的响应对象，不得返回 null。",
+      "compiled": true,
+      "verdict": "FAIL",
+      "reason": "期望非 null，实际 None",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-PackageTypeService-create-1",
+      "unit": "com.jiuyan.banquet.service.PackageTypeService#create",
+      "template": "not_null",
+      "mission": "按名称新建套餐分类（若存在同名软删记录则恢复为未删除），保存后返回套餐分类响应对象，不得返回 null。",
+      "compiled": true,
+      "verdict": "FAIL",
+      "reason": "期望非 null，实际 None",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-OrderMapper-toResponse-1",
+      "unit": "com.jiuyan.banquet.mapper.OrderMapper#toResponse",
+      "template": "returns_null",
+      "mission": "把订单实体映射为订单响应；输入为空（未指定订单）时返回 null，不做过滤也不抛异常。",
+      "compiled": true,
+      "verdict": "FAIL",
+      "reason": "期望正常返回，实际 threw / java.lang.NullPointerException: Cannot invoke \"com.jiuyan.banquet.entity.BanquetOrder.getBanquetPackage()\" because \"<parameter1>\" is null",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-OrderService-update-1",
+      "unit": "com.jiuyan.banquet.service.OrderService#update",
+      "template": "not_null",
+      "mission": "用更新请求覆盖订单字段并保存，返回更新后的订单响应对象，不得返回 null。",
+      "compiled": true,
+      "verdict": "FAIL",
+      "reason": "期望非 null，实际 None",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-OrderService-updateStatus-1",
+      "unit": "com.jiuyan.banquet.service.OrderService#updateStatus",
+      "template": "not_null",
+      "mission": "按 id 修改订单状态并保存，返回更新后的订单响应对象，不得返回 null。（注：OrderStatus 枚举常量名在事实里无从得知，状态入参只能取空值规格，断言范围因此收窄到「保存并映射后仍返回非 null」）",
+      "compiled": true,
+      "verdict": "FAIL",
+      "reason": "期望非 null，实际 None",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-PackageService-create-1",
+      "unit": "com.jiuyan.banquet.service.PackageService#create",
+      "template": "not_null",
+      "mission": "按创建请求新建套餐并保存，返回新建套餐的响应对象，不得返回 null。",
+      "compiled": true,
+      "verdict": "FAIL",
+      "reason": "期望非 null，实际 None",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-PackageService-update-1",
+      "unit": "com.jiuyan.banquet.service.PackageService#update",
+      "template": "not_null",
+      "mission": "用更新请求覆盖套餐字段并保存，返回更新后的套餐响应对象，不得返回 null。",
+      "compiled": true,
+      "verdict": "FAIL",
+      "reason": "期望非 null，实际 None",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-PackageService-updateStatus-1",
+      "unit": "com.jiuyan.banquet.service.PackageService#updateStatus",
+      "template": "not_null",
+      "mission": "按 id 修改套餐的启用状态并保存，返回更新后的套餐响应对象，不得返回 null。",
+      "compiled": true,
+      "verdict": "FAIL",
+      "reason": "期望非 null，实际 None",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-PackageService-delete-1",
+      "unit": "com.jiuyan.banquet.service.PackageService#delete",
+      "template": "not_null",
+      "mission": "按 id 软删除套餐（置 isDeleted=true、isActive=false 并保存），返回被删除套餐的响应对象，不得返回 null。",
+      "compiled": true,
+      "verdict": "FAIL",
+      "reason": "期望非 null，实际 None",
+      "gate_eligible": false
+    }
+  ],
+  "isolation_check": {
+    "checked": 12,
+    "assertions_identical_after_poisoning_text": true,
+    "note": "承重字段只有 template/args/bound/stubs；mission 与 label 是自由文本"
+  },
+  "rows": [
+    {
+      "id": "OB-MODEL-CategoryService-delete-1",
+      "unit": "com.jiuyan.banquet.service.CategoryService#delete",
+      "template": "not_null",
+      "mission": "按 id 软删除分类（置 isDeleted=true 并保存），返回被删除分类的响应对象，不得返回 null。",
+      "compiled": true,
+      "verdict": "FAIL",
+      "reason": "期望非 null，实际 None",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-PackageTypeService-delete-1",
+      "unit": "com.jiuyan.banquet.service.PackageTypeService#delete",
+      "template": "not_null",
+      "mission": "按 id 软删除套餐分类（置 isDeleted=true 并保存），返回被删除套餐分类的响应对象，不得返回 null。",
+      "compiled": true,
+      "verdict": "FAIL",
+      "reason": "期望非 null，实际 None",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-PackageTypeService-create-1",
+      "unit": "com.jiuyan.banquet.service.PackageTypeService#create",
+      "template": "not_null",
+      "mission": "按名称新建套餐分类（若存在同名软删记录则恢复为未删除），保存后返回套餐分类响应对象，不得返回 null。",
+      "compiled": true,
+      "verdict": "FAIL",
+      "reason": "期望非 null，实际 None",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-ProductService-updateStatus-1",
+      "unit": "com.jiuyan.banquet.service.ProductService#updateStatus",
+      "template": "not_null",
+      "mission": "按 id 修改商品的启用状态并保存，返回更新后的商品响应对象，不得返回 null。",
+      "compiled": true,
+      "verdict": "INVALID",
+      "reason": "用例构造错误：参数类型与方法签名对不上",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-OrderMapper-toResponse-1",
+      "unit": "com.jiuyan.banquet.mapper.OrderMapper#toResponse",
+      "template": "returns_null",
+      "mission": "把订单实体映射为订单响应；输入为空（未指定订单）时返回 null，不做过滤也不抛异常。",
+      "compiled": true,
+      "verdict": "FAIL",
+      "reason": "期望正常返回，实际 threw / java.lang.NullPointerException: Cannot invoke \"com.jiuyan.banquet.entity.BanquetOrder.getBanquetPackage()\" because \"<parameter1>\" is null",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-ProductService-delete-1",
+      "unit": "com.jiuyan.banquet.service.ProductService#delete",
+      "template": "not_null",
+      "mission": "按 id 软删除商品（置 isDeleted=true、isActive=false 并保存），返回被删除商品的响应对象，不得返回 null。",
+      "compiled": true,
+      "verdict": "INVALID",
+      "reason": "用例构造错误：参数类型与方法签名对不上",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-OrderService-update-1",
+      "unit": "com.jiuyan.banquet.service.OrderService#update",
+      "template": "not_null",
+      "mission": "用更新请求覆盖订单字段并保存，返回更新后的订单响应对象，不得返回 null。",
+      "compiled": true,
+      "verdict": "FAIL",
+      "reason": "期望非 null，实际 None",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-OrderService-updateStatus-1",
+      "unit": "com.jiuyan.banquet.service.OrderService#updateStatus",
+      "template": "not_null",
+      "mission": "按 id 修改订单状态并保存，返回更新后的订单响应对象，不得返回 null。（注：OrderStatus 枚举常量名在事实里无从得知，状态入参只能取空值规格，断言范围因此收窄到「保存并映射后仍返回非 null」）",
+      "compiled": true,
+      "verdict": "FAIL",
+      "reason": "期望非 null，实际 None",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-PackageService-create-1",
+      "unit": "com.jiuyan.banquet.service.PackageService#create",
+      "template": "not_null",
+      "mission": "按创建请求新建套餐并保存，返回新建套餐的响应对象，不得返回 null。",
+      "compiled": true,
+      "verdict": "FAIL",
+      "reason": "期望非 null，实际 None",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-PackageService-update-1",
+      "unit": "com.jiuyan.banquet.service.PackageService#update",
+      "template": "not_null",
+      "mission": "用更新请求覆盖套餐字段并保存，返回更新后的套餐响应对象，不得返回 null。",
+      "compiled": true,
+      "verdict": "FAIL",
+      "reason": "期望非 null，实际 None",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-PackageService-updateStatus-1",
+      "unit": "com.jiuyan.banquet.service.PackageService#updateStatus",
+      "template": "not_null",
+      "mission": "按 id 修改套餐的启用状态并保存，返回更新后的套餐响应对象，不得返回 null。",
+      "compiled": true,
+      "verdict": "FAIL",
+      "reason": "期望非 null，实际 None",
+      "gate_eligible": false
+    },
+    {
+      "id": "OB-MODEL-PackageService-delete-1",
+      "unit": "com.jiuyan.banquet.service.PackageService#delete",
+      "template": "not_null",
+      "mission": "按 id 软删除套餐（置 isDeleted=true、isActive=false 并保存），返回被删除套餐的响应对象，不得返回 null。",
+      "compiled": true,
+      "verdict": "FAIL",
+      "reason": "期望非 null，实际 None",
+      "gate_eligible": false
+    }
+  ]
+}

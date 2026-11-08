@@ -25,6 +25,7 @@ HERE = Path(__file__).resolve().parent
 OUT_CASES = HERE / "semantic_cases.json"
 OUT_REPORT = HERE / "semantic_map_report.json"
 MAP_FILE = HERE / "semantic_map.json"
+MODEL_MAP_FILE = HERE / "semantic_map_model.json"
 
 
 def main() -> None:
@@ -35,6 +36,16 @@ def main() -> None:
 
     missions = semantic.get("missions", [])
     cases, failures = compile_map(missions, ctx)
+
+    # 模型轨的候选：单独编译、单独统计。
+    # 它们的 group 是 SEMANTIC_OBLIGATION_MODEL —— 函数层差分只认
+    # SEMANTIC_OBLIGATION，所以模型轨**不会开出缺陷单**（只作线索）。
+    model_missions: list[dict[str, Any]] = []
+    if MODEL_MAP_FILE.exists():
+        model_map = json.loads(MODEL_MAP_FILE.read_text(encoding="utf-8"))
+        model_missions = model_map.get("missions", [])
+    model_cases, model_failures = compile_map(model_missions, ctx)
+    cases = cases + model_cases
 
     decl_path = project.artifact_dir() / "fn_declaration.json"
     declarations: dict[str, Any] = {}
@@ -62,8 +73,16 @@ def main() -> None:
         "rejected_by_validation": rejected,
         "units_with_mission": sorted(x for x in units_with_mission if x),
         "source_mix": {},
+        "model_track": {
+            "missions": len(model_missions),
+            "compiled_ok": len(model_cases),
+            "compile_failed": model_failures,
+            "gate_eligible": False,
+            "note": "模型轨只产出待验证线索：不进缺陷台账、不进门禁；"
+                    "要进门禁得人工冻结到 semantic_map.json（决议 D3）",
+        },
     }
-    for m in missions:
+    for m in missions + model_missions:
         report["source_mix"][m.get("source", "declared")] = \
             report["source_mix"].get(m.get("source", "declared"), 0) + 1
     OUT_REPORT.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -71,6 +90,9 @@ def main() -> None:
     print(f"语义地图 -> {OUT_REPORT}")
     print(f"  职责 {len(missions)} 条，覆盖单元 {len(report['units_with_mission'])} 个")
     print(f"  编译通过 {len(valid)} / 编译失败 {len(failures)} / 校验不通过 {len(rejected)}")
+    mt = report["model_track"]
+    print(f"  模型轨：候选 {mt['missions']} 条 / 编译通过 {mt['compiled_ok']} "
+          f"/ 编译失败 {len(mt['compile_failed'])}（只作线索，不进门禁）")
     print(f"  产出可执行用例 -> {OUT_CASES}")
     for f in failures:
         print(f"  编译失败 {f['id']}: {f['error']}")

@@ -65,6 +65,13 @@ SUPPORTED_CHECK_TYPES = {
 }
 
 
+# 需要「目标方法有返回值」的断言类型 —— 用在 void 方法上毫无意义
+_RETURN_VALUE_CHECKS = {
+    "returns_eq", "returns_ge", "returns_le", "returns_gt", "returns_lt",
+    "returns_null", "returns_non_null",
+}
+
+
 class CompileError(Exception):
     """编译失败 —— 带着原因，不要静默丢弃。"""
 
@@ -104,7 +111,9 @@ def compile_mission(mission: dict[str, Any], ctx: dict[str, Any]) -> dict[str, A
     args = list(mission.get("args") or [])
     bound_spec = mission.get("bound")
     bound_value = None
-    if bound_spec is not None:
+    # 空的 bound（{}）= 没有 bound：not_null / returns_null 这两个模板不需要 bound，
+    # 而模型按输出契约会写 {}。编译器不该因为这个拒绝一条本来合法的断言。
+    if bound_spec:
         if bound_spec.get("kind") == "arg":
             # 上界就是某个入参：当前值就是上界（可用 limit 改写期望值）
             idx = bound_spec.get("index")
@@ -166,8 +175,17 @@ def validate_case(case: dict[str, Any], declarations: dict[str, Any]) -> list[st
         arity = len(fact.get("params") or [])
         if arity != len(case.get("args") or []):
             problems.append(f"参数个数不符: 声明 {arity} / 用例 {len(case.get('args') or [])}")
-    if case.get("check", {}).get("type") not in SUPPORTED_CHECK_TYPES:
-        problems.append(f"断言类型不认识: {case.get('check', {}).get('type')}")
+    check_type = case.get("check", {}).get("type")
+    if check_type not in SUPPORTED_CHECK_TYPES:
+        problems.append(f"断言类型不认识: {check_type}")
+    # 返回值类断言用在 void 方法上是**语义荒谬**（void 方法不可能返回 null，
+    # 也不可能「不小于某个上界」）。结构上完全合法，所以前面几道闸都拦不住 ——
+    # 模型轨第一次真跑就撞上了这个洞。
+    if fact is not None and check_type in _RETURN_VALUE_CHECKS:
+        returns = str(fact.get("returns") or "")
+        if returns in ("void", "java.lang.Void", ""):
+            problems.append(
+                f"断言类型 {check_type} 需要返回值，但目标方法返回 {returns or '（未知）'}")
     if not case.get("class") or not case.get("method"):
         problems.append("case 缺 class/method")
     return problems

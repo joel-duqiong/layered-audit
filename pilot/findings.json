@@ -49,7 +49,7 @@
     "endpoint": "PATCH /api/orders/{id}/status",
     "title": "错误响应把内部实现细节返回给客户端",
     "detail": "details.message 直接透传框架异常原文（JSON parse error: Cannot deserialize value of type `com.jiuyan.banquet.entity.Or...），泄漏内部类名、框架类型与反序列化细节。",
-    "repro": "curl -X PATCH /api/orders/1816/status",
+    "repro": "curl -X PATCH /api/orders/1863/status",
     "evidence": {
       "details_message": "JSON parse error: Cannot deserialize value of type `com.jiuyan.banquet.entity.OrderStatus` from number 12345: index value outside legal index range [0..2]"
     }
@@ -60,7 +60,7 @@
     "endpoint": "PATCH /api/packages/{id}/status",
     "title": "错误响应把内部实现细节返回给客户端",
     "detail": "details.message 直接透传框架异常原文（JSON parse error: Cannot deserialize value of type `java.lang.Boolean` from Stri...），泄漏内部类名、框架类型与反序列化细节。",
-    "repro": "curl -X PATCH /api/packages/372/status",
+    "repro": "curl -X PATCH /api/packages/379/status",
     "evidence": {
       "details_message": "JSON parse error: Cannot deserialize value of type `java.lang.Boolean` from String \"not-a-boolean\": only \"true\" or \"false\" recognized"
     }
@@ -71,7 +71,7 @@
     "endpoint": "PATCH /api/products/{id}/status",
     "title": "错误响应把内部实现细节返回给客户端",
     "detail": "details.message 直接透传框架异常原文（JSON parse error: Cannot deserialize value of type `java.lang.Boolean` from Stri...），泄漏内部类名、框架类型与反序列化细节。",
-    "repro": "curl -X PATCH /api/products/4155654/status",
+    "repro": "curl -X PATCH /api/products/4255769/status",
     "evidence": {
       "details_message": "JSON parse error: Cannot deserialize value of type `java.lang.Boolean` from String \"not-a-boolean\": only \"true\" or \"false\" recognized"
     }
@@ -104,7 +104,7 @@
     "endpoint": "PUT /api/packages/{id}",
     "title": "错误响应把内部实现细节返回给客户端",
     "detail": "details.message 直接透传框架异常原文（JSON parse error: Cannot deserialize value of type `java.lang.Long` from String ...），泄漏内部类名、框架类型与反序列化细节。",
-    "repro": "curl -X PUT /api/packages/372",
+    "repro": "curl -X PUT /api/packages/379",
     "evidence": {
       "details_message": "JSON parse error: Cannot deserialize value of type `java.lang.Long` from String \"not-a-number\": not a valid `java.lang.Long` value"
     }
@@ -115,7 +115,7 @@
     "endpoint": "PUT /api/products/{id}",
     "title": "错误响应把内部实现细节返回给客户端",
     "detail": "details.message 直接透传框架异常原文（JSON parse error: Cannot deserialize value of type `java.lang.Long` from String ...），泄漏内部类名、框架类型与反序列化细节。",
-    "repro": "curl -X PUT /api/products/4155654",
+    "repro": "curl -X PUT /api/products/4255769",
     "evidence": {
       "details_message": "JSON parse error: Cannot deserialize value of type `java.lang.Long` from String \"not-a-number\": not a valid `java.lang.Long` value"
     }

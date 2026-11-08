@@ -3,8 +3,8 @@
     "layer": "function",
     "carrier": "JVM 内反射直调（静态字节码 + 动态属性/边界用例）",
     "functions_declared": 461,
-    "cases": 100,
-    "failed_cases": 30,
+    "cases": 112,
+    "failed_cases": 42,
     "passed_cases": 70,
     "total": 10,
     "by_severity": {

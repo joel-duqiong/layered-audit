@@ -5,7 +5,7 @@
       "severity": "HIGH",
       "endpoint": "POST /api/orders",
       "title": "订单定金是否不得超过订单本身的金额？",
-      "detail": "定金是订单金额里的一部分。定金大于订单金额，业务上不可能成立 —— 系统没有任何折扣或溢价模型能解释它。\n不变式：BI-DEPOSIT-LTE-FINAL-AMOUNT　判定原语：field_lte_field\n实测 6 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 1851,\n    \"type\": \"field_lte_field\",\n    \"left\": 999999,\n    \"right\": 1,\n    \"ok\": false,\n    \"scenario\": \"deposit_over\"\n  }\n]",
+      "detail": "定金是订单金额里的一部分。定金大于订单金额，业务上不可能成立 —— 系统没有任何折扣或溢价模型能解释它。\n不变式：BI-DEPOSIT-LTE-FINAL-AMOUNT　判定原语：field_lte_field\n实测 6 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 1898,\n    \"type\": \"field_lte_field\",\n    \"left\": 999999,\n    \"right\": 1,\n    \"ok\": false,\n    \"scenario\": \"deposit_over\"\n  }\n]",
       "repro": "python3 business_probe.py",
       "evidence": {
         "invariant": {
@@ -24,7 +24,7 @@
         "violations": 1,
         "samples": [
           {
-            "row_id": 1851,
+            "row_id": 1898,
             "type": "field_lte_field",
             "left": 999999,
             "right": 1,
@@ -35,27 +35,27 @@
         "scenarios": [
           {
             "scenario": "clean",
-            "order_id": 1850
+            "order_id": 1897
           },
           {
             "scenario": "deposit_over",
-            "order_id": 1851
+            "order_id": 1898
           },
           {
             "scenario": "amount_ne_detail",
-            "order_id": 1852
+            "order_id": 1899
           },
           {
             "scenario": "over_pkg_price",
-            "order_id": 1853
+            "order_id": 1900
           },
           {
             "scenario": "wrong_btype",
-            "order_id": 1854
+            "order_id": 1901
           },
           {
             "scenario": "foreign_item",
-            "order_id": 1855
+            "order_id": 1902
           }
         ]
       }
@@ -65,7 +65,7 @@
       "severity": "HIGH",
       "endpoint": "POST /api/orders",
       "title": "订单金额是否不超过所选套餐的标价？",
-      "detail": "套餐价是系统里唯一的商品价格基准。订单金额高于套餐标价，等于凭空多收钱。\n不变式：BI-FINAL-AMOUNT-LTE-PACKAGE-PRICE　判定原语：field_lte_field\n实测 6 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 1853,\n    \"type\": \"field_lte_field\",\n    \"left\": 999999999,\n    \"right\": 46800,\n    \"ok\": false,\n    \"scenario\": \"over_pkg_price\"\n  }\n]",
+      "detail": "套餐价是系统里唯一的商品价格基准。订单金额高于套餐标价，等于凭空多收钱。\n不变式：BI-FINAL-AMOUNT-LTE-PACKAGE-PRICE　判定原语：field_lte_field\n实测 6 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 1900,\n    \"type\": \"field_lte_field\",\n    \"left\": 999999999,\n    \"right\": 46800,\n    \"ok\": false,\n    \"scenario\": \"over_pkg_price\"\n  }\n]",
       "repro": "python3 business_probe.py",
       "evidence": {
         "invariant": {
@@ -84,7 +84,7 @@
         "violations": 1,
         "samples": [
           {
-            "row_id": 1853,
+            "row_id": 1900,
             "type": "field_lte_field",
             "left": 999999999,
             "right": 46800,
@@ -95,27 +95,27 @@
         "scenarios": [
           {
             "scenario": "clean",
-            "order_id": 1850
+            "order_id": 1897
           },
           {
             "scenario": "deposit_over",
-            "order_id": 1851
+            "order_id": 1898
           },
           {
             "scenario": "amount_ne_detail",
-            "order_id": 1852
+            "order_id": 1899
           },
           {
             "scenario": "over_pkg_price",
-            "order_id": 1853
+            "order_id": 1900
           },
           {
             "scenario": "wrong_btype",
-            "order_id": 1854
+            "order_id": 1901
           },
           {
             "scenario": "foreign_item",
-            "order_id": 1855
+            "order_id": 1902
           }
         ]
       }
@@ -125,7 +125,7 @@
       "severity": "MEDIUM",
       "endpoint": "POST /api/orders",
       "title": "订单的宴会类型是否与所选套餐的宴会类型一致？",
-      "detail": "套餐带 banquetType（婚宴 / 满月酒 / 寿宴这类分类），订单也带 banquetType。两者指向同一场宴席就必须一致 —— 不一致就是数据自相矛盾（订单说婚宴、套餐说寿宴）。\n不变式：BI-BANQUET-TYPE-MATCH-PACKAGE　判定原语：field_eq_field\n实测 6 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 1854,\n    \"type\": \"field_eq_field\",\n    \"left\": \"寿宴\",\n    \"right\": \"升学宴\",\n    \"ok\": false,\n    \"scenario\": \"wrong_btype\"\n  }\n]",
+      "detail": "套餐带 banquetType（婚宴 / 满月酒 / 寿宴这类分类），订单也带 banquetType。两者指向同一场宴席就必须一致 —— 不一致就是数据自相矛盾（订单说婚宴、套餐说寿宴）。\n不变式：BI-BANQUET-TYPE-MATCH-PACKAGE　判定原语：field_eq_field\n实测 6 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 1901,\n    \"type\": \"field_eq_field\",\n    \"left\": \"寿宴\",\n    \"right\": \"升学宴\",\n    \"ok\": false,\n    \"scenario\": \"wrong_btype\"\n  }\n]",
       "repro": "python3 business_probe.py",
       "evidence": {
         "invariant": {
@@ -144,7 +144,7 @@
         "violations": 1,
         "samples": [
           {
-            "row_id": 1854,
+            "row_id": 1901,
             "type": "field_eq_field",
             "left": "寿宴",
             "right": "升学宴",
@@ -155,27 +155,27 @@
         "scenarios": [
           {
             "scenario": "clean",
-            "order_id": 1850
+            "order_id": 1897
           },
           {
             "scenario": "deposit_over",
-            "order_id": 1851
+            "order_id": 1898
           },
           {
             "scenario": "amount_ne_detail",
-            "order_id": 1852
+            "order_id": 1899
           },
           {
             "scenario": "over_pkg_price",
-            "order_id": 1853
+            "order_id": 1900
           },
           {
             "scenario": "wrong_btype",
-            "order_id": 1854
+            "order_id": 1901
           },
           {
             "scenario": "foreign_item",
-            "order_id": 1855
+            "order_id": 1902
           }
         ]
       }
@@ -185,7 +185,7 @@
       "severity": "HIGH",
       "endpoint": "POST /api/orders",
       "title": "订单快照里的明细是否都属于所选套餐？",
-      "detail": "快照是订单金额与交付内容的凭据。混进不属于该套餐的商品，快照就不再代表这份套餐。\n不变式：BI-SNAPSHOT-ITEMS-SUBSET-OF-PACKAGE　判定原语：jsonb_subset_of\n实测 6 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 1855,\n    \"type\": \"jsonb_subset_of\",\n    \"item_ids\": [\n      30\n    ],\n    \"ref_ids\": [\n      1,\n      4,\n      7,\n      10,\n      11,\n      13,\n      19,\n      21,\n      25,\n      26\n    ],\n    \"outside_ref\": [\n      30\n    ],\n    \"ok\": false,\n    \"scenario\": \"foreign_item\"\n  }\n]",
+      "detail": "快照是订单金额与交付内容的凭据。混进不属于该套餐的商品，快照就不再代表这份套餐。\n不变式：BI-SNAPSHOT-ITEMS-SUBSET-OF-PACKAGE　判定原语：jsonb_subset_of\n实测 6 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 1902,\n    \"type\": \"jsonb_subset_of\",\n    \"item_ids\": [\n      30\n    ],\n    \"ref_ids\": [\n      1,\n      4,\n      7,\n      10,\n      11,\n      13,\n      19,\n      21,\n      25,\n      26\n    ],\n    \"outside_ref\": [\n      30\n    ],\n    \"ok\": false,\n    \"scenario\": \"foreign_item\"\n  }\n]",
       "repro": "python3 business_probe.py",
       "evidence": {
         "invariant": {
@@ -206,7 +206,7 @@
         "violations": 1,
         "samples": [
           {
-            "row_id": 1855,
+            "row_id": 1902,
             "type": "jsonb_subset_of",
             "item_ids": [
               30
@@ -233,27 +233,27 @@
         "scenarios": [
           {
             "scenario": "clean",
-            "order_id": 1850
+            "order_id": 1897
           },
           {
             "scenario": "deposit_over",
-            "order_id": 1851
+            "order_id": 1898
           },
           {
             "scenario": "amount_ne_detail",
-            "order_id": 1852
+            "order_id": 1899
           },
           {
             "scenario": "over_pkg_price",
-            "order_id": 1853
+            "order_id": 1900
           },
           {
             "scenario": "wrong_btype",
-            "order_id": 1854
+            "order_id": 1901
           },
           {
             "scenario": "foreign_item",
-            "order_id": 1855
+            "order_id": 1902
           }
         ]
       }
@@ -327,7 +327,7 @@
       "violations": 1,
       "failure_samples": [
         {
-          "row_id": 1851,
+          "row_id": 1898,
           "type": "field_lte_field",
           "left": 999999,
           "right": 1,
@@ -367,7 +367,7 @@
       "violations": 1,
       "failure_samples": [
         {
-          "row_id": 1853,
+          "row_id": 1900,
           "type": "field_lte_field",
           "left": 999999999,
           "right": 46800,
@@ -389,7 +389,7 @@
       "violations": 1,
       "failure_samples": [
         {
-          "row_id": 1854,
+          "row_id": 1901,
           "type": "field_eq_field",
           "left": "寿宴",
           "right": "升学宴",
@@ -411,7 +411,7 @@
       "violations": 1,
       "failure_samples": [
         {
-          "row_id": 1855,
+          "row_id": 1902,
           "type": "jsonb_subset_of",
           "item_ids": [
             30
