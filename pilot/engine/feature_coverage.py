@@ -24,6 +24,8 @@ import findings_schema
 
 HERE = Path(__file__).resolve().parent
 PROJECT_DIR = findings_schema.target_path().parent
+# 工具目录：pilot/ —— 各层探针脚本的家（engine/ 的上一级）
+TOOL_DIR = Path(__file__).resolve().parent.parent
 
 
 def _load() -> tuple[dict[str, Any], dict[str, Any]]:
@@ -32,10 +34,16 @@ def _load() -> tuple[dict[str, Any], dict[str, Any]]:
 
 
 def run_detector(name: str) -> dict[str, Any]:
-    """跑项目侧检测器；跑不起来就记下来，不静默吞。"""
+    """跑项目侧检测器；跑不起来就记下来，不静默吞。
+
+    检测器脚本住在**工具目录**（pilot/）里 —— 那是各层探针的家；
+    项目目录（target.json 所在处）里也可能有自己的检测器，先找项目侧。
+    """
     path = PROJECT_DIR / name
     if not path.exists():
-        return {"ok": False, "error": f"检测器不存在: {path}"}
+        path = TOOL_DIR / name
+    if not path.exists():
+        return {"ok": False, "error": f"检测器不存在: {name}"}
     proc = subprocess.run(["python3", str(path)], capture_output=True, text=True,
                           timeout=300, cwd=str(PROJECT_DIR))
     if proc.returncode != 0:

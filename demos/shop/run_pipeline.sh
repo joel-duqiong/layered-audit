@@ -77,6 +77,9 @@ elif [ "$gate_rc" -eq 2 ]; then
   exit 2
 fi
 
+echo "=== 特性覆盖矩阵（特性 × 载体）==="
+python3 engine/feature_coverage.py
+
 echo "=== 残留守卫（探针容器 / ai_ 行 / 非种子上传，必须全 0）==="
 python3 probe_residue_check.py --selftest
 python3 probe_residue_check.py
