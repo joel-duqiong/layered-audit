@@ -3,13 +3,14 @@
   "contract": "/Users/june/.cc-weixin/workspace/layered-audit/layers.yaml",
   "target": "/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/target.json",
   "counts": {
-    "total": 16,
+    "total": 18,
     "by_layer": {
       "class": 15,
-      "integration": 1
+      "integration": 1,
+      "service": 2
     },
     "by_kind": {
-      "defect": 14,
+      "defect": 16,
       "positive": 2,
       "observation": 0
     }
@@ -786,6 +787,104 @@
       "source": {
         "file": "artifacts/emergence_chains.json",
         "index": 0
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "BI-QUOTA-LEDGER-PARITY",
+      "uid": "service:BI-QUOTA-LEDGER-PARITY#0",
+      "layer": "service",
+      "category": "service.data_consistency",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "POST /api/orders",
+        "endpoint": "POST /api/orders"
+      },
+      "claim": "额度占用额（通过授信额度检查的报价）是否等于账本记录额（实付）？",
+      "evidence_refs": [
+        "artifacts/business_findings.json#BI-QUOTA-LEDGER-PARITY"
+      ],
+      "repro_cmd": "python3 demos/shop/business_probe.py",
+      "repro_granularity": "layer",
+      "confidence": 0.93,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-840"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "order.quota_checked_on_quoted_amount_ledger_on_settled",
+      "related_root_causes": [],
+      "kind": "defect",
+      "runtime_fidelity": "container",
+      "severity": "HIGH",
+      "title": "额度占用额（通过授信额度检查的报价）是否等于账本记录额（实付）？",
+      "detail": "授信额度按客户报价检查并占住，账本按实付记录。两个口径必须相等 —— 不相等就意味着「额度被占住了，却没有对应的账目」，差额就是被白占的额度。\n不变式：BI-QUOTA-LEDGER-PARITY　判定原语：field_eq_field\n实测 3 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 505,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 810000,\n    \"ok\": false,\n    \"scenario\": \"vip_on_vip\"\n  }\n]",
+      "related": [],
+      "note": "服务层 OrderService.create 里额度检查用 quotedAmountCent、账本记录用 settled —— 两个口径。单条件都不分裂：普通客户 + 会员装配不分裂，VIP 客户 + 标准装配也不分裂；两个条件同时成立才分裂（实测 3 个场景里只有这一组违反）。服务层是能给可复现证据的最低层，故 owner 归 service",
+      "source": {
+        "file": "artifacts/business_findings.json",
+        "index": 0
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "BI-VIP-MEMBER-PRICE",
+      "uid": "service:BI-VIP-MEMBER-PRICE#1",
+      "layer": "service",
+      "category": "service.data_consistency",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "POST /api/orders",
+        "endpoint": "POST /api/orders"
+      },
+      "claim": "VIP 客户的结算额是否享受了会员价（报价的 9/10）？",
+      "evidence_refs": [
+        "artifacts/business_findings.json#BI-VIP-MEMBER-PRICE"
+      ],
+      "repro_cmd": "python3 demos/shop/business_probe.py",
+      "repro_granularity": "layer",
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-840"
+      ],
+      "owner": {
+        "layer": "class",
+        "relation": "cite",
+        "basis": "根因归 class；本层拥有链级后果"
+      },
+      "root_cause_key": "pricing.member_tier_bound_to_deployment_profile",
+      "related_root_causes": [],
+      "kind": "defect",
+      "runtime_fidelity": "container",
+      "severity": "HIGH",
+      "title": "VIP 客户的结算额是否享受了会员价（报价的 9/10）？",
+      "detail": "会员价是**客户等级**维度的价格规则：VIP 客户在任何部署环境下都应当拿到九折。这条不变式只对 VIP 客户适用（when 条件），衡量的是「等级条件有没有真的落到定价上」。\n不变式：BI-VIP-MEMBER-PRICE　判定原语：field_eq_field\n实测 2 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 504,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 810000,\n    \"ok\": false,\n    \"scenario\": \"vip_on_default\"\n  }\n]",
+      "related": [],
+      "note": "服务层实测到：VIP 客户在标准装配下拿不到九折（结算额 = 报价额）。根因是「业务维度（客户等级）被绑到部署维度（@Profile）」—— 那是类层的结构问题，类层已经 own（CLASS-CONDITIONAL-ASSEMBLY-DIVERGENCE）。本层只作行为佐证，不重复开单",
+      "source": {
+        "file": "artifacts/business_findings.json",
+        "index": 1
       },
       "meta": {
         "inferred_fields": [],

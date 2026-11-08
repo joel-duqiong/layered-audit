@@ -44,12 +44,27 @@ EOF
 
 结论字段（id / severity / layer / detail / category / claim）两边逐字节一致。
 
-## 注意
+## 实际复核输出（2026-11-08 实测）
 
-类层基线是**通用化之前**的 16 条。当前 jiuyan 类层是 **23 条** ——
-多出来的 7 条来自这一轮新接入的 `class_shape` 通用探针
-（6 条实体缺值相等 + 1 条封装泄漏），是**新增覆盖**，不是回归。
-比对时要把这 7 条排除在外（用 id 集合差集看，不要只比数量）。
+```text
+file_findings.json: 基线 18 条 / 现在 18 条｜只在基线 []｜只出现在 []｜结论级差异 0 条 []
+class_findings.json: 基线 15 条 / 现在 17 条｜只在基线 []｜
+  只出现在 ['CLASS-ENCAPSULATION-LEAK-ENTITY-COLLECTION', 'CLASS-ENTITY-WITHOUT-VALUE-EQUALITY']｜
+  结论级差异 1 条 [('INDEX_UNUSABLE_FOR_QUERY_PATTERN', 'title')]
+```
+
+## 注意两件事
+
+1. **计数会被 id 去重影响**：类层有 4 个实体共用同一个 id
+   （`CLASS-ENTITY-WITHOUT-VALUE-EQUALITY`），所以「唯一 id 数」比「条数」少。
+   基线 16 条（15 个唯一 id），当前 23 条（17 个唯一 id）——
+   多出来的是这一轮新接入的 `class_shape` 通用探针
+   （6 条实体缺值相等 + 1 条封装泄漏），是**新增覆盖**，不是回归。
+   比对时用 id 集合差集看，不要只比数量。
+
+2. **唯一一处结论级差异是实测值**：`INDEX_UNASABLE_FOR_QUERY_PATTERN` 的
+   title 里嵌了 EXPLAIN 的实测耗时（ms 与倍数），每次跑都不同。
+   结论不变：EXPLAIN 显示走 Filter 全量过滤而非 Index Cond。
 
 ## 为什么放在仓库里
 

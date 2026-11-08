@@ -1,12 +1,55 @@
 {
   "generated_from": "aggregate_findings.py",
   "summary": {
-    "findings": 16,
-    "root_causes": 13,
-    "collapsed": 3,
+    "findings": 18,
+    "root_causes": 14,
+    "collapsed": 4,
     "violations": 0
   },
   "root_causes": [
+    {
+      "root_cause_key": "pricing.member_tier_bound_to_deployment_profile",
+      "title": "同一请求在两个部署实例上结果不同：settledAmountCent 分叉",
+      "severity": "HIGH",
+      "owner_layer": "class",
+      "categories": [
+        "class.invariant",
+        "service.data_consistency"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 2,
+      "finding_uids": [
+        "class:CLASS-CONDITIONAL-ASSEMBLY-DIVERGENCE#2",
+        "service:BI-VIP-MEMBER-PRICE#1"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class",
+        "service"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-840"
+      ],
+      "confidence": 0.94,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 demos/shop/business_probe.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1,
+        "container": 1
+      },
+      "related_root_causes": []
+    },
     {
       "root_cause_key": "error.business_error_as_500",
       "title": "业务规则失败被当成服务器错误抛出去：customerName 不存在（服务层抛异常） -> HTTP 500",
@@ -82,6 +125,45 @@
       "related_root_causes": []
     },
     {
+      "root_cause_key": "order.quota_checked_on_quoted_amount_ledger_on_settled",
+      "title": "额度占用额（通过授信额度检查的报价）是否等于账本记录额（实付）？",
+      "severity": "HIGH",
+      "owner_layer": "service",
+      "categories": [
+        "service.data_consistency"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "service:BI-QUOTA-LEDGER-PARITY#0"
+      ],
+      "layers_own": [
+        "service"
+      ],
+      "layers_all": [
+        "service"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-840"
+      ],
+      "confidence": 0.93,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 demos/shop/business_probe.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "evidence_fidelity": "container",
+      "fidelity_breakdown": {
+        "container": 1
+      },
+      "related_root_causes": []
+    },
+    {
       "root_cause_key": "order.quota_ledger_amount_divergence",
       "title": "额度占用额（报价）与账本记录额（实付）在会员链路上口径分裂",
       "severity": "HIGH",
@@ -122,43 +204,6 @@
         "order.quota_checked_on_quoted_amount_ledger_on_settled",
         "pricing.member_tier_bound_to_deployment_profile"
       ]
-    },
-    {
-      "root_cause_key": "pricing.member_tier_bound_to_deployment_profile",
-      "title": "同一请求在两个部署实例上结果不同：settledAmountCent 分叉",
-      "severity": "HIGH",
-      "owner_layer": "class",
-      "categories": [
-        "class.invariant"
-      ],
-      "category_fit": [
-        "exact"
-      ],
-      "finding_count": 1,
-      "finding_uids": [
-        "class:CLASS-CONDITIONAL-ASSEMBLY-DIVERGENCE#2"
-      ],
-      "layers_own": [
-        "class"
-      ],
-      "layers_all": [
-        "class"
-      ],
-      "cited_from": [],
-      "cwe": [
-        "CWE-840"
-      ],
-      "confidence": 0.94,
-      "ground_truth": "verified",
-      "repro_cmds": [],
-      "violations": [],
-      "notes": [],
-      "merges": [],
-      "evidence_fidelity": "hybrid",
-      "fidelity_breakdown": {
-        "hybrid": 1
-      },
-      "related_root_causes": []
     },
     {
       "root_cause_key": "rule.missing_in_db_dto_service",
@@ -514,7 +559,7 @@
         "interface_contract": 0,
         "resilience": 0,
         "authz": 0,
-        "data_consistency": 0,
+        "data_consistency": 2,
         "resource_leak": 0,
         "service_latency": 0
       },
@@ -537,7 +582,6 @@
       "service.interface_contract",
       "service.resilience",
       "service.authz",
-      "service.data_consistency",
       "service.resource_leak",
       "service.service_latency",
       "integration.cross_service_performance",
@@ -562,7 +606,7 @@
         "order.quota_ledger_amount_divergence"
       ]
     },
-    "root_cause_count": 13,
-    "finding_count": 16
+    "root_cause_count": 14,
+    "finding_count": 18
   }
 }
