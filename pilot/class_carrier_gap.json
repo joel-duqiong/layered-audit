@@ -1,0 +1,40 @@
+{
+  "unowned": [],
+  "count": 0,
+  "declared_out_of_scope": [
+    {
+      "detector": "encapsulation_leak",
+      "observation": {
+        "class": "com.jiuyan.banquet.repository.CategoryRepository",
+        "method": "findAllByIsDeletedFalseOrderBySortOrderAscIdAsc",
+        "return_type": "java.util.List<com.jiuyan.banquet.entity.Category>",
+        "element_type": "com.jiuyan.banquet.entity.Category",
+        "element_entity": true
+      },
+      "reason": "Spring Data 仓储方法返回实体是框架的既定用法 —— 仓储本身就是实体的对外接口；封装泄漏的担心针对的是服务层把内部状态交出去"
+    },
+    {
+      "detector": "encapsulation_leak",
+      "observation": {
+        "class": "com.jiuyan.banquet.repository.PackageItemRepository",
+        "method": "findByBanquetPackageId",
+        "return_type": "java.util.List<com.jiuyan.banquet.entity.PackageItem>",
+        "element_type": "com.jiuyan.banquet.entity.PackageItem",
+        "element_entity": true
+      },
+      "reason": "Spring Data 仓储方法返回实体是框架的既定用法 —— 仓储本身就是实体的对外接口；封装泄漏的担心针对的是服务层把内部状态交出去"
+    },
+    {
+      "detector": "encapsulation_leak",
+      "observation": {
+        "class": "com.jiuyan.banquet.repository.PackageTypeRepository",
+        "method": "findAllByIsDeletedFalseOrderBySortOrderAscIdAsc",
+        "return_type": "java.util.List<com.jiuyan.banquet.entity.PackageType>",
+        "element_type": "com.jiuyan.banquet.entity.PackageType",
+        "element_entity": true
+      },
+      "reason": "Spring Data 仓储方法返回实体是框架的既定用法 —— 仓储本身就是实体的对外接口；封装泄漏的担心针对的是服务层把内部状态交出去"
+    }
+  ],
+  "declared_out_of_scope_count": 3
+}

@@ -1,14 +1,21 @@
 # 类层差分报告（jiuyan）
 
-JPA 实体 7 个 | DDL 表 6 张 | 索引 22 个 | finding 16 条
+JPA 实体 7 个 | DDL 表 6 张 | 索引 22 个 | finding 23 条
 
 | 级别 | 层 | 缺陷 |
 |---|---|---|
 | HIGH | class | 状态机缺失：9/9 种迁移全部被接受，含回退 |
-| HIGH | class→service | DDL 声明的 idx_products_name 对服务层查询模式无效（7.97ms vs 0.014ms，差 569 倍） |
+| HIGH | class→service | DDL 声明的 idx_products_name 对服务层查询模式无效（7.587ms vs 0.013ms，差 584 倍） |
+| HIGH | class | com.jiuyan.banquet.entity.BanquetPackage.getItems 把内部实体集合直接交出去 |
 | HIGH | class | 4 条业务不变量在 DB / DTO / 服务层三层全都不存在 |
 | MEDIUM | class | 软删除的行会被同名重建「复活」，id 与 sort_order 沿用旧值 |
-| MEDIUM | class | orders 表没有软删/归档，永久增长（当前 192 kB） |
+| MEDIUM | class | orders 表没有软删/归档，永久增长（当前 184 kB） |
+| MEDIUM | class | BanquetOrder 没有值相等：放进集合或当键，语义会变 |
+| MEDIUM | class | BanquetPackage 没有值相等：放进集合或当键，语义会变 |
+| MEDIUM | class | Category 没有值相等：放进集合或当键，语义会变 |
+| MEDIUM | class | PackageItem 没有值相等：放进集合或当键，语义会变 |
+| MEDIUM | class | PackageType 没有值相等：放进集合或当键，语义会变 |
+| MEDIUM | class | Product 没有值相等：放进集合或当键，语义会变 |
 | MEDIUM | class | orders.address 声明 NOT NULL，实际用空串绕过 —— 非空约束只挡了 NULL |
 | MEDIUM | class | orders.finalPriceCent 必填性校验落在服务层，DTO 少一条 @NotNull |
 | MEDIUM | class | PUT 是全量覆盖：不传的 imageUrl 会被抹成 NULL |
@@ -47,17 +54,42 @@ DDL 只有取值白名单 CHECK (status IN (...))，没有任何迁移约束；�
 }
 ```
 
-## [HIGH] DDL 声明的 idx_products_name 对服务层查询模式无效（7.97ms vs 0.014ms，差 569 倍）
+## [HIGH] DDL 声明的 idx_products_name 对服务层查询模式无效（7.587ms vs 0.013ms，差 584 倍）
 
 迁移文件建了 products(name) 索引，但服务层关键词搜索写的是 lower(name) LIKE '%kw%'：lower() 让索引无法用于定位，前导 % 让 btree 本来也用不上。EXPLAIN 显示走 Filter 全量过滤而非 Index Cond。类层把索引交给服务层，但服务层不知道该怎么用它 —— 声明没有传递下去。
 
 ```json
 {
-  "like_prefix_lower_ms": 7.97,
-  "exact_equal_ms": 0.014,
+  "like_prefix_lower_ms": 7.587,
+  "exact_equal_ms": 0.013,
   "index_cond_present": true,
   "like_has_index_cond": false,
   "scale_rows": 50000
+}
+```
+
+## [HIGH] com.jiuyan.banquet.entity.BanquetPackage.getItems 把内部实体集合直接交出去
+
+public 方法返回 java.util.List<com.jiuyan.banquet.entity.PackageItem>，元素类型是实体 com.jiuyan.banquet.entity.PackageItem。调用方拿到的不是快照而是内部对象本身 —— 改一个字段就改了服务层的内部状态，绕过所有不变量检查。集合可变、实体也可变，封装在这一行彻底失效。（返回单个实体引用是 JPA 常规用法，不算泄漏；这里只认「实体的集合」。）
+
+```json
+{
+  "class": "com.jiuyan.banquet.entity.BanquetPackage",
+  "method": "getItems",
+  "returns": "java.util.List<com.jiuyan.banquet.entity.PackageItem>",
+  "entity_type": "com.jiuyan.banquet.entity.PackageItem",
+  "file_carrier": {
+    "detector": "encapsulation_leak",
+    "observations": [
+      {
+        "class": "com.jiuyan.banquet.entity.BanquetPackage",
+        "method": "getItems",
+        "return_type": "java.util.List<com.jiuyan.banquet.entity.PackageItem>",
+        "element_type": "com.jiuyan.banquet.entity.PackageItem",
+        "element_entity": true
+      }
+    ]
+  }
 }
 ```
 
@@ -106,34 +138,178 @@ DDL 只有取值白名单 CHECK (status IN (...))，没有任何迁移约束；�
 
 ```json
 {
-  "category": "ai_probe_cat_a45e38",
+  "category": "ai_probe_cat_4eeb0a",
   "create": 200,
   "delete": 200,
   "recreate": 200,
   "db_rows": [
     [
-      "231",
+      "247",
       "f"
     ]
   ]
 }
 ```
 
-## [MEDIUM] orders 表没有软删/归档，永久增长（当前 192 kB）
+## [MEDIUM] orders 表没有软删/归档，永久增长（当前 184 kB）
 
 products/packages/categories 都有 is_deleted，orders 没有。订单是唯一不设生命周期的表，还带 2 个 jsonb 快照列和 6 个索引 —— 数据量上来后这张表会最先撑爆。
 
 ```json
 {
-  "orders_size": "192 kB",
+  "orders_size": "184 kB",
   "table_sizes": {
     "products": "16 MB",
-    "orders": "192 kB",
+    "orders": "184 kB",
     "packages": "144 kB",
     "categories": "104 kB",
     "package_items": "104 kB",
     "package_types": "104 kB",
     "flyway_schema_history": "48 kB"
+  }
+}
+```
+
+## [MEDIUM] BanquetOrder 没有值相等：放进集合或当键，语义会变
+
+实体没有声明 equals/hashCode，用的是 Object 的默认实现 —— 按对象身份比较，不是按业务主键。业务上「同一个客户」在两处会被当成两个对象：Set 去重失效、Map 键匹配不上、List.contains 永远 false。这不是性能问题而是正确性问题，而且编译期与运行期都不会报错。
+
+```json
+{
+  "class": "com.jiuyan.banquet.entity.BanquetOrder",
+  "simple_name": "BanquetOrder",
+  "declares_equals": false,
+  "declares_hashcode": false,
+  "file_carrier": {
+    "detector": "entity_value_equality",
+    "observations": [
+      {
+        "class": "com.jiuyan.banquet.entity.BanquetOrder",
+        "has_equals": false,
+        "has_hashcode": false,
+        "two_instances_equal": false
+      }
+    ]
+  }
+}
+```
+
+## [MEDIUM] BanquetPackage 没有值相等：放进集合或当键，语义会变
+
+实体没有声明 equals/hashCode，用的是 Object 的默认实现 —— 按对象身份比较，不是按业务主键。业务上「同一个客户」在两处会被当成两个对象：Set 去重失效、Map 键匹配不上、List.contains 永远 false。这不是性能问题而是正确性问题，而且编译期与运行期都不会报错。
+
+```json
+{
+  "class": "com.jiuyan.banquet.entity.BanquetPackage",
+  "simple_name": "BanquetPackage",
+  "declares_equals": false,
+  "declares_hashcode": false,
+  "file_carrier": {
+    "detector": "entity_value_equality",
+    "observations": [
+      {
+        "class": "com.jiuyan.banquet.entity.BanquetPackage",
+        "has_equals": false,
+        "has_hashcode": false,
+        "two_instances_equal": false
+      }
+    ]
+  }
+}
+```
+
+## [MEDIUM] Category 没有值相等：放进集合或当键，语义会变
+
+实体没有声明 equals/hashCode，用的是 Object 的默认实现 —— 按对象身份比较，不是按业务主键。业务上「同一个客户」在两处会被当成两个对象：Set 去重失效、Map 键匹配不上、List.contains 永远 false。这不是性能问题而是正确性问题，而且编译期与运行期都不会报错。
+
+```json
+{
+  "class": "com.jiuyan.banquet.entity.Category",
+  "simple_name": "Category",
+  "declares_equals": false,
+  "declares_hashcode": false,
+  "file_carrier": {
+    "detector": "entity_value_equality",
+    "observations": [
+      {
+        "class": "com.jiuyan.banquet.entity.Category",
+        "has_equals": false,
+        "has_hashcode": false,
+        "two_instances_equal": false
+      }
+    ]
+  }
+}
+```
+
+## [MEDIUM] PackageItem 没有值相等：放进集合或当键，语义会变
+
+实体没有声明 equals/hashCode，用的是 Object 的默认实现 —— 按对象身份比较，不是按业务主键。业务上「同一个客户」在两处会被当成两个对象：Set 去重失效、Map 键匹配不上、List.contains 永远 false。这不是性能问题而是正确性问题，而且编译期与运行期都不会报错。
+
+```json
+{
+  "class": "com.jiuyan.banquet.entity.PackageItem",
+  "simple_name": "PackageItem",
+  "declares_equals": false,
+  "declares_hashcode": false,
+  "file_carrier": {
+    "detector": "entity_value_equality",
+    "observations": [
+      {
+        "class": "com.jiuyan.banquet.entity.PackageItem",
+        "has_equals": false,
+        "has_hashcode": false,
+        "two_instances_equal": false
+      }
+    ]
+  }
+}
+```
+
+## [MEDIUM] PackageType 没有值相等：放进集合或当键，语义会变
+
+实体没有声明 equals/hashCode，用的是 Object 的默认实现 —— 按对象身份比较，不是按业务主键。业务上「同一个客户」在两处会被当成两个对象：Set 去重失效、Map 键匹配不上、List.contains 永远 false。这不是性能问题而是正确性问题，而且编译期与运行期都不会报错。
+
+```json
+{
+  "class": "com.jiuyan.banquet.entity.PackageType",
+  "simple_name": "PackageType",
+  "declares_equals": false,
+  "declares_hashcode": false,
+  "file_carrier": {
+    "detector": "entity_value_equality",
+    "observations": [
+      {
+        "class": "com.jiuyan.banquet.entity.PackageType",
+        "has_equals": false,
+        "has_hashcode": false,
+        "two_instances_equal": false
+      }
+    ]
+  }
+}
+```
+
+## [MEDIUM] Product 没有值相等：放进集合或当键，语义会变
+
+实体没有声明 equals/hashCode，用的是 Object 的默认实现 —— 按对象身份比较，不是按业务主键。业务上「同一个客户」在两处会被当成两个对象：Set 去重失效、Map 键匹配不上、List.contains 永远 false。这不是性能问题而是正确性问题，而且编译期与运行期都不会报错。
+
+```json
+{
+  "class": "com.jiuyan.banquet.entity.Product",
+  "simple_name": "Product",
+  "declares_equals": false,
+  "declares_hashcode": false,
+  "file_carrier": {
+    "detector": "entity_value_equality",
+    "observations": [
+      {
+        "class": "com.jiuyan.banquet.entity.Product",
+        "has_equals": false,
+        "has_hashcode": false,
+        "two_instances_equal": false
+      }
+    ]
   }
 }
 ```
@@ -181,7 +357,7 @@ UpdateProductRequest.imageUrl 没有任何约束（可缺省），但 PUT 的语
 ```json
 {
   "entity": "products",
-  "id": 3054482,
+  "id": 3554852,
   "changed_columns": [
     "description",
     "image_url",
@@ -192,15 +368,15 @@ UpdateProductRequest.imageUrl 没有任何约束（可缺省），但 PUT 的语
     "updated_at"
   ],
   "final_row": {
-    "id": 3054482,
+    "id": 3554852,
     "name": "ai_probe_fp2",
     "unit": "克",
     "image_url": null,
     "is_active": false,
-    "created_at": "2026-11-07T19:07:14.878745+00:00",
+    "created_at": "2026-11-08T09:00:48.459919+00:00",
     "is_deleted": true,
     "price_cent": 9999,
-    "updated_at": "2026-11-07T19:07:15.299499+00:00",
+    "updated_at": "2026-11-08T09:00:48.82964+00:00",
     "category_id": 2,
     "description": "changed"
   }
@@ -364,3 +540,13 @@ categoryId 在 DTO 上有 @NotNull，实测缺省时接口返回 400 且行未�
   "changed": []
 }
 ```
+
+## 第二载体复核（文件载体 × 类层载体）
+
+文件载体观测 10 条｜被类层结论独立复现 7 条｜无人认领 0 条｜项目声明不适用 3 条
+
+### 项目声明不适用的观测（决策留痕）
+
+- `encapsulation_leak` → `com.jiuyan.banquet.repository.CategoryRepository.findAllByIsDeletedFalseOrderBySortOrderAscIdAsc` —— Spring Data 仓储方法返回实体是框架的既定用法 —— 仓储本身就是实体的对外接口；封装泄漏的担心针对的是服务层把内部状态交出去
+- `encapsulation_leak` → `com.jiuyan.banquet.repository.PackageItemRepository.findByBanquetPackageId` —— Spring Data 仓储方法返回实体是框架的既定用法 —— 仓储本身就是实体的对外接口；封装泄漏的担心针对的是服务层把内部状态交出去
+- `encapsulation_leak` → `com.jiuyan.banquet.repository.PackageTypeRepository.findAllByIsDeletedFalseOrderBySortOrderAscIdAsc` —— Spring Data 仓储方法返回实体是框架的既定用法 —— 仓储本身就是实体的对外接口；封装泄漏的担心针对的是服务层把内部状态交出去

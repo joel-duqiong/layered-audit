@@ -8,6 +8,7 @@ pilot/*_declaration.json
 pilot/*_diff.json
 pilot/*_contract.json
 pilot/file_deps.txt
+pilot/file_detectors.json
 pilot/perf_load.json
 pilot/agents.json
 pilot/openapi.json
@@ -15,3 +16,9 @@ __pycache__/
 pilot/__pycache__/
 pilot/.store/
 pilot/*_harness/**/__pycache__/
+
+# demo 侧的原始运行产物（可由 demos/shop/run_pipeline.sh 重新生成）。
+# 收口后的结论在 demos/shop/{all_findings.json,root_causes.json,audit_report.md}。
+# emergence_chains.json 例外 —— 它是涌现裁决的原始结论，保留。
+demos/shop/artifacts/*
+!demos/shop/artifacts/emergence_chains.json

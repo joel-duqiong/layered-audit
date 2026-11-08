@@ -1,9 +1,9 @@
 {
   "generated_from": "aggregate_findings.py",
   "summary": {
-    "findings": 93,
-    "root_causes": 70,
-    "collapsed": 23,
+    "findings": 100,
+    "root_causes": 72,
+    "collapsed": 28,
     "violations": 1
   },
   "root_causes": [
@@ -446,6 +446,45 @@
       "related_root_causes": []
     },
     {
+      "root_cause_key": "banquet_package.items_exposed",
+      "title": "com.jiuyan.banquet.entity.BanquetPackage.getItems 把内部实体集合直接交出去",
+      "severity": "HIGH",
+      "owner_layer": "class",
+      "categories": [
+        "class.encapsulation_leak"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:CLASS-ENCAPSULATION-LEAK-ENTITY-COLLECTION#2"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-495"
+      ],
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 class_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
+      "related_root_causes": []
+    },
+    {
       "root_cause_key": "cors.empty_whitelist_fails_open",
       "title": "CORS 白名单配成空值时反而允许任意来源跨域（fail-open）",
       "severity": "HIGH",
@@ -523,7 +562,7 @@
     },
     {
       "root_cause_key": "index.idx_products_name_unusable",
-      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.97ms vs 0.014ms，差 569 倍）",
+      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.587ms vs 0.013ms，差 584 倍）",
       "severity": "HIGH",
       "owner_layer": "service",
       "categories": [
@@ -654,7 +693,7 @@
       ],
       "finding_count": 1,
       "finding_uids": [
-        "class:CLASS-RULE-MISSING-IN-ALL-LAYERS#2"
+        "class:CLASS-RULE-MISSING-IN-ALL-LAYERS#3"
       ],
       "layers_own": [
         "class"
@@ -714,13 +753,13 @@
       "confidence": 0.92,
       "ground_truth": "verified",
       "repro_cmds": [
-        "curl -X PATCH /api/orders/1314/status",
-        "curl -X PATCH /api/packages/295/status",
-        "curl -X PATCH /api/products/3004477/status",
+        "curl -X PATCH /api/orders/1501/status",
+        "curl -X PATCH /api/packages/324/status",
+        "curl -X PATCH /api/products/3504847/status",
         "curl -X POST /api/packages",
         "curl -X POST /api/products",
-        "curl -X PUT /api/packages/295",
-        "curl -X PUT /api/products/3004477"
+        "curl -X PUT /api/packages/324",
+        "curl -X PUT /api/products/3504847"
       ],
       "violations": [],
       "notes": [],
@@ -730,6 +769,52 @@
       "evidence_fidelity": "container",
       "fidelity_breakdown": {
         "container": 7
+      },
+      "related_root_causes": []
+    },
+    {
+      "root_cause_key": "entity.no_value_equality",
+      "title": "BanquetOrder 没有值相等：放进集合或当键，语义会变",
+      "severity": "MEDIUM",
+      "owner_layer": "class",
+      "categories": [
+        "class.invariant"
+      ],
+      "category_fit": [
+        "stretched"
+      ],
+      "finding_count": 6,
+      "finding_uids": [
+        "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#6",
+        "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#7",
+        "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#8",
+        "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#9",
+        "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#10",
+        "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#11"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-595"
+      ],
+      "confidence": 0.8,
+      "ground_truth": "verified",
+      "repro_cmds": [
+        "python3 class_dynamic.py"
+      ],
+      "violations": [],
+      "notes": [],
+      "merges": [
+        "class 层同一根因开了 6 条 own，可归并为 1 条根因"
+      ],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 6
       },
       "related_root_causes": []
     },
@@ -790,7 +875,7 @@
       ],
       "finding_count": 1,
       "finding_uids": [
-        "class:CLASS-PUT-WIPES-UNSET-FIELD#7"
+        "class:CLASS-PUT-WIPES-UNSET-FIELD#14"
       ],
       "layers_own": [
         "class"
@@ -906,7 +991,7 @@
       ],
       "finding_count": 1,
       "finding_uids": [
-        "class:CLASS-NOTNULL-BYPASSED-BY-EMPTY-STRING#5"
+        "class:CLASS-NOTNULL-BYPASSED-BY-EMPTY-STRING#12"
       ],
       "layers_own": [
         "class"
@@ -945,7 +1030,7 @@
       ],
       "finding_count": 1,
       "finding_uids": [
-        "class:CLASS-REQUIRED-CHECKED-IN-SERVICE-LAYER#6"
+        "class:CLASS-REQUIRED-CHECKED-IN-SERVICE-LAYER#13"
       ],
       "layers_own": [
         "class"
@@ -1351,7 +1436,7 @@
     },
     {
       "root_cause_key": "orders.no_data_lifecycle",
-      "title": "orders 表没有软删/归档，永久增长（当前 192 kB）",
+      "title": "orders 表没有软删/归档，永久增长（当前 184 kB）",
       "severity": "MEDIUM",
       "owner_layer": "class",
       "categories": [
@@ -1362,7 +1447,7 @@
       ],
       "finding_count": 1,
       "finding_uids": [
-        "class:NO_DATA_LIFECYCLE#4"
+        "class:NO_DATA_LIFECYCLE#5"
       ],
       "layers_own": [
         "class"
@@ -1512,7 +1597,7 @@
       ],
       "finding_count": 1,
       "finding_uids": [
-        "class:SOFT_DELETE_RESURRECTS_ROW#3"
+        "class:SOFT_DELETE_RESURRECTS_ROW#4"
       ],
       "layers_own": [
         "class"
@@ -1808,8 +1893,8 @@
       ],
       "finding_count": 2,
       "finding_uids": [
-        "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#8",
-        "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#9"
+        "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#15",
+        "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#16"
       ],
       "layers_own": [
         "class"
@@ -1959,7 +2044,7 @@
       ],
       "finding_count": 1,
       "finding_uids": [
-        "class:CLASS-ENUM-CASE-SENSITIVE#11"
+        "class:CLASS-ENUM-CASE-SENSITIVE#18"
       ],
       "layers_own": [
         "class"
@@ -2033,7 +2118,7 @@
       ],
       "finding_count": 1,
       "finding_uids": [
-        "class:CLASS-ERROR-MESSAGE-MISMATCH#10"
+        "class:CLASS-ERROR-MESSAGE-MISMATCH#17"
       ],
       "layers_own": [
         "class"
@@ -2144,7 +2229,7 @@
       ],
       "finding_count": 1,
       "finding_uids": [
-        "class:CLASS-CHECK-DTO-ALIGNED#14"
+        "class:CLASS-CHECK-DTO-ALIGNED#21"
       ],
       "layers_own": [
         "class"
@@ -2253,7 +2338,7 @@
       ],
       "finding_count": 1,
       "finding_uids": [
-        "class:ENUM_CHECK_ALIGNED#12"
+        "class:ENUM_CHECK_ALIGNED#19"
       ],
       "layers_own": [
         "class"
@@ -2327,7 +2412,7 @@
       ],
       "finding_count": 1,
       "finding_uids": [
-        "class:CLASS-NULLABILITY-ALIGNED#13"
+        "class:CLASS-NULLABILITY-ALIGNED#20"
       ],
       "layers_own": [
         "class"
@@ -2512,7 +2597,7 @@
       ],
       "finding_count": 1,
       "finding_uids": [
-        "class:CLASS-PUT-REQUIRED-FK-GUARDED#15"
+        "class:CLASS-PUT-REQUIRED-FK-GUARDED#22"
       ],
       "layers_own": [
         "class"
@@ -2769,8 +2854,8 @@
         "cohesion": 3
       },
       "class": {
-        "encapsulation_leak": 1,
-        "invariant": 6,
+        "encapsulation_leak": 2,
+        "invariant": 12,
         "contract_violation": 8,
         "inheritance_design": 0
       },
@@ -2804,8 +2889,8 @@
       "file:FILE-CORS-NEGATIVE-PRECISION#12",
       "file:FILE-STATIC-ORACLE-BLIND-SPOT#15",
       "file:FILE-STATIC-SAME-ROOT#16",
-      "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#8",
-      "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#9",
+      "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#15",
+      "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#16",
       "integration:RECORDING_COVERAGE_GAP#10"
     ],
     "unmapped_by_layer": {
@@ -2875,6 +2960,7 @@
       "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/BanquetOrder.java": [
         "db.notnull_bypassed_by_empty_string",
         "dto.required_check_missing",
+        "entity.no_value_equality",
         "error.message_mismatch",
         "order.status.transition_unconstrained",
         "orders.no_data_lifecycle"
@@ -2883,6 +2969,10 @@
         "api.put_full_overwrite",
         "column.default_declared_in_three_places",
         "index.idx_products_name_unusable"
+      ],
+      "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/BanquetPackage.java": [
+        "banquet_package.items_exposed",
+        "column.default_declared_in_three_places"
       ],
       "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/OrderStatus.java": [
         "enum.case_sensitive",
@@ -2893,7 +2983,7 @@
         "price.final_price.upper_bound_unvalidated"
       ]
     },
-    "root_cause_count": 70,
-    "finding_count": 93
+    "root_cause_count": 72,
+    "finding_count": 100
   }
 }

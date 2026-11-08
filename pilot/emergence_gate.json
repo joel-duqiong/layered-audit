@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "engine": "emergence_gate",
+  "generated_at": "2026-11-08T09:05:27+00:00",
+  "target": "jiuyan",
+  "verdict": "INCOMPLETE",
+  "exit_code": 2,
+  "inputs": {
+    "catalog": "emergence_injections.json",
+    "results": "emergence_chains.json",
+    "findings": "all_findings.json",
+    "baseline": "emergence_baseline.json"
+  },
+  "metrics": {},
+  "problems": [
+    {
+      "level": "INCOMPLETE",
+      "kind": "input_missing",
+      "detail": "注入目录不存在: emergence_injections.json"
+    },
+    {
+      "level": "INCOMPLETE",
+      "kind": "input_missing",
+      "detail": "涌现裁决产物不存在: emergence_chains.json"
+    }
+  ],
+  "warnings": [],
+  "fingerprint": "4c958f7bcacec8c8"
+}

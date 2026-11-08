@@ -1,0 +1,4595 @@
+{
+  "schema_version": 1,
+  "seed": 20261107,
+  "counts": {
+    "nodes": 162,
+    "edges": 151,
+    "by_type": {
+      "HTTP_ENTRY": 25,
+      "SVC_OP": 77,
+      "REPO_OP": 28,
+      "TABLE": 6,
+      "ENTITY_FIELD": 26
+    },
+    "edges_by_type": {
+      "EXPOSES": 24,
+      "CALLS": 63,
+      "READS": 13,
+      "WRITES": 26,
+      "DERIVES": 25
+    },
+    "bindings": 19,
+    "unbound": 6,
+    "invariants": 6
+  },
+  "bindings": {
+    "PUT /api/products/{id}": "com.jiuyan.banquet.controller.ProductController#update",
+    "DELETE /api/products/{id}": "com.jiuyan.banquet.controller.ProductController#delete",
+    "GET /api/packages/{id}": "com.jiuyan.banquet.controller.PackageController#get",
+    "PUT /api/packages/{id}": "com.jiuyan.banquet.controller.PackageController#update",
+    "DELETE /api/packages/{id}": "com.jiuyan.banquet.controller.PackageController#delete",
+    "GET /api/orders/{id}": "com.jiuyan.banquet.controller.OrderController#get",
+    "PUT /api/orders/{id}": "com.jiuyan.banquet.controller.OrderController#update",
+    "POST /api/uploads/product-image": "com.jiuyan.banquet.controller.UploadController#uploadProductImage",
+    "POST /api/uploads/package-image": "com.jiuyan.banquet.controller.UploadController#uploadPackageImage",
+    "GET /api/products": "com.jiuyan.banquet.controller.ProductController#list",
+    "POST /api/products": "com.jiuyan.banquet.controller.ProductController#create",
+    "GET /api/packages": "com.jiuyan.banquet.controller.PackageController#list",
+    "POST /api/packages": "com.jiuyan.banquet.controller.PackageController#create",
+    "GET /api/orders": "com.jiuyan.banquet.controller.OrderController#list",
+    "POST /api/orders": "com.jiuyan.banquet.controller.OrderController#create",
+    "PATCH /api/products/{id}/status": "com.jiuyan.banquet.controller.ProductController#updateStatus",
+    "PATCH /api/packages/{id}/status": "com.jiuyan.banquet.controller.PackageController#updateStatus",
+    "PATCH /api/orders/{id}/status": "com.jiuyan.banquet.controller.OrderController#updateStatus",
+    "GET /api/health": "com.jiuyan.banquet.controller.HealthController#health"
+  },
+  "unbound": [
+    "GET /api/package-types",
+    "POST /api/package-types",
+    "GET /api/categories",
+    "POST /api/categories",
+    "DELETE /api/package-types/{id}",
+    "DELETE /api/categories/{id}"
+  ],
+  "invariant_anchors": {
+    "BI-DEPOSIT-LTE-FINAL-AMOUNT": {
+      "entity": "order",
+      "tables": [
+        "orders"
+      ],
+      "fields": [
+        "deposit_cent",
+        "final_price_cent"
+      ],
+      "covered_fields": [
+        "deposit_cent",
+        "final_price_cent"
+      ],
+      "severity": "HIGH",
+      "category": "service.data_consistency"
+    },
+    "BI-NOT-FINAL-PRICE-AMOUNT-EQ-PLAN": {
+      "entity": "order",
+      "tables": [
+        "orders"
+      ],
+      "fields": [
+        "final_price_cent",
+        "plan_total_cent"
+      ],
+      "covered_fields": [
+        "final_price_cent",
+        "plan_total_cent"
+      ],
+      "severity": "MEDIUM",
+      "category": "service.data_consistency"
+    },
+    "BI-FINAL-AMOUNT-LTE-PACKAGE-PRICE": {
+      "entity": "order",
+      "tables": [
+        "orders"
+      ],
+      "fields": [
+        "final_price_cent",
+        "package_price_cent"
+      ],
+      "covered_fields": [
+        "final_price_cent"
+      ],
+      "severity": "HIGH",
+      "category": "service.data_consistency"
+    },
+    "BI-BANQUET-TYPE-MATCH-PACKAGE": {
+      "entity": "order",
+      "tables": [
+        "orders"
+      ],
+      "fields": [
+        "banquet_type",
+        "package_banquet_type"
+      ],
+      "covered_fields": [
+        "banquet_type"
+      ],
+      "severity": "MEDIUM",
+      "category": "service.data_consistency"
+    },
+    "BI-SNAPSHOT-ITEMS-SUBSET-OF-PACKAGE": {
+      "entity": "order",
+      "tables": [
+        "orders"
+      ],
+      "fields": [
+        "items",
+        "package_items",
+        "productId"
+      ],
+      "covered_fields": [],
+      "severity": "HIGH",
+      "category": "service.data_consistency"
+    },
+    "BI-ADDED-ITEMS-EXIST": {
+      "entity": "order",
+      "tables": [
+        "orders"
+      ],
+      "fields": [
+        "added_items_snapshot",
+        "existing_products",
+        "productId"
+      ],
+      "covered_fields": [
+        "added_items_snapshot"
+      ],
+      "severity": "MEDIUM",
+      "category": "service.data_consistency"
+    }
+  },
+  "nodes": {
+    "com.jiuyan.banquet.controller.CategoryController#list": {
+      "id": "com.jiuyan.banquet.controller.CategoryController#list",
+      "type": "HTTP_ENTRY",
+      "cls": "com.jiuyan.banquet.controller.CategoryController",
+      "method": "list",
+      "simple": "CategoryController",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      },
+      "endpoint": ""
+    },
+    "com.jiuyan.banquet.controller.CategoryController#create": {
+      "id": "com.jiuyan.banquet.controller.CategoryController#create",
+      "type": "HTTP_ENTRY",
+      "cls": "com.jiuyan.banquet.controller.CategoryController",
+      "method": "create",
+      "simple": "CategoryController",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      },
+      "endpoint": ""
+    },
+    "com.jiuyan.banquet.controller.CategoryController#delete": {
+      "id": "com.jiuyan.banquet.controller.CategoryController#delete",
+      "type": "HTTP_ENTRY",
+      "cls": "com.jiuyan.banquet.controller.CategoryController",
+      "method": "delete",
+      "simple": "CategoryController",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      },
+      "endpoint": ""
+    },
+    "com.jiuyan.banquet.controller.HealthController#health": {
+      "id": "com.jiuyan.banquet.controller.HealthController#health",
+      "type": "HTTP_ENTRY",
+      "cls": "com.jiuyan.banquet.controller.HealthController",
+      "method": "health",
+      "simple": "HealthController",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      },
+      "endpoint": "GET /api/health"
+    },
+    "com.jiuyan.banquet.controller.OrderController#list": {
+      "id": "com.jiuyan.banquet.controller.OrderController#list",
+      "type": "HTTP_ENTRY",
+      "cls": "com.jiuyan.banquet.controller.OrderController",
+      "method": "list",
+      "simple": "OrderController",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      },
+      "endpoint": "GET /api/orders"
+    },
+    "com.jiuyan.banquet.controller.OrderController#get": {
+      "id": "com.jiuyan.banquet.controller.OrderController#get",
+      "type": "HTTP_ENTRY",
+      "cls": "com.jiuyan.banquet.controller.OrderController",
+      "method": "get",
+      "simple": "OrderController",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      },
+      "endpoint": "GET /api/orders/{id}"
+    },
+    "com.jiuyan.banquet.controller.OrderController#create": {
+      "id": "com.jiuyan.banquet.controller.OrderController#create",
+      "type": "HTTP_ENTRY",
+      "cls": "com.jiuyan.banquet.controller.OrderController",
+      "method": "create",
+      "simple": "OrderController",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      },
+      "endpoint": "POST /api/orders"
+    },
+    "com.jiuyan.banquet.controller.OrderController#update": {
+      "id": "com.jiuyan.banquet.controller.OrderController#update",
+      "type": "HTTP_ENTRY",
+      "cls": "com.jiuyan.banquet.controller.OrderController",
+      "method": "update",
+      "simple": "OrderController",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      },
+      "endpoint": "PUT /api/orders/{id}"
+    },
+    "com.jiuyan.banquet.controller.OrderController#updateStatus": {
+      "id": "com.jiuyan.banquet.controller.OrderController#updateStatus",
+      "type": "HTTP_ENTRY",
+      "cls": "com.jiuyan.banquet.controller.OrderController",
+      "method": "updateStatus",
+      "simple": "OrderController",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [
+          "com.jiuyan.banquet.dto.OrderStatusRequest.status"
+        ],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      },
+      "endpoint": "PATCH /api/orders/{id}/status"
+    },
+    "com.jiuyan.banquet.controller.PackageController#list": {
+      "id": "com.jiuyan.banquet.controller.PackageController#list",
+      "type": "HTTP_ENTRY",
+      "cls": "com.jiuyan.banquet.controller.PackageController",
+      "method": "list",
+      "simple": "PackageController",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      },
+      "endpoint": "GET /api/packages"
+    },
+    "com.jiuyan.banquet.controller.PackageController#get": {
+      "id": "com.jiuyan.banquet.controller.PackageController#get",
+      "type": "HTTP_ENTRY",
+      "cls": "com.jiuyan.banquet.controller.PackageController",
+      "method": "get",
+      "simple": "PackageController",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      },
+      "endpoint": "GET /api/packages/{id}"
+    },
+    "com.jiuyan.banquet.controller.PackageController#create": {
+      "id": "com.jiuyan.banquet.controller.PackageController#create",
+      "type": "HTTP_ENTRY",
+      "cls": "com.jiuyan.banquet.controller.PackageController",
+      "method": "create",
+      "simple": "PackageController",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      },
+      "endpoint": "POST /api/packages"
+    },
+    "com.jiuyan.banquet.controller.PackageController#update": {
+      "id": "com.jiuyan.banquet.controller.PackageController#update",
+      "type": "HTTP_ENTRY",
+      "cls": "com.jiuyan.banquet.controller.PackageController",
+      "method": "update",
+      "simple": "PackageController",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      },
+      "endpoint": "PUT /api/packages/{id}"
+    },
+    "com.jiuyan.banquet.controller.PackageController#updateStatus": {
+      "id": "com.jiuyan.banquet.controller.PackageController#updateStatus",
+      "type": "HTTP_ENTRY",
+      "cls": "com.jiuyan.banquet.controller.PackageController",
+      "method": "updateStatus",
+      "simple": "PackageController",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [
+          "com.jiuyan.banquet.dto.StatusRequest.isActive"
+        ],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      },
+      "endpoint": "PATCH /api/packages/{id}/status"
+    },
+    "com.jiuyan.banquet.controller.PackageController#delete": {
+      "id": "com.jiuyan.banquet.controller.PackageController#delete",
+      "type": "HTTP_ENTRY",
+      "cls": "com.jiuyan.banquet.controller.PackageController",
+      "method": "delete",
+      "simple": "PackageController",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      },
+      "endpoint": "DELETE /api/packages/{id}"
+    },
+    "com.jiuyan.banquet.controller.PackageTypeController#list": {
+      "id": "com.jiuyan.banquet.controller.PackageTypeController#list",
+      "type": "HTTP_ENTRY",
+      "cls": "com.jiuyan.banquet.controller.PackageTypeController",
+      "method": "list",
+      "simple": "PackageTypeController",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      },
+      "endpoint": ""
+    },
+    "com.jiuyan.banquet.controller.PackageTypeController#create": {
+      "id": "com.jiuyan.banquet.controller.PackageTypeController#create",
+      "type": "HTTP_ENTRY",
+      "cls": "com.jiuyan.banquet.controller.PackageTypeController",
+      "method": "create",
+      "simple": "PackageTypeController",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      },
+      "endpoint": ""
+    },
+    "com.jiuyan.banquet.controller.PackageTypeController#delete": {
+      "id": "com.jiuyan.banquet.controller.PackageTypeController#delete",
+      "type": "HTTP_ENTRY",
+      "cls": "com.jiuyan.banquet.controller.PackageTypeController",
+      "method": "delete",
+      "simple": "PackageTypeController",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      },
+      "endpoint": ""
+    },
+    "com.jiuyan.banquet.controller.ProductController#list": {
+      "id": "com.jiuyan.banquet.controller.ProductController#list",
+      "type": "HTTP_ENTRY",
+      "cls": "com.jiuyan.banquet.controller.ProductController",
+      "method": "list",
+      "simple": "ProductController",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      },
+      "endpoint": "GET /api/products"
+    },
+    "com.jiuyan.banquet.controller.ProductController#create": {
+      "id": "com.jiuyan.banquet.controller.ProductController#create",
+      "type": "HTTP_ENTRY",
+      "cls": "com.jiuyan.banquet.controller.ProductController",
+      "method": "create",
+      "simple": "ProductController",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      },
+      "endpoint": "POST /api/products"
+    },
+    "com.jiuyan.banquet.controller.ProductController#update": {
+      "id": "com.jiuyan.banquet.controller.ProductController#update",
+      "type": "HTTP_ENTRY",
+      "cls": "com.jiuyan.banquet.controller.ProductController",
+      "method": "update",
+      "simple": "ProductController",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      },
+      "endpoint": "PUT /api/products/{id}"
+    },
+    "com.jiuyan.banquet.controller.ProductController#updateStatus": {
+      "id": "com.jiuyan.banquet.controller.ProductController#updateStatus",
+      "type": "HTTP_ENTRY",
+      "cls": "com.jiuyan.banquet.controller.ProductController",
+      "method": "updateStatus",
+      "simple": "ProductController",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [
+          "com.jiuyan.banquet.dto.StatusRequest.isActive"
+        ],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      },
+      "endpoint": "PATCH /api/products/{id}/status"
+    },
+    "com.jiuyan.banquet.controller.ProductController#delete": {
+      "id": "com.jiuyan.banquet.controller.ProductController#delete",
+      "type": "HTTP_ENTRY",
+      "cls": "com.jiuyan.banquet.controller.ProductController",
+      "method": "delete",
+      "simple": "ProductController",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      },
+      "endpoint": "DELETE /api/products/{id}"
+    },
+    "com.jiuyan.banquet.controller.UploadController#uploadProductImage": {
+      "id": "com.jiuyan.banquet.controller.UploadController#uploadProductImage",
+      "type": "HTTP_ENTRY",
+      "cls": "com.jiuyan.banquet.controller.UploadController",
+      "method": "uploadProductImage",
+      "simple": "UploadController",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      },
+      "endpoint": "POST /api/uploads/product-image"
+    },
+    "com.jiuyan.banquet.controller.UploadController#uploadPackageImage": {
+      "id": "com.jiuyan.banquet.controller.UploadController#uploadPackageImage",
+      "type": "HTTP_ENTRY",
+      "cls": "com.jiuyan.banquet.controller.UploadController",
+      "method": "uploadPackageImage",
+      "simple": "UploadController",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      },
+      "endpoint": "POST /api/uploads/package-image"
+    },
+    "com.jiuyan.banquet.repository.BanquetPackageRepository#findByIdAndIsDeletedFalse": {
+      "id": "com.jiuyan.banquet.repository.BanquetPackageRepository#findByIdAndIsDeletedFalse",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.BanquetPackageRepository",
+      "method": "findByIdAndIsDeletedFalse",
+      "simple": "BanquetPackageRepository",
+      "file": "",
+      "modifiers": "public abstract",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.BanquetPackageRepository#existsByBanquetTypeAndIsDeletedFalse": {
+      "id": "com.jiuyan.banquet.repository.BanquetPackageRepository#existsByBanquetTypeAndIsDeletedFalse",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.BanquetPackageRepository",
+      "method": "existsByBanquetTypeAndIsDeletedFalse",
+      "simple": "BanquetPackageRepository",
+      "file": "",
+      "modifiers": "public abstract",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.CategoryRepository#findByName": {
+      "id": "com.jiuyan.banquet.repository.CategoryRepository#findByName",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.CategoryRepository",
+      "method": "findByName",
+      "simple": "CategoryRepository",
+      "file": "",
+      "modifiers": "public abstract",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.CategoryRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc": {
+      "id": "com.jiuyan.banquet.repository.CategoryRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.CategoryRepository",
+      "method": "findAllByIsDeletedFalseOrderBySortOrderAscIdAsc",
+      "simple": "CategoryRepository",
+      "file": "",
+      "modifiers": "public abstract",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.CategoryRepository#findMaxSortOrder": {
+      "id": "com.jiuyan.banquet.repository.CategoryRepository#findMaxSortOrder",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.CategoryRepository",
+      "method": "findMaxSortOrder",
+      "simple": "CategoryRepository",
+      "file": "",
+      "modifiers": "public abstract",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.OrderRepository#existsByOrderNo": {
+      "id": "com.jiuyan.banquet.repository.OrderRepository#existsByOrderNo",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.OrderRepository",
+      "method": "existsByOrderNo",
+      "simple": "OrderRepository",
+      "file": "",
+      "modifiers": "public abstract",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.OrderRepository#findByOrderNo": {
+      "id": "com.jiuyan.banquet.repository.OrderRepository#findByOrderNo",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.OrderRepository",
+      "method": "findByOrderNo",
+      "simple": "OrderRepository",
+      "file": "",
+      "modifiers": "public abstract",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.PackageItemRepository#existsByProductId": {
+      "id": "com.jiuyan.banquet.repository.PackageItemRepository#existsByProductId",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.PackageItemRepository",
+      "method": "existsByProductId",
+      "simple": "PackageItemRepository",
+      "file": "",
+      "modifiers": "public abstract",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.PackageItemRepository#existsNonDeletedPackageReferenceByProductId": {
+      "id": "com.jiuyan.banquet.repository.PackageItemRepository#existsNonDeletedPackageReferenceByProductId",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.PackageItemRepository",
+      "method": "existsNonDeletedPackageReferenceByProductId",
+      "simple": "PackageItemRepository",
+      "file": "",
+      "modifiers": "public abstract",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.PackageItemRepository#findByBanquetPackageId": {
+      "id": "com.jiuyan.banquet.repository.PackageItemRepository#findByBanquetPackageId",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.PackageItemRepository",
+      "method": "findByBanquetPackageId",
+      "simple": "PackageItemRepository",
+      "file": "",
+      "modifiers": "public abstract",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.PackageItemRepository#deleteByBanquetPackageId": {
+      "id": "com.jiuyan.banquet.repository.PackageItemRepository#deleteByBanquetPackageId",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.PackageItemRepository",
+      "method": "deleteByBanquetPackageId",
+      "simple": "PackageItemRepository",
+      "file": "",
+      "modifiers": "public abstract",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.PackageTypeRepository#findByName": {
+      "id": "com.jiuyan.banquet.repository.PackageTypeRepository#findByName",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.PackageTypeRepository",
+      "method": "findByName",
+      "simple": "PackageTypeRepository",
+      "file": "",
+      "modifiers": "public abstract",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.PackageTypeRepository#findByNameAndIsDeletedFalse": {
+      "id": "com.jiuyan.banquet.repository.PackageTypeRepository#findByNameAndIsDeletedFalse",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.PackageTypeRepository",
+      "method": "findByNameAndIsDeletedFalse",
+      "simple": "PackageTypeRepository",
+      "file": "",
+      "modifiers": "public abstract",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.PackageTypeRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc": {
+      "id": "com.jiuyan.banquet.repository.PackageTypeRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.PackageTypeRepository",
+      "method": "findAllByIsDeletedFalseOrderBySortOrderAscIdAsc",
+      "simple": "PackageTypeRepository",
+      "file": "",
+      "modifiers": "public abstract",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.PackageTypeRepository#findMaxSortOrder": {
+      "id": "com.jiuyan.banquet.repository.PackageTypeRepository#findMaxSortOrder",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.PackageTypeRepository",
+      "method": "findMaxSortOrder",
+      "simple": "PackageTypeRepository",
+      "file": "",
+      "modifiers": "public abstract",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.ProductRepository#findByIdAndIsDeletedFalse": {
+      "id": "com.jiuyan.banquet.repository.ProductRepository#findByIdAndIsDeletedFalse",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.ProductRepository",
+      "method": "findByIdAndIsDeletedFalse",
+      "simple": "ProductRepository",
+      "file": "",
+      "modifiers": "public abstract",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.ProductRepository#existsByCategoryIdAndIsDeletedFalse": {
+      "id": "com.jiuyan.banquet.repository.ProductRepository#existsByCategoryIdAndIsDeletedFalse",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.ProductRepository",
+      "method": "existsByCategoryIdAndIsDeletedFalse",
+      "simple": "ProductRepository",
+      "file": "",
+      "modifiers": "public abstract",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.CategoryService#list": {
+      "id": "com.jiuyan.banquet.service.CategoryService#list",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.CategoryService",
+      "method": "list",
+      "simple": "CategoryService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": true,
+        "branches": 0,
+        "side_effects": [
+          "com.jiuyan.banquet.repository.CategoryRepository.findAllByIsDeletedFalseOrderBySortOrderAscIdAsc"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.CategoryService#create": {
+      "id": "com.jiuyan.banquet.service.CategoryService#create",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.CategoryService",
+      "method": "create",
+      "simple": "CategoryService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [
+          "com.jiuyan.banquet.dto.CreateCategoryRequest.name"
+        ],
+        "sinks": [
+          "com.jiuyan.banquet.entity.Category.setIsDeleted"
+        ],
+        "guard": false,
+        "persist": true,
+        "branches": 2,
+        "side_effects": [
+          "com.jiuyan.banquet.mapper.CategoryMapper.toResponse",
+          "com.jiuyan.banquet.repository.CategoryRepository.findByName",
+          "com.jiuyan.banquet.repository.CategoryRepository.save"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.CategoryService#delete": {
+      "id": "com.jiuyan.banquet.service.CategoryService#delete",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.CategoryService",
+      "method": "delete",
+      "simple": "CategoryService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [
+          "com.jiuyan.banquet.entity.Category.setIsDeleted"
+        ],
+        "guard": false,
+        "persist": true,
+        "branches": 2,
+        "side_effects": [
+          "com.jiuyan.banquet.mapper.CategoryMapper.toResponse",
+          "com.jiuyan.banquet.repository.CategoryRepository.findById",
+          "com.jiuyan.banquet.repository.CategoryRepository.save",
+          "com.jiuyan.banquet.repository.ProductRepository.existsByCategoryIdAndIsDeletedFalse"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.CategoryService#lambda$delete$1": {
+      "id": "com.jiuyan.banquet.service.CategoryService#lambda$delete$1",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.CategoryService",
+      "method": "lambda$delete$1",
+      "simple": "CategoryService",
+      "file": "",
+      "modifiers": "private static",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.CategoryService#lambda$create$0": {
+      "id": "com.jiuyan.banquet.service.CategoryService#lambda$create$0",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.CategoryService",
+      "method": "lambda$create$0",
+      "simple": "CategoryService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [
+          "com.jiuyan.banquet.entity.Category.setName",
+          "com.jiuyan.banquet.entity.Category.setSortOrder"
+        ],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [
+          "com.jiuyan.banquet.repository.CategoryRepository.findMaxSortOrder"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#list": {
+      "id": "com.jiuyan.banquet.service.OrderService#list",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "list",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [
+          "com.jiuyan.banquet.repository.OrderRepository.findAll"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#get": {
+      "id": "com.jiuyan.banquet.service.OrderService#get",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "get",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [
+          "com.jiuyan.banquet.mapper.OrderMapper.toResponse"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#create": {
+      "id": "com.jiuyan.banquet.service.OrderService#create",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "create",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [
+          "com.jiuyan.banquet.dto.CreateOrderRequest.addedItems",
+          "com.jiuyan.banquet.dto.CreateOrderRequest.address",
+          "com.jiuyan.banquet.dto.CreateOrderRequest.banquetName",
+          "com.jiuyan.banquet.dto.CreateOrderRequest.banquetType",
+          "com.jiuyan.banquet.dto.CreateOrderRequest.customerName",
+          "com.jiuyan.banquet.dto.CreateOrderRequest.customerPhone",
+          "com.jiuyan.banquet.dto.CreateOrderRequest.depositCent",
+          "com.jiuyan.banquet.dto.CreateOrderRequest.finalPriceCent",
+          "com.jiuyan.banquet.dto.CreateOrderRequest.packageId",
+          "com.jiuyan.banquet.dto.CreateOrderRequest.packageItems",
+          "com.jiuyan.banquet.dto.CreateOrderRequest.planTotalCent",
+          "com.jiuyan.banquet.dto.CreateOrderRequest.remark",
+          "com.jiuyan.banquet.dto.CreateOrderRequest.reservationTime",
+          "com.jiuyan.banquet.dto.CreateOrderRequest.status",
+          "com.jiuyan.banquet.dto.CreateOrderRequest.tableCount",
+          "com.jiuyan.banquet.dto.CreateOrderRequest.useFinalPrice"
+        ],
+        "sinks": [
+          "com.jiuyan.banquet.entity.BanquetOrder.setOrderNo"
+        ],
+        "guard": false,
+        "persist": true,
+        "branches": 0,
+        "side_effects": [
+          "com.jiuyan.banquet.mapper.OrderMapper.toResponse",
+          "com.jiuyan.banquet.repository.OrderRepository.save"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#update": {
+      "id": "com.jiuyan.banquet.service.OrderService#update",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "update",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [
+          "com.jiuyan.banquet.dto.UpdateOrderRequest.addedItems",
+          "com.jiuyan.banquet.dto.UpdateOrderRequest.address",
+          "com.jiuyan.banquet.dto.UpdateOrderRequest.banquetName",
+          "com.jiuyan.banquet.dto.UpdateOrderRequest.banquetType",
+          "com.jiuyan.banquet.dto.UpdateOrderRequest.customerName",
+          "com.jiuyan.banquet.dto.UpdateOrderRequest.customerPhone",
+          "com.jiuyan.banquet.dto.UpdateOrderRequest.depositCent",
+          "com.jiuyan.banquet.dto.UpdateOrderRequest.finalPriceCent",
+          "com.jiuyan.banquet.dto.UpdateOrderRequest.packageId",
+          "com.jiuyan.banquet.dto.UpdateOrderRequest.packageItems",
+          "com.jiuyan.banquet.dto.UpdateOrderRequest.planTotalCent",
+          "com.jiuyan.banquet.dto.UpdateOrderRequest.remark",
+          "com.jiuyan.banquet.dto.UpdateOrderRequest.reservationTime",
+          "com.jiuyan.banquet.dto.UpdateOrderRequest.status",
+          "com.jiuyan.banquet.dto.UpdateOrderRequest.tableCount",
+          "com.jiuyan.banquet.dto.UpdateOrderRequest.useFinalPrice"
+        ],
+        "sinks": [],
+        "guard": false,
+        "persist": true,
+        "branches": 0,
+        "side_effects": [
+          "com.jiuyan.banquet.mapper.OrderMapper.toResponse",
+          "com.jiuyan.banquet.repository.OrderRepository.save"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#updateStatus": {
+      "id": "com.jiuyan.banquet.service.OrderService#updateStatus",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "updateStatus",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [
+          "com.jiuyan.banquet.entity.BanquetOrder.setStatus"
+        ],
+        "guard": false,
+        "persist": true,
+        "branches": 0,
+        "side_effects": [
+          "com.jiuyan.banquet.mapper.OrderMapper.toResponse",
+          "com.jiuyan.banquet.repository.OrderRepository.save"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#apply": {
+      "id": "com.jiuyan.banquet.service.OrderService#apply",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "apply",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [
+          "com.jiuyan.banquet.entity.BanquetOrder.setAddedItemsSnapshot",
+          "com.jiuyan.banquet.entity.BanquetOrder.setAddress",
+          "com.jiuyan.banquet.entity.BanquetOrder.setBanquetName",
+          "com.jiuyan.banquet.entity.BanquetOrder.setBanquetPackage",
+          "com.jiuyan.banquet.entity.BanquetOrder.setBanquetType",
+          "com.jiuyan.banquet.entity.BanquetOrder.setCustomerName",
+          "com.jiuyan.banquet.entity.BanquetOrder.setCustomerPhone",
+          "com.jiuyan.banquet.entity.BanquetOrder.setDepositCent",
+          "com.jiuyan.banquet.entity.BanquetOrder.setFinalPriceCent",
+          "com.jiuyan.banquet.entity.BanquetOrder.setPackageSnapshot",
+          "com.jiuyan.banquet.entity.BanquetOrder.setPlanTotalCent",
+          "com.jiuyan.banquet.entity.BanquetOrder.setRemark",
+          "com.jiuyan.banquet.entity.BanquetOrder.setReservationTime",
+          "com.jiuyan.banquet.entity.BanquetOrder.setStatus",
+          "com.jiuyan.banquet.entity.BanquetOrder.setTableCount",
+          "com.jiuyan.banquet.entity.BanquetOrder.setUseFinalPrice"
+        ],
+        "guard": false,
+        "persist": true,
+        "branches": 10,
+        "side_effects": [
+          "com.jiuyan.banquet.repository.BanquetPackageRepository.findByIdAndIsDeletedFalse"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#resolveFinalPrice": {
+      "id": "com.jiuyan.banquet.service.OrderService#resolveFinalPrice",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "resolveFinalPrice",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 3,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#buildPackageSnapshot": {
+      "id": "com.jiuyan.banquet.service.OrderService#buildPackageSnapshot",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "buildPackageSnapshot",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 6,
+        "side_effects": [
+          "com.fasterxml.jackson.databind.ObjectMapper.createArrayNode",
+          "com.fasterxml.jackson.databind.ObjectMapper.createObjectNode"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#buildAddedItemsSnapshot": {
+      "id": "com.jiuyan.banquet.service.OrderService#buildAddedItemsSnapshot",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "buildAddedItemsSnapshot",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 4,
+        "side_effects": [
+          "com.fasterxml.jackson.databind.ObjectMapper.createArrayNode"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#packageItemSnapshot": {
+      "id": "com.jiuyan.banquet.service.OrderService#packageItemSnapshot",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "packageItemSnapshot",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#productSnapshot": {
+      "id": "com.jiuyan.banquet.service.OrderService#productSnapshot",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "productSnapshot",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [
+          "com.fasterxml.jackson.databind.ObjectMapper.createObjectNode"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#normalizePackageItems": {
+      "id": "com.jiuyan.banquet.service.OrderService#normalizePackageItems",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "normalizePackageItems",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [
+          "com.jiuyan.banquet.dto.PackageItemRequest.productId",
+          "com.jiuyan.banquet.dto.PackageItemRequest.quantity"
+        ],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 3,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#normalizeAddedItems": {
+      "id": "com.jiuyan.banquet.service.OrderService#normalizeAddedItems",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "normalizeAddedItems",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [
+          "com.jiuyan.banquet.dto.AddedItemRequest.productId",
+          "com.jiuyan.banquet.dto.AddedItemRequest.quantity"
+        ],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 3,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#findProduct": {
+      "id": "com.jiuyan.banquet.service.OrderService#findProduct",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "findProduct",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": true,
+        "branches": 0,
+        "side_effects": [
+          "com.jiuyan.banquet.repository.ProductRepository.findByIdAndIsDeletedFalse"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#findOrder": {
+      "id": "com.jiuyan.banquet.service.OrderService#findOrder",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "findOrder",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [
+          "com.jiuyan.banquet.repository.OrderRepository.findById"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#generateOrderNo": {
+      "id": "com.jiuyan.banquet.service.OrderService#generateOrderNo",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "generateOrderNo",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 3,
+        "side_effects": [
+          "com.jiuyan.banquet.repository.OrderRepository.existsByOrderNo"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#parseStatus": {
+      "id": "com.jiuyan.banquet.service.OrderService#parseStatus",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "parseStatus",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": true,
+        "persist": false,
+        "branches": 1,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#parseDateScope": {
+      "id": "com.jiuyan.banquet.service.OrderService#parseDateScope",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "parseDateScope",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 11,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#orderSpec": {
+      "id": "com.jiuyan.banquet.service.OrderService#orderSpec",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "orderSpec",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#normalizePage": {
+      "id": "com.jiuyan.banquet.service.OrderService#normalizePage",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "normalizePage",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#normalizePageSize": {
+      "id": "com.jiuyan.banquet.service.OrderService#normalizePageSize",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "normalizePageSize",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#$deserializeLambda$": {
+      "id": "com.jiuyan.banquet.service.OrderService#$deserializeLambda$",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "$deserializeLambda$",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "private static",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 9,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#lambda$orderSpec$6158dec4$1": {
+      "id": "com.jiuyan.banquet.service.OrderService#lambda$orderSpec$6158dec4$1",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "lambda$orderSpec$6158dec4$1",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "private static",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 3,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#lambda$findOrder$3": {
+      "id": "com.jiuyan.banquet.service.OrderService#lambda$findOrder$3",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "lambda$findOrder$3",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "private static",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#lambda$findProduct$2": {
+      "id": "com.jiuyan.banquet.service.OrderService#lambda$findProduct$2",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "lambda$findProduct$2",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "private static",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#lambda$buildPackageSnapshot$1": {
+      "id": "com.jiuyan.banquet.service.OrderService#lambda$buildPackageSnapshot$1",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "lambda$buildPackageSnapshot$1",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "private static",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.OrderService#lambda$apply$0": {
+      "id": "com.jiuyan.banquet.service.OrderService#lambda$apply$0",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.OrderService",
+      "method": "lambda$apply$0",
+      "simple": "OrderService",
+      "file": "",
+      "modifiers": "private static",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageService#list": {
+      "id": "com.jiuyan.banquet.service.PackageService#list",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageService",
+      "method": "list",
+      "simple": "PackageService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [
+          "com.jiuyan.banquet.repository.BanquetPackageRepository.findAll"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageService#get": {
+      "id": "com.jiuyan.banquet.service.PackageService#get",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageService",
+      "method": "get",
+      "simple": "PackageService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [
+          "com.jiuyan.banquet.mapper.PackageMapper.toResponse"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageService#create": {
+      "id": "com.jiuyan.banquet.service.PackageService#create",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageService",
+      "method": "create",
+      "simple": "PackageService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [
+          "com.jiuyan.banquet.dto.CreatePackageRequest.banquetType",
+          "com.jiuyan.banquet.dto.CreatePackageRequest.description",
+          "com.jiuyan.banquet.dto.CreatePackageRequest.imageUrl",
+          "com.jiuyan.banquet.dto.CreatePackageRequest.isActive",
+          "com.jiuyan.banquet.dto.CreatePackageRequest.items",
+          "com.jiuyan.banquet.dto.CreatePackageRequest.name",
+          "com.jiuyan.banquet.dto.CreatePackageRequest.priceCent"
+        ],
+        "sinks": [],
+        "guard": false,
+        "persist": true,
+        "branches": 0,
+        "side_effects": [
+          "com.jiuyan.banquet.mapper.PackageMapper.toResponse",
+          "com.jiuyan.banquet.repository.BanquetPackageRepository.save"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageService#update": {
+      "id": "com.jiuyan.banquet.service.PackageService#update",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageService",
+      "method": "update",
+      "simple": "PackageService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [
+          "com.jiuyan.banquet.dto.UpdatePackageRequest.banquetType",
+          "com.jiuyan.banquet.dto.UpdatePackageRequest.description",
+          "com.jiuyan.banquet.dto.UpdatePackageRequest.imageUrl",
+          "com.jiuyan.banquet.dto.UpdatePackageRequest.isActive",
+          "com.jiuyan.banquet.dto.UpdatePackageRequest.items",
+          "com.jiuyan.banquet.dto.UpdatePackageRequest.name",
+          "com.jiuyan.banquet.dto.UpdatePackageRequest.priceCent"
+        ],
+        "sinks": [],
+        "guard": false,
+        "persist": true,
+        "branches": 0,
+        "side_effects": [
+          "com.jiuyan.banquet.mapper.PackageMapper.toResponse",
+          "com.jiuyan.banquet.repository.BanquetPackageRepository.save"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageService#updateStatus": {
+      "id": "com.jiuyan.banquet.service.PackageService#updateStatus",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageService",
+      "method": "updateStatus",
+      "simple": "PackageService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [
+          "com.jiuyan.banquet.entity.BanquetPackage.setIsActive"
+        ],
+        "guard": false,
+        "persist": true,
+        "branches": 0,
+        "side_effects": [
+          "com.jiuyan.banquet.mapper.PackageMapper.toResponse",
+          "com.jiuyan.banquet.repository.BanquetPackageRepository.save"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageService#delete": {
+      "id": "com.jiuyan.banquet.service.PackageService#delete",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageService",
+      "method": "delete",
+      "simple": "PackageService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [
+          "com.jiuyan.banquet.entity.BanquetPackage.setIsActive",
+          "com.jiuyan.banquet.entity.BanquetPackage.setIsDeleted"
+        ],
+        "guard": false,
+        "persist": true,
+        "branches": 0,
+        "side_effects": [
+          "com.jiuyan.banquet.mapper.PackageMapper.toResponse",
+          "com.jiuyan.banquet.repository.BanquetPackageRepository.save"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageService#findPackage": {
+      "id": "com.jiuyan.banquet.service.PackageService#findPackage",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageService",
+      "method": "findPackage",
+      "simple": "PackageService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": true,
+        "branches": 0,
+        "side_effects": [
+          "com.jiuyan.banquet.repository.BanquetPackageRepository.findByIdAndIsDeletedFalse"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageService#applyBase": {
+      "id": "com.jiuyan.banquet.service.PackageService#applyBase",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageService",
+      "method": "applyBase",
+      "simple": "PackageService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [
+          "com.jiuyan.banquet.entity.BanquetPackage.setBanquetType",
+          "com.jiuyan.banquet.entity.BanquetPackage.setDescription",
+          "com.jiuyan.banquet.entity.BanquetPackage.setImageUrl",
+          "com.jiuyan.banquet.entity.BanquetPackage.setIsActive",
+          "com.jiuyan.banquet.entity.BanquetPackage.setName",
+          "com.jiuyan.banquet.entity.BanquetPackage.setPriceCent"
+        ],
+        "guard": false,
+        "persist": true,
+        "branches": 8,
+        "side_effects": [
+          "com.jiuyan.banquet.repository.PackageTypeRepository.findByNameAndIsDeletedFalse"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageService#applyItems": {
+      "id": "com.jiuyan.banquet.service.PackageService#applyItems",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageService",
+      "method": "applyItems",
+      "simple": "PackageService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [
+          "com.jiuyan.banquet.entity.PackageItem.setBanquetPackage",
+          "com.jiuyan.banquet.entity.PackageItem.setProduct",
+          "com.jiuyan.banquet.entity.PackageItem.setQuantity"
+        ],
+        "guard": false,
+        "persist": false,
+        "branches": 5,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageService#normalizeItems": {
+      "id": "com.jiuyan.banquet.service.PackageService#normalizeItems",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageService",
+      "method": "normalizeItems",
+      "simple": "PackageService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [
+          "com.jiuyan.banquet.dto.PackageItemRequest.productId",
+          "com.jiuyan.banquet.dto.PackageItemRequest.quantity"
+        ],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 3,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageService#findProduct": {
+      "id": "com.jiuyan.banquet.service.PackageService#findProduct",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageService",
+      "method": "findProduct",
+      "simple": "PackageService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": true,
+        "branches": 0,
+        "side_effects": [
+          "com.jiuyan.banquet.repository.ProductRepository.findByIdAndIsDeletedFalse"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageService#packageSpec": {
+      "id": "com.jiuyan.banquet.service.PackageService#packageSpec",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageService",
+      "method": "packageSpec",
+      "simple": "PackageService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageService#normalizePage": {
+      "id": "com.jiuyan.banquet.service.PackageService#normalizePage",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageService",
+      "method": "normalizePage",
+      "simple": "PackageService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageService#normalizePageSize": {
+      "id": "com.jiuyan.banquet.service.PackageService#normalizePageSize",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageService",
+      "method": "normalizePageSize",
+      "simple": "PackageService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageService#$deserializeLambda$": {
+      "id": "com.jiuyan.banquet.service.PackageService#$deserializeLambda$",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageService",
+      "method": "$deserializeLambda$",
+      "simple": "PackageService",
+      "file": "",
+      "modifiers": "private static",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 9,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageService#lambda$packageSpec$cdf9b199$1": {
+      "id": "com.jiuyan.banquet.service.PackageService#lambda$packageSpec$cdf9b199$1",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageService",
+      "method": "lambda$packageSpec$cdf9b199$1",
+      "simple": "PackageService",
+      "file": "",
+      "modifiers": "private static",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 3,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageService#lambda$findProduct$4": {
+      "id": "com.jiuyan.banquet.service.PackageService#lambda$findProduct$4",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageService",
+      "method": "lambda$findProduct$4",
+      "simple": "PackageService",
+      "file": "",
+      "modifiers": "private static",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageService#lambda$applyItems$3": {
+      "id": "com.jiuyan.banquet.service.PackageService#lambda$applyItems$3",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageService",
+      "method": "lambda$applyItems$3",
+      "simple": "PackageService",
+      "file": "",
+      "modifiers": "private static",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 2,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageService#lambda$applyItems$2": {
+      "id": "com.jiuyan.banquet.service.PackageService#lambda$applyItems$2",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageService",
+      "method": "lambda$applyItems$2",
+      "simple": "PackageService",
+      "file": "",
+      "modifiers": "private static",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageService#lambda$applyBase$1": {
+      "id": "com.jiuyan.banquet.service.PackageService#lambda$applyBase$1",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageService",
+      "method": "lambda$applyBase$1",
+      "simple": "PackageService",
+      "file": "",
+      "modifiers": "private static",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageService#lambda$findPackage$0": {
+      "id": "com.jiuyan.banquet.service.PackageService#lambda$findPackage$0",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageService",
+      "method": "lambda$findPackage$0",
+      "simple": "PackageService",
+      "file": "",
+      "modifiers": "private static",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageTypeService#list": {
+      "id": "com.jiuyan.banquet.service.PackageTypeService#list",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageTypeService",
+      "method": "list",
+      "simple": "PackageTypeService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": true,
+        "branches": 0,
+        "side_effects": [
+          "com.jiuyan.banquet.repository.PackageTypeRepository.findAllByIsDeletedFalseOrderBySortOrderAscIdAsc"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageTypeService#create": {
+      "id": "com.jiuyan.banquet.service.PackageTypeService#create",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageTypeService",
+      "method": "create",
+      "simple": "PackageTypeService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [
+          "com.jiuyan.banquet.dto.CreatePackageTypeRequest.name"
+        ],
+        "sinks": [
+          "com.jiuyan.banquet.entity.PackageType.setIsDeleted"
+        ],
+        "guard": false,
+        "persist": true,
+        "branches": 2,
+        "side_effects": [
+          "com.jiuyan.banquet.mapper.PackageTypeMapper.toResponse",
+          "com.jiuyan.banquet.repository.PackageTypeRepository.findByName",
+          "com.jiuyan.banquet.repository.PackageTypeRepository.save"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageTypeService#delete": {
+      "id": "com.jiuyan.banquet.service.PackageTypeService#delete",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageTypeService",
+      "method": "delete",
+      "simple": "PackageTypeService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [
+          "com.jiuyan.banquet.entity.PackageType.setIsDeleted"
+        ],
+        "guard": false,
+        "persist": true,
+        "branches": 2,
+        "side_effects": [
+          "com.jiuyan.banquet.mapper.PackageTypeMapper.toResponse",
+          "com.jiuyan.banquet.repository.BanquetPackageRepository.existsByBanquetTypeAndIsDeletedFalse",
+          "com.jiuyan.banquet.repository.PackageTypeRepository.findById",
+          "com.jiuyan.banquet.repository.PackageTypeRepository.save"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageTypeService#lambda$delete$1": {
+      "id": "com.jiuyan.banquet.service.PackageTypeService#lambda$delete$1",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageTypeService",
+      "method": "lambda$delete$1",
+      "simple": "PackageTypeService",
+      "file": "",
+      "modifiers": "private static",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.PackageTypeService#lambda$create$0": {
+      "id": "com.jiuyan.banquet.service.PackageTypeService#lambda$create$0",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.PackageTypeService",
+      "method": "lambda$create$0",
+      "simple": "PackageTypeService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [
+          "com.jiuyan.banquet.entity.PackageType.setName",
+          "com.jiuyan.banquet.entity.PackageType.setSortOrder"
+        ],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [
+          "com.jiuyan.banquet.repository.PackageTypeRepository.findMaxSortOrder"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.ProductService#list": {
+      "id": "com.jiuyan.banquet.service.ProductService#list",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.ProductService",
+      "method": "list",
+      "simple": "ProductService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [
+          "com.jiuyan.banquet.repository.ProductRepository.findAll"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.ProductService#create": {
+      "id": "com.jiuyan.banquet.service.ProductService#create",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.ProductService",
+      "method": "create",
+      "simple": "ProductService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [
+          "com.jiuyan.banquet.dto.CreateProductRequest.categoryId",
+          "com.jiuyan.banquet.dto.CreateProductRequest.description",
+          "com.jiuyan.banquet.dto.CreateProductRequest.imageUrl",
+          "com.jiuyan.banquet.dto.CreateProductRequest.isActive",
+          "com.jiuyan.banquet.dto.CreateProductRequest.name",
+          "com.jiuyan.banquet.dto.CreateProductRequest.priceCent",
+          "com.jiuyan.banquet.dto.CreateProductRequest.unit"
+        ],
+        "sinks": [],
+        "guard": false,
+        "persist": true,
+        "branches": 0,
+        "side_effects": [
+          "com.jiuyan.banquet.mapper.ProductMapper.toResponse",
+          "com.jiuyan.banquet.repository.ProductRepository.save"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.ProductService#update": {
+      "id": "com.jiuyan.banquet.service.ProductService#update",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.ProductService",
+      "method": "update",
+      "simple": "ProductService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [
+          "com.jiuyan.banquet.dto.UpdateProductRequest.categoryId",
+          "com.jiuyan.banquet.dto.UpdateProductRequest.description",
+          "com.jiuyan.banquet.dto.UpdateProductRequest.imageUrl",
+          "com.jiuyan.banquet.dto.UpdateProductRequest.isActive",
+          "com.jiuyan.banquet.dto.UpdateProductRequest.name",
+          "com.jiuyan.banquet.dto.UpdateProductRequest.priceCent",
+          "com.jiuyan.banquet.dto.UpdateProductRequest.unit"
+        ],
+        "sinks": [],
+        "guard": false,
+        "persist": true,
+        "branches": 0,
+        "side_effects": [
+          "com.jiuyan.banquet.mapper.ProductMapper.toResponse",
+          "com.jiuyan.banquet.repository.ProductRepository.save"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.ProductService#updateStatus": {
+      "id": "com.jiuyan.banquet.service.ProductService#updateStatus",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.ProductService",
+      "method": "updateStatus",
+      "simple": "ProductService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [
+          "com.jiuyan.banquet.entity.Product.setIsActive"
+        ],
+        "guard": false,
+        "persist": true,
+        "branches": 2,
+        "side_effects": [
+          "com.jiuyan.banquet.mapper.ProductMapper.toResponse",
+          "com.jiuyan.banquet.repository.PackageItemRepository.existsByProductId",
+          "com.jiuyan.banquet.repository.ProductRepository.save"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.ProductService#delete": {
+      "id": "com.jiuyan.banquet.service.ProductService#delete",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.ProductService",
+      "method": "delete",
+      "simple": "ProductService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [
+          "com.jiuyan.banquet.entity.Product.setIsActive",
+          "com.jiuyan.banquet.entity.Product.setIsDeleted"
+        ],
+        "guard": false,
+        "persist": true,
+        "branches": 1,
+        "side_effects": [
+          "com.jiuyan.banquet.mapper.ProductMapper.toResponse",
+          "com.jiuyan.banquet.repository.PackageItemRepository.existsNonDeletedPackageReferenceByProductId",
+          "com.jiuyan.banquet.repository.ProductRepository.save"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.ProductService#findProduct": {
+      "id": "com.jiuyan.banquet.service.ProductService#findProduct",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.ProductService",
+      "method": "findProduct",
+      "simple": "ProductService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": true,
+        "branches": 0,
+        "side_effects": [
+          "com.jiuyan.banquet.repository.ProductRepository.findByIdAndIsDeletedFalse"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.ProductService#findCategory": {
+      "id": "com.jiuyan.banquet.service.ProductService#findCategory",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.ProductService",
+      "method": "findCategory",
+      "simple": "ProductService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [
+          "com.jiuyan.banquet.repository.CategoryRepository.findById"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.ProductService#apply": {
+      "id": "com.jiuyan.banquet.service.ProductService#apply",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.ProductService",
+      "method": "apply",
+      "simple": "ProductService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [
+          "com.jiuyan.banquet.entity.Product.setCategory",
+          "com.jiuyan.banquet.entity.Product.setDescription",
+          "com.jiuyan.banquet.entity.Product.setImageUrl",
+          "com.jiuyan.banquet.entity.Product.setIsActive",
+          "com.jiuyan.banquet.entity.Product.setName",
+          "com.jiuyan.banquet.entity.Product.setPriceCent",
+          "com.jiuyan.banquet.entity.Product.setUnit"
+        ],
+        "guard": false,
+        "persist": false,
+        "branches": 8,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.ProductService#productSpec": {
+      "id": "com.jiuyan.banquet.service.ProductService#productSpec",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.ProductService",
+      "method": "productSpec",
+      "simple": "ProductService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.ProductService#normalizePage": {
+      "id": "com.jiuyan.banquet.service.ProductService#normalizePage",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.ProductService",
+      "method": "normalizePage",
+      "simple": "ProductService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.ProductService#normalizePageSize": {
+      "id": "com.jiuyan.banquet.service.ProductService#normalizePageSize",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.ProductService",
+      "method": "normalizePageSize",
+      "simple": "ProductService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.ProductService#$deserializeLambda$": {
+      "id": "com.jiuyan.banquet.service.ProductService#$deserializeLambda$",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.ProductService",
+      "method": "$deserializeLambda$",
+      "simple": "ProductService",
+      "file": "",
+      "modifiers": "private static",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 9,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.ProductService#lambda$productSpec$d619ff4b$1": {
+      "id": "com.jiuyan.banquet.service.ProductService#lambda$productSpec$d619ff4b$1",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.ProductService",
+      "method": "lambda$productSpec$d619ff4b$1",
+      "simple": "ProductService",
+      "file": "",
+      "modifiers": "private static",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 5,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.ProductService#lambda$findCategory$1": {
+      "id": "com.jiuyan.banquet.service.ProductService#lambda$findCategory$1",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.ProductService",
+      "method": "lambda$findCategory$1",
+      "simple": "ProductService",
+      "file": "",
+      "modifiers": "private static",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.ProductService#lambda$findProduct$0": {
+      "id": "com.jiuyan.banquet.service.ProductService#lambda$findProduct$0",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.ProductService",
+      "method": "lambda$findProduct$0",
+      "simple": "ProductService",
+      "file": "",
+      "modifiers": "private static",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.UploadService#uploadProductImage": {
+      "id": "com.jiuyan.banquet.service.UploadService#uploadProductImage",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.UploadService",
+      "method": "uploadProductImage",
+      "simple": "UploadService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.UploadService#uploadPackageImage": {
+      "id": "com.jiuyan.banquet.service.UploadService#uploadPackageImage",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.UploadService",
+      "method": "uploadPackageImage",
+      "simple": "UploadService",
+      "file": "",
+      "modifiers": "public",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.UploadService#uploadImage": {
+      "id": "com.jiuyan.banquet.service.UploadService#uploadImage",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.UploadService",
+      "method": "uploadImage",
+      "simple": "UploadService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 9,
+        "side_effects": [
+          "java.io.InputStream.close",
+          "java.nio.file.Files.copy",
+          "java.nio.file.Files.createDirectories",
+          "org.springframework.web.multipart.MultipartFile.getContentType",
+          "org.springframework.web.multipart.MultipartFile.getInputStream",
+          "org.springframework.web.multipart.MultipartFile.getOriginalFilename",
+          "org.springframework.web.multipart.MultipartFile.isEmpty"
+        ],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.service.UploadService#extension": {
+      "id": "com.jiuyan.banquet.service.UploadService#extension",
+      "type": "SVC_OP",
+      "cls": "com.jiuyan.banquet.service.UploadService",
+      "method": "extension",
+      "simple": "UploadService",
+      "file": "",
+      "modifiers": "private",
+      "declared": true,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 2,
+        "side_effects": [],
+        "is_pure": true,
+        "dispatch": {}
+      }
+    },
+    "table:categories": {
+      "id": "table:categories",
+      "type": "TABLE",
+      "table": "categories",
+      "columns": [
+        "created_at",
+        "id",
+        "is_deleted",
+        "name",
+        "sort_order",
+        "updated_at"
+      ]
+    },
+    "table:products": {
+      "id": "table:products",
+      "type": "TABLE",
+      "table": "products",
+      "columns": [
+        "category_id",
+        "created_at",
+        "description",
+        "id",
+        "image_url",
+        "is_active",
+        "is_deleted",
+        "name",
+        "price_cent",
+        "unit",
+        "updated_at"
+      ]
+    },
+    "table:packages": {
+      "id": "table:packages",
+      "type": "TABLE",
+      "table": "packages",
+      "columns": [
+        "banquet_type",
+        "created_at",
+        "description",
+        "id",
+        "image_url",
+        "is_active",
+        "is_deleted",
+        "name",
+        "price_cent",
+        "updated_at"
+      ]
+    },
+    "table:package_items": {
+      "id": "table:package_items",
+      "type": "TABLE",
+      "table": "package_items",
+      "columns": [
+        "created_at",
+        "id",
+        "package_id",
+        "product_id",
+        "quantity",
+        "updated_at"
+      ]
+    },
+    "table:orders": {
+      "id": "table:orders",
+      "type": "TABLE",
+      "table": "orders",
+      "columns": [
+        "added_items_snapshot",
+        "address",
+        "banquet_name",
+        "banquet_type",
+        "created_at",
+        "customer_name",
+        "customer_phone",
+        "deposit_cent",
+        "final_price_cent",
+        "id",
+        "order_no",
+        "package_id",
+        "package_snapshot",
+        "plan_total_cent",
+        "remark",
+        "reservation_time",
+        "status",
+        "table_count",
+        "updated_at",
+        "use_final_price"
+      ]
+    },
+    "table:package_types": {
+      "id": "table:package_types",
+      "type": "TABLE",
+      "table": "package_types",
+      "columns": [
+        "created_at",
+        "id",
+        "is_deleted",
+        "name",
+        "sort_order",
+        "updated_at"
+      ]
+    },
+    "field:BanquetOrder.orderNo": {
+      "id": "field:BanquetOrder.orderNo",
+      "type": "ENTITY_FIELD",
+      "entity": "BanquetOrder",
+      "field": "orderNo",
+      "column": "order_no",
+      "table": "orders"
+    },
+    "field:BanquetOrder.customerName": {
+      "id": "field:BanquetOrder.customerName",
+      "type": "ENTITY_FIELD",
+      "entity": "BanquetOrder",
+      "field": "customerName",
+      "column": "customer_name",
+      "table": "orders"
+    },
+    "field:BanquetOrder.customerPhone": {
+      "id": "field:BanquetOrder.customerPhone",
+      "type": "ENTITY_FIELD",
+      "entity": "BanquetOrder",
+      "field": "customerPhone",
+      "column": "customer_phone",
+      "table": "orders"
+    },
+    "field:BanquetOrder.banquetName": {
+      "id": "field:BanquetOrder.banquetName",
+      "type": "ENTITY_FIELD",
+      "entity": "BanquetOrder",
+      "field": "banquetName",
+      "column": "banquet_name",
+      "table": "orders"
+    },
+    "field:BanquetOrder.banquetType": {
+      "id": "field:BanquetOrder.banquetType",
+      "type": "ENTITY_FIELD",
+      "entity": "BanquetOrder",
+      "field": "banquetType",
+      "column": "banquet_type",
+      "table": "orders"
+    },
+    "field:BanquetOrder.address": {
+      "id": "field:BanquetOrder.address",
+      "type": "ENTITY_FIELD",
+      "entity": "BanquetOrder",
+      "field": "address",
+      "column": "address",
+      "table": "orders"
+    },
+    "field:BanquetOrder.reservationTime": {
+      "id": "field:BanquetOrder.reservationTime",
+      "type": "ENTITY_FIELD",
+      "entity": "BanquetOrder",
+      "field": "reservationTime",
+      "column": "reservation_time",
+      "table": "orders"
+    },
+    "field:BanquetOrder.tableCount": {
+      "id": "field:BanquetOrder.tableCount",
+      "type": "ENTITY_FIELD",
+      "entity": "BanquetOrder",
+      "field": "tableCount",
+      "column": "table_count",
+      "table": "orders"
+    },
+    "field:BanquetOrder.packageSnapshot": {
+      "id": "field:BanquetOrder.packageSnapshot",
+      "type": "ENTITY_FIELD",
+      "entity": "BanquetOrder",
+      "field": "packageSnapshot",
+      "column": "package_snapshot",
+      "table": "orders"
+    },
+    "field:BanquetOrder.addedItemsSnapshot": {
+      "id": "field:BanquetOrder.addedItemsSnapshot",
+      "type": "ENTITY_FIELD",
+      "entity": "BanquetOrder",
+      "field": "addedItemsSnapshot",
+      "column": "added_items_snapshot",
+      "table": "orders"
+    },
+    "field:BanquetOrder.planTotalCent": {
+      "id": "field:BanquetOrder.planTotalCent",
+      "type": "ENTITY_FIELD",
+      "entity": "BanquetOrder",
+      "field": "planTotalCent",
+      "column": "plan_total_cent",
+      "table": "orders"
+    },
+    "field:BanquetOrder.finalPriceCent": {
+      "id": "field:BanquetOrder.finalPriceCent",
+      "type": "ENTITY_FIELD",
+      "entity": "BanquetOrder",
+      "field": "finalPriceCent",
+      "column": "final_price_cent",
+      "table": "orders"
+    },
+    "field:BanquetOrder.status": {
+      "id": "field:BanquetOrder.status",
+      "type": "ENTITY_FIELD",
+      "entity": "BanquetOrder",
+      "field": "status",
+      "column": "status",
+      "table": "orders"
+    },
+    "field:BanquetPackage.name": {
+      "id": "field:BanquetPackage.name",
+      "type": "ENTITY_FIELD",
+      "entity": "BanquetPackage",
+      "field": "name",
+      "column": "name",
+      "table": "packages"
+    },
+    "field:BanquetPackage.banquetType": {
+      "id": "field:BanquetPackage.banquetType",
+      "type": "ENTITY_FIELD",
+      "entity": "BanquetPackage",
+      "field": "banquetType",
+      "column": "banquet_type",
+      "table": "packages"
+    },
+    "field:BanquetPackage.priceCent": {
+      "id": "field:BanquetPackage.priceCent",
+      "type": "ENTITY_FIELD",
+      "entity": "BanquetPackage",
+      "field": "priceCent",
+      "column": "price_cent",
+      "table": "packages"
+    },
+    "field:BanquetPackage.imageUrl": {
+      "id": "field:BanquetPackage.imageUrl",
+      "type": "ENTITY_FIELD",
+      "entity": "BanquetPackage",
+      "field": "imageUrl",
+      "column": "image_url",
+      "table": "packages"
+    },
+    "field:BaseEntity.createdAt": {
+      "id": "field:BaseEntity.createdAt",
+      "type": "ENTITY_FIELD",
+      "entity": "BaseEntity",
+      "field": "createdAt",
+      "column": "created_at",
+      "table": "base_entity"
+    },
+    "field:BaseEntity.updatedAt": {
+      "id": "field:BaseEntity.updatedAt",
+      "type": "ENTITY_FIELD",
+      "entity": "BaseEntity",
+      "field": "updatedAt",
+      "column": "updated_at",
+      "table": "base_entity"
+    },
+    "field:Category.name": {
+      "id": "field:Category.name",
+      "type": "ENTITY_FIELD",
+      "entity": "Category",
+      "field": "name",
+      "column": "name",
+      "table": "categories"
+    },
+    "field:PackageItem.quantity": {
+      "id": "field:PackageItem.quantity",
+      "type": "ENTITY_FIELD",
+      "entity": "PackageItem",
+      "field": "quantity",
+      "column": "quantity",
+      "table": "package_items"
+    },
+    "field:PackageType.name": {
+      "id": "field:PackageType.name",
+      "type": "ENTITY_FIELD",
+      "entity": "PackageType",
+      "field": "name",
+      "column": "name",
+      "table": "package_types"
+    },
+    "field:Product.name": {
+      "id": "field:Product.name",
+      "type": "ENTITY_FIELD",
+      "entity": "Product",
+      "field": "name",
+      "column": "name",
+      "table": "products"
+    },
+    "field:Product.priceCent": {
+      "id": "field:Product.priceCent",
+      "type": "ENTITY_FIELD",
+      "entity": "Product",
+      "field": "priceCent",
+      "column": "price_cent",
+      "table": "products"
+    },
+    "field:Product.unit": {
+      "id": "field:Product.unit",
+      "type": "ENTITY_FIELD",
+      "entity": "Product",
+      "field": "unit",
+      "column": "unit",
+      "table": "products"
+    },
+    "field:Product.imageUrl": {
+      "id": "field:Product.imageUrl",
+      "type": "ENTITY_FIELD",
+      "entity": "Product",
+      "field": "imageUrl",
+      "column": "image_url",
+      "table": "products"
+    },
+    "com.jiuyan.banquet.repository.CategoryRepository#save": {
+      "id": "com.jiuyan.banquet.repository.CategoryRepository#save",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.CategoryRepository",
+      "method": "save",
+      "simple": "CategoryRepository",
+      "file": "",
+      "declared": false,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.CategoryRepository#findById": {
+      "id": "com.jiuyan.banquet.repository.CategoryRepository#findById",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.CategoryRepository",
+      "method": "findById",
+      "simple": "CategoryRepository",
+      "file": "",
+      "declared": false,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.OrderRepository#findAll": {
+      "id": "com.jiuyan.banquet.repository.OrderRepository#findAll",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.OrderRepository",
+      "method": "findAll",
+      "simple": "OrderRepository",
+      "file": "",
+      "declared": false,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.OrderRepository#save": {
+      "id": "com.jiuyan.banquet.repository.OrderRepository#save",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.OrderRepository",
+      "method": "save",
+      "simple": "OrderRepository",
+      "file": "",
+      "declared": false,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.OrderRepository#findById": {
+      "id": "com.jiuyan.banquet.repository.OrderRepository#findById",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.OrderRepository",
+      "method": "findById",
+      "simple": "OrderRepository",
+      "file": "",
+      "declared": false,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.BanquetPackageRepository#findAll": {
+      "id": "com.jiuyan.banquet.repository.BanquetPackageRepository#findAll",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.BanquetPackageRepository",
+      "method": "findAll",
+      "simple": "BanquetPackageRepository",
+      "file": "",
+      "declared": false,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.BanquetPackageRepository#save": {
+      "id": "com.jiuyan.banquet.repository.BanquetPackageRepository#save",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.BanquetPackageRepository",
+      "method": "save",
+      "simple": "BanquetPackageRepository",
+      "file": "",
+      "declared": false,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.PackageTypeRepository#save": {
+      "id": "com.jiuyan.banquet.repository.PackageTypeRepository#save",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.PackageTypeRepository",
+      "method": "save",
+      "simple": "PackageTypeRepository",
+      "file": "",
+      "declared": false,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.PackageTypeRepository#findById": {
+      "id": "com.jiuyan.banquet.repository.PackageTypeRepository#findById",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.PackageTypeRepository",
+      "method": "findById",
+      "simple": "PackageTypeRepository",
+      "file": "",
+      "declared": false,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.ProductRepository#findAll": {
+      "id": "com.jiuyan.banquet.repository.ProductRepository#findAll",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.ProductRepository",
+      "method": "findAll",
+      "simple": "ProductRepository",
+      "file": "",
+      "declared": false,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    },
+    "com.jiuyan.banquet.repository.ProductRepository#save": {
+      "id": "com.jiuyan.banquet.repository.ProductRepository#save",
+      "type": "REPO_OP",
+      "cls": "com.jiuyan.banquet.repository.ProductRepository",
+      "method": "save",
+      "simple": "ProductRepository",
+      "file": "",
+      "declared": false,
+      "taint": {
+        "source_fields": [],
+        "sinks": [],
+        "guard": false,
+        "persist": false,
+        "branches": 0,
+        "side_effects": [],
+        "is_pure": false,
+        "dispatch": {}
+      }
+    }
+  },
+  "edges": [
+    {
+      "from": "com.jiuyan.banquet.controller.CategoryController#list",
+      "to": "com.jiuyan.banquet.service.CategoryService#list",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.CategoryController#list",
+      "to": "com.jiuyan.banquet.service.CategoryService#list",
+      "type": "EXPOSES"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.CategoryController#create",
+      "to": "com.jiuyan.banquet.service.CategoryService#create",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.CategoryController#create",
+      "to": "com.jiuyan.banquet.service.CategoryService#create",
+      "type": "EXPOSES"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.CategoryController#delete",
+      "to": "com.jiuyan.banquet.service.CategoryService#delete",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.CategoryController#delete",
+      "to": "com.jiuyan.banquet.service.CategoryService#delete",
+      "type": "EXPOSES"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.OrderController#list",
+      "to": "com.jiuyan.banquet.service.OrderService#list",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.OrderController#list",
+      "to": "com.jiuyan.banquet.service.OrderService#list",
+      "type": "EXPOSES"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.OrderController#get",
+      "to": "com.jiuyan.banquet.service.OrderService#get",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.OrderController#get",
+      "to": "com.jiuyan.banquet.service.OrderService#get",
+      "type": "EXPOSES"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.OrderController#create",
+      "to": "com.jiuyan.banquet.service.OrderService#create",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.OrderController#create",
+      "to": "com.jiuyan.banquet.service.OrderService#create",
+      "type": "EXPOSES"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.OrderController#update",
+      "to": "com.jiuyan.banquet.service.OrderService#update",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.OrderController#update",
+      "to": "com.jiuyan.banquet.service.OrderService#update",
+      "type": "EXPOSES"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.OrderController#updateStatus",
+      "to": "com.jiuyan.banquet.service.OrderService#updateStatus",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.OrderController#updateStatus",
+      "to": "com.jiuyan.banquet.service.OrderService#updateStatus",
+      "type": "EXPOSES"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.PackageController#list",
+      "to": "com.jiuyan.banquet.service.PackageService#list",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.PackageController#list",
+      "to": "com.jiuyan.banquet.service.PackageService#list",
+      "type": "EXPOSES"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.PackageController#get",
+      "to": "com.jiuyan.banquet.service.PackageService#get",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.PackageController#get",
+      "to": "com.jiuyan.banquet.service.PackageService#get",
+      "type": "EXPOSES"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.PackageController#create",
+      "to": "com.jiuyan.banquet.service.PackageService#create",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.PackageController#create",
+      "to": "com.jiuyan.banquet.service.PackageService#create",
+      "type": "EXPOSES"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.PackageController#update",
+      "to": "com.jiuyan.banquet.service.PackageService#update",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.PackageController#update",
+      "to": "com.jiuyan.banquet.service.PackageService#update",
+      "type": "EXPOSES"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.PackageController#updateStatus",
+      "to": "com.jiuyan.banquet.service.PackageService#updateStatus",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.PackageController#updateStatus",
+      "to": "com.jiuyan.banquet.service.PackageService#updateStatus",
+      "type": "EXPOSES"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.PackageController#delete",
+      "to": "com.jiuyan.banquet.service.PackageService#delete",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.PackageController#delete",
+      "to": "com.jiuyan.banquet.service.PackageService#delete",
+      "type": "EXPOSES"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.PackageTypeController#list",
+      "to": "com.jiuyan.banquet.service.PackageTypeService#list",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.PackageTypeController#list",
+      "to": "com.jiuyan.banquet.service.PackageTypeService#list",
+      "type": "EXPOSES"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.PackageTypeController#create",
+      "to": "com.jiuyan.banquet.service.PackageTypeService#create",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.PackageTypeController#create",
+      "to": "com.jiuyan.banquet.service.PackageTypeService#create",
+      "type": "EXPOSES"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.PackageTypeController#delete",
+      "to": "com.jiuyan.banquet.service.PackageTypeService#delete",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.PackageTypeController#delete",
+      "to": "com.jiuyan.banquet.service.PackageTypeService#delete",
+      "type": "EXPOSES"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.ProductController#list",
+      "to": "com.jiuyan.banquet.service.ProductService#list",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.ProductController#list",
+      "to": "com.jiuyan.banquet.service.ProductService#list",
+      "type": "EXPOSES"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.ProductController#create",
+      "to": "com.jiuyan.banquet.service.ProductService#create",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.ProductController#create",
+      "to": "com.jiuyan.banquet.service.ProductService#create",
+      "type": "EXPOSES"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.ProductController#update",
+      "to": "com.jiuyan.banquet.service.ProductService#update",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.ProductController#update",
+      "to": "com.jiuyan.banquet.service.ProductService#update",
+      "type": "EXPOSES"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.ProductController#updateStatus",
+      "to": "com.jiuyan.banquet.service.ProductService#updateStatus",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.ProductController#updateStatus",
+      "to": "com.jiuyan.banquet.service.ProductService#updateStatus",
+      "type": "EXPOSES"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.ProductController#delete",
+      "to": "com.jiuyan.banquet.service.ProductService#delete",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.ProductController#delete",
+      "to": "com.jiuyan.banquet.service.ProductService#delete",
+      "type": "EXPOSES"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.UploadController#uploadProductImage",
+      "to": "com.jiuyan.banquet.service.UploadService#uploadProductImage",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.UploadController#uploadProductImage",
+      "to": "com.jiuyan.banquet.service.UploadService#uploadProductImage",
+      "type": "EXPOSES"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.UploadController#uploadPackageImage",
+      "to": "com.jiuyan.banquet.service.UploadService#uploadPackageImage",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.controller.UploadController#uploadPackageImage",
+      "to": "com.jiuyan.banquet.service.UploadService#uploadPackageImage",
+      "type": "EXPOSES"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.CategoryService#list",
+      "to": "com.jiuyan.banquet.repository.CategoryRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.CategoryRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc",
+      "to": "table:categories",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.CategoryRepository.findAllByIsDeletedFalseOrderBySortOrderAscIdAsc"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.CategoryService#create",
+      "to": "com.jiuyan.banquet.repository.CategoryRepository#findByName",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.CategoryService#create",
+      "to": "com.jiuyan.banquet.repository.CategoryRepository#save",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.CategoryRepository#findByName",
+      "to": "table:categories",
+      "type": "READS",
+      "effect": "com.jiuyan.banquet.repository.CategoryRepository.findByName"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.CategoryRepository#save",
+      "to": "table:categories",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.CategoryRepository.save"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.CategoryService#delete",
+      "to": "com.jiuyan.banquet.repository.CategoryRepository#findById",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.CategoryService#delete",
+      "to": "com.jiuyan.banquet.repository.CategoryRepository#save",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.CategoryService#delete",
+      "to": "com.jiuyan.banquet.repository.ProductRepository#existsByCategoryIdAndIsDeletedFalse",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.CategoryRepository#findById",
+      "to": "table:categories",
+      "type": "READS",
+      "effect": "com.jiuyan.banquet.repository.CategoryRepository.findById"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.CategoryRepository#save",
+      "to": "table:categories",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.CategoryRepository.save"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.ProductRepository#existsByCategoryIdAndIsDeletedFalse",
+      "to": "table:products",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.ProductRepository.existsByCategoryIdAndIsDeletedFalse"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.CategoryService#lambda$create$0",
+      "to": "field:Category.name",
+      "type": "DERIVES",
+      "callee": "com.jiuyan.banquet.entity.Category.setName"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.CategoryService#lambda$create$0",
+      "to": "com.jiuyan.banquet.repository.CategoryRepository#findMaxSortOrder",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.CategoryRepository#findMaxSortOrder",
+      "to": "table:categories",
+      "type": "READS",
+      "effect": "com.jiuyan.banquet.repository.CategoryRepository.findMaxSortOrder"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#list",
+      "to": "com.jiuyan.banquet.repository.OrderRepository#findAll",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.OrderRepository#findAll",
+      "to": "table:orders",
+      "type": "READS",
+      "effect": "com.jiuyan.banquet.repository.OrderRepository.findAll"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#create",
+      "to": "field:BanquetOrder.orderNo",
+      "type": "DERIVES",
+      "callee": "com.jiuyan.banquet.entity.BanquetOrder.setOrderNo"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#create",
+      "to": "com.jiuyan.banquet.repository.OrderRepository#save",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.OrderRepository#save",
+      "to": "table:orders",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.OrderRepository.save"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#update",
+      "to": "com.jiuyan.banquet.repository.OrderRepository#save",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.OrderRepository#save",
+      "to": "table:orders",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.OrderRepository.save"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#updateStatus",
+      "to": "field:BanquetOrder.status",
+      "type": "DERIVES",
+      "callee": "com.jiuyan.banquet.entity.BanquetOrder.setStatus"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#updateStatus",
+      "to": "com.jiuyan.banquet.repository.OrderRepository#save",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.OrderRepository#save",
+      "to": "table:orders",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.OrderRepository.save"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#apply",
+      "to": "field:BanquetOrder.addedItemsSnapshot",
+      "type": "DERIVES",
+      "callee": "com.jiuyan.banquet.entity.BanquetOrder.setAddedItemsSnapshot"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#apply",
+      "to": "field:BanquetOrder.address",
+      "type": "DERIVES",
+      "callee": "com.jiuyan.banquet.entity.BanquetOrder.setAddress"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#apply",
+      "to": "field:BanquetOrder.banquetName",
+      "type": "DERIVES",
+      "callee": "com.jiuyan.banquet.entity.BanquetOrder.setBanquetName"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#apply",
+      "to": "field:BanquetOrder.banquetType",
+      "type": "DERIVES",
+      "callee": "com.jiuyan.banquet.entity.BanquetOrder.setBanquetType"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#apply",
+      "to": "field:BanquetOrder.customerName",
+      "type": "DERIVES",
+      "callee": "com.jiuyan.banquet.entity.BanquetOrder.setCustomerName"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#apply",
+      "to": "field:BanquetOrder.customerPhone",
+      "type": "DERIVES",
+      "callee": "com.jiuyan.banquet.entity.BanquetOrder.setCustomerPhone"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#apply",
+      "to": "field:BanquetOrder.finalPriceCent",
+      "type": "DERIVES",
+      "callee": "com.jiuyan.banquet.entity.BanquetOrder.setFinalPriceCent"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#apply",
+      "to": "field:BanquetOrder.packageSnapshot",
+      "type": "DERIVES",
+      "callee": "com.jiuyan.banquet.entity.BanquetOrder.setPackageSnapshot"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#apply",
+      "to": "field:BanquetOrder.planTotalCent",
+      "type": "DERIVES",
+      "callee": "com.jiuyan.banquet.entity.BanquetOrder.setPlanTotalCent"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#apply",
+      "to": "field:BanquetOrder.reservationTime",
+      "type": "DERIVES",
+      "callee": "com.jiuyan.banquet.entity.BanquetOrder.setReservationTime"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#apply",
+      "to": "field:BanquetOrder.status",
+      "type": "DERIVES",
+      "callee": "com.jiuyan.banquet.entity.BanquetOrder.setStatus"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#apply",
+      "to": "field:BanquetOrder.tableCount",
+      "type": "DERIVES",
+      "callee": "com.jiuyan.banquet.entity.BanquetOrder.setTableCount"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#apply",
+      "to": "com.jiuyan.banquet.repository.BanquetPackageRepository#findByIdAndIsDeletedFalse",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.BanquetPackageRepository#findByIdAndIsDeletedFalse",
+      "to": "table:packages",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.BanquetPackageRepository.findByIdAndIsDeletedFalse"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#findProduct",
+      "to": "com.jiuyan.banquet.repository.ProductRepository#findByIdAndIsDeletedFalse",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.ProductRepository#findByIdAndIsDeletedFalse",
+      "to": "table:products",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.ProductRepository.findByIdAndIsDeletedFalse"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#findOrder",
+      "to": "com.jiuyan.banquet.repository.OrderRepository#findById",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.OrderRepository#findById",
+      "to": "table:orders",
+      "type": "READS",
+      "effect": "com.jiuyan.banquet.repository.OrderRepository.findById"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#generateOrderNo",
+      "to": "com.jiuyan.banquet.repository.OrderRepository#existsByOrderNo",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.OrderRepository#existsByOrderNo",
+      "to": "table:orders",
+      "type": "READS",
+      "effect": "com.jiuyan.banquet.repository.OrderRepository.existsByOrderNo"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageService#list",
+      "to": "com.jiuyan.banquet.repository.BanquetPackageRepository#findAll",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.BanquetPackageRepository#findAll",
+      "to": "table:packages",
+      "type": "READS",
+      "effect": "com.jiuyan.banquet.repository.BanquetPackageRepository.findAll"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageService#create",
+      "to": "com.jiuyan.banquet.repository.BanquetPackageRepository#save",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.BanquetPackageRepository#save",
+      "to": "table:packages",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.BanquetPackageRepository.save"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageService#update",
+      "to": "com.jiuyan.banquet.repository.BanquetPackageRepository#save",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.BanquetPackageRepository#save",
+      "to": "table:packages",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.BanquetPackageRepository.save"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageService#updateStatus",
+      "to": "com.jiuyan.banquet.repository.BanquetPackageRepository#save",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.BanquetPackageRepository#save",
+      "to": "table:packages",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.BanquetPackageRepository.save"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageService#delete",
+      "to": "com.jiuyan.banquet.repository.BanquetPackageRepository#save",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.BanquetPackageRepository#save",
+      "to": "table:packages",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.BanquetPackageRepository.save"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageService#findPackage",
+      "to": "com.jiuyan.banquet.repository.BanquetPackageRepository#findByIdAndIsDeletedFalse",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.BanquetPackageRepository#findByIdAndIsDeletedFalse",
+      "to": "table:packages",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.BanquetPackageRepository.findByIdAndIsDeletedFalse"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageService#applyBase",
+      "to": "field:BanquetPackage.banquetType",
+      "type": "DERIVES",
+      "callee": "com.jiuyan.banquet.entity.BanquetPackage.setBanquetType"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageService#applyBase",
+      "to": "field:BanquetPackage.imageUrl",
+      "type": "DERIVES",
+      "callee": "com.jiuyan.banquet.entity.BanquetPackage.setImageUrl"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageService#applyBase",
+      "to": "field:BanquetPackage.name",
+      "type": "DERIVES",
+      "callee": "com.jiuyan.banquet.entity.BanquetPackage.setName"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageService#applyBase",
+      "to": "field:BanquetPackage.priceCent",
+      "type": "DERIVES",
+      "callee": "com.jiuyan.banquet.entity.BanquetPackage.setPriceCent"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageService#applyBase",
+      "to": "com.jiuyan.banquet.repository.PackageTypeRepository#findByNameAndIsDeletedFalse",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.PackageTypeRepository#findByNameAndIsDeletedFalse",
+      "to": "table:package_types",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.PackageTypeRepository.findByNameAndIsDeletedFalse"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageService#applyItems",
+      "to": "field:PackageItem.quantity",
+      "type": "DERIVES",
+      "callee": "com.jiuyan.banquet.entity.PackageItem.setQuantity"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageService#findProduct",
+      "to": "com.jiuyan.banquet.repository.ProductRepository#findByIdAndIsDeletedFalse",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.ProductRepository#findByIdAndIsDeletedFalse",
+      "to": "table:products",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.ProductRepository.findByIdAndIsDeletedFalse"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageTypeService#list",
+      "to": "com.jiuyan.banquet.repository.PackageTypeRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.PackageTypeRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc",
+      "to": "table:package_types",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.PackageTypeRepository.findAllByIsDeletedFalseOrderBySortOrderAscIdAsc"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageTypeService#create",
+      "to": "com.jiuyan.banquet.repository.PackageTypeRepository#findByName",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageTypeService#create",
+      "to": "com.jiuyan.banquet.repository.PackageTypeRepository#save",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.PackageTypeRepository#findByName",
+      "to": "table:package_types",
+      "type": "READS",
+      "effect": "com.jiuyan.banquet.repository.PackageTypeRepository.findByName"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.PackageTypeRepository#save",
+      "to": "table:package_types",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.PackageTypeRepository.save"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageTypeService#delete",
+      "to": "com.jiuyan.banquet.repository.BanquetPackageRepository#existsByBanquetTypeAndIsDeletedFalse",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageTypeService#delete",
+      "to": "com.jiuyan.banquet.repository.PackageTypeRepository#findById",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageTypeService#delete",
+      "to": "com.jiuyan.banquet.repository.PackageTypeRepository#save",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.BanquetPackageRepository#existsByBanquetTypeAndIsDeletedFalse",
+      "to": "table:packages",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.BanquetPackageRepository.existsByBanquetTypeAndIsDeletedFalse"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.PackageTypeRepository#findById",
+      "to": "table:package_types",
+      "type": "READS",
+      "effect": "com.jiuyan.banquet.repository.PackageTypeRepository.findById"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.PackageTypeRepository#save",
+      "to": "table:package_types",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.PackageTypeRepository.save"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageTypeService#lambda$create$0",
+      "to": "field:PackageType.name",
+      "type": "DERIVES",
+      "callee": "com.jiuyan.banquet.entity.PackageType.setName"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageTypeService#lambda$create$0",
+      "to": "com.jiuyan.banquet.repository.PackageTypeRepository#findMaxSortOrder",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.PackageTypeRepository#findMaxSortOrder",
+      "to": "table:package_types",
+      "type": "READS",
+      "effect": "com.jiuyan.banquet.repository.PackageTypeRepository.findMaxSortOrder"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.ProductService#list",
+      "to": "com.jiuyan.banquet.repository.ProductRepository#findAll",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.ProductRepository#findAll",
+      "to": "table:products",
+      "type": "READS",
+      "effect": "com.jiuyan.banquet.repository.ProductRepository.findAll"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.ProductService#create",
+      "to": "com.jiuyan.banquet.repository.ProductRepository#save",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.ProductRepository#save",
+      "to": "table:products",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.ProductRepository.save"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.ProductService#update",
+      "to": "com.jiuyan.banquet.repository.ProductRepository#save",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.ProductRepository#save",
+      "to": "table:products",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.ProductRepository.save"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.ProductService#updateStatus",
+      "to": "com.jiuyan.banquet.repository.PackageItemRepository#existsByProductId",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.ProductService#updateStatus",
+      "to": "com.jiuyan.banquet.repository.ProductRepository#save",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.PackageItemRepository#existsByProductId",
+      "to": "table:package_items",
+      "type": "READS",
+      "effect": "com.jiuyan.banquet.repository.PackageItemRepository.existsByProductId"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.ProductRepository#save",
+      "to": "table:products",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.ProductRepository.save"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.ProductService#delete",
+      "to": "com.jiuyan.banquet.repository.PackageItemRepository#existsNonDeletedPackageReferenceByProductId",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.ProductService#delete",
+      "to": "com.jiuyan.banquet.repository.ProductRepository#save",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.PackageItemRepository#existsNonDeletedPackageReferenceByProductId",
+      "to": "table:package_items",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.PackageItemRepository.existsNonDeletedPackageReferenceByProductId"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.ProductRepository#save",
+      "to": "table:products",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.ProductRepository.save"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.ProductService#findProduct",
+      "to": "com.jiuyan.banquet.repository.ProductRepository#findByIdAndIsDeletedFalse",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.ProductRepository#findByIdAndIsDeletedFalse",
+      "to": "table:products",
+      "type": "WRITES",
+      "effect": "com.jiuyan.banquet.repository.ProductRepository.findByIdAndIsDeletedFalse"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.ProductService#findCategory",
+      "to": "com.jiuyan.banquet.repository.CategoryRepository#findById",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.repository.CategoryRepository#findById",
+      "to": "table:categories",
+      "type": "READS",
+      "effect": "com.jiuyan.banquet.repository.CategoryRepository.findById"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.ProductService#apply",
+      "to": "field:Product.imageUrl",
+      "type": "DERIVES",
+      "callee": "com.jiuyan.banquet.entity.Product.setImageUrl"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.ProductService#apply",
+      "to": "field:Product.name",
+      "type": "DERIVES",
+      "callee": "com.jiuyan.banquet.entity.Product.setName"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.ProductService#apply",
+      "to": "field:Product.priceCent",
+      "type": "DERIVES",
+      "callee": "com.jiuyan.banquet.entity.Product.setPriceCent"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.ProductService#apply",
+      "to": "field:Product.unit",
+      "type": "DERIVES",
+      "callee": "com.jiuyan.banquet.entity.Product.setUnit"
+    }
+  ],
+  "centrality": {
+    "degree": {
+      "com.jiuyan.banquet.controller.CategoryController#list": 2,
+      "com.jiuyan.banquet.service.CategoryService#list": 3,
+      "com.jiuyan.banquet.controller.CategoryController#create": 2,
+      "com.jiuyan.banquet.service.CategoryService#create": 4,
+      "com.jiuyan.banquet.controller.CategoryController#delete": 2,
+      "com.jiuyan.banquet.service.CategoryService#delete": 5,
+      "com.jiuyan.banquet.controller.OrderController#list": 2,
+      "com.jiuyan.banquet.service.OrderService#list": 3,
+      "com.jiuyan.banquet.controller.OrderController#get": 2,
+      "com.jiuyan.banquet.service.OrderService#get": 2,
+      "com.jiuyan.banquet.controller.OrderController#create": 2,
+      "com.jiuyan.banquet.service.OrderService#create": 4,
+      "com.jiuyan.banquet.controller.OrderController#update": 2,
+      "com.jiuyan.banquet.service.OrderService#update": 3,
+      "com.jiuyan.banquet.controller.OrderController#updateStatus": 2,
+      "com.jiuyan.banquet.service.OrderService#updateStatus": 4,
+      "com.jiuyan.banquet.controller.PackageController#list": 2,
+      "com.jiuyan.banquet.service.PackageService#list": 3,
+      "com.jiuyan.banquet.controller.PackageController#get": 2,
+      "com.jiuyan.banquet.service.PackageService#get": 2,
+      "com.jiuyan.banquet.controller.PackageController#create": 2,
+      "com.jiuyan.banquet.service.PackageService#create": 3,
+      "com.jiuyan.banquet.controller.PackageController#update": 2,
+      "com.jiuyan.banquet.service.PackageService#update": 3,
+      "com.jiuyan.banquet.controller.PackageController#updateStatus": 2,
+      "com.jiuyan.banquet.service.PackageService#updateStatus": 3,
+      "com.jiuyan.banquet.controller.PackageController#delete": 2,
+      "com.jiuyan.banquet.service.PackageService#delete": 3,
+      "com.jiuyan.banquet.controller.PackageTypeController#list": 2,
+      "com.jiuyan.banquet.service.PackageTypeService#list": 3,
+      "com.jiuyan.banquet.controller.PackageTypeController#create": 2,
+      "com.jiuyan.banquet.service.PackageTypeService#create": 4,
+      "com.jiuyan.banquet.controller.PackageTypeController#delete": 2,
+      "com.jiuyan.banquet.service.PackageTypeService#delete": 5,
+      "com.jiuyan.banquet.controller.ProductController#list": 2,
+      "com.jiuyan.banquet.service.ProductService#list": 3,
+      "com.jiuyan.banquet.controller.ProductController#create": 2,
+      "com.jiuyan.banquet.service.ProductService#create": 3,
+      "com.jiuyan.banquet.controller.ProductController#update": 2,
+      "com.jiuyan.banquet.service.ProductService#update": 3,
+      "com.jiuyan.banquet.controller.ProductController#updateStatus": 2,
+      "com.jiuyan.banquet.service.ProductService#updateStatus": 4,
+      "com.jiuyan.banquet.controller.ProductController#delete": 2,
+      "com.jiuyan.banquet.service.ProductService#delete": 4,
+      "com.jiuyan.banquet.controller.UploadController#uploadProductImage": 2,
+      "com.jiuyan.banquet.service.UploadService#uploadProductImage": 2,
+      "com.jiuyan.banquet.controller.UploadController#uploadPackageImage": 2,
+      "com.jiuyan.banquet.service.UploadService#uploadPackageImage": 2,
+      "com.jiuyan.banquet.repository.CategoryRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc": 2,
+      "table:categories": 7,
+      "com.jiuyan.banquet.repository.CategoryRepository#findByName": 2,
+      "com.jiuyan.banquet.repository.CategoryRepository#save": 4,
+      "com.jiuyan.banquet.repository.CategoryRepository#findById": 4,
+      "com.jiuyan.banquet.repository.ProductRepository#existsByCategoryIdAndIsDeletedFalse": 2,
+      "table:products": 9,
+      "com.jiuyan.banquet.service.CategoryService#lambda$create$0": 2,
+      "field:Category.name": 1,
+      "com.jiuyan.banquet.repository.CategoryRepository#findMaxSortOrder": 2,
+      "com.jiuyan.banquet.repository.OrderRepository#findAll": 2,
+      "table:orders": 6,
+      "field:BanquetOrder.orderNo": 1,
+      "com.jiuyan.banquet.repository.OrderRepository#save": 6,
+      "field:BanquetOrder.status": 2,
+      "com.jiuyan.banquet.service.OrderService#apply": 13,
+      "field:BanquetOrder.addedItemsSnapshot": 1,
+      "field:BanquetOrder.address": 1,
+      "field:BanquetOrder.banquetName": 1,
+      "field:BanquetOrder.banquetType": 1,
+      "field:BanquetOrder.customerName": 1,
+      "field:BanquetOrder.customerPhone": 1,
+      "field:BanquetOrder.finalPriceCent": 1,
+      "field:BanquetOrder.packageSnapshot": 1,
+      "field:BanquetOrder.planTotalCent": 1,
+      "field:BanquetOrder.reservationTime": 1,
+      "field:BanquetOrder.tableCount": 1,
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#findByIdAndIsDeletedFalse": 4,
+      "table:packages": 8,
+      "com.jiuyan.banquet.service.OrderService#findProduct": 1,
+      "com.jiuyan.banquet.repository.ProductRepository#findByIdAndIsDeletedFalse": 6,
+      "com.jiuyan.banquet.service.OrderService#findOrder": 1,
+      "com.jiuyan.banquet.repository.OrderRepository#findById": 2,
+      "com.jiuyan.banquet.service.OrderService#generateOrderNo": 1,
+      "com.jiuyan.banquet.repository.OrderRepository#existsByOrderNo": 2,
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#findAll": 2,
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#save": 8,
+      "com.jiuyan.banquet.service.PackageService#findPackage": 1,
+      "com.jiuyan.banquet.service.PackageService#applyBase": 5,
+      "field:BanquetPackage.banquetType": 1,
+      "field:BanquetPackage.imageUrl": 1,
+      "field:BanquetPackage.name": 1,
+      "field:BanquetPackage.priceCent": 1,
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findByNameAndIsDeletedFalse": 2,
+      "table:package_types": 7,
+      "com.jiuyan.banquet.service.PackageService#applyItems": 1,
+      "field:PackageItem.quantity": 1,
+      "com.jiuyan.banquet.service.PackageService#findProduct": 1,
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc": 2,
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findByName": 2,
+      "com.jiuyan.banquet.repository.PackageTypeRepository#save": 4,
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#existsByBanquetTypeAndIsDeletedFalse": 2,
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findById": 2,
+      "com.jiuyan.banquet.service.PackageTypeService#lambda$create$0": 2,
+      "field:PackageType.name": 1,
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findMaxSortOrder": 2,
+      "com.jiuyan.banquet.repository.ProductRepository#findAll": 2,
+      "com.jiuyan.banquet.repository.ProductRepository#save": 8,
+      "com.jiuyan.banquet.repository.PackageItemRepository#existsByProductId": 2,
+      "table:package_items": 2,
+      "com.jiuyan.banquet.repository.PackageItemRepository#existsNonDeletedPackageReferenceByProductId": 2,
+      "com.jiuyan.banquet.service.ProductService#findProduct": 1,
+      "com.jiuyan.banquet.service.ProductService#findCategory": 1,
+      "com.jiuyan.banquet.service.ProductService#apply": 4,
+      "field:Product.imageUrl": 1,
+      "field:Product.name": 1,
+      "field:Product.priceCent": 1,
+      "field:Product.unit": 1
+    },
+    "reachable_tables": {
+      "com.jiuyan.banquet.controller.CategoryController#list": 1,
+      "com.jiuyan.banquet.controller.CategoryController#create": 1,
+      "com.jiuyan.banquet.controller.CategoryController#delete": 2,
+      "com.jiuyan.banquet.controller.HealthController#health": 0,
+      "com.jiuyan.banquet.controller.OrderController#list": 1,
+      "com.jiuyan.banquet.controller.OrderController#get": 0,
+      "com.jiuyan.banquet.controller.OrderController#create": 1,
+      "com.jiuyan.banquet.controller.OrderController#update": 1,
+      "com.jiuyan.banquet.controller.OrderController#updateStatus": 1,
+      "com.jiuyan.banquet.controller.PackageController#list": 1,
+      "com.jiuyan.banquet.controller.PackageController#get": 0,
+      "com.jiuyan.banquet.controller.PackageController#create": 1,
+      "com.jiuyan.banquet.controller.PackageController#update": 1,
+      "com.jiuyan.banquet.controller.PackageController#updateStatus": 1,
+      "com.jiuyan.banquet.controller.PackageController#delete": 1,
+      "com.jiuyan.banquet.controller.PackageTypeController#list": 1,
+      "com.jiuyan.banquet.controller.PackageTypeController#create": 1,
+      "com.jiuyan.banquet.controller.PackageTypeController#delete": 2,
+      "com.jiuyan.banquet.controller.ProductController#list": 1,
+      "com.jiuyan.banquet.controller.ProductController#create": 1,
+      "com.jiuyan.banquet.controller.ProductController#update": 1,
+      "com.jiuyan.banquet.controller.ProductController#updateStatus": 2,
+      "com.jiuyan.banquet.controller.ProductController#delete": 2,
+      "com.jiuyan.banquet.controller.UploadController#uploadProductImage": 0,
+      "com.jiuyan.banquet.controller.UploadController#uploadPackageImage": 0,
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#findByIdAndIsDeletedFalse": 1,
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#existsByBanquetTypeAndIsDeletedFalse": 1,
+      "com.jiuyan.banquet.repository.CategoryRepository#findByName": 1,
+      "com.jiuyan.banquet.repository.CategoryRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc": 1,
+      "com.jiuyan.banquet.repository.CategoryRepository#findMaxSortOrder": 1,
+      "com.jiuyan.banquet.repository.OrderRepository#existsByOrderNo": 1,
+      "com.jiuyan.banquet.repository.OrderRepository#findByOrderNo": 0,
+      "com.jiuyan.banquet.repository.PackageItemRepository#existsByProductId": 1,
+      "com.jiuyan.banquet.repository.PackageItemRepository#existsNonDeletedPackageReferenceByProductId": 1,
+      "com.jiuyan.banquet.repository.PackageItemRepository#findByBanquetPackageId": 0,
+      "com.jiuyan.banquet.repository.PackageItemRepository#deleteByBanquetPackageId": 0,
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findByName": 1,
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findByNameAndIsDeletedFalse": 1,
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc": 1,
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findMaxSortOrder": 1,
+      "com.jiuyan.banquet.repository.ProductRepository#findByIdAndIsDeletedFalse": 1,
+      "com.jiuyan.banquet.repository.ProductRepository#existsByCategoryIdAndIsDeletedFalse": 1,
+      "com.jiuyan.banquet.service.CategoryService#list": 1,
+      "com.jiuyan.banquet.service.CategoryService#create": 1,
+      "com.jiuyan.banquet.service.CategoryService#delete": 2,
+      "com.jiuyan.banquet.service.CategoryService#lambda$delete$1": 0,
+      "com.jiuyan.banquet.service.CategoryService#lambda$create$0": 1,
+      "com.jiuyan.banquet.service.OrderService#list": 1,
+      "com.jiuyan.banquet.service.OrderService#get": 0,
+      "com.jiuyan.banquet.service.OrderService#create": 1,
+      "com.jiuyan.banquet.service.OrderService#update": 1,
+      "com.jiuyan.banquet.service.OrderService#updateStatus": 1,
+      "com.jiuyan.banquet.service.OrderService#apply": 1,
+      "com.jiuyan.banquet.service.OrderService#resolveFinalPrice": 0,
+      "com.jiuyan.banquet.service.OrderService#buildPackageSnapshot": 0,
+      "com.jiuyan.banquet.service.OrderService#buildAddedItemsSnapshot": 0,
+      "com.jiuyan.banquet.service.OrderService#packageItemSnapshot": 0,
+      "com.jiuyan.banquet.service.OrderService#productSnapshot": 0,
+      "com.jiuyan.banquet.service.OrderService#normalizePackageItems": 0,
+      "com.jiuyan.banquet.service.OrderService#normalizeAddedItems": 0,
+      "com.jiuyan.banquet.service.OrderService#findProduct": 1,
+      "com.jiuyan.banquet.service.OrderService#findOrder": 1,
+      "com.jiuyan.banquet.service.OrderService#generateOrderNo": 1,
+      "com.jiuyan.banquet.service.OrderService#parseStatus": 0,
+      "com.jiuyan.banquet.service.OrderService#parseDateScope": 0,
+      "com.jiuyan.banquet.service.OrderService#orderSpec": 0,
+      "com.jiuyan.banquet.service.OrderService#normalizePage": 0,
+      "com.jiuyan.banquet.service.OrderService#normalizePageSize": 0,
+      "com.jiuyan.banquet.service.OrderService#$deserializeLambda$": 0,
+      "com.jiuyan.banquet.service.OrderService#lambda$orderSpec$6158dec4$1": 0,
+      "com.jiuyan.banquet.service.OrderService#lambda$findOrder$3": 0,
+      "com.jiuyan.banquet.service.OrderService#lambda$findProduct$2": 0,
+      "com.jiuyan.banquet.service.OrderService#lambda$buildPackageSnapshot$1": 0,
+      "com.jiuyan.banquet.service.OrderService#lambda$apply$0": 0,
+      "com.jiuyan.banquet.service.PackageService#list": 1,
+      "com.jiuyan.banquet.service.PackageService#get": 0,
+      "com.jiuyan.banquet.service.PackageService#create": 1,
+      "com.jiuyan.banquet.service.PackageService#update": 1,
+      "com.jiuyan.banquet.service.PackageService#updateStatus": 1,
+      "com.jiuyan.banquet.service.PackageService#delete": 1,
+      "com.jiuyan.banquet.service.PackageService#findPackage": 1,
+      "com.jiuyan.banquet.service.PackageService#applyBase": 1,
+      "com.jiuyan.banquet.service.PackageService#applyItems": 0,
+      "com.jiuyan.banquet.service.PackageService#normalizeItems": 0,
+      "com.jiuyan.banquet.service.PackageService#findProduct": 1,
+      "com.jiuyan.banquet.service.PackageService#packageSpec": 0,
+      "com.jiuyan.banquet.service.PackageService#normalizePage": 0,
+      "com.jiuyan.banquet.service.PackageService#normalizePageSize": 0,
+      "com.jiuyan.banquet.service.PackageService#$deserializeLambda$": 0,
+      "com.jiuyan.banquet.service.PackageService#lambda$packageSpec$cdf9b199$1": 0,
+      "com.jiuyan.banquet.service.PackageService#lambda$findProduct$4": 0,
+      "com.jiuyan.banquet.service.PackageService#lambda$applyItems$3": 0,
+      "com.jiuyan.banquet.service.PackageService#lambda$applyItems$2": 0,
+      "com.jiuyan.banquet.service.PackageService#lambda$applyBase$1": 0,
+      "com.jiuyan.banquet.service.PackageService#lambda$findPackage$0": 0,
+      "com.jiuyan.banquet.service.PackageTypeService#list": 1,
+      "com.jiuyan.banquet.service.PackageTypeService#create": 1,
+      "com.jiuyan.banquet.service.PackageTypeService#delete": 2,
+      "com.jiuyan.banquet.service.PackageTypeService#lambda$delete$1": 0,
+      "com.jiuyan.banquet.service.PackageTypeService#lambda$create$0": 1,
+      "com.jiuyan.banquet.service.ProductService#list": 1,
+      "com.jiuyan.banquet.service.ProductService#create": 1,
+      "com.jiuyan.banquet.service.ProductService#update": 1,
+      "com.jiuyan.banquet.service.ProductService#updateStatus": 2,
+      "com.jiuyan.banquet.service.ProductService#delete": 2,
+      "com.jiuyan.banquet.service.ProductService#findProduct": 1,
+      "com.jiuyan.banquet.service.ProductService#findCategory": 1,
+      "com.jiuyan.banquet.service.ProductService#apply": 0,
+      "com.jiuyan.banquet.service.ProductService#productSpec": 0,
+      "com.jiuyan.banquet.service.ProductService#normalizePage": 0,
+      "com.jiuyan.banquet.service.ProductService#normalizePageSize": 0,
+      "com.jiuyan.banquet.service.ProductService#$deserializeLambda$": 0,
+      "com.jiuyan.banquet.service.ProductService#lambda$productSpec$d619ff4b$1": 0,
+      "com.jiuyan.banquet.service.ProductService#lambda$findCategory$1": 0,
+      "com.jiuyan.banquet.service.ProductService#lambda$findProduct$0": 0,
+      "com.jiuyan.banquet.service.UploadService#uploadProductImage": 0,
+      "com.jiuyan.banquet.service.UploadService#uploadPackageImage": 0,
+      "com.jiuyan.banquet.service.UploadService#uploadImage": 0,
+      "com.jiuyan.banquet.service.UploadService#extension": 0,
+      "table:categories": 0,
+      "table:products": 0,
+      "table:packages": 0,
+      "table:package_items": 0,
+      "table:orders": 0,
+      "table:package_types": 0,
+      "field:BanquetOrder.orderNo": 0,
+      "field:BanquetOrder.customerName": 0,
+      "field:BanquetOrder.customerPhone": 0,
+      "field:BanquetOrder.banquetName": 0,
+      "field:BanquetOrder.banquetType": 0,
+      "field:BanquetOrder.address": 0,
+      "field:BanquetOrder.reservationTime": 0,
+      "field:BanquetOrder.tableCount": 0,
+      "field:BanquetOrder.packageSnapshot": 0,
+      "field:BanquetOrder.addedItemsSnapshot": 0,
+      "field:BanquetOrder.planTotalCent": 0,
+      "field:BanquetOrder.finalPriceCent": 0,
+      "field:BanquetOrder.status": 0,
+      "field:BanquetPackage.name": 0,
+      "field:BanquetPackage.banquetType": 0,
+      "field:BanquetPackage.priceCent": 0,
+      "field:BanquetPackage.imageUrl": 0,
+      "field:BaseEntity.createdAt": 0,
+      "field:BaseEntity.updatedAt": 0,
+      "field:Category.name": 0,
+      "field:PackageItem.quantity": 0,
+      "field:PackageType.name": 0,
+      "field:Product.name": 0,
+      "field:Product.priceCent": 0,
+      "field:Product.unit": 0,
+      "field:Product.imageUrl": 0,
+      "com.jiuyan.banquet.repository.CategoryRepository#save": 1,
+      "com.jiuyan.banquet.repository.CategoryRepository#findById": 1,
+      "com.jiuyan.banquet.repository.OrderRepository#findAll": 1,
+      "com.jiuyan.banquet.repository.OrderRepository#save": 1,
+      "com.jiuyan.banquet.repository.OrderRepository#findById": 1,
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#findAll": 1,
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#save": 1,
+      "com.jiuyan.banquet.repository.PackageTypeRepository#save": 1,
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findById": 1,
+      "com.jiuyan.banquet.repository.ProductRepository#findAll": 1,
+      "com.jiuyan.banquet.repository.ProductRepository#save": 1
+    },
+    "entry_reachable": {
+      "com.jiuyan.banquet.controller.CategoryController#list": 0,
+      "com.jiuyan.banquet.controller.CategoryController#create": 0,
+      "com.jiuyan.banquet.controller.CategoryController#delete": 0,
+      "com.jiuyan.banquet.controller.HealthController#health": 0,
+      "com.jiuyan.banquet.controller.OrderController#list": 0,
+      "com.jiuyan.banquet.controller.OrderController#get": 0,
+      "com.jiuyan.banquet.controller.OrderController#create": 0,
+      "com.jiuyan.banquet.controller.OrderController#update": 0,
+      "com.jiuyan.banquet.controller.OrderController#updateStatus": 0,
+      "com.jiuyan.banquet.controller.PackageController#list": 0,
+      "com.jiuyan.banquet.controller.PackageController#get": 0,
+      "com.jiuyan.banquet.controller.PackageController#create": 0,
+      "com.jiuyan.banquet.controller.PackageController#update": 0,
+      "com.jiuyan.banquet.controller.PackageController#updateStatus": 0,
+      "com.jiuyan.banquet.controller.PackageController#delete": 0,
+      "com.jiuyan.banquet.controller.PackageTypeController#list": 0,
+      "com.jiuyan.banquet.controller.PackageTypeController#create": 0,
+      "com.jiuyan.banquet.controller.PackageTypeController#delete": 0,
+      "com.jiuyan.banquet.controller.ProductController#list": 0,
+      "com.jiuyan.banquet.controller.ProductController#create": 0,
+      "com.jiuyan.banquet.controller.ProductController#update": 0,
+      "com.jiuyan.banquet.controller.ProductController#updateStatus": 0,
+      "com.jiuyan.banquet.controller.ProductController#delete": 0,
+      "com.jiuyan.banquet.controller.UploadController#uploadProductImage": 0,
+      "com.jiuyan.banquet.controller.UploadController#uploadPackageImage": 0,
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#findByIdAndIsDeletedFalse": 0,
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#existsByBanquetTypeAndIsDeletedFalse": 1,
+      "com.jiuyan.banquet.repository.CategoryRepository#findByName": 1,
+      "com.jiuyan.banquet.repository.CategoryRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc": 1,
+      "com.jiuyan.banquet.repository.CategoryRepository#findMaxSortOrder": 0,
+      "com.jiuyan.banquet.repository.OrderRepository#existsByOrderNo": 0,
+      "com.jiuyan.banquet.repository.OrderRepository#findByOrderNo": 0,
+      "com.jiuyan.banquet.repository.PackageItemRepository#existsByProductId": 1,
+      "com.jiuyan.banquet.repository.PackageItemRepository#existsNonDeletedPackageReferenceByProductId": 1,
+      "com.jiuyan.banquet.repository.PackageItemRepository#findByBanquetPackageId": 0,
+      "com.jiuyan.banquet.repository.PackageItemRepository#deleteByBanquetPackageId": 0,
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findByName": 1,
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findByNameAndIsDeletedFalse": 0,
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc": 1,
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findMaxSortOrder": 0,
+      "com.jiuyan.banquet.repository.ProductRepository#findByIdAndIsDeletedFalse": 0,
+      "com.jiuyan.banquet.repository.ProductRepository#existsByCategoryIdAndIsDeletedFalse": 1,
+      "com.jiuyan.banquet.service.CategoryService#list": 1,
+      "com.jiuyan.banquet.service.CategoryService#create": 1,
+      "com.jiuyan.banquet.service.CategoryService#delete": 1,
+      "com.jiuyan.banquet.service.CategoryService#lambda$delete$1": 0,
+      "com.jiuyan.banquet.service.CategoryService#lambda$create$0": 0,
+      "com.jiuyan.banquet.service.OrderService#list": 1,
+      "com.jiuyan.banquet.service.OrderService#get": 1,
+      "com.jiuyan.banquet.service.OrderService#create": 1,
+      "com.jiuyan.banquet.service.OrderService#update": 1,
+      "com.jiuyan.banquet.service.OrderService#updateStatus": 1,
+      "com.jiuyan.banquet.service.OrderService#apply": 0,
+      "com.jiuyan.banquet.service.OrderService#resolveFinalPrice": 0,
+      "com.jiuyan.banquet.service.OrderService#buildPackageSnapshot": 0,
+      "com.jiuyan.banquet.service.OrderService#buildAddedItemsSnapshot": 0,
+      "com.jiuyan.banquet.service.OrderService#packageItemSnapshot": 0,
+      "com.jiuyan.banquet.service.OrderService#productSnapshot": 0,
+      "com.jiuyan.banquet.service.OrderService#normalizePackageItems": 0,
+      "com.jiuyan.banquet.service.OrderService#normalizeAddedItems": 0,
+      "com.jiuyan.banquet.service.OrderService#findProduct": 0,
+      "com.jiuyan.banquet.service.OrderService#findOrder": 0,
+      "com.jiuyan.banquet.service.OrderService#generateOrderNo": 0,
+      "com.jiuyan.banquet.service.OrderService#parseStatus": 0,
+      "com.jiuyan.banquet.service.OrderService#parseDateScope": 0,
+      "com.jiuyan.banquet.service.OrderService#orderSpec": 0,
+      "com.jiuyan.banquet.service.OrderService#normalizePage": 0,
+      "com.jiuyan.banquet.service.OrderService#normalizePageSize": 0,
+      "com.jiuyan.banquet.service.OrderService#$deserializeLambda$": 0,
+      "com.jiuyan.banquet.service.OrderService#lambda$orderSpec$6158dec4$1": 0,
+      "com.jiuyan.banquet.service.OrderService#lambda$findOrder$3": 0,
+      "com.jiuyan.banquet.service.OrderService#lambda$findProduct$2": 0,
+      "com.jiuyan.banquet.service.OrderService#lambda$buildPackageSnapshot$1": 0,
+      "com.jiuyan.banquet.service.OrderService#lambda$apply$0": 0,
+      "com.jiuyan.banquet.service.PackageService#list": 1,
+      "com.jiuyan.banquet.service.PackageService#get": 1,
+      "com.jiuyan.banquet.service.PackageService#create": 1,
+      "com.jiuyan.banquet.service.PackageService#update": 1,
+      "com.jiuyan.banquet.service.PackageService#updateStatus": 1,
+      "com.jiuyan.banquet.service.PackageService#delete": 1,
+      "com.jiuyan.banquet.service.PackageService#findPackage": 0,
+      "com.jiuyan.banquet.service.PackageService#applyBase": 0,
+      "com.jiuyan.banquet.service.PackageService#applyItems": 0,
+      "com.jiuyan.banquet.service.PackageService#normalizeItems": 0,
+      "com.jiuyan.banquet.service.PackageService#findProduct": 0,
+      "com.jiuyan.banquet.service.PackageService#packageSpec": 0,
+      "com.jiuyan.banquet.service.PackageService#normalizePage": 0,
+      "com.jiuyan.banquet.service.PackageService#normalizePageSize": 0,
+      "com.jiuyan.banquet.service.PackageService#$deserializeLambda$": 0,
+      "com.jiuyan.banquet.service.PackageService#lambda$packageSpec$cdf9b199$1": 0,
+      "com.jiuyan.banquet.service.PackageService#lambda$findProduct$4": 0,
+      "com.jiuyan.banquet.service.PackageService#lambda$applyItems$3": 0,
+      "com.jiuyan.banquet.service.PackageService#lambda$applyItems$2": 0,
+      "com.jiuyan.banquet.service.PackageService#lambda$applyBase$1": 0,
+      "com.jiuyan.banquet.service.PackageService#lambda$findPackage$0": 0,
+      "com.jiuyan.banquet.service.PackageTypeService#list": 1,
+      "com.jiuyan.banquet.service.PackageTypeService#create": 1,
+      "com.jiuyan.banquet.service.PackageTypeService#delete": 1,
+      "com.jiuyan.banquet.service.PackageTypeService#lambda$delete$1": 0,
+      "com.jiuyan.banquet.service.PackageTypeService#lambda$create$0": 0,
+      "com.jiuyan.banquet.service.ProductService#list": 1,
+      "com.jiuyan.banquet.service.ProductService#create": 1,
+      "com.jiuyan.banquet.service.ProductService#update": 1,
+      "com.jiuyan.banquet.service.ProductService#updateStatus": 1,
+      "com.jiuyan.banquet.service.ProductService#delete": 1,
+      "com.jiuyan.banquet.service.ProductService#findProduct": 0,
+      "com.jiuyan.banquet.service.ProductService#findCategory": 0,
+      "com.jiuyan.banquet.service.ProductService#apply": 0,
+      "com.jiuyan.banquet.service.ProductService#productSpec": 0,
+      "com.jiuyan.banquet.service.ProductService#normalizePage": 0,
+      "com.jiuyan.banquet.service.ProductService#normalizePageSize": 0,
+      "com.jiuyan.banquet.service.ProductService#$deserializeLambda$": 0,
+      "com.jiuyan.banquet.service.ProductService#lambda$productSpec$d619ff4b$1": 0,
+      "com.jiuyan.banquet.service.ProductService#lambda$findCategory$1": 0,
+      "com.jiuyan.banquet.service.ProductService#lambda$findProduct$0": 0,
+      "com.jiuyan.banquet.service.UploadService#uploadProductImage": 1,
+      "com.jiuyan.banquet.service.UploadService#uploadPackageImage": 1,
+      "com.jiuyan.banquet.service.UploadService#uploadImage": 0,
+      "com.jiuyan.banquet.service.UploadService#extension": 0,
+      "table:categories": 3,
+      "table:products": 6,
+      "table:packages": 6,
+      "table:package_items": 2,
+      "table:orders": 4,
+      "table:package_types": 3,
+      "field:BanquetOrder.orderNo": 1,
+      "field:BanquetOrder.customerName": 0,
+      "field:BanquetOrder.customerPhone": 0,
+      "field:BanquetOrder.banquetName": 0,
+      "field:BanquetOrder.banquetType": 0,
+      "field:BanquetOrder.address": 0,
+      "field:BanquetOrder.reservationTime": 0,
+      "field:BanquetOrder.tableCount": 0,
+      "field:BanquetOrder.packageSnapshot": 0,
+      "field:BanquetOrder.addedItemsSnapshot": 0,
+      "field:BanquetOrder.planTotalCent": 0,
+      "field:BanquetOrder.finalPriceCent": 0,
+      "field:BanquetOrder.status": 1,
+      "field:BanquetPackage.name": 0,
+      "field:BanquetPackage.banquetType": 0,
+      "field:BanquetPackage.priceCent": 0,
+      "field:BanquetPackage.imageUrl": 0,
+      "field:BaseEntity.createdAt": 0,
+      "field:BaseEntity.updatedAt": 0,
+      "field:Category.name": 0,
+      "field:PackageItem.quantity": 0,
+      "field:PackageType.name": 0,
+      "field:Product.name": 0,
+      "field:Product.priceCent": 0,
+      "field:Product.unit": 0,
+      "field:Product.imageUrl": 0,
+      "com.jiuyan.banquet.repository.CategoryRepository#save": 2,
+      "com.jiuyan.banquet.repository.CategoryRepository#findById": 1,
+      "com.jiuyan.banquet.repository.OrderRepository#findAll": 1,
+      "com.jiuyan.banquet.repository.OrderRepository#save": 3,
+      "com.jiuyan.banquet.repository.OrderRepository#findById": 0,
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#findAll": 1,
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#save": 4,
+      "com.jiuyan.banquet.repository.PackageTypeRepository#save": 2,
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findById": 1,
+      "com.jiuyan.banquet.repository.ProductRepository#findAll": 1,
+      "com.jiuyan.banquet.repository.ProductRepository#save": 4
+    }
+  }
+}

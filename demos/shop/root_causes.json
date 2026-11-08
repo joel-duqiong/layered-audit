@@ -1,12 +1,86 @@
 {
   "generated_from": "aggregate_findings.py",
   "summary": {
-    "findings": 1,
-    "root_causes": 1,
-    "collapsed": 0,
+    "findings": 16,
+    "root_causes": 13,
+    "collapsed": 3,
     "violations": 0
   },
   "root_causes": [
+    {
+      "root_cause_key": "error.business_error_as_500",
+      "title": "业务规则失败被当成服务器错误抛出去：customerName 不存在（服务层抛异常） -> HTTP 500",
+      "severity": "HIGH",
+      "owner_layer": "class",
+      "categories": [
+        "class.contract_violation"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:CLASS-BUSINESS-ERROR-AS-500#4"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-755"
+      ],
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "repro_cmds": [],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
+      "related_root_causes": []
+    },
+    {
+      "root_cause_key": "inheritance.touch_postcondition_changed",
+      "title": "com.demo.shop.entity.ShopOrder 覆写 com.demo.shop.entity.AuditableEntity.touch 后置条件变了：updatedBy 不再相同",
+      "severity": "HIGH",
+      "owner_layer": "class",
+      "categories": [
+        "class.inheritance_design"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:CLASS-LSP-POSTCONDITION-CHANGED#0"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-840"
+      ],
+      "confidence": 0.95,
+      "ground_truth": "verified",
+      "repro_cmds": [],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
+      "related_root_causes": []
+    },
     {
       "root_cause_key": "order.quota_ledger_amount_divergence",
       "title": "额度占用额（报价）与账本记录额（实付）在会员链路上口径分裂",
@@ -48,6 +122,373 @@
         "order.quota_checked_on_quoted_amount_ledger_on_settled",
         "pricing.member_tier_bound_to_deployment_profile"
       ]
+    },
+    {
+      "root_cause_key": "pricing.member_tier_bound_to_deployment_profile",
+      "title": "同一请求在两个部署实例上结果不同：settledAmountCent 分叉",
+      "severity": "HIGH",
+      "owner_layer": "class",
+      "categories": [
+        "class.invariant"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:CLASS-CONDITIONAL-ASSEMBLY-DIVERGENCE#2"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-840"
+      ],
+      "confidence": 0.94,
+      "ground_truth": "verified",
+      "repro_cmds": [],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
+      "related_root_causes": []
+    },
+    {
+      "root_cause_key": "rule.missing_in_db_dto_service",
+      "title": "3 条业务不变量在 DB / DTO / 服务层三层全都不存在",
+      "severity": "HIGH",
+      "owner_layer": "class",
+      "categories": [
+        "class.invariant"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:CLASS-RULE-MISSING-IN-ALL-LAYERS#3"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-840"
+      ],
+      "confidence": 0.85,
+      "ground_truth": "verified",
+      "repro_cmds": [],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
+      "related_root_causes": []
+    },
+    {
+      "root_cause_key": "service.product_service_returns_internal_entities",
+      "title": "com.demo.shop.service.ProductService.snapshot 把内部实体集合直接交出去",
+      "severity": "HIGH",
+      "owner_layer": "class",
+      "categories": [
+        "class.encapsulation_leak"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:CLASS-ENCAPSULATION-LEAK-ENTITY-COLLECTION#1"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-495"
+      ],
+      "confidence": 0.92,
+      "ground_truth": "verified",
+      "repro_cmds": [],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
+      "related_root_causes": []
+    },
+    {
+      "root_cause_key": "entity.no_value_equality",
+      "title": "ShopOrder 没有值相等：放进集合或当键，语义会变",
+      "severity": "MEDIUM",
+      "owner_layer": "class",
+      "categories": [
+        "class.invariant"
+      ],
+      "category_fit": [
+        "stretched"
+      ],
+      "finding_count": 4,
+      "finding_uids": [
+        "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#5",
+        "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#6",
+        "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#7",
+        "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#8"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-595"
+      ],
+      "confidence": 0.8,
+      "ground_truth": "verified",
+      "repro_cmds": [],
+      "violations": [],
+      "notes": [],
+      "merges": [
+        "class 层同一根因开了 4 条 own，可归并为 1 条根因"
+      ],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 4
+      },
+      "related_root_causes": []
+    },
+    {
+      "root_cause_key": "cache.holds_mutable_container",
+      "title": "com.demo.shop.service.ProductService.listCached 缓存里放的是可变容器",
+      "severity": "MEDIUM",
+      "owner_layer": "class",
+      "categories": [
+        "class.encapsulation_leak"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:CLASS-CACHE-HOLDS-MUTABLE-CONTAINER#9"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-471"
+      ],
+      "confidence": 0.88,
+      "ground_truth": "verified",
+      "repro_cmds": [],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
+      "related_root_causes": []
+    },
+    {
+      "root_cause_key": "dto.primitive_hides_missing_required_field",
+      "title": "shop_order.quoted_amount_cent 声明 NOT NULL，DTO 用原始类型 long —— 缺省静默变成 0",
+      "severity": "MEDIUM",
+      "owner_layer": "class",
+      "categories": [
+        "class.contract_violation"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:CLASS-PRIMITIVE-NULLABLE-BY-DESIGN#11"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [
+        "CWE-20"
+      ],
+      "confidence": 0.9,
+      "ground_truth": "verified",
+      "repro_cmds": [],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
+      "related_root_causes": []
+    },
+    {
+      "root_cause_key": "rule.check_without_dto_counterpart",
+      "title": "3 条 DB CHECK 在 DTO 层找不到同义约束",
+      "severity": "MEDIUM",
+      "owner_layer": "class",
+      "categories": [
+        "class.invariant"
+      ],
+      "category_fit": [
+        "stretched"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:CLASS-CHECK-WITHOUT-DTO-COUNTERPART#12"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.75,
+      "ground_truth": "verified",
+      "repro_cmds": [],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
+      "related_root_causes": []
+    },
+    {
+      "root_cause_key": "shop_order.no_data_lifecycle",
+      "title": "shop_order 表没有软删/归档，永久增长（当前 56 kB）",
+      "severity": "MEDIUM",
+      "owner_layer": "class",
+      "categories": [
+        "class.invariant"
+      ],
+      "category_fit": [
+        "stretched"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:NO_DATA_LIFECYCLE#10"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.8,
+      "ground_truth": "verified",
+      "repro_cmds": [],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
+      "related_root_causes": []
+    },
+    {
+      "root_cause_key": "check.dto_aligned",
+      "title": "1/4 条 DB CHECK 在 DTO 层都有同义约束，防线链条闭合",
+      "severity": "INFO",
+      "owner_layer": "class",
+      "categories": [
+        "class.invariant"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:CLASS-CHECK-DTO-ALIGNED#14"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.95,
+      "ground_truth": "verified",
+      "repro_cmds": [],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
+      "related_root_causes": []
+    },
+    {
+      "root_cause_key": "nullability.three_way_aligned",
+      "title": "可空性三方一致 1/2 列（同向设防 1 · DTO 更严 0 · 都可空 0）",
+      "severity": "INFO",
+      "owner_layer": "class",
+      "categories": [
+        "class.contract_violation"
+      ],
+      "category_fit": [
+        "exact"
+      ],
+      "finding_count": 1,
+      "finding_uids": [
+        "class:CLASS-NULLABILITY-ALIGNED#13"
+      ],
+      "layers_own": [
+        "class"
+      ],
+      "layers_all": [
+        "class"
+      ],
+      "cited_from": [],
+      "cwe": [],
+      "confidence": 0.95,
+      "ground_truth": "verified",
+      "repro_cmds": [],
+      "violations": [],
+      "notes": [],
+      "merges": [],
+      "evidence_fidelity": "hybrid",
+      "fidelity_breakdown": {
+        "hybrid": 1
+      },
+      "related_root_causes": []
     }
   ],
   "coverage": {
@@ -64,10 +505,10 @@
         "cohesion": 0
       },
       "class": {
-        "encapsulation_leak": 0,
-        "invariant": 0,
-        "contract_violation": 0,
-        "inheritance_design": 0
+        "encapsulation_leak": 2,
+        "invariant": 9,
+        "contract_violation": 3,
+        "inheritance_design": 1
       },
       "service": {
         "interface_contract": 0,
@@ -93,10 +534,6 @@
       "file.state_consistency",
       "file.error_handling_pattern",
       "file.cohesion",
-      "class.encapsulation_leak",
-      "class.invariant",
-      "class.contract_violation",
-      "class.inheritance_design",
       "service.interface_contract",
       "service.resilience",
       "service.authz",
@@ -110,8 +547,22 @@
     ],
     "unmapped_uids": [],
     "unmapped_by_layer": {},
-    "files_with_multiple_root_causes": {},
-    "root_cause_count": 1,
-    "finding_count": 1
+    "files_with_multiple_root_causes": {
+      "/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/backend/src/main/java/com/demo/shop/entity/ShopOrder.java": [
+        "entity.no_value_equality",
+        "inheritance.touch_postcondition_changed",
+        "shop_order.no_data_lifecycle"
+      ],
+      "/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/backend/src/main/java/com/demo/shop/service/ProductService.java": [
+        "cache.holds_mutable_container",
+        "service.product_service_returns_internal_entities"
+      ],
+      "/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/backend/src/main/java/com/demo/shop/service/OrderService.java": [
+        "error.business_error_as_500",
+        "order.quota_ledger_amount_divergence"
+      ]
+    },
+    "root_cause_count": 13,
+    "finding_count": 16
   }
 }
