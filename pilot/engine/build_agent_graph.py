@@ -219,6 +219,28 @@ def _evidence_index(units: dict[str, list[dict[str, Any]]]
         if "#" in target:
             cases[target].append(case)
 
+    # 同层单元的别名索引：
+    #   文件层单元 = 一个源文件（key 是它的主类全名，file 是相对路径）
+    #   类层单元   = 一个类（key 是简单类名）
+    #   服务层单元 = 服务边界（key 是 service:<name>）
+    # 结论只能记到**同层**的单元头上 —— 函数层的缺陷不决定某个文件的
+    # 「内聚性」义务成立与否，反之亦然。
+    file_by_rel: dict[str, str] = {}
+    class_units: set[str] = set()
+    service_units: set[str] = set()
+    for layer, layer_units in units.items():
+        for u in layer_units:
+            key = u["unit_key"]
+            rel = u.get("file") or ""
+            # 只收**文件层**的单元：函数单元也带 file 字段，而且排在前面 ——
+            # 混进来的话，同一个路径会映射到函数单元的 key 上。
+            if rel and layer == "file":
+                file_by_rel.setdefault(rel, key)
+            if layer == "class":
+                class_units.add(key)
+            elif layer == "service":
+                service_units.add(key)
+
     findings_by_unit: dict[str, list[dict[str, Any]]] = defaultdict(list)
     af = _load("all_findings.json") or {}
     for rec in af.get("findings") or []:
@@ -229,6 +251,31 @@ def _evidence_index(units: dict[str, list[dict[str, Any]]]
         fqn = simple_to_fqn.get(simple, "")
         keys = {k for k in (f"{fqn}#{method}" if fqn else "", f"{simple}#{method}" if simple else "",
                             sym, loc.get("file", "")) if k}
+        # 层以类别的层为准（类别带层前缀），没有类别就看结论自己的层
+        cat_layer = (rec.get("category") or "").partition(".")[0]
+        layer = cat_layer if cat_layer in ("function", "file", "class", "service", "integration") \
+            else (rec.get("layer") or "")
+        if layer == "class":
+            # 类层单元的 key 是简单类名。类层结论的 location.symbol 常是空的，
+            # 定位在 location.file（实体的源文件）—— 用文件名反查类名。
+            if simple in class_units:
+                keys.add(simple)
+            if fqn in class_units:
+                keys.add(fqn)
+            abs_path = loc.get("file") or ""
+            base = abs_path.rsplit("/", 1)[-1] if abs_path else ""
+            if base.endswith(".java"):
+                base = base[:-len(".java")]
+            if base and base in class_units:
+                keys.add(base)
+        elif layer == "service":
+            keys |= service_units
+        elif layer == "file":
+            # 文件层单元按路径后缀匹配（结论里的路径是绝对路径，单元里是相对路径）
+            abs_path = loc.get("file") or ""
+            for rel, key in file_by_rel.items():
+                if abs_path and abs_path.endswith(rel):
+                    keys.add(key)
         for k in keys:
             findings_by_unit[k].append(rec)
     return cases, findings_by_unit
@@ -298,8 +345,12 @@ def _build_units(roles: dict[str, dict[str, Any]],
             def _own(cat: str) -> bool:
                 return bool(cat) and cat.partition(".")[0] == layer
 
-            satisfied_categories = sorted({c["category"] for c in passing
-                                           if c.get("category") and _own(c["category"])})
+            satisfied_categories = sorted(
+                {c["category"] for c in passing
+                 if c.get("category") and _own(c["category"])}
+                # 同层的**正面结论**也算「这一类义务被验过、且成立」
+                | {f.get("category") for f in positive
+                   if f.get("category") and _own(f.get("category"))})
             violated_categories = sorted({c["category"] for c in failing
                                           if c.get("category") and _own(c["category"])}
                                          | {f.get("category") for f in violated

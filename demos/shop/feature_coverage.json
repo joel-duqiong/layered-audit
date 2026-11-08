@@ -1,0 +1,160 @@
+{
+  "generated_from": "feature_coverage.py",
+  "carriers": [
+    {
+      "carrier": "function.jvm_reflection",
+      "layer": "function",
+      "language": "java",
+      "blind_to": []
+    },
+    {
+      "carrier": "file.jvm_whole_class",
+      "layer": "file",
+      "language": "java",
+      "blind_to": []
+    },
+    {
+      "carrier": "class.dto_db_contract",
+      "layer": "class",
+      "language": "java",
+      "blind_to": []
+    },
+    {
+      "carrier": "service.http_contract",
+      "layer": "service",
+      "language": "java",
+      "blind_to": []
+    },
+    {
+      "carrier": "integration.e2e_three_source",
+      "layer": "integration",
+      "language": "java+python",
+      "blind_to": []
+    }
+  ],
+  "matrix": [
+    {
+      "feature": "rpc_boundary",
+      "label": "跨仓库调用边界（HTTP / MQ / RPC）",
+      "detector": "xrepo_probe.py",
+      "detector_ok": true,
+      "covered_by": [
+        "integration.e2e_three_source"
+      ],
+      "blind_carriers": [
+        "function.jvm_reflection",
+        "file.jvm_whole_class"
+      ],
+      "status": "partial",
+      "affected_findings": [
+        "file.contract_alignment",
+        "file.error_handling_pattern"
+      ],
+      "affected_count": 2,
+      "note": "demo 的集成层载体**含跨仓库**（Java 后端 → python-svc 的 /fx）：边被真跑确认（xrepo_probe 观测对端计数），并且跨仓库契约的问题开出了单 —— 文件层的 FILE-FX-FALLBACK-WRONG-SCALE（兜底值与正常刻度不是一个量纲）。jiuyan 侧这一格是盲的（它没有跨仓库调用）。"
+    },
+    {
+      "feature": "aop_aspect",
+      "label": "AOP 切面（代理织入）",
+      "detector": "java_feature_scan.py",
+      "detector_ok": true,
+      "covered_by": [
+        "integration.e2e_three_source"
+      ],
+      "blind_carriers": [
+        "function.jvm_reflection",
+        "file.jvm_whole_class"
+      ],
+      "status": "partial",
+      "affected_findings": [
+        "file.contract_alignment",
+        "file.error_handling_pattern"
+      ],
+      "affected_count": 2,
+      "note": "demo 的 @Profile 条件装配必须**起两个实例对比**才看得见（default 与 vip），所以只有集成层载体覆盖它；类层能看见 @Profile 注解本身，但看不见装配结果。"
+    },
+    {
+      "feature": "dependency_injection",
+      "label": "依赖注入装配",
+      "detector": "java_feature_scan.py",
+      "detector_ok": true,
+      "covered_by": [
+        "class.dto_db_contract",
+        "integration.e2e_three_source"
+      ],
+      "blind_carriers": [
+        "function.jvm_reflection",
+        "file.jvm_whole_class"
+      ],
+      "status": "partial",
+      "affected_findings": [
+        "file.contract_alignment",
+        "file.error_handling_pattern"
+      ],
+      "affected_count": 2,
+      "note": "类层的类形状探针能看见 @Profile/@Primary/@Qualifier 注解，集成层能看见**装配结果**（两个实例行为分叉）；但「装配图本身」（327 个 bean 谁注入谁）仍然没有运行时证据 ——Spring 上下文探针还没做（DESIGN §6.4 第 3 项）。"
+    },
+    {
+      "feature": "dynamic_config",
+      "label": "动态配置注入（@Value / 配置绑定 / 配置刷新）",
+      "detector": "java_feature_scan.py",
+      "detector_ok": true,
+      "covered_by": [],
+      "blind_carriers": [
+        "function.jvm_reflection",
+        "file.jvm_whole_class",
+        "service.http_contract"
+      ],
+      "status": "blind",
+      "affected_findings": [
+        "file.contract_alignment",
+        "file.error_handling_pattern",
+        "service.data_consistency"
+      ],
+      "affected_count": 3,
+      "note": "demo 的 @Value 只有一个（app.fx-base-url），且它的兜底值写错了量纲 —— 但**那不是配置绑定的问题，是兜底常量的问题**。属性溯源与宽松绑定矩阵还没做（DESIGN §6.4 第 4 项）。"
+    },
+    {
+      "feature": "jpa_persistence",
+      "label": "JPA 持久化（懒加载 / N+1 / 脏写）",
+      "detector": "java_feature_scan.py",
+      "detector_ok": true,
+      "covered_by": [
+        "class.dto_db_contract",
+        "service.http_contract"
+      ],
+      "blind_carriers": [
+        "function.jvm_reflection",
+        "file.jvm_whole_class"
+      ],
+      "status": "partial",
+      "affected_findings": [
+        "file.contract_alignment",
+        "file.error_handling_pattern"
+      ],
+      "affected_count": 2,
+      "note": "类层的 DTO↔实体↔DB 三方差分 + 服务层的真实容器实测覆盖了 demo 的 JPA 面。"
+    },
+    {
+      "feature": "http_contract",
+      "label": "HTTP 契约（请求/响应形状 / 错误码）",
+      "detector": null,
+      "detector_ok": null,
+      "covered_by": [
+        "service.http_contract"
+      ],
+      "blind_carriers": [],
+      "status": "covered",
+      "affected_findings": [],
+      "affected_count": 0,
+      "note": "demo 的服务层差分跑在真实容器上（demo-shop-backend / -vip 两个实例）。"
+    }
+  ],
+  "summary": {
+    "features": 6,
+    "covered": 1,
+    "partial": 4,
+    "blind": 1,
+    "detectors_failing": []
+  }
+}

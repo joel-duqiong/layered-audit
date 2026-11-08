@@ -939,7 +939,7 @@
       "runtime_fidelity": "container",
       "severity": "HIGH",
       "title": "额度占用额（通过授信额度检查的报价）是否等于账本记录额（实付）？",
-      "detail": "授信额度按客户报价检查并占住，账本按实付记录。两个口径必须相等 —— 不相等就意味着「额度被占住了，却没有对应的账目」，差额就是被白占的额度。\n不变式：BI-QUOTA-LEDGER-PARITY　判定原语：field_eq_field\n实测 3 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 559,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 810000,\n    \"ok\": false,\n    \"scenario\": \"vip_on_vip\"\n  }\n]",
+      "detail": "授信额度按客户报价检查并占住，账本按实付记录。两个口径必须相等 —— 不相等就意味着「额度被占住了，却没有对应的账目」，差额就是被白占的额度。\n不变式：BI-QUOTA-LEDGER-PARITY　判定原语：field_eq_field\n实测 3 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 586,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 810000,\n    \"ok\": false,\n    \"scenario\": \"vip_on_vip\"\n  }\n]",
       "related": [],
       "note": "服务层 OrderService.create 里额度检查用 quotedAmountCent、账本记录用 settled —— 两个口径。单条件都不分裂：普通客户 + 会员装配不分裂，VIP 客户 + 标准装配也不分裂；两个条件同时成立才分裂（实测 3 个场景里只有这一组违反）。服务层是能给可复现证据的最低层，故 owner 归 service",
       "source": {
@@ -988,7 +988,7 @@
       "runtime_fidelity": "container",
       "severity": "HIGH",
       "title": "VIP 客户的结算额是否享受了会员价（报价的 9/10）？",
-      "detail": "会员价是**客户等级**维度的价格规则：VIP 客户在任何部署环境下都应当拿到九折。这条不变式只对 VIP 客户适用（when 条件），衡量的是「等级条件有没有真的落到定价上」。\n不变式：BI-VIP-MEMBER-PRICE　判定原语：field_eq_field\n实测 2 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 558,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 810000,\n    \"ok\": false,\n    \"scenario\": \"vip_on_default\"\n  }\n]",
+      "detail": "会员价是**客户等级**维度的价格规则：VIP 客户在任何部署环境下都应当拿到九折。这条不变式只对 VIP 客户适用（when 条件），衡量的是「等级条件有没有真的落到定价上」。\n不变式：BI-VIP-MEMBER-PRICE　判定原语：field_eq_field\n实测 2 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 585,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 810000,\n    \"ok\": false,\n    \"scenario\": \"vip_on_default\"\n  }\n]",
       "related": [],
       "note": "服务层实测到：VIP 客户在标准装配下拿不到九折（结算额 = 报价额）。根因是「业务维度（客户等级）被绑到部署维度（@Profile）」—— 那是类层的结构问题，类层已经 own（CLASS-CONDITIONAL-ASSEMBLY-DIVERGENCE）。本层只作行为佐证，不重复开单",
       "source": {

@@ -1,66 +1,18 @@
 {
   "counts": {
     "units": 532,
-    "verified_units": 6,
-    "observed_only_units": 13,
-    "unknown_units": 513,
-    "verified_ratio": 0.0113,
+    "verified_units": 34,
+    "observed_only_units": 0,
+    "unknown_units": 498,
+    "verified_ratio": 0.0639,
     "obligations": {
-      "satisfied": 0,
-      "violated": 6,
-      "unknown": 2125
+      "satisfied": 22,
+      "violated": 63,
+      "unknown": 2067
     },
-    "root_causes_with_multiple_carriers": 0
+    "root_causes_with_multiple_carriers": 12
   },
   "top_blind_spots": [
-    {
-      "unit_key": "com.jiuyan.banquet.service.OrderService",
-      "layer": "file",
-      "symbol": "OrderService",
-      "centrality": 5,
-      "logic": {
-        "branches": 56,
-        "side_effects": 16,
-        "null_guards": 9,
-        "is_pure": false,
-        "score": 173
-      },
-      "priority": 870,
-      "status": "UNKNOWN",
-      "observations": 0,
-      "agents": 4,
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 4
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.service.PackageService",
-      "layer": "file",
-      "symbol": "PackageService",
-      "centrality": 6,
-      "logic": {
-        "branches": 30,
-        "side_effects": 13,
-        "null_guards": 5,
-        "is_pure": false,
-        "score": 119
-      },
-      "priority": 720,
-      "status": "UNKNOWN",
-      "observations": 0,
-      "agents": 4,
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 4
-      },
-      "cases": 0,
-      "root_causes": []
-    },
     {
       "unit_key": "com.jiuyan.banquet.service.ProductService",
       "layer": "file",
@@ -122,102 +74,6 @@
         "score": 51
       },
       "priority": 156,
-      "status": "UNKNOWN",
-      "observations": 0,
-      "agents": 4,
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 4
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.service.UploadService",
-      "layer": "file",
-      "symbol": "UploadService",
-      "centrality": 2,
-      "logic": {
-        "branches": 11,
-        "side_effects": 7,
-        "null_guards": 3,
-        "is_pure": false,
-        "score": 40
-      },
-      "priority": 82,
-      "status": "UNKNOWN",
-      "observations": 0,
-      "agents": 4,
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 4
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.entity.BanquetOrder",
-      "layer": "file",
-      "symbol": "BanquetOrder",
-      "centrality": 46,
-      "logic": {
-        "branches": 0,
-        "side_effects": 0,
-        "null_guards": 0,
-        "is_pure": true,
-        "score": 0
-      },
-      "priority": 46,
-      "status": "UNKNOWN",
-      "observations": 0,
-      "agents": 4,
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 4
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.entity.Product",
-      "layer": "file",
-      "symbol": "Product",
-      "centrality": 42,
-      "logic": {
-        "branches": 0,
-        "side_effects": 0,
-        "null_guards": 0,
-        "is_pure": true,
-        "score": 0
-      },
-      "priority": 42,
-      "status": "UNKNOWN",
-      "observations": 0,
-      "agents": 4,
-      "obligations": {
-        "satisfied": 0,
-        "violated": 0,
-        "unknown": 4
-      },
-      "cases": 0,
-      "root_causes": []
-    },
-    {
-      "unit_key": "com.jiuyan.banquet.entity.BanquetPackage",
-      "layer": "file",
-      "symbol": "BanquetPackage",
-      "centrality": 35,
-      "logic": {
-        "branches": 0,
-        "side_effects": 0,
-        "null_guards": 0,
-        "is_pure": true,
-        "score": 0
-      },
-      "priority": 35,
       "status": "UNKNOWN",
       "observations": 0,
       "agents": 4,
@@ -612,26 +468,301 @@
       },
       "cases": 0,
       "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.service.PackageService#updateStatus",
+      "layer": "function",
+      "symbol": "PackageService.updateStatus",
+      "centrality": 1,
+      "logic": {
+        "branches": 0,
+        "side_effects": 2,
+        "null_guards": 0,
+        "is_pure": false,
+        "score": 11
+      },
+      "priority": 12,
+      "status": "UNKNOWN",
+      "observations": 0,
+      "agents": 4,
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 4
+      },
+      "cases": 0,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.service.PackageService#delete",
+      "layer": "function",
+      "symbol": "PackageService.delete",
+      "centrality": 1,
+      "logic": {
+        "branches": 0,
+        "side_effects": 2,
+        "null_guards": 0,
+        "is_pure": false,
+        "score": 11
+      },
+      "priority": 12,
+      "status": "UNKNOWN",
+      "observations": 0,
+      "agents": 4,
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 4
+      },
+      "cases": 0,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.service.ProductService#create",
+      "layer": "function",
+      "symbol": "ProductService.create",
+      "centrality": 1,
+      "logic": {
+        "branches": 0,
+        "side_effects": 2,
+        "null_guards": 0,
+        "is_pure": false,
+        "score": 11
+      },
+      "priority": 12,
+      "status": "UNKNOWN",
+      "observations": 0,
+      "agents": 4,
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 4
+      },
+      "cases": 0,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.service.ProductService#update",
+      "layer": "function",
+      "symbol": "ProductService.update",
+      "centrality": 1,
+      "logic": {
+        "branches": 0,
+        "side_effects": 2,
+        "null_guards": 0,
+        "is_pure": false,
+        "score": 11
+      },
+      "priority": 12,
+      "status": "UNKNOWN",
+      "observations": 0,
+      "agents": 4,
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 4
+      },
+      "cases": 0,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.config.TraceContext#getTraceId",
+      "layer": "function",
+      "symbol": "TraceContext.getTraceId",
+      "centrality": 10,
+      "logic": {
+        "branches": 0,
+        "side_effects": 0,
+        "null_guards": 0,
+        "is_pure": true,
+        "score": 0
+      },
+      "priority": 10,
+      "status": "UNKNOWN",
+      "observations": 0,
+      "agents": 4,
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 4
+      },
+      "cases": 0,
+      "root_causes": []
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.entity.PackageItem",
+      "layer": "file",
+      "symbol": "PackageItem",
+      "centrality": 10,
+      "logic": {
+        "branches": 0,
+        "side_effects": 0,
+        "null_guards": 0,
+        "is_pure": true,
+        "score": 0
+      },
+      "priority": 10,
+      "status": "UNKNOWN",
+      "observations": 0,
+      "agents": 4,
+      "obligations": {
+        "satisfied": 0,
+        "violated": 0,
+        "unknown": 4
+      },
+      "cases": 0,
+      "root_causes": []
     }
   ],
   "root_cause_carriers": {
+    "api.put_full_overwrite": [
+      "Product",
+      "com.jiuyan.banquet.entity.Product"
+    ],
+    "apiresponse.null_body_wrapped_as_success": [
+      "com.jiuyan.banquet.config.ApiResponseAdvice"
+    ],
     "apply.null_input.npe_instead_of_422": [
       "com.jiuyan.banquet.service.OrderService#create"
     ],
+    "audit.client_ip_trusted_from_header": [
+      "com.jiuyan.banquet.config.TraceIdFilter"
+    ],
+    "authz.no_authorization_layer": [
+      "service:api"
+    ],
+    "banquet_package.items_exposed": [
+      "BanquetPackage",
+      "com.jiuyan.banquet.entity.BanquetPackage"
+    ],
+    "column.default_declared_in_three_places": [
+      "BanquetPackage",
+      "Product",
+      "com.jiuyan.banquet.entity.BanquetPackage",
+      "com.jiuyan.banquet.entity.Product"
+    ],
+    "config.bad_upload_dir_kills_startup": [
+      "service:api"
+    ],
+    "cors.allowed_origin_patterns_too_broad": [
+      "com.jiuyan.banquet.config.WebConfig",
+      "service:api"
+    ],
+    "cors.empty_whitelist_fails_open": [
+      "service:api"
+    ],
+    "db.notnull_bypassed_by_empty_string": [
+      "BanquetOrder",
+      "com.jiuyan.banquet.entity.BanquetOrder"
+    ],
+    "dto.required_check_missing": [
+      "BanquetOrder",
+      "com.jiuyan.banquet.entity.BanquetOrder"
+    ],
+    "entity.no_value_equality": [
+      "BanquetOrder",
+      "com.jiuyan.banquet.entity.BanquetOrder"
+    ],
+    "errhandler.badrequest_echoes_body": [
+      "com.jiuyan.banquet.exception.GlobalExceptionHandler"
+    ],
+    "errhandler.client_error_mapped_to_500": [
+      "service:api"
+    ],
+    "errhandler.db_constraint_text_leak": [
+      "com.jiuyan.banquet.exception.GlobalExceptionHandler"
+    ],
+    "errhandler.internal_detail_leak": [
+      "service:api"
+    ],
+    "errhandler.response_shape_inconsistent": [
+      "com.jiuyan.banquet.exception.GlobalExceptionHandler"
+    ],
+    "error.message_mismatch": [
+      "BanquetOrder",
+      "com.jiuyan.banquet.entity.BanquetOrder"
+    ],
+    "index.idx_products_name_unusable": [
+      "service:api"
+    ],
+    "order.added_items_existence_checked": [
+      "service:api"
+    ],
+    "order.amount_consistent_when_not_overridden": [
+      "service:api"
+    ],
     "order.apply.amount_invariants_weak": [
-      "com.jiuyan.banquet.service.OrderService#apply"
+      "com.jiuyan.banquet.service.OrderService#apply",
+      "service:api"
+    ],
+    "order.banquet_type_not_checked_against_package": [
+      "service:api"
+    ],
+    "order.create.n_plus_one_per_item": [
+      "service:api"
+    ],
+    "order.create.not_idempotent": [
+      "service:api"
     ],
     "order.item_quantity_unvalidated": [
       "com.jiuyan.banquet.service.OrderService#normalizePackageItems"
     ],
+    "order.snapshot.item_ownership_unchecked": [
+      "service:api"
+    ],
+    "order.status.transition_unconstrained": [
+      "BanquetOrder",
+      "com.jiuyan.banquet.entity.BanquetOrder"
+    ],
+    "order.update.no_concurrency_control": [
+      "service:api"
+    ],
+    "order.update.transaction_boundary_holds": [
+      "service:api"
+    ],
     "order_no.no_collision_guarantee": [
       "com.jiuyan.banquet.service.OrderService#generateOrderNo"
     ],
+    "orders.no_data_lifecycle": [
+      "BanquetOrder",
+      "com.jiuyan.banquet.entity.BanquetOrder"
+    ],
+    "package.applyItems.mutate_before_validate": [
+      "com.jiuyan.banquet.service.PackageService"
+    ],
+    "package.list.n_plus_one_per_package": [
+      "service:api"
+    ],
+    "pagination.count_total_computed_but_discarded": [
+      "service:api"
+    ],
     "price.final_price.upper_bound_unvalidated": [
-      "com.jiuyan.banquet.service.OrderService#resolveFinalPrice"
+      "com.jiuyan.banquet.service.OrderService#resolveFinalPrice",
+      "service:api"
+    ],
+    "service.helpers.duplicated": [
+      "com.jiuyan.banquet.service.OrderService"
+    ],
+    "spring.transaction_effectiveness_verified": [
+      "service:api"
+    ],
+    "traceid.client_controlled_no_validation": [
+      "com.jiuyan.banquet.config.TraceIdFilter"
+    ],
+    "upload.error.no_path_leak": [
+      "service:api"
+    ],
+    "upload.limit_declared_in_three_places": [
+      "com.jiuyan.banquet.service.UploadService"
     ],
     "upload.no_size_limit": [
       "com.jiuyan.banquet.service.UploadService#uploadImage"
+    ],
+    "validation.status_code_split": [
+      "com.jiuyan.banquet.dto.PackageItemRequest"
+    ],
+    "webconfig.static_root_normalization_env_dependent": [
+      "com.jiuyan.banquet.config.WebConfig"
     ]
   }
 }
