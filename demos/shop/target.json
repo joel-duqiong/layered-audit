@@ -35,7 +35,8 @@
       "name_column": "name",
       "columns": "name, price_cent, stock, category_id",
       "values_sql": "'{{marker}}', 1, 1, (SELECT id FROM shop_category LIMIT 1)"
-    }
+    },
+    "file_cases": "file_cases.json"
   },
   "source_roots": {
     "java": "/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/backend/src/main/java",

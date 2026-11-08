@@ -308,7 +308,9 @@ def main() -> None:
             [{"from": a, "to": b, "calls": c} for (a, b), c in edges.items()],
             key=lambda e: -e["calls"]),
     }
-    out = Path(__file__).with_name("file_declaration.json")
+    # 产物跟着目标走：jiuyan 的 artifacts_dir 就是本目录，行为不变；
+    # 换目标时落到目标自己的 artifacts 目录，不会覆盖别人的产物。
+    out = project.artifact_dir() / "file_declaration.json"
     out.write_text(json.dumps(payload, ensure_ascii=False, indent=2))
 
     print(f"文件层静态 -> {out}")

@@ -1,0 +1,1898 @@
+{
+  "_comment": "文件层用例配置（项目侧）。通用 harness 在 pilot/file_harness/，这里只有项目知识：类名、样本、打桩、断言、期望。改项目只改这个文件。",
+  "meta": {
+    "harness": "JVM 内整类实例化 + 仓库打桩 + 日志捕获；容器探针走真实 HTTP",
+    "upload_sandbox": "/tmp/jiuyan_fn/file/uploads"
+  },
+  "log_package": "com.jiuyan.banquet",
+  "templates": {
+    "updateReq": {
+      "$t": "record",
+      "class": "com.jiuyan.banquet.dto.UpdatePackageRequest",
+      "fields": {
+        "name": "双人精选宴",
+        "banquetType": "婚宴",
+        "priceCent": 46800,
+        "imageUrl": null,
+        "description": null,
+        "isActive": null,
+        "items": [
+          {
+            "productId": 11,
+            "quantity": 2
+          }
+        ]
+      }
+    },
+    "updateReqMissingProduct": {
+      "$t": "record",
+      "class": "com.jiuyan.banquet.dto.UpdatePackageRequest",
+      "fields": {
+        "name": "双人精选宴",
+        "banquetType": "婚宴",
+        "priceCent": 46800,
+        "imageUrl": null,
+        "description": null,
+        "isActive": null,
+        "items": [
+          {
+            "productId": 999999,
+            "quantity": 2
+          }
+        ]
+      }
+    },
+    "updateReqNullType": {
+      "$t": "record",
+      "class": "com.jiuyan.banquet.dto.UpdatePackageRequest",
+      "fields": {
+        "name": "双人精选宴",
+        "banquetType": null,
+        "priceCent": 46800,
+        "imageUrl": null,
+        "description": null,
+        "isActive": null,
+        "items": [
+          {
+            "productId": 11,
+            "quantity": 2
+          }
+        ]
+      }
+    },
+    "updateReqEmptyItems": {
+      "$t": "record",
+      "class": "com.jiuyan.banquet.dto.UpdatePackageRequest",
+      "fields": {
+        "name": "双人精选宴",
+        "banquetType": "婚宴",
+        "priceCent": 46800,
+        "imageUrl": null,
+        "description": null,
+        "isActive": null,
+        "items": []
+      }
+    },
+    "updateReqDuplicateItems": {
+      "$t": "record",
+      "class": "com.jiuyan.banquet.dto.UpdatePackageRequest",
+      "fields": {
+        "name": "双人精选宴",
+        "banquetType": "婚宴",
+        "priceCent": 46800,
+        "imageUrl": null,
+        "description": null,
+        "isActive": null,
+        "items": [
+          {
+            "productId": 11,
+            "quantity": 2
+          },
+          {
+            "productId": 11,
+            "quantity": 2
+          }
+        ]
+      }
+    },
+    "updateReqQtyZero": {
+      "$t": "record",
+      "class": "com.jiuyan.banquet.dto.UpdatePackageRequest",
+      "fields": {
+        "name": "双人精选宴",
+        "banquetType": "婚宴",
+        "priceCent": 46800,
+        "imageUrl": null,
+        "description": null,
+        "isActive": null,
+        "items": [
+          {
+            "productId": 11,
+            "quantity": 0
+          }
+        ]
+      }
+    },
+    "updateReqMissingPackage": {
+      "$t": "record",
+      "class": "com.jiuyan.banquet.dto.UpdatePackageRequest",
+      "fields": {
+        "name": "x",
+        "banquetType": "婚宴",
+        "priceCent": 1,
+        "imageUrl": null,
+        "description": null,
+        "isActive": null,
+        "items": [
+          {
+            "productId": 11,
+            "quantity": 2
+          }
+        ]
+      }
+    },
+    "createReqMissingProduct": {
+      "$t": "record",
+      "class": "com.jiuyan.banquet.dto.CreatePackageRequest",
+      "fields": {
+        "name": "新套餐",
+        "banquetType": "婚宴",
+        "priceCent": 1000,
+        "imageUrl": null,
+        "description": null,
+        "isActive": null,
+        "items": [
+          {
+            "productId": 999999,
+            "quantity": 2
+          }
+        ]
+      }
+    },
+    "allowedOrigins": "http://localhost:[*],http://127.0.0.1:[*],http://192.168.*.*:[*],http://10.*.*.*:[*],http://172.*.*.*:[*]",
+    "uploadDir": "/app/uploads",
+    "traceId": "FILELAYER-TRACE-77",
+    "spoofedIp": "9.9.9.9",
+    "httpPkgBase": {
+      "name": "升学答谢宴",
+      "banquetType": "升学宴",
+      "priceCent": 46800,
+      "imageUrl": "/uploads/seed/packages/package-04.jpg",
+      "description": "适合升学答谢，热菜主食汤品齐全。",
+      "isActive": true
+    }
+  },
+  "fixtures": {
+    "category1": {
+      "$entity": "com.jiuyan.banquet.entity.Category",
+      "fields": {
+        "id": 1,
+        "name": "汤品"
+      }
+    },
+    "product11": {
+      "$entity": "com.jiuyan.banquet.entity.Product",
+      "fields": {
+        "id": 11,
+        "name": "花胶鸡汤",
+        "priceCent": 8800,
+        "unit": "份",
+        "category": {
+          "$fixture": "category1"
+        },
+        "imageUrl": "/uploads/seed/products/product-11.jpg"
+      }
+    },
+    "product13": {
+      "$entity": "com.jiuyan.banquet.entity.Product",
+      "fields": {
+        "id": 13,
+        "name": "红枣莲子羹",
+        "priceCent": 4800,
+        "unit": "份",
+        "category": {
+          "$fixture": "category1"
+        },
+        "imageUrl": "/uploads/seed/products/product-13.jpg"
+      }
+    },
+    "product29": {
+      "$entity": "com.jiuyan.banquet.entity.Product",
+      "fields": {
+        "id": 29,
+        "name": "套餐外商品",
+        "priceCent": 100,
+        "unit": "份",
+        "category": {
+          "$fixture": "category1"
+        },
+        "imageUrl": "/uploads/seed/products/product-29.jpg"
+      }
+    },
+    "packageType": {
+      "$entity": "com.jiuyan.banquet.entity.PackageType",
+      "fields": {
+        "id": 1,
+        "name": "婚宴"
+      }
+    },
+    "item11": {
+      "$entity": "com.jiuyan.banquet.entity.PackageItem",
+      "fields": {
+        "id": 1100,
+        "product": {
+          "$fixture": "product11"
+        },
+        "quantity": 2
+      }
+    },
+    "item13": {
+      "$entity": "com.jiuyan.banquet.entity.PackageItem",
+      "fields": {
+        "id": 1300,
+        "product": {
+          "$fixture": "product13"
+        },
+        "quantity": 2
+      }
+    },
+    "itemDup11": {
+      "$entity": "com.jiuyan.banquet.entity.PackageItem",
+      "fields": {
+        "id": 9999,
+        "product": {
+          "$fixture": "product11"
+        },
+        "quantity": 5
+      }
+    },
+    "pkg4": {
+      "$entity": "com.jiuyan.banquet.entity.BanquetPackage",
+      "fields": {
+        "id": 4,
+        "name": "双人精选宴",
+        "banquetType": "婚宴",
+        "priceCent": 46800,
+        "isActive": true,
+        "isDeleted": false,
+        "items": [
+          {
+            "$fixture": "item11"
+          },
+          {
+            "$fixture": "item13"
+          }
+        ]
+      }
+    },
+    "pkgSingle": {
+      "$entity": "com.jiuyan.banquet.entity.BanquetPackage",
+      "fields": {
+        "id": 4,
+        "name": "双人精选宴",
+        "banquetType": "婚宴",
+        "priceCent": 46800,
+        "isActive": true,
+        "isDeleted": false,
+        "items": [
+          {
+            "$fixture": "item11"
+          }
+        ]
+      }
+    },
+    "pkgDup": {
+      "$entity": "com.jiuyan.banquet.entity.BanquetPackage",
+      "fields": {
+        "id": 4,
+        "name": "双人精选宴",
+        "banquetType": "婚宴",
+        "priceCent": 46800,
+        "isActive": true,
+        "isDeleted": false,
+        "items": [
+          {
+            "$fixture": "item11"
+          },
+          {
+            "$fixture": "itemDup11"
+          }
+        ]
+      }
+    }
+  },
+  "stubs": {
+    "com.jiuyan.banquet.repository.BanquetPackageRepository": {
+      "findByIdAndIsDeletedFalse": {
+        "$optional": {
+          "$fixture": "pkg4"
+        }
+      },
+      "save": {
+        "$echoArg0": true
+      }
+    },
+    "com.jiuyan.banquet.repository.ProductRepository": {
+      "findByIdAndIsDeletedFalse": {
+        "$byKeyMap": {
+          "map": {
+            "11": {
+              "$fixture": "product11"
+            },
+            "13": {
+              "$fixture": "product13"
+            },
+            "29": {
+              "$fixture": "product29"
+            }
+          },
+          "default": {
+            "$null": true
+          }
+        }
+      }
+    },
+    "com.jiuyan.banquet.repository.PackageTypeRepository": {
+      "findByNameAndIsDeletedFalse": {
+        "$byKeyMap": {
+          "map": {
+            "婚宴": {
+              "$fixture": "packageType"
+            }
+          },
+          "default": {
+            "$null": true
+          }
+        }
+      }
+    }
+  },
+  "stub_labels": {
+    "com.jiuyan.banquet.repository.BanquetPackageRepository": "pkgRepo",
+    "com.jiuyan.banquet.repository.ProductRepository": "productRepo",
+    "com.jiuyan.banquet.repository.PackageTypeRepository": "typeRepo"
+  },
+  "ctor": {
+    "com.jiuyan.banquet.config.WebConfig": {
+      "0": {
+        "$t": "template",
+        "v": "allowedOrigins"
+      },
+      "1": {
+        "$const": "/tmp/jiuyan_file/uploads"
+      }
+    },
+    "com.jiuyan.banquet.service.UploadService": {
+      "0": {
+        "$t": "template",
+        "v": "uploadDir"
+      }
+    }
+  },
+  "views": {
+    "pkg_items": {
+      "source": "items",
+      "list": true,
+      "fields": {
+        "itemId": "id",
+        "productId": "product.id",
+        "quantity": "quantity"
+      }
+    }
+  },
+  "scenarios": [
+    {
+      "id": "PKG-UPDATE-SUBSET",
+      "class": "com.jiuyan.banquet.service.PackageService",
+      "steps": [
+        {
+          "op": "observe",
+          "subject": "fixture:pkg4",
+          "view": "pkg_items",
+          "as": "before_items"
+        },
+        {
+          "op": "call",
+          "method": "update",
+          "args": [
+            4,
+            {
+              "$t": "template",
+              "v": "updateReq"
+            }
+          ],
+          "capture": {
+            "response_item_count": {
+              "path": "items",
+              "op": "count"
+            }
+          }
+        },
+        {
+          "op": "observe",
+          "subject": "fixture:pkg4",
+          "view": "pkg_items",
+          "as": "after_items"
+        }
+      ],
+      "measures": [
+        {
+          "name": "after_items_count",
+          "op": "count",
+          "of": "after_items"
+        }
+      ],
+      "checks": [
+        {
+          "check": "after_items_count",
+          "op": "eq",
+          "expect": 1,
+          "note": "PUT 只提交 1 个商品：PackageService.applyItems 的 removeIf 会把未提交的明细删掉（全量替换语义，PUT 语义下不算缺陷）"
+        },
+        {
+          "check": "result",
+          "op": "eq",
+          "expect": "ok",
+          "note": "更新本身成功"
+        }
+      ]
+    },
+    {
+      "id": "PKG-UPDATE-MISSING-PRODUCT",
+      "class": "com.jiuyan.banquet.service.PackageService",
+      "steps": [
+        {
+          "op": "observe",
+          "subject": "fixture:pkg4",
+          "view": "pkg_items",
+          "as": "before_items"
+        },
+        {
+          "op": "call",
+          "method": "update",
+          "args": [
+            4,
+            {
+              "$t": "template",
+              "v": "updateReqMissingProduct"
+            }
+          ]
+        },
+        {
+          "op": "observe",
+          "subject": "fixture:pkg4",
+          "view": "pkg_items",
+          "as": "after_items"
+        },
+        {
+          "op": "read",
+          "subject": "fixture:pkg4",
+          "path": "name",
+          "mode": "text",
+          "as": "entity_name_after"
+        },
+        {
+          "op": "read",
+          "subject": "fixture:pkg4",
+          "path": "priceCent",
+          "as": "entity_price_after"
+        }
+      ],
+      "measures": [
+        {
+          "name": "after_items_count",
+          "op": "count",
+          "of": "after_items"
+        }
+      ],
+      "checks": [
+        {
+          "check": "error_type",
+          "op": "eq",
+          "expect": "BusinessException",
+          "note": "不存在的商品 id 走 findProduct -> BusinessException(PRODUCT_NOT_FOUND)"
+        },
+        {
+          "check": "http_status",
+          "op": "eq",
+          "expect": 404,
+          "note": "对外是 404 而不是 500"
+        },
+        {
+          "check": "after_items_count",
+          "op": "eq",
+          "expect": 0,
+          "note": "★ 异常抛出时实体明细已被 removeIf 清空：删除发生在存在性校验之前（中间态已改坏）"
+        }
+      ]
+    },
+    {
+      "id": "PKG-CREATE-MISSING-PRODUCT",
+      "class": "com.jiuyan.banquet.service.PackageService",
+      "stubs": {
+        "com.jiuyan.banquet.repository.BanquetPackageRepository": {
+          "findByIdAndIsDeletedFalse": {
+            "$optionalEmpty": true
+          }
+        }
+      },
+      "steps": [
+        {
+          "op": "call",
+          "method": "create",
+          "args": [
+            {
+              "$t": "template",
+              "v": "createReqMissingProduct"
+            }
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "check": "error_type",
+          "op": "eq",
+          "expect": "BusinessException",
+          "note": "create 路径同样在校验失败时抛业务异常"
+        },
+        {
+          "check": "http_status",
+          "op": "eq",
+          "expect": 404,
+          "note": "对外 404"
+        }
+      ]
+    },
+    {
+      "id": "PKG-NULL-BANQUET-TYPE",
+      "class": "com.jiuyan.banquet.service.PackageService",
+      "stubs": {
+        "com.jiuyan.banquet.repository.BanquetPackageRepository": {
+          "findByIdAndIsDeletedFalse": {
+            "$optional": {
+              "$fixture": "pkgSingle"
+            }
+          }
+        }
+      },
+      "steps": [
+        {
+          "op": "call",
+          "method": "update",
+          "args": [
+            4,
+            {
+              "$t": "template",
+              "v": "updateReqNullType"
+            }
+          ]
+        },
+        {
+          "op": "observe",
+          "subject": "fixture:pkgSingle",
+          "view": "pkg_items",
+          "as": "after_items"
+        }
+      ],
+      "checks": [
+        {
+          "check": "error_type",
+          "op": "eq",
+          "expect": "NullPointerException",
+          "note": "★ applyBase 里 banquetType.trim() 未判空：空值是 NPE（500）而不是业务异常（422）"
+        },
+        {
+          "check": "is_business_exception",
+          "op": "eq",
+          "expect": false,
+          "note": "非业务异常，会落到全局兜底 500"
+        }
+      ]
+    },
+    {
+      "id": "PKG-EMPTY-ITEMS",
+      "class": "com.jiuyan.banquet.service.PackageService",
+      "steps": [
+        {
+          "op": "call",
+          "method": "update",
+          "args": [
+            4,
+            {
+              "$t": "template",
+              "v": "updateReqEmptyItems"
+            }
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "check": "error_type",
+          "op": "eq",
+          "expect": "BusinessException",
+          "note": "明细为空抛业务异常"
+        },
+        {
+          "check": "http_status",
+          "op": "eq",
+          "expect": 422,
+          "note": "对外 422"
+        }
+      ]
+    },
+    {
+      "id": "PKG-DUPLICATE-ITEMS",
+      "class": "com.jiuyan.banquet.service.PackageService",
+      "steps": [
+        {
+          "op": "call",
+          "method": "update",
+          "args": [
+            4,
+            {
+              "$t": "template",
+              "v": "updateReqDuplicateItems"
+            }
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "check": "error_type",
+          "op": "eq",
+          "expect": "BusinessException",
+          "note": "重复明细抛业务异常"
+        },
+        {
+          "check": "http_status",
+          "op": "eq",
+          "expect": 422,
+          "note": "对外 422"
+        }
+      ]
+    },
+    {
+      "id": "PKG-QUANTITY-ZERO",
+      "class": "com.jiuyan.banquet.service.PackageService",
+      "stubs": {
+        "com.jiuyan.banquet.repository.BanquetPackageRepository": {
+          "findByIdAndIsDeletedFalse": {
+            "$optional": {
+              "$fixture": "pkgSingle"
+            }
+          }
+        }
+      },
+      "steps": [
+        {
+          "op": "call",
+          "method": "update",
+          "args": [
+            4,
+            {
+              "$t": "template",
+              "v": "updateReqQtyZero"
+            }
+          ]
+        },
+        {
+          "op": "observe",
+          "subject": "fixture:pkgSingle",
+          "view": "pkg_items",
+          "as": "after_items"
+        }
+      ],
+      "measures": [
+        {
+          "name": "after_quantity_zero",
+          "op": "any_eq",
+          "of": "after_items",
+          "field": "quantity",
+          "value": 0
+        }
+      ],
+      "checks": [
+        {
+          "check": "result",
+          "op": "eq",
+          "expect": "ok",
+          "note": "★ 数量 0 被直接写进实体（Java 层不校验数量），只能靠 DB 的 chk_package_items_quantity 兜底"
+        },
+        {
+          "check": "after_quantity_zero",
+          "op": "eq",
+          "expect": true,
+          "note": "★ 明细数量为 0 的条目已进入实体"
+        }
+      ]
+    },
+    {
+      "id": "PKG-DUP-DB-ITEMS",
+      "class": "com.jiuyan.banquet.service.PackageService",
+      "stubs": {
+        "com.jiuyan.banquet.repository.BanquetPackageRepository": {
+          "findByIdAndIsDeletedFalse": {
+            "$optional": {
+              "$fixture": "pkgDup"
+            }
+          }
+        }
+      },
+      "steps": [
+        {
+          "op": "call",
+          "method": "update",
+          "args": [
+            4,
+            {
+              "$t": "template",
+              "v": "updateReq"
+            }
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "check": "error_type",
+          "op": "eq",
+          "expect": "IllegalStateException",
+          "note": "同套餐同商品出现两条明细时 Collectors.toMap 抛重复键（500）——但 DB 有 uk_package_items_package_product 唯一约束，构造不出这种数据"
+        }
+      ]
+    },
+    {
+      "id": "PKG-UPDATE-MISSING-PACKAGE",
+      "class": "com.jiuyan.banquet.service.PackageService",
+      "stubs": {
+        "com.jiuyan.banquet.repository.BanquetPackageRepository": {
+          "findByIdAndIsDeletedFalse": {
+            "$optionalEmpty": true
+          }
+        }
+      },
+      "steps": [
+        {
+          "op": "call",
+          "method": "update",
+          "args": [
+            404,
+            {
+              "$t": "template",
+              "v": "updateReqMissingPackage"
+            }
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "check": "error_type",
+          "op": "eq",
+          "expect": "BusinessException",
+          "note": "套餐不存在抛业务异常"
+        },
+        {
+          "check": "http_status",
+          "op": "eq",
+          "expect": 404,
+          "note": "对外 404"
+        }
+      ]
+    },
+    {
+      "id": "CORS-ORIGIN-MATRIX",
+      "class": "com.jiuyan.banquet.config.WebConfig",
+      "steps": [
+        {
+          "op": "instantiate",
+          "class": "org.springframework.web.servlet.config.annotation.CorsRegistry",
+          "as": "registry"
+        },
+        {
+          "op": "call",
+          "method": "addCorsMappings",
+          "args": [
+            {
+              "$t": "captured",
+              "v": "registry"
+            }
+          ],
+          "outcome": false
+        },
+        {
+          "op": "cors_probe",
+          "from": "registry",
+          "pattern": "/api/**",
+          "origins": [
+            "http://localhost:5173",
+            "http://localhost:9999",
+            "http://127.0.0.1:5173",
+            "http://192.168.1.5:8080",
+            "http://192.168.1.5:9999",
+            "http://10.0.0.7:3000",
+            "http://172.16.0.9:1234",
+            "http://evil.example.com",
+            "https://evil.example.com",
+            "http://localhost.evil.com",
+            "null",
+            "http://[::1]:5173"
+          ],
+          "as": {
+            "mapping_keys": "mapping_keys",
+            "config_found": "config_found",
+            "patterns": "allowed_origin_patterns",
+            "probes": "probes"
+          }
+        }
+      ],
+      "measures": [
+        {
+          "name": "evil_allowed",
+          "op": "lookup",
+          "of": "probes",
+          "key": "origin",
+          "field": "allowed",
+          "value": "http://evil.example.com"
+        },
+        {
+          "name": "https_evil_allowed",
+          "op": "lookup",
+          "of": "probes",
+          "key": "origin",
+          "field": "allowed",
+          "value": "https://evil.example.com"
+        },
+        {
+          "name": "localhost_any_port_allowed",
+          "op": "lookup",
+          "of": "probes",
+          "key": "origin",
+          "field": "allowed",
+          "value": "http://localhost:9999"
+        },
+        {
+          "name": "intranet_any_port_allowed",
+          "op": "all_lookup",
+          "of": "probes",
+          "key": "origin",
+          "field": "allowed",
+          "values": [
+            "http://192.168.1.5:9999",
+            "http://10.0.0.7:3000"
+          ]
+        }
+      ],
+      "checks": [
+        {
+          "check": "evil_allowed",
+          "op": "eq",
+          "expect": false,
+          "note": "外网站点不得被放行"
+        },
+        {
+          "check": "intranet_any_port_allowed",
+          "op": "eq",
+          "expect": true,
+          "note": "★ 内网任意主机 + 任意端口都被放行（http://192.168.*.*:[*] 之类的通配）"
+        },
+        {
+          "check": "localhost_any_port_allowed",
+          "op": "eq",
+          "expect": true,
+          "note": "本机任意端口放行（开发期合理）"
+        },
+        {
+          "check": "https_evil_allowed",
+          "op": "eq",
+          "expect": false,
+          "note": "https 外网不得被放行"
+        }
+      ]
+    },
+    {
+      "id": "CORS-CREDENTIALS",
+      "class": "com.jiuyan.banquet.config.WebConfig",
+      "steps": [
+        {
+          "op": "instantiate",
+          "class": "org.springframework.web.servlet.config.annotation.CorsRegistry",
+          "as": "registry"
+        },
+        {
+          "op": "call",
+          "method": "addCorsMappings",
+          "args": [
+            {
+              "$t": "captured",
+              "v": "registry"
+            }
+          ],
+          "outcome": false
+        },
+        {
+          "op": "cors_probe",
+          "from": "registry",
+          "pattern": "/api/**",
+          "as": {
+            "credentials": "allow_credentials",
+            "methods": "allowed_methods",
+            "headers": "allowed_headers",
+            "exposed": "exposed_headers"
+          }
+        }
+      ],
+      "checks": [
+        {
+          "check": "allow_credentials",
+          "op": "eq",
+          "expect": false,
+          "note": "★ allowCredentials=false：跨站拿不到 Cookie（正向结论）"
+        }
+      ]
+    },
+    {
+      "id": "UPLOADS-RESOURCE-LOCATION",
+      "steps": [
+        {
+          "op": "path_facts",
+          "base": "/tmp/jiuyan_file/loc-test",
+          "dirs": [
+            {
+              "name": "exists",
+              "create": true
+            },
+            {
+              "name": "missing",
+              "create": false
+            }
+          ],
+          "probes": [
+            {
+              "name": "existing_dir_to_uri",
+              "dir": "exists"
+            },
+            {
+              "name": "missing_dir_to_uri",
+              "dir": "missing"
+            },
+            {
+              "name": "relative_with_slash",
+              "dir": "exists",
+              "relative": "seed/banquet-table.png"
+            },
+            {
+              "name": "relative_without_slash",
+              "dir": "missing",
+              "relative": "seed/banquet-table.png"
+            },
+            {
+              "name": "webconfig_location_for_existing",
+              "dir": "exists"
+            },
+            {
+              "name": "webconfig_location_for_missing",
+              "dir": "missing"
+            }
+          ]
+        }
+      ],
+      "measures": [
+        {
+          "name": "existing_dir_to_uri_ends_with_slash",
+          "op": "ends_with",
+          "of": "existing_dir_to_uri",
+          "suffix": "/"
+        },
+        {
+          "name": "missing_dir_to_uri_ends_with_slash",
+          "op": "ends_with",
+          "of": "missing_dir_to_uri",
+          "suffix": "/"
+        },
+        {
+          "name": "relative_with_slash_ok",
+          "op": "contains",
+          "of": "relative_with_slash",
+          "text": "/exists/seed/banquet-table.png"
+        },
+        {
+          "name": "relative_without_slash_ok",
+          "op": "contains",
+          "of": "relative_without_slash",
+          "text": "/missing/seed/banquet-table.png"
+        }
+      ],
+      "checks": [
+        {
+          "check": "existing_dir_to_uri_ends_with_slash",
+          "op": "eq",
+          "expect": true,
+          "note": "目录存在时 toUri() 带尾斜杠，静态映射拼相对路径才正确"
+        },
+        {
+          "check": "missing_dir_to_uri_ends_with_slash",
+          "op": "eq",
+          "expect": false,
+          "note": "★ 目录不存在时 toUri() 不带尾斜杠 -> Spring 会把 /uploads/x.jpg 拼成 <root>x.jpg，全部 404"
+        },
+        {
+          "check": "relative_without_slash_ok",
+          "op": "eq",
+          "expect": false,
+          "note": "★ 无尾斜杠时相对路径被拼坏"
+        },
+        {
+          "check": "relative_with_slash_ok",
+          "op": "eq",
+          "expect": true,
+          "note": "有尾斜杠时相对路径正确"
+        }
+      ]
+    },
+    {
+      "id": "UPLOADS-SAME-ROOT",
+      "class": "com.jiuyan.banquet.service.UploadService",
+      "steps": [
+        {
+          "op": "field",
+          "subject": "target",
+          "field": "uploadRoot",
+          "mode": "text",
+          "as": "uploadservice_root"
+        },
+        {
+          "op": "path_fact",
+          "value": {
+            "$t": "template",
+            "v": "uploadDir"
+          },
+          "mode": "text",
+          "as": "webconfig_root"
+        },
+        {
+          "op": "path_fact",
+          "value": {
+            "$t": "template",
+            "v": "uploadDir"
+          },
+          "mode": "uri",
+          "as": "webconfig_uri"
+        }
+      ],
+      "measures": [
+        {
+          "name": "same_root",
+          "op": "same_as",
+          "of": "uploadservice_root",
+          "other": "webconfig_root"
+        }
+      ],
+      "checks": [
+        {
+          "check": "same_root",
+          "op": "eq",
+          "expect": true,
+          "note": "★ 静态映射根目录与 UploadService 的上传根目录同源（推翻 manifest 里「非同源」的假设）"
+        }
+      ]
+    },
+    {
+      "id": "TRACE-XFF-SPOOF",
+      "class": "com.jiuyan.banquet.config.TraceIdFilter",
+      "steps": [
+        {
+          "op": "call",
+          "method": "doFilter",
+          "outcome": false,
+          "request": {
+            "method": "GET",
+            "uri": "/api/products",
+            "remote_addr": "127.0.0.1",
+            "headers": {
+              "X-Forwarded-For": "9.9.9.9, 10.0.0.1"
+            }
+          }
+        },
+        {
+          "op": "read",
+          "subject": "arg:0",
+          "path": "remoteAddr",
+          "mode": "text",
+          "as": "remote_addr"
+        },
+        {
+          "op": "call_on",
+          "subject": "arg:0",
+          "method": "getHeader",
+          "args": [
+            "X-Forwarded-For"
+          ],
+          "as": "xff_header"
+        },
+        {
+          "op": "log_field",
+          "prefix": "clientIp=",
+          "as": "logged_client_ip"
+        }
+      ],
+      "checks": [
+        {
+          "check": "logged_client_ip",
+          "op": "eq",
+          "expect": "9.9.9.9",
+          "note": "★ 审计日志里的 clientIp 直接取 X-Forwarded-For 首段，客户端可任意伪造"
+        },
+        {
+          "check": "remote_addr",
+          "op": "eq",
+          "expect": "127.0.0.1",
+          "note": "真实对端地址是 127.0.0.1，与日志记录不符"
+        }
+      ]
+    },
+    {
+      "id": "TRACE-ID-VERBATIM",
+      "class": "com.jiuyan.banquet.config.TraceIdFilter",
+      "steps": [
+        {
+          "op": "call",
+          "method": "doFilter",
+          "outcome": false,
+          "request": {
+            "method": "GET",
+            "uri": "/api/products",
+            "remote_addr": "127.0.0.1",
+            "headers": {
+              "X-Trace-Id": {
+                "$t": "template",
+                "v": "traceId"
+              }
+            }
+          }
+        },
+        {
+          "op": "const",
+          "value": {
+            "$t": "template",
+            "v": "traceId"
+          },
+          "as": "sent_trace_id"
+        },
+        {
+          "op": "response_header",
+          "name": "X-Trace-Id",
+          "as": "response_trace_id"
+        },
+        {
+          "op": "static_call",
+          "class": "com.jiuyan.banquet.config.TraceContext",
+          "method": "getTraceId",
+          "as": "trace_context_value"
+        }
+      ],
+      "measures": [
+        {
+          "name": "log_contains_raw_trace_id",
+          "op": "log_contains",
+          "text": "FILELAYER-TRACE-77"
+        }
+      ],
+      "checks": [
+        {
+          "check": "response_trace_id",
+          "op": "eq",
+          "expect": "FILELAYER-TRACE-77",
+          "note": "★ 客户端提供的 traceId 原样回写到响应头与日志，服务端不做任何校验"
+        },
+        {
+          "check": "log_contains_raw_trace_id",
+          "op": "eq",
+          "expect": true,
+          "note": "★ 客户端值原样进入日志行"
+        }
+      ]
+    },
+    {
+      "id": "TRACE-MDC-CLEANUP",
+      "class": "com.jiuyan.banquet.config.TraceIdFilter",
+      "steps": [
+        {
+          "op": "call",
+          "method": "doFilter",
+          "outcome": false,
+          "request": {
+            "method": "GET",
+            "uri": "/api/products"
+          }
+        },
+        {
+          "op": "mdc_get",
+          "key": "traceId",
+          "as": "mdc_after"
+        },
+        {
+          "op": "static_call",
+          "class": "com.jiuyan.banquet.config.TraceContext",
+          "method": "getTraceId",
+          "as": "trace_context_after"
+        },
+        {
+          "op": "response_header",
+          "name": "X-Trace-Id",
+          "as": "response_header_present",
+          "mode": "present"
+        }
+      ],
+      "checks": [
+        {
+          "check": "mdc_after",
+          "op": "eq",
+          "expect": null,
+          "note": "MDC 在 finally 里清理（正向结论）"
+        },
+        {
+          "check": "trace_context_after",
+          "op": "eq",
+          "expect": null,
+          "note": "ThreadLocal 在 finally 里清理（正向结论）"
+        }
+      ]
+    },
+    {
+      "id": "ERR-DATA-INTEGRITY-LEAK",
+      "steps": [
+        {
+          "op": "handler",
+          "class": "com.jiuyan.banquet.exception.GlobalExceptionHandler",
+          "method": "handleDataIntegrity",
+          "args": [
+            {
+              "$t": "throwable",
+              "throwable": {
+                "class": "org.springframework.dao.DataIntegrityViolationException",
+                "message": "could not execute statement",
+                "cause": {
+                  "class": "java.lang.IllegalStateException",
+                  "message": "could not execute statement [ERROR: duplicate key value violates unique constraint \"uk_orders_order_no\"]"
+                }
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "uri": "/api/orders"
+          },
+          "status_as": "http_status",
+          "body_as": "body"
+        }
+      ],
+      "measures": [
+        {
+          "name": "body_contains_constraint_name",
+          "op": "contains",
+          "of": "body",
+          "text": "uk_orders_order_no"
+        },
+        {
+          "name": "body_contains_db_vendor_detail",
+          "op": "contains",
+          "of": "body",
+          "text": "could not execute statement"
+        }
+      ],
+      "checks": [
+        {
+          "check": "http_status",
+          "op": "eq",
+          "expect": 409,
+          "note": "唯一键冲突返回 409"
+        },
+        {
+          "check": "body_contains_constraint_name",
+          "op": "eq",
+          "expect": true,
+          "note": "★ 响应体里带出数据库约束名 uk_orders_order_no（内部实现细节泄漏）"
+        }
+      ]
+    },
+    {
+      "id": "ERR-BADREQUEST-ECHO",
+      "steps": [
+        {
+          "op": "handler",
+          "class": "com.jiuyan.banquet.exception.GlobalExceptionHandler",
+          "method": "handleBadRequest",
+          "args": [
+            {
+              "$t": "throwable",
+              "throwable": {
+                "class": "org.springframework.http.converter.HttpMessageNotReadableException",
+                "ctorArgs": [
+                  "JSON parse error: Unexpected character ('s' (code 115)) in JSON string: {\"password\":\"hunter2\"} at [Source: (String)\"; line: 1, column: 20]",
+                  null
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "uri": "/api/orders"
+          },
+          "status_as": "http_status",
+          "body_as": "body"
+        }
+      ],
+      "measures": [
+        {
+          "name": "body_contains_raw_fragment",
+          "op": "contains",
+          "of": "body",
+          "text": "hunter2"
+        }
+      ],
+      "checks": [
+        {
+          "check": "http_status",
+          "op": "eq",
+          "expect": 400,
+          "note": "请求体解析失败返回 400"
+        },
+        {
+          "check": "body_contains_raw_fragment",
+          "op": "eq",
+          "expect": true,
+          "note": "★ 响应体里回显了原始请求体片段（攻击者提交什么就回什么）"
+        }
+      ]
+    },
+    {
+      "id": "ERR-CLIENT-ABORT-ENVELOPE",
+      "steps": [
+        {
+          "op": "handler",
+          "class": "com.jiuyan.banquet.exception.GlobalExceptionHandler",
+          "method": "handleClientAbort",
+          "args": [
+            {
+              "$t": "throwable",
+              "throwable": {
+                "class": "org.springframework.web.context.request.async.AsyncRequestNotUsableException",
+                "message": "broken pipe"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "uri": "/api/orders"
+          },
+          "status_as": "http_status",
+          "body_null_as": "body_is_null",
+          "envelope_as": "has_envelope_fields",
+          "envelope_class": "com.jiuyan.banquet.dto.ApiResponse"
+        }
+      ],
+      "checks": [
+        {
+          "check": "http_status",
+          "op": "eq",
+          "expect": 499,
+          "note": "客户端中断返回 499"
+        },
+        {
+          "check": "body_is_null",
+          "op": "eq",
+          "expect": true,
+          "note": "★ 499 走的是 ResponseEntity<Void>，响应体为空：前端拿不到 success/code/message/data 信封"
+        }
+      ]
+    },
+    {
+      "id": "ERR-UNKNOWN-NO-LEAK",
+      "steps": [
+        {
+          "op": "handler",
+          "class": "com.jiuyan.banquet.exception.GlobalExceptionHandler",
+          "method": "handleUnknown",
+          "args": [
+            {
+              "$t": "throwable",
+              "throwable": {
+                "class": "java.lang.IllegalStateException",
+                "message": "com.zaxxer.hikari.pool.HikariPool : connection is not available"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "uri": "/api/products"
+          },
+          "status_as": "http_status",
+          "body_as": "body"
+        }
+      ],
+      "measures": [
+        {
+          "name": "body_contains_internal_detail",
+          "op": "contains",
+          "of": "body",
+          "text": "HikariPool"
+        }
+      ],
+      "checks": [
+        {
+          "check": "http_status",
+          "op": "eq",
+          "expect": 500,
+          "note": "未知异常返回 500"
+        },
+        {
+          "check": "body_contains_internal_detail",
+          "op": "eq",
+          "expect": false,
+          "note": "★ 兜底 handler 不泄漏内部堆栈（正向结论）"
+        }
+      ]
+    },
+    {
+      "id": "ADVICE-ENVELOPE",
+      "steps": [
+        {
+          "op": "advice_supports",
+          "class": "com.jiuyan.banquet.config.ApiResponseAdvice",
+          "converter": "org.springframework.http.converter.json.MappingJackson2HttpMessageConverter",
+          "types": {
+            "plain": "com.jiuyan.banquet.entity.Product",
+            "enveloped": "com.jiuyan.banquet.dto.ApiResponse",
+            "entity": "org.springframework.http.ResponseEntity"
+          },
+          "as": "supports"
+        },
+        {
+          "op": "static_call",
+          "class": "com.jiuyan.banquet.config.TraceContext",
+          "method": "setTraceId",
+          "args": [
+            "FILELAYER-CONTEXT-TRACE"
+          ]
+        },
+        {
+          "op": "static_call",
+          "class": "com.jiuyan.banquet.config.TraceContext",
+          "method": "getTraceId",
+          "as": "trace_context_set"
+        },
+        {
+          "op": "call",
+          "class": "com.jiuyan.banquet.config.ApiResponseAdvice",
+          "method": "beforeBodyWrite",
+          "args": [
+            {
+              "$t": "map",
+              "v": {
+                "id": 1
+              }
+            },
+            {
+              "$t": "methodParameter",
+              "type": "com.jiuyan.banquet.entity.Product"
+            },
+            {
+              "$t": "mediaType",
+              "v": "application/json"
+            },
+            {
+              "$t": "class",
+              "v": "org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "uri": "/api/products"
+          },
+          "outcome": false,
+          "capture": {
+            "success_envelope_json": {
+              "op": "json"
+            }
+          }
+        },
+        {
+          "op": "call",
+          "class": "com.jiuyan.banquet.config.ApiResponseAdvice",
+          "method": "beforeBodyWrite",
+          "args": [
+            null,
+            {
+              "$t": "methodParameter",
+              "type": "com.jiuyan.banquet.entity.Product"
+            },
+            {
+              "$t": "mediaType",
+              "v": "application/json"
+            },
+            {
+              "$t": "class",
+              "v": "org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "uri": "/api/products"
+          },
+          "outcome": false,
+          "capture": {
+            "null_body_result_is_null": {
+              "op": "is_null"
+            },
+            "null_body_json": {
+              "op": "json"
+            }
+          }
+        },
+        {
+          "op": "call",
+          "class": "com.jiuyan.banquet.config.ApiResponseAdvice",
+          "method": "beforeBodyWrite",
+          "args": [
+            {
+              "$t": "staticCall",
+              "staticCall": {
+                "class": "com.jiuyan.banquet.dto.ApiResponse",
+                "method": "error",
+                "args": [
+                  "X",
+                  "msg",
+                  null,
+                  "t",
+                  {
+                    "$t": "dt",
+                    "v": "2026-01-01T00:00:00Z"
+                  }
+                ]
+              }
+            },
+            {
+              "$t": "methodParameter",
+              "type": "com.jiuyan.banquet.entity.Product"
+            },
+            {
+              "$t": "mediaType",
+              "v": "application/json"
+            },
+            {
+              "$t": "class",
+              "v": "org.springframework.http.converter.json.MappingJackson2HttpMessageConverter"
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "uri": "/api/products"
+          },
+          "outcome": false,
+          "capture": {
+            "already_envelope_unchanged": {
+              "op": "instance_of",
+              "class": "com.jiuyan.banquet.dto.ApiResponse"
+            }
+          }
+        }
+      ],
+      "measures": [
+        {
+          "name": "success_envelope_has_fields",
+          "op": "contains_all",
+          "of": "success_envelope_json",
+          "texts": [
+            "\"success\"",
+            "\"code\"",
+            "\"message\"",
+            "\"data\""
+          ]
+        },
+        {
+          "name": "trace_id_present",
+          "op": "contains",
+          "of": "success_envelope_json",
+          "text": "\"traceId\""
+        }
+      ],
+      "checks": [
+        {
+          "check": "success_envelope_has_fields",
+          "op": "eq",
+          "expect": true,
+          "note": "成功响应被 ApiResponseAdvice 包成统一信封"
+        },
+        {
+          "check": "trace_id_present",
+          "op": "eq",
+          "expect": true,
+          "note": "★ 信封里的 traceId 字段：有过滤器的真实请求里一定在（实测容器响应头与响应体都带 traceId）"
+        },
+        {
+          "check": "already_envelope_unchanged",
+          "op": "eq",
+          "expect": true,
+          "note": "已经是 ApiResponse 的 body 不会被二次包装"
+        },
+        {
+          "check": "null_body_result_is_null",
+          "op": "eq",
+          "expect": true,
+          "note": "空 body 不应被包成 data:null 的成功信封（内容类型为空时不会发生）"
+        }
+      ]
+    }
+  ],
+  "http": {
+    "plugin": "file_http_probe",
+    "base_url": "http://127.0.0.1:8080",
+    "container": "jiuyan-backend",
+    "db": {
+      "container": "jiuyan-postgres",
+      "user": "jiuyan",
+      "database": "jiuyan"
+    },
+    "probes": [
+      {
+        "id": "HTTP-TRACEID-CRLF",
+        "kind": "raw_header",
+        "path": "/api/health",
+        "headers": {
+          "X-Trace-Id": "abc\r\nFORGED-LOG-LINE-9X"
+        },
+        "log_contains": "FORGED-LOG-LINE-9X",
+        "status_line_as": "status_line",
+        "log_flag_as": "forged_line_in_logs",
+        "note": "Tomcat 若拒绝含控制字符的头，容器日志里不会出现伪造行"
+      },
+      {
+        "id": "HTTP-TRACEID-U2028",
+        "kind": "raw_header",
+        "path": "/api/health",
+        "headers": {
+          "X-Trace-Id": "abc FORGED-U2028-LINE"
+        },
+        "log_contains": "FORGED-U2028-LINE",
+        "status_line_as": "status_line",
+        "log_flag_as": "u2028_in_logs"
+      },
+      {
+        "id": "HTTP-TRACEID-ECHO",
+        "kind": "http_get",
+        "path": "/api/health",
+        "headers": {
+          "X-Trace-Id": "FILELAYER-TRACE-77"
+        },
+        "status_as": "status",
+        "header_as": {
+          "response_trace_id": "X-Trace-Id"
+        },
+        "flag_as": {
+          "verbatim": {
+            "header": "X-Trace-Id",
+            "equals": "FILELAYER-TRACE-77"
+          }
+        }
+      },
+      {
+        "id": "HTTP-XFF-SPOOF",
+        "kind": "http_get",
+        "path": "/api/health",
+        "headers": {
+          "X-Forwarded-For": "9.9.9.9"
+        },
+        "log_contains": "clientIp=9.9.9.9",
+        "log_flag_as": "spoofed_ip_in_logs",
+        "log_segment_as": "log_segment"
+      },
+      {
+        "id": "HTTP-UPLOADS-STATIC",
+        "kind": "http_get",
+        "path": "/uploads/seed/banquet-table.png",
+        "status_as": "status",
+        "body_len_as": "body_len",
+        "flag_as": {
+          "works": {
+            "status": 200
+          }
+        }
+      },
+      {
+        "id": "HTTP-PKG-QTY-ZERO",
+        "kind": "http_put",
+        "path": "/api/packages/4",
+        "payload": {
+          "name": "升学答谢宴",
+          "banquetType": "升学宴",
+          "priceCent": 46800,
+          "imageUrl": "/uploads/seed/packages/package-04.jpg",
+          "description": "适合升学答谢，热菜主食汤品齐全。",
+          "isActive": true,
+          "items": [
+            {
+              "productId": 1,
+              "quantity": 0
+            }
+          ]
+        },
+        "status_as": "status",
+        "body_as": "body",
+        "body_limit": 300
+      },
+      {
+        "id": "HTTP-PKG-QTY-NEGATIVE",
+        "kind": "http_put",
+        "path": "/api/packages/4",
+        "payload": {
+          "name": "升学答谢宴",
+          "banquetType": "升学宴",
+          "priceCent": 46800,
+          "imageUrl": "/uploads/seed/packages/package-04.jpg",
+          "description": "适合升学答谢，热菜主食汤品齐全。",
+          "isActive": true,
+          "items": [
+            {
+              "productId": 1,
+              "quantity": -1
+            }
+          ]
+        },
+        "status_as": "status",
+        "body_as": "body",
+        "body_limit": 300
+      },
+      {
+        "id": "HTTP-PKG-ROLLBACK",
+        "kind": "db_compare",
+        "path": "/api/packages/4",
+        "payload": {
+          "name": "升学答谢宴",
+          "banquetType": "升学宴",
+          "priceCent": 46800,
+          "imageUrl": "/uploads/seed/packages/package-04.jpg",
+          "description": "适合升学答谢，热菜主食汤品齐全。",
+          "isActive": true,
+          "items": [
+            {
+              "productId": 1,
+              "quantity": 1
+            },
+            {
+              "productId": 999999,
+              "quantity": 1
+            }
+          ]
+        },
+        "before_sql": "SELECT id||'|'||product_id||'|'||quantity FROM package_items WHERE package_id=4 ORDER BY id",
+        "after_sql": "SELECT id||'|'||product_id||'|'||quantity FROM package_items WHERE package_id=4 ORDER BY id",
+        "name_before_sql": "SELECT name FROM packages WHERE id=4",
+        "name_after_sql": "SELECT name FROM packages WHERE id=4",
+        "status_as": "status",
+        "body_as": "body",
+        "body_limit": 300,
+        "compare_as": {
+          "items_unchanged": {
+            "before": "items_before",
+            "after": "items_after",
+            "before_sql": "before_sql",
+            "after_sql": "after_sql"
+          },
+          "name_unchanged": {
+            "before": "name_before",
+            "after": "name_after",
+            "before_sql": "name_before_sql",
+            "after_sql": "name_after_sql"
+          }
+        }
+      },
+      {
+        "id": "HTTP-CORS-REAL",
+        "kind": "cors",
+        "path": "/api/packages",
+        "origins": {
+          "intranet_acao": "http://192.168.66.66:1234",
+          "localhost_any_port_acao": "http://localhost:65535",
+          "evil_acao": "http://evil.example.com"
+        }
+      }
+    ],
+    "checks": [
+      {
+        "check": "forged_line_in_logs",
+        "op": "eq",
+        "expect": false,
+        "from": "http:HTTP-TRACEID-CRLF.forged_line_in_logs",
+        "note": "含 CRLF 的 traceId 是否能伪造出日志行（若 Tomcat 拦截则为假，边界已挡）"
+      },
+      {
+        "check": "verbatim_echo",
+        "op": "eq",
+        "expect": true,
+        "from": "http:HTTP-TRACEID-ECHO.verbatim",
+        "note": "客户端 traceId 是否原样回显到响应头"
+      },
+      {
+        "check": "spoofed_ip_in_logs",
+        "op": "eq",
+        "expect": true,
+        "from": "http:HTTP-XFF-SPOOF.spoofed_ip_in_logs",
+        "note": "X-Forwarded-For 伪造的 IP 是否进入真实容器审计日志"
+      },
+      {
+        "check": "uploads_static_works",
+        "op": "eq",
+        "expect": true,
+        "from": "http:HTTP-UPLOADS-STATIC.works",
+        "note": "真实部署里 /uploads/** 静态映射是否可用（正向结论）"
+      },
+      {
+        "check": "qty_zero_rejected",
+        "op": "eq",
+        "expect": 400,
+        "from": "http:HTTP-PKG-QTY-ZERO.status",
+        "note": "源码证据：DTO @Min(1) -> MethodArgumentNotValidException -> handleValidation -> BAD_REQUEST(400)。数量=0 在跨文件校验链上被挡住了（正向结论）"
+      },
+      {
+        "check": "qty_negative_rejected",
+        "op": "eq",
+        "expect": 400,
+        "from": "http:HTTP-PKG-QTY-NEGATIVE.status",
+        "note": "数量=-1 同上，被 @Min(1) 挡住"
+      },
+      {
+        "check": "validation_status_split",
+        "op": "differs",
+        "expect": true,
+        "from": "http:HTTP-PKG-QTY-ZERO.status",
+        "other": "scenario:PKG-EMPTY-ITEMS.http_status",
+        "note": "同属「参数非法」：DTO 层校验返 400，服务文件自校验返 422 —— 状态码按校验责任分裂"
+      },
+      {
+        "check": "missing_product_status",
+        "op": "eq",
+        "expect": 404,
+        "from": "http:HTTP-PKG-ROLLBACK.status",
+        "note": "明细引用不存在商品时的状态码"
+      },
+      {
+        "check": "rollback_items_unchanged",
+        "op": "eq",
+        "expect": true,
+        "from": "http:HTTP-PKG-ROLLBACK.items_unchanged",
+        "note": "applyItems 先删后校验导致的中途失败，事务边界是否把 DB 兜回来"
+      },
+      {
+        "check": "rollback_name_unchanged",
+        "op": "eq",
+        "expect": true,
+        "from": "http:HTTP-PKG-ROLLBACK.name_unchanged",
+        "note": "applyBase 先改后失败的字段是否也被回滚"
+      },
+      {
+        "check": "cors_intranet_reflected",
+        "op": "eq",
+        "expect": "http://192.168.66.66:1234",
+        "from": "http:HTTP-CORS-REAL.intranet_acao",
+        "note": "真实容器是否把内网任意主机:任意端口回显成允许源"
+      },
+      {
+        "check": "cors_evil_blocked",
+        "op": "eq",
+        "expect": null,
+        "from": "http:HTTP-CORS-REAL.evil_acao",
+        "note": "外网域名是否被挡（正向结论）"
+      }
+    ]
+  },
+  "detectors": {
+    "enable": [
+      "override_postcondition",
+      "profile_assembly",
+      "entity_value_equality",
+      "cacheable_mutable",
+      "encapsulation_leak",
+      "outbound_http"
+    ],
+    "args": {}
+  }
+}

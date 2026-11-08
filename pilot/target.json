@@ -292,6 +292,7 @@
     "work_dir": "/tmp/jiuyan_fn",
     "recordings": "/Users/june/tests/auto-api/recordings",
     "fn_cases": "fn_cases.json",
+    "file_cases": "file_cases.json",
     "probe_container_prefixes": [
       "jiuyan-tx-probe",
       "jiuyan-cfg-",

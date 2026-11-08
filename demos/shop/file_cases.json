@@ -1,0 +1,281 @@
+{
+  "_comment": "文件层用例配置（项目侧）。通用 harness 在 pilot/file_harness/，这里只有 demo-shop 的知识：类名、样本、打桩、期望。换项目只改这个文件。",
+  "meta": {
+    "harness": "JVM 内整类实例化 + 仓库打桩 + 日志捕获；容器探针走真实 HTTP",
+    "note": "demo-shop 的文件层价值点：同一文件内多方法的配合（覆写与父类约定、策略实现与 profile、订单流程里四个协作者的口径）"
+  },
+  "log_package": "com.demo.shop",
+
+  "fixtures": {
+    "productA": {
+      "$entity": "com.demo.shop.entity.ShopProduct",
+      "fields": {"name": "演示商品A", "priceCent": 8800, "stock": 12}
+    },
+    "vipCustomer": {
+      "$entity": "com.demo.shop.entity.ShopCustomer",
+      "fields": {"name": "demo-vip", "level": "VIP", "creditLimitCent": 1000000}
+    },
+    "vipCustomerTight": {
+      "$entity": "com.demo.shop.entity.ShopCustomer",
+      "fields": {"name": "demo-vip", "level": "VIP", "creditLimitCent": 9500}
+    }
+  },
+
+  "stub_labels": {
+    "com.demo.shop.repository.ShopProductRepository": "productRepo",
+    "com.demo.shop.repository.ShopCustomerRepository": "customerRepo",
+    "com.demo.shop.repository.ShopOrderRepository": "orderRepo",
+    "com.demo.shop.service.PricingStrategy": "pricingStrategy"
+  },
+
+  "stubs": {
+    "com.demo.shop.repository.ShopProductRepository": {
+      "findAll": {"$list": [{"$fixture": "productA"}]}
+    },
+    "com.demo.shop.repository.ShopCustomerRepository": {
+      "findByName": {"$optional": {"$fixture": "vipCustomer"}}
+    },
+    "com.demo.shop.repository.ShopOrderRepository": {
+      "save": {"$echoArg0": true}
+    },
+    "com.demo.shop.service.PricingStrategy": {
+      "settle": {"$const": 9000}
+    }
+  },
+
+  "ctor": {
+    "com.demo.shop.client.FxClient": {
+      "0": {"$const": "http://127.0.0.1:1/"}
+    }
+  },
+
+  "scenarios": [
+    {
+      "id": "ENTITY-TOUCH-AUDIT-LOST",
+      "class": "com.demo.shop.entity.ShopOrder",
+      "steps": [
+        {"op": "call", "method": "touch", "args": ["auditor-42"]},
+        {"op": "read", "subject": "target", "path": "updatedBy", "as": "order_updated_by"},
+        {"op": "instantiate", "class": "com.demo.shop.entity.ShopCategory", "as": "sibling"},
+        {"op": "call_on", "subject": "captured:sibling", "method": "touch",
+         "args": ["auditor-42"], "as": "sibling_touch"},
+        {"op": "call_on", "subject": "captured:sibling", "method": "getUpdatedBy",
+         "as": "sibling_updated_by"},
+        {"op": "call_on", "subject": "target", "method": "getUpdatedBy",
+         "as": "order_updated_by_getter"}
+      ],
+      "checks": [
+        {"check": "order_updated_by", "op": "eq", "expect": null,
+         "note": "ShopOrder 覆写 touch 后把 updatedBy 抹成 null —— 父类 AuditableEntity 的约定（记录谁改的）被打破，里氏替换被违反"},
+        {"check": "sibling_updated_by", "op": "eq", "expect": "auditor-42",
+         "note": "同一父类的另一个子类（ShopCategory）没有覆写，约定成立 —— 证明差异来自覆写而不是父类本身"}
+      ]
+    },
+    {
+      "id": "ENTITY-VALUE-EQUALITY",
+      "class": "com.demo.shop.entity.ShopProduct",
+      "steps": [
+        {"op": "instantiate", "class": "com.demo.shop.entity.ShopProduct", "as": "a"},
+        {"op": "instantiate", "class": "com.demo.shop.entity.ShopProduct", "as": "b"},
+        {"op": "call_on", "subject": "captured:a", "method": "equals",
+         "args": [{"$t": "captured", "v": "b"}], "as": "a_equals_b"},
+        {"op": "call_on", "subject": "captured:a", "method": "hashCode", "as": "a_hash"},
+        {"op": "call_on", "subject": "captured:b", "method": "hashCode", "as": "b_hash"}
+      ],
+      "checks": [
+        {"check": "a_equals_b", "op": "eq", "expect": false,
+         "note": "@Entity 没有覆写 equals —— 两个字段完全相同的实体实例不相等，语义是「同一个对象」而不是「同一件事」"},
+        {"check": "hash_differs", "op": "differs", "from": "a_hash", "other": "b_hash",
+         "expect": true,
+         "note": "hashCode 走的是身份哈希 —— 放进 Set/Map 当键会当成两条不同记录"}
+      ]
+    },
+    {
+      "id": "PRICING-PROFILE-DIVERGENCE",
+      "class": "com.demo.shop.service.StandardPricingStrategy",
+      "steps": [
+        {"op": "call", "class": "com.demo.shop.service.StandardPricingStrategy",
+         "method": "settle", "args": [10000, "VIP"], "capture": {"standard_vip": {}}},
+        {"op": "call", "class": "com.demo.shop.service.MemberPricingStrategy",
+         "method": "settle", "args": [10000, "VIP"], "capture": {"member_vip": {}}},
+        {"op": "call", "class": "com.demo.shop.service.MemberPricingStrategy",
+         "method": "settle", "args": [10000, "NORMAL"], "capture": {"member_normal": {}}}
+      ],
+      "checks": [
+        {"check": "standard_vip", "op": "eq", "expect": 10000,
+         "note": "@Profile(\"!vip\") 的实现：VIP 客户也按原价结算"},
+        {"check": "member_vip", "op": "eq", "expect": 9000,
+         "note": "@Profile(\"vip\") 的实现：VIP 客户九折"},
+        {"check": "member_normal", "op": "eq", "expect": 10000,
+         "note": "同一个实现对非 VIP 不打折 —— 会员价本身是对的"},
+        {"check": "price_differs_by_implementation", "op": "differs",
+         "from": "standard_vip", "other": "member_vip", "expect": true,
+         "note": "同一接口的两个实现给出不同金额 —— 谁生效由部署 profile 决定，于是「客户等级」被绑到了「部署环境」上"}
+      ]
+    },
+    {
+      "id": "PRODUCT-SNAPSHOT-ENCAPSULATION-LEAK",
+      "class": "com.demo.shop.service.ProductService",
+      "steps": [
+        {"op": "call", "method": "snapshot",
+         "capture": {"snapshot_count": {"op": "count"}, "leaked_name": {"path": "0.name"}}},
+        {"op": "call_on", "subject": "fixture:productA", "method": "setName",
+         "args": ["HACKED"], "as": "mutation_result"}
+      ],
+      "measures": [
+        {"name": "leaked_name_after", "op": "any_eq", "of": "return",
+         "field": "name", "value": "HACKED"}
+      ],
+      "checks": [
+        {"check": "snapshot_count", "op": "eq", "expect": 1,
+         "note": "snapshot() 把内部实体列表原样交出去"},
+        {"check": "leaked_name", "op": "eq", "expect": "演示商品A",
+         "note": "交出去的就是仓储层持有的那个实体实例"},
+        {"check": "leaked_name_after", "op": "eq", "expect": true,
+         "note": "调用方改完名字后，手里那个列表里的元素也跟着变 —— 内部状态被穿透，封装泄漏是可复现的"}
+      ]
+    },
+    {
+      "id": "PRODUCT-CACHE-VALUE-SHAPE",
+      "class": "com.demo.shop.service.ProductService",
+      "steps": [
+        {"op": "call", "method": "listCached",
+         "capture": {"cached_count": {"op": "count"}, "cached_first_name": {"path": "0.name"}}},
+        {"op": "call_on", "subject": "fixture:productA", "method": "setName",
+         "args": ["MUTATED-ENTITY"], "as": "mutation_result"}
+      ],
+      "measures": [
+        {"name": "cached_after_entity_mutation", "op": "any_eq", "of": "return",
+         "field": "name", "value": "MUTATED-ENTITY"}
+      ],
+      "checks": [
+        {"check": "cached_count", "op": "eq", "expect": 1,
+         "note": "@Cacheable(\"products\") 返回的是 DTO 列表"},
+        {"check": "cached_first_name", "op": "eq", "expect": "演示商品A",
+         "note": "缓存里放的是 ProductResponse（record，元素不可变）"},
+        {"check": "cached_after_entity_mutation", "op": "eq", "expect": false,
+         "note": "改内部实体不影响已缓存的 DTO —— 缓存里的值其实不可变，源码注释「缓存里放的是可变对象」与实测不符"}
+      ]
+    },
+    {
+      "id": "ORDER-QUOTA-CHECKS-QUOTED-NOT-SETTLED",
+      "class": "com.demo.shop.service.OrderService",
+      "stubs": {
+        "com.demo.shop.repository.ShopCustomerRepository": {
+          "findByName": {"$optional": {"$fixture": "vipCustomerTight"}}
+        }
+      },
+      "steps": [
+        {"op": "call", "method": "create",
+         "args": [{"$t": "record", "class": "com.demo.shop.web.dto.CreateOrderRequest",
+                   "fields": {"customerName": "demo-vip", "quotedAmountCent": 10000,
+                              "currency": "CNY"}}],
+         "capture": {"settled": {"path": "settledAmountCent"},
+                     "quoted": {"path": "quotedAmountCent"}}},
+        {"op": "call", "class": "com.demo.shop.service.QuotaService", "method": "withinLimit",
+         "args": [{"$t": "fixture", "v": "vipCustomerTight"}, 9000],
+         "outcome_as": "quota_result",
+         "capture": {"settled_within_limit": {}}}
+      ],
+      "checks": [
+        {"check": "result", "op": "eq", "expect": "threw",
+         "note": "报价 10000 > 额度 9500 → 下单被拒"},
+        {"check": "error_message", "op": "eq", "expect": "超出授信额度",
+         "note": "拒单原因来自额度检查"},
+        {"check": "settled_within_limit", "op": "eq", "expect": true,
+         "note": "但真正要结算的金额是 9000（会员九折），9000 在额度内 —— 额度按「报价」口径卡，账按「结算」口径记，两个口径不一致"}
+      ]
+    },
+    {
+      "id": "ORDER-FX-FALLBACK-SCALE",
+      "class": "com.demo.shop.service.OrderService",
+      "steps": [
+        {"op": "call", "method": "create",
+         "args": [{"$t": "record", "class": "com.demo.shop.web.dto.CreateOrderRequest",
+                   "fields": {"customerName": "demo-vip", "quotedAmountCent": 10000,
+                              "currency": "CNY"}}],
+         "capture": {"settled": {"path": "settledAmountCent"},
+                     "quoted": {"path": "quotedAmountCent"}}}
+      ],
+      "checks": [
+        {"check": "result", "op": "eq", "expect": "ok",
+         "note": "额度充足时下单成功"},
+        {"check": "quoted", "op": "eq", "expect": 10000,
+         "note": "报价 10000"},
+        {"check": "settled", "op": "eq", "expect": 90,
+         "note": "结算额只有 90：会员价 9000 乘以汇率 1 再除以 100 —— 汇率服务不可达时兜底成 1，而正常刻度是 100（等于 1.0），兜底值把结算金额砍到 1%"}
+      ]
+    },
+    {
+      "id": "FX-CLIENT-FALLBACK",
+      "class": "com.demo.shop.client.FxClient",
+      "steps": [
+        {"op": "call", "method": "rate", "args": ["CNY"], "capture": {"rate": {}}}
+      ],
+      "checks": [
+        {"check": "rate", "op": "eq", "expect": 1,
+         "note": "汇率服务连不上（构造参数指向不可达地址）→ 异常被吞掉，静默返回 1；调用方看不出这次汇率是「真的 1」还是「兜底的 1」"}
+      ]
+    }
+  ],
+
+  "detectors": {
+    "enable": [
+      "override_postcondition",
+      "profile_assembly",
+      "entity_value_equality",
+      "cacheable_mutable",
+      "encapsulation_leak",
+      "outbound_http"
+    ],
+    "args": {
+      "com.demo.shop.entity.ShopOrder#touch": ["auditor-42"]
+    }
+  },
+
+  "http": {
+    "base_url": "http://127.0.0.1:8090",
+    "container": "demo-shop-backend",
+    "db": {"container": "jiuyan-postgres", "user": "jiuyan", "database": "demo_shop"},
+    "probes": [
+      {
+        "id": "ORDER-VIP-DEFAULT-DEPLOY",
+        "kind": "http_post",
+        "path": "/api/orders",
+        "payload": {"customerName": "demo-vip", "quotedAmountCent": 888888, "currency": "CNY"},
+        "status_as": "status",
+        "json_path_as": {"quoted": "quotedAmountCent", "settled": "settledAmountCent",
+                         "order_id": "id"}
+      },
+      {
+        "id": "ORDER-VIP-VIPPROFILE-DEPLOY",
+        "kind": "http_post",
+        "base_url": "http://127.0.0.1:8091",
+        "path": "/api/orders",
+        "payload": {"customerName": "demo-vip", "quotedAmountCent": 888888, "currency": "CNY"},
+        "status_as": "status",
+        "json_path_as": {"quoted": "quotedAmountCent", "settled": "settledAmountCent",
+                         "order_id": "id"}
+      }
+    ],
+    "checks": [
+      {"check": "default_deploy_settled", "from": "http:ORDER-VIP-DEFAULT-DEPLOY.settled",
+       "op": "eq", "expect": 888888,
+       "note": "默认部署（profile=default）里 MemberPricingStrategy 没激活 → VIP 客户按原价结算"},
+      {"check": "vip_deploy_settled", "from": "http:ORDER-VIP-VIPPROFILE-DEPLOY.settled",
+       "op": "eq", "expect": 799999,
+       "note": "vip 部署（profile=vip）里打了九折：888888*9/10 = 799999"},
+      {"check": "same_request_different_settlement", "op": "differs",
+       "from": "http:ORDER-VIP-DEFAULT-DEPLOY.settled",
+       "other": "http:ORDER-VIP-VIPPROFILE-DEPLOY.settled", "expect": true,
+       "note": "同一个客户、同一个金额、两个部署结算结果不同 —— @Profile 用「部署环境」表达了「客户等级」"},
+      {"check": "default_deploy_status", "from": "http:ORDER-VIP-DEFAULT-DEPLOY.status",
+       "op": "eq", "expect": 200,
+       "note": "两个部署都正常受理请求，差异只在结算金额"}
+    ],
+    "cleanup": [
+      {"table": "shop_order", "id_column": "id",
+       "sql": "DELETE FROM {table} WHERE {id_column} > {max_id_before} AND quoted_amount_cent = 888888"}
+    ]
+  }
+}
