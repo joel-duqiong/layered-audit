@@ -62,8 +62,34 @@ def default_table_name(cls: str) -> str:
     return re.sub(r"(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])", "_", cls).lower()
 
 
+def default_column_name(field: str) -> str:
+    """列名的默认推导 —— 与 Spring Boot 默认命名策略一致（CamelCase -> snake_case）。
+
+    没写 @Column(name=...) 的字段，Hibernate 按默认命名策略映射成 snake_case 列。
+    解析时必须用同一套规则，否则 JPA<->DDL 差分会把「没写 name」误判成「列不存在」。
+    """
+    return re.sub(r"(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])", "_", field).lower()
+
+
+def mapped_superclasses() -> set:
+    """项目里被声明为 @MappedSuperclass 的类。
+
+    「这个实体继承自某个映射超类」是语言级事实 —— 不该写死某个项目的基类名
+    （写死了就等于把项目名刻进了通用层）。
+    """
+    found = set()
+    for f in sorted(glob.glob(os.path.join(ENT, "*.java"))):
+        src = open(f).read()
+        for m in re.finditer(r"@MappedSuperclass\b", src):
+            cm = re.search(r"class\s+(\w+)", src[m.end():])
+            if cm:
+                found.add(cm.group(1))
+    return found
+
+
 def parse_entities():
     out = {}
+    superclasses = mapped_superclasses()
     for f in sorted(glob.glob(os.path.join(ENT, "*.java"))):
         src = open(f).read()
         cls = re.search(r"public (?:abstract )?class (\w+)", src)
@@ -75,18 +101,20 @@ def parse_entities():
                 r'@Column\(([^)]*)\)\s*private\s+([\w<>]+)\s+(\w+)\s*;', src):
             args, jtype, field = cm.group(1), cm.group(2), cm.group(3)
             nm = re.search(r'name\s*=\s*"(\w+)"', args)
-            cols.append({"field": field, "column": nm.group(1) if nm else field,
+            cols.append({"field": field,
+                         "column": nm.group(1) if nm else default_column_name(field),
                          "java_type": jtype,
                          "nullable": "nullable = false" not in args,
                          "unique": "unique = true" in args,
                          "length": (re.search(r"length\s*=\s*(\d+)", args).group(1)
                                     if re.search(r"length\s*=\s*(\d+)", args) else None),
                          "enum": "Enumerated" in src.split(field)[0].split("@Column")[0][-120:]})
-        base = "BaseEntity" in src
+        ext = re.search(r"class\s+\w+\s+extends\s+(\w+)", src)
+        base = bool(ext and ext.group(1) in superclasses)
         out[cls.group(1)] = {"file": os.path.basename(f),
                              "table": tbl.group(1) if tbl else default_table_name(cls.group(1)),
                              "table_explicit": bool(tbl),
-                             "columns": cols, "extends_base_entity": base}
+                             "columns": cols, "extends_mapped_superclass": base}
     return out
 
 def main():

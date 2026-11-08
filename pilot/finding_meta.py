@@ -449,6 +449,20 @@ CLASS: dict[str, Meta] = {
         "PUT 全量覆盖是否会把不传的字段抹成 NULL？",
         "class", 0.91, "defect", ("CWE-20",),
         "api.put_full_overwrite"),
+    "CLASS-ENTITY-WITHOUT-VALUE-EQUALITY": _m(
+        "class.invariant", "stretched",
+        "实体是否没有值相等（equals/hashCode）？",
+        "class", 0.80, "defect", ("CWE-595",),
+        "entity.no_value_equality",
+        note="按对象身份比较而不是按业务主键：Set 去重失效、Map 键匹配不上、"
+             "List.contains 永远 false。编译期与运行期都不会报错"),
+    "CLASS-ENCAPSULATION-LEAK-ENTITY-COLLECTION": _m(
+        "class.encapsulation_leak", "exact",
+        "public 方法是否把内部可变实体集合直接交出去？",
+        "class", 0.90, "defect", ("CWE-495",),
+        "banquet_package.items_exposed",
+        note="BanquetPackage.getItems() 把实体集合本身交出去，"
+             "调用方改一个字段就改了服务层的内部状态"),
     "CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES": _m(
         "UNMAPPED", "unmapped",
         "同一列的默认值是否被声明了三遍？",
@@ -636,6 +650,8 @@ CLASS_FILE_HINTS: dict[str, str] = {
     "ENUM_CHECK_ALIGNED": "entity/OrderStatus.java",
     "CLASS-NULLABILITY-ALIGNED": "",
     "CLASS-CHECK-DTO-ALIGNED": "",
+    "CLASS-ENTITY-WITHOUT-VALUE-EQUALITY": "entity/BanquetOrder.java",
+    "CLASS-ENCAPSULATION-LEAK-ENTITY-COLLECTION": "entity/BanquetPackage.java",
 }
 
 # 只知道列名时的兜底：列 -> 所属实体文件

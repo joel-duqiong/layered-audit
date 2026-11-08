@@ -7,7 +7,8 @@
   D 契约边界的错误码与消息一致性
 
 **通用骨架**在这里；项目特定的部分（DTO 到表的映射、哪些字段有专门的结论文案、
-哪些实测标签对应哪条业务规则）在项目侧的 class_scenarios.json 里。
+哪些实测标签对应哪条业务规则、哪些实测标签算「规则缺失」）在项目侧的
+class_scenarios.json 的 contract_diff 段。
 
 只输出差分结论，不做判定；判定权留给 class_diff.py 的排序与落盘。
 """
@@ -83,22 +84,22 @@ def _finding(fid: str, sev: str, layer: str, title: str, detail: str,
 # ---------------------------------------------------------------- 差分 A
 def diff_nullability(ctx: dict, cfg: dict) -> list[dict]:
     """DB NOT NULL ↔ 实体 nullable ↔ DTO 约束：谁该为"非空"负责，声明和实际是否一致。"""
-    findings = []
+    findings: list[dict] = []
     contract, decl, obs = ctx["contract"], ctx["decl"], ctx["obs"]
     dtos = _dto_index(contract)
     entities = _entity_columns(decl)
     db_tables = contract["db_actual"]["tables"]
     dto_target: dict = cfg.get("dto_target", {})
     server_derived = set(cfg.get("server_derived", []))
-    field_notes = {n["match_field"]: n for n in cfg.get("field_notes", [])}
+    notes = list(cfg.get("field_notes", []))
 
-    probe_by_label = {}
+    probe_by_label: dict[str, dict] = {}
     for group in ("contract_boundary", "nullability"):
         for c in obs.get(group, []):
             probe_by_label[c["label"]] = c
 
     # 同一列在 Create/Update 两个 DTO 里都会出现，按 (表, 列) 去重后再比
-    per_col = {}
+    per_col: dict[tuple[str, str], dict] = {}
     for dto_name, (table, entity) in dto_target.items():
         fields = dtos.get(dto_name)
         if not fields:
@@ -137,20 +138,20 @@ def diff_nullability(ctx: dict, cfg: dict) -> list[dict]:
     aligned = both + stricter + loose
 
     for c in cases:
-        note = field_notes.get(c["field"])
+        note = next((n for n in notes
+                     if n.get("match_field") == c["field"]
+                     and n.get("match_table", c["table"]) == c["table"]), None)
         if note:
-            probe = probe_by_label.get(note["probe_label"], {})
+            probe = probe_by_label.get(
+                render_text(note["probe_label"], c), {})
             row = probe.get("db_row") or {}
-            values = {
-                "dto": c["dto"], "field": c["field"], "column": c["column"],
-                "table": c["table"], "entity": c["entity"],
-                "entity_nullable": c["entity_nullable"],
-                "db_default": c["db_default"], "db_not_null": c["db_not_null"],
-                "dto_required": c["dto_required"],
-                "http": probe.get("http"), "code": probe.get("code"),
-                "message": probe.get("message"), "details": probe.get("details"),
-                "db_value": repr(row.get(note.get("evidence_column", c["column"]))),
-            }
+            ev_col = note.get("evidence_column", c["column"])
+            raw = row.get(ev_col)
+            values = dict(c)
+            values.update({"http": probe.get("http"), "code": probe.get("code"),
+                           "message": probe.get("message"),
+                           "details": probe.get("details"),
+                           "db_value": raw, "db_value_repr": repr(raw)})
             findings.append(_finding(
                 note["id"], note["severity"], note.get("layer", "class"),
                 render_text(note["title"], values),
@@ -182,15 +183,15 @@ def diff_nullability(ctx: dict, cfg: dict) -> list[dict]:
 # ---------------------------------------------------------------- 差分 B
 def diff_rules(ctx: dict, cfg: dict) -> list[dict]:
     """业务规则在 DB CHECK / DTO 约束 / 服务层 三层的分布。"""
-    findings = []
+    findings: list[dict] = []
     contract, obs = ctx["contract"], ctx["obs"]
     dtos = _dto_index(contract)
     db_tables = contract["db_actual"]["tables"]
-    probes = obs.get("defense_audit", {}).get("constraint_probes", [])
+    probes = obs["defense_audit"]["constraint_probes"]
     dto_target: dict = cfg.get("dto_target", {})
 
-    aligned_checks = []
-    unaligned_checks = []
+    aligned_checks: list[dict] = []
+    unaligned_checks: list[dict] = []
     for p in probes:
         if not p.get("constraint"):
             continue
@@ -246,7 +247,7 @@ def diff_rules(ctx: dict, cfg: dict) -> list[dict]:
             "改规则要改迁移文件，业务代码读不到这条规则。",
             {"unaligned": unaligned_checks}))
 
-    rule_notes = cfg.get("rule_notes", {})
+    rule_notes: dict = cfg.get("rule_notes", {})
     rule_excludes = set(cfg.get("rule_excludes", []))
     missing_cfg = cfg.get("rule_missing", {})
     missing = []
@@ -275,61 +276,63 @@ def diff_rules(ctx: dict, cfg: dict) -> list[dict]:
 # ---------------------------------------------------------------- 差分 C
 def diff_write_footprint(ctx: dict, cfg: dict) -> list[dict]:
     """DTO 声明可写的字段 ↔ 实测真的被改的列。"""
-    findings = []
+    findings: list[dict] = []
     obs = ctx["obs"]
-    put_prefix = cfg.get("put_action_prefix", "PUT /api/products/{id}")
-    missing_fk = cfg.get("missing_fk_action_contains", "缺省 categoryId")
+    wf = cfg.get("write_footprint", {})
+    put_prefix = wf.get("put_action_prefix", "")
+    missing_fk = wf.get("missing_fk_action_contains", "")
+    wipes_cfg = wf.get("put_wipes")
+    guarded_cfg = wf.get("put_guarded")
     for w in obs.get("write_footprint", []):
         steps = {s["action"]: s for s in w["steps"]}
-        put = next((s for a, s in steps.items() if a.startswith(put_prefix)), None)
-        if put and "image_url" in put["changed"]:
-            findings.append(_finding(
-                "CLASS-PUT-WIPES-UNSET-FIELD", "MEDIUM", "class",
-                "PUT 是全量覆盖：不传的 imageUrl 会被抹成 NULL",
-                "UpdateProductRequest.imageUrl 没有任何约束（可缺省），"
-                "但 PUT 的语义是全量替换。实测：创建时带图片路径，"
-                "随后一次不带 imageUrl 的 PUT 之后，image_url 变成 NULL。"
-                "后果不是校验问题而是数据丢失 —— 磁盘上的图片文件还在，"
-                "但数据库里的引用没了，文件成为孤儿，前端永远拿不到图。",
-                {"entity": w["entity"], "id": w["id"],
-                 "changed_columns": put["changed"],
-                 "final_row": w.get("final_row")}))
-        miss = next((s for a, s in steps.items() if missing_fk in a), None)
-        if miss and miss.get("http") == 400 and not miss["changed"]:
-            findings.append(_finding(
-                "CLASS-PUT-REQUIRED-FK-GUARDED", "INFO", "class",
-                "PUT 缺省必填外键被 DTO 的 @NotNull 挡住（400，DB 无脏数据）",
-                "categoryId 在 DTO 上有 @NotNull，实测缺省时接口返回 400 且行未被改动。"
-                "这是可空性差分里方向正确的一例：声明在最靠近输入的地方设防。",
-                {"http": miss.get("http"), "changed": miss["changed"]}))
+        if wipes_cfg:
+            put = next((s for a, s in steps.items()
+                        if put_prefix and a.startswith(put_prefix)), None)
+            if put and wipes_cfg.get("column") in put["changed"]:
+                values = {"entity": w["entity"], "id": w["id"],
+                          "column": wipes_cfg["column"],
+                          "changed_columns": put["changed"],
+                          "final_row": w.get("final_row")}
+                findings.append(_finding(
+                    wipes_cfg["id"], wipes_cfg["severity"],
+                    wipes_cfg.get("layer", "class"),
+                    render_text(wipes_cfg["title"], values),
+                    render_text(wipes_cfg["detail"], values),
+                    render_json(wipes_cfg["evidence"], values)))
+        if guarded_cfg:
+            miss = next((s for a, s in steps.items() if missing_fk in a), None)
+            if miss and miss.get("http") == guarded_cfg.get("http") and not miss["changed"]:
+                values = {"entity": w["entity"], "http": miss.get("http"),
+                          "changed": miss["changed"]}
+                findings.append(_finding(
+                    guarded_cfg["id"], guarded_cfg["severity"],
+                    guarded_cfg.get("layer", "class"),
+                    render_text(guarded_cfg["title"], values),
+                    render_text(guarded_cfg["detail"], values),
+                    render_json(guarded_cfg["evidence"], values)))
     return findings
 
 
 # ---------------------------------------------------------------- 差分 D
 def diff_error_contract(ctx: dict, cfg: dict) -> list[dict]:
     """错误码 / 状态码 / 文案 与真实原因是否一致。"""
-    findings = []
+    findings: list[dict] = []
     obs = ctx["obs"]
-    for c in obs.get("contract_boundary", []):
-        if c["label"].startswith("finalPriceCent=null") and c["http"] == 422:
+    for rule in cfg.get("error_contract", []):
+        prefix = rule.get("label_prefix", "")
+        want_http = rule.get("http")
+        for c in obs.get("contract_boundary", []):
+            if not c["label"].startswith(prefix):
+                continue
+            if want_http is not None and c["http"] != want_http:
+                continue
+            values = {"http": c["http"], "code": c.get("code"),
+                      "message": c.get("message"), "label": c["label"]}
             findings.append(_finding(
-                "CLASS-ERROR-MESSAGE-MISMATCH", "LOW", "class",
-                "finalPriceCent=null 的报错文案说的是「小于 0」，真实原因是「不能为空」",
-                "null 触发的是必填缺失，却复用了一个数值区间的错误文案。"
-                "客户端拿到 422 后按「价格太小」去提示用户，实际用户根本没填价格。"
-                "这类错误文案漂移会让前端提示整体失真。",
-                {"http": c["http"], "code": c.get("code"),
-                 "message": c.get("message"), "label": c["label"]}))
-        if c["label"].startswith("status 小写") and c["http"] == 400:
-            findings.append(_finding(
-                "CLASS-ENUM-CASE-SENSITIVE", "LOW", "class",
-                "订单状态枚举大小写敏感，小写 pending 直接 400",
-                "DTO 的 status 字段直接用 OrderStatus 枚举，Jackson 默认大小写敏感。"
-                "实测传 'pending' 返回 400「订单状态不正确」。"
-                "对外 API 的枚举值应当约定为大小写不敏感或明确写进 OpenAPI，"
-                "否则每个新客户端都会踩一次。",
-                {"http": c["http"], "code": c.get("code"),
-                 "message": c.get("message")}))
+                rule["id"], rule["severity"], rule.get("layer", "class"),
+                render_text(rule["title"], values),
+                render_text(rule["detail"], values),
+                render_json(rule["evidence"], values)))
     return findings
 
 
@@ -337,7 +340,7 @@ def run(decl_path: str, contract_path: str, obs_path: str,
         cfg: dict | None = None) -> list[dict]:
     cfg = cfg or {}
     ctx = load(decl_path, contract_path, obs_path)
-    out = []
+    out: list[dict] = []
     out += diff_nullability(ctx, cfg)
     out += diff_rules(ctx, cfg)
     out += diff_write_footprint(ctx, cfg)

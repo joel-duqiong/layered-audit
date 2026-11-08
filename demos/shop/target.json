@@ -36,6 +36,7 @@
       "columns": "name, price_cent, stock, category_id",
       "values_sql": "'{{marker}}', 1, 1, (SELECT id FROM shop_category LIMIT 1)"
     },
+    "contract_src_roots": "web/dto,entity",
     "file_cases": "file_cases.json"
   },
   "source_roots": {
@@ -74,6 +75,11 @@
     "integration.emergent_masking": "组合条件之间的相互掩盖必须被显式检出：单条件可见的症状在组合下消失时，必须另有判据给出结论"
   },
   "evidence_sources": [
+    {
+      "layer": "class",
+      "file": "artifacts/class_findings.json",
+      "key": null
+    },
     {
       "layer": "integration",
       "file": "artifacts/emergence_chains.json",

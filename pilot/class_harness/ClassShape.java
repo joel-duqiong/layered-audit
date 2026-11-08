@@ -206,6 +206,15 @@ public class ClassShape {
                     o.put("params", typeName(overM.getGenericParameterTypes()[0]));
                     o.put("arg", String.valueOf(arg));
                     o.set("differing_fields", M.valueToTree(diff));
+                    // 逐字段给出两边的实际取值 —— 报告里要能说清「哪里不一样」
+                    ObjectNode states = M.createObjectNode();
+                    for (String k : diff) {
+                        ObjectNode one = M.createObjectNode();
+                        one.put("overrider", sa.get(k));
+                        one.put("inheritor", sb.get(k));
+                        states.set(k, one);
+                    }
+                    o.set("field_states", states);
                     o.put("overrider_state", String.valueOf(sa));
                     o.put("inheritor_state", String.valueOf(sb));
                     o.put("inherited_state", String.valueOf(sb));

@@ -5,7 +5,7 @@
 
 项目配置里一条规则的形状：
 
-    {"id": "enum_check_drift", "params": {"enum_file": "OrderStatus.java", ...}}
+    {"id": "enum_check_drift", "params": {"enum_file": "EnumFile.java", ...}}
 
 `{{xxx}}` 是占位符：文案模板里换成实测值，证据模板里换成 JSON 值（保持类型）。
 """
@@ -14,6 +14,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 from typing import Any
+
+import file_carrier
 
 
 # ------------------------------------------------------------------ 模板渲染
@@ -24,19 +26,25 @@ def render_text(template: str, values: dict[str, Any]) -> str:
     return out
 
 
-def render_json(template: str, values: dict[str, Any]) -> Any:
+def render_json(template: Any, values: dict[str, Any]) -> Any:
     """证据模板：先换成哨兵，再 json.loads，最后把哨兵换回真值（保住类型）。"""
+    import json
     tokens: dict[str, Any] = {}
+    if not isinstance(template, str):
+        template = json.dumps(template, ensure_ascii=False)
     text = template
     for i, (k, v) in enumerate(values.items()):
         tok = f"@@{i}@@"
         tokens[tok] = v
         text = text.replace("{{" + k + "}}", tok)
-    import json
     obj = json.loads(text)
 
     def walk(o: Any) -> Any:
         if isinstance(o, str):
+            # 整个字符串就是一个占位符 -> 直接换成真值（保住 bool / int / list / dict 的类型）
+            for tok, v in tokens.items():
+                if o == tok:
+                    return v
             for tok, v in tokens.items():
                 if tok in o:
                     s = v if isinstance(v, str) else json.dumps(v, ensure_ascii=False)
@@ -169,14 +177,20 @@ def class_shape(rule: dict, ctx: dict) -> list[dict]:
             if key in seen:
                 continue
             seen.add(key)
+            states = v.get("field_states") or {}
             values = {"overrider": v["overrider"], "base": v["base"],
                       "method": v["method"], "fields": ", ".join(v["differing_fields"]),
-                      "over_state": v["overrider_state"], "inh_state": v["inheritor_state"]}
-            out.append(_finding(
+                      "over_state": v["overrider_state"], "inh_state": v["inheritor_state"],
+                      # 逐字段：字段名 + 覆写方取值 + 继承方取值（报告里能直接引用）
+                      "field_diff": "; ".join(
+                          f"{k}: 覆写方={st.get('overrider')} / 继承方={st.get('inheritor')}"
+                          for k, st in states.items())}
+            out.append(file_carrier.attach(_finding(
                 lsp_cfg["id"], lsp_cfg["severity"], lsp_cfg.get("layer", "class"),
                 render_text(lsp_cfg["title"], values),
                 render_text(lsp_cfg["detail"], values),
-                render_json(lsp_cfg["evidence"], values)))
+                render_json(lsp_cfg["evidence"], values)),
+                lsp_cfg.get("file_carrier_detector"), ctx))
 
     # 2) 实体没有值相等：放进集合 / 做键，语义会变
     eq_cfg = p.get("value_equality")
@@ -187,11 +201,12 @@ def class_shape(rule: dict, ctx: dict) -> list[dict]:
             if c.get("declares_equals") or c.get("declares_hashcode"):
                 continue
             values = {"class": c["class"], "simple_name": c["simple_name"]}
-            out.append(_finding(
+            out.append(file_carrier.attach(_finding(
                 eq_cfg["id"], eq_cfg["severity"], eq_cfg.get("layer", "class"),
                 render_text(eq_cfg["title"], values),
                 render_text(eq_cfg["detail"], values),
-                render_json(eq_cfg["evidence"], values)))
+                render_json(eq_cfg["evidence"], values)),
+                eq_cfg.get("file_carrier_detector"), ctx))
 
     # 3) 封装泄漏：public 方法把内部可变实体的集合交出去
     leak_cfg = p.get("encapsulation")
@@ -200,11 +215,12 @@ def class_shape(rule: dict, ctx: dict) -> list[dict]:
             for leak in c.get("encapsulation_leaks", []):
                 values = {"class": leak["class"], "method": leak["method"],
                           "returns": leak["returns"], "entity": leak["entity_type"]}
-                out.append(_finding(
+                out.append(file_carrier.attach(_finding(
                     leak_cfg["id"], leak_cfg["severity"], leak_cfg.get("layer", "class"),
                     render_text(leak_cfg["title"], values),
                     render_text(leak_cfg["detail"], values),
-                    render_json(leak_cfg["evidence"], values)))
+                    render_json(leak_cfg["evidence"], values)),
+                leak_cfg.get("file_carrier_detector"), ctx))
 
     # 4) 缓存里放可变对象：@Cacheable 直接缓存了集合实例
     cache_cfg = p.get("cacheable")
@@ -216,11 +232,12 @@ def class_shape(rule: dict, ctx: dict) -> list[dict]:
                 values = {"class": cm["class"], "method": cm["method"],
                           "returns": cm["returns"], "element": cm.get("element_type"),
                           "element_is_record": cm.get("element_is_record")}
-                out.append(_finding(
+                out.append(file_carrier.attach(_finding(
                     cache_cfg["id"], cache_cfg["severity"], cache_cfg.get("layer", "class"),
                     render_text(cache_cfg["title"], values),
                     render_text(cache_cfg["detail"], values),
-                    render_json(cache_cfg["evidence"], values)))
+                    render_json(cache_cfg["evidence"], values)),
+                cache_cfg.get("file_carrier_detector"), ctx))
     return out
 
 
@@ -234,7 +251,11 @@ def instance_pair(rule: dict, ctx: dict) -> list[dict]:
         return []
     values = {"fields": ", ".join(d["field"] for d in div),
               "instances": ", ".join(i["instance"] + (f"({i['profile']})" if i.get("profile") else "")
-                                     for i in ip.get("instances", []))}
+                                     for i in ip.get("instances", [])),
+              # 每个分叉字段在各实例上的实测取值
+              "field_values": "; ".join(
+                  f"{d['field']}: " + ", ".join(f"{k}={v}" for k, v in d.get("values", {}).items())
+                  for d in div)}
     return [_finding(p["finding_id"], p["severity"], p.get("layer", "class"),
                      render_text(p["title"], values),
                      render_text(p["detail"], values),

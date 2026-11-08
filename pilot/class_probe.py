@@ -10,7 +10,7 @@
 三条硬规矩（都是本项目踩过的坑）：
 
 1. **造出来的行必须带前缀**（``ai_probe_``）。没有前缀的行清理脚本删不掉，
-   还会污染种子基线（亲眼见过 products 里留下叫 ``probe-str`` 的行）。
+   还会污染种子基线（亲眼见过业务表里留下叫 ``probe-str`` 的行）。
 2. **探针跑完自己删干净**。引擎记下每一条它造的行，探针结束时统一清。
    「别人会帮我清」不是理由 —— 流水线里探针和清理脚本之间还有别的步骤。
 3. **类型探针绝不能破坏前缀字段**。破坏了，等于造了一行清理不掉的垃圾。
@@ -85,6 +85,24 @@ class Database:
                 res.append(json.loads(line))
         return res
 
+    def cte_rows(self, query: str) -> list[dict]:
+        """把任意语句（含 INSERT ... RETURNING）包进 CTE 再取回行。
+
+        Postgres 不允许把数据修改语句直接放进子查询：
+        `SELECT ... FROM (INSERT ... RETURNING ...) x` 是语法错误。
+        走 CTE 就没问题：`WITH _ins AS (INSERT ... RETURNING ...) SELECT to_jsonb(_ins) FROM _ins`。
+        """
+        out = self._psql(["-tA", "-c",
+                          f"WITH _ins AS ({query}) SELECT to_jsonb(_ins) FROM _ins"])
+        if out.returncode != 0:
+            raise RuntimeError(out.stderr.strip()[:300])
+        res = []
+        for line in out.stdout.splitlines():
+            line = line.strip()
+            if line:
+                res.append(json.loads(line))
+        return res
+
     def script(self, script: str) -> dict:
         """在单个 psql 会话里跑一段脚本。脚本自带 BEGIN，session 结束即回滚 —— 零残留。
 
@@ -125,6 +143,11 @@ class ClassProbe:
         self.errors: list[dict] = []
         self._created: list[dict] = []      # 本探针造出来的行
         self._cleanup_log: list[dict] = []
+        # 跨探针共享的夹具（SQL 造的行 / 查出来的 id）—— 后面的探针可以用 {{名字}} 引用
+        self.fixtures: dict[str, Any] = dict(cfg.get("fixtures", {}))
+        # 响应里新建行 id 的取值路径：先包信封的（data.id），再直接返回对象的（id）
+        self.id_paths: list[str] = list(cfg.get("id_paths", ["data.id", "id"]))
+        self._fixture_cleanup: list[str] = []
 
     # ------------------------------------------------------------------ 骨架
     def run(self) -> dict[str, Any]:
@@ -142,6 +165,7 @@ class ClassProbe:
                 self.errors.append({"probe": probe.get("id"), "kind": kind,
                                     "error": f"{type(exc).__name__}: {exc}"})
             self._cleanup(probe)
+        self._cleanup_fixtures()
         self.results["_cleanup"] = self._cleanup_log
         self.results["_errors"] = self.errors
         return self.results
@@ -190,6 +214,8 @@ class ClassProbe:
             return _now().isoformat()
         if key in ctx:
             return ctx[key]
+        if key in self.fixtures:      # 跨探针的夹具值
+            return self.fixtures[key]
         return ""
 
     def _entity_prefix_dto_fields(self, entity: str | None) -> list[str]:
@@ -254,10 +280,23 @@ class ClassProbe:
                                                "error": str(exc)[:200]})
 
     def _created_id(self, payload: Any) -> Any:
-        if isinstance(payload, dict):
-            data = payload.get("data")
-            if isinstance(data, dict):
-                return data.get("id")
+        """从响应里取新建行的 id。
+
+        两种响应形状都支持：包信封的（{"data": {"id": ...}}）与直接返回对象的
+        （{"id": ...}）。取值路径由项目绑定声明，默认先试信封再试扁平 ——
+        通用引擎不该假设某一个项目的响应信封长什么样。
+        """
+        if not isinstance(payload, dict):
+            return None
+        for path in self.id_paths:
+            cur: Any = payload
+            for part in path.split("."):
+                if not isinstance(cur, dict):
+                    cur = None
+                    break
+                cur = cur.get(part)
+            if cur is not None:
+                return cur
         return None
 
     # ------------------------------------------------------------ 状态迁移矩阵
@@ -537,6 +576,9 @@ class ClassProbe:
         条件装配（@Profile / @Conditional）用错维度时，只有起两个实例对比才暴露。
         """
         request = probe["request"]
+        # 每次调用都会变、但不代表「行为分叉」的字段（自增 id、时间戳）——
+        # 由项目配置声明要忽略哪些，引擎不替项目猜哪些字段是随机量。
+        ignore = set(probe.get("ignore_fields") or [])
         results = []
         for inst in probe["instances"]:
             api = Api(inst["base_url"])
@@ -544,6 +586,10 @@ class ClassProbe:
             body = self._resolve(request.get("body"), ctx)
             body = self._enforce_prefix(body, probe)
             st, payload = api.call(request["method"], request["path"], body)
+            # 实例会真的落库 —— 造出来的行必须记账，否则它就留在库里了
+            oid = self._created_id(payload)
+            if st == 200 and oid is not None:
+                self._track(probe.get("entity"), oid, probe.get("cleanup_sql"))
             results.append({"instance": inst["name"], "profile": inst.get("profile"),
                             "http": st, "body": payload})
         divergence = []
@@ -553,12 +599,48 @@ class ClassProbe:
                 if isinstance(r["body"], dict):
                     fields |= set(r["body"].keys())
             for field in sorted(fields):
+                if field in ignore:
+                    continue
                 values = {r["instance"]: (r["body"] or {}).get(field)
                           for r in results if isinstance(r["body"], dict)}
                 if len({json.dumps(v, sort_keys=True, ensure_ascii=False)
                         for v in values.values()}) > 1:
                     divergence.append({"field": field, "values": values})
         return {"instances": results, "divergence": divergence}
+
+    # ------------------------------------------------------------ SQL 夹具
+    def _p_sql_fixture(self, probe: dict) -> dict:
+        """用 SQL 造夹具行。
+
+        有些实体的字段被外键或业务规则卡住，API 造不出来（比如订单必须引用
+        一个已存在的客户）。这类夹具行自己带探针前缀，清理语句由项目配置给 ——
+        外键顺序只有项目自己知道，引擎不猜。
+        """
+        out = []
+        for stmt in probe.get("statements", []):
+            sql = self._resolve(stmt["sql"], dict(self.fixtures))
+            rows = self.db.cte_rows(sql)
+            captured: dict[str, Any] = {}
+            for key, col in (stmt.get("capture") or {}).items():
+                value = rows[0].get(col) if rows else None
+                captured[key] = value
+                self.fixtures[key] = value
+            out.append({"sql": sql, "rows": rows, "captured": captured})
+        self._fixture_cleanup.extend(probe.get("cleanup_sql", []))
+        return {"statements": out, "fixtures": dict(self.fixtures)}
+
+    def _cleanup_fixtures(self) -> None:
+        """夹具行在所有探针跑完之后统一清 —— 夹具要活到最后一刻才能被别的探针用。"""
+        for stmt in self._fixture_cleanup:
+            filled = self._resolve(stmt, dict(self.fixtures))
+            try:
+                self.db.raw(filled)
+                self._cleanup_log.append({"table": "fixture", "id": None,
+                                           "sql": filled, "ok": True})
+            except Exception as exc:
+                self._cleanup_log.append({"table": "fixture", "id": None,
+                                           "sql": filled, "ok": False,
+                                           "error": str(exc)[:200]})
 
     # ------------------------------------------------------------- 类形状（反射）
     def _p_class_shape(self, probe: dict) -> dict:

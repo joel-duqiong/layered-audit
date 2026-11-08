@@ -57,11 +57,90 @@ INTEGRATION: dict[str, Meta] = {
              "两个低层各自都对，根因落在它们的组合上，故由集成层开单。"),
 }
 
-# 其余四层：demo 目前还没有这四层的 findings，等真跑出来再标注。
+# 类层：demo 的类层探针真跑出来了（15 条），逐条标注。
+CLASS: dict[str, Meta] = {
+    "CLASS-LSP-POSTCONDITION-CHANGED": _m(
+        "class.inheritance_design", "exact",
+        "ShopOrder 覆写 touch() 后是否把父类承诺的审计信息抹掉了？",
+        "class", 0.95, "defect", ("CWE-840",),
+        "inheritance.touch_postcondition_changed",
+        note="BaseEntity <- AuditableEntity <- ShopOrder 三层继承；"
+             "AuditableEntity.touch(actor) 承诺 updatedBy=actor，ShopOrder 覆写后置成 null。"
+             "反射实测：覆写方 updatedBy=null，继承方 updatedBy=actor"),
+    "CLASS-ENCAPSULATION-LEAK-ENTITY-COLLECTION": _m(
+        "class.encapsulation_leak", "exact",
+        "public 方法是否把内部可变实体集合直接交出去？",
+        "class", 0.92, "defect", ("CWE-495",),
+        "service.product_service_returns_internal_entities",
+        note="ProductService.snapshot() 返回 List<ShopProduct>（JPA 实体本身），"
+             "调用方改一个字段就改了服务层内部状态"),
+    "CLASS-CONDITIONAL-ASSEMBLY-DIVERGENCE": _m(
+        "class.invariant", "exact",
+        "同一请求在两个 profile 实例上是否算出不同的结算金额？",
+        "class", 0.94, "defect", ("CWE-840",),
+        "pricing.member_tier_bound_to_deployment_profile",
+        note="VIP 是客户等级（业务维度），却用 @Profile（部署维度）表达。"
+             "实测：default 实例 settled=1000，vip 实例 settled=900。"
+             "本条是集成层涌现链（EMERG-QUOTA-LEDGER-DIVERGENCE）的低层根因之一"),
+    "CLASS-RULE-MISSING-IN-ALL-LAYERS": _m(
+        "class.invariant", "exact",
+        "那 3 条业务不变量在 DB / DTO / 服务层是否全都不存在？",
+        "class", 0.85, "defect", ("CWE-840",),
+        "rule.missing_in_db_dto_service"),
+    "CLASS-BUSINESS-ERROR-AS-500": _m(
+        "class.contract_violation", "exact",
+        "业务规则失败是否被当成服务器错误抛出去？",
+        "class", 0.90, "defect", ("CWE-755",),
+        "error.business_error_as_500",
+        note="客户不存在是业务错误，实测却返回 HTTP 500，响应体里没有业务错误码"),
+    "CLASS-ENTITY-WITHOUT-VALUE-EQUALITY": _m(
+        "class.invariant", "stretched",
+        "实体是否没有值相等（equals/hashCode）？",
+        "class", 0.80, "defect", ("CWE-595",),
+        "entity.no_value_equality",
+        note="按对象身份比较而不是按业务主键：Set 去重失效、Map 键匹配不上"),
+    "CLASS-CACHE-HOLDS-MUTABLE-CONTAINER": _m(
+        "class.encapsulation_leak", "exact",
+        "@Cacheable 是否缓存了可变容器本身？",
+        "class", 0.88, "defect", ("CWE-471",),
+        "cache.holds_mutable_container",
+        note="ProductService.listCached() 缓存 List<ProductResponse> 实例本身，"
+             "调用方 add/remove 就是在改缓存，后续所有请求都读到被改过的值"),
+    "NO_DATA_LIFECYCLE": _m(
+        "class.invariant", "stretched",
+        "shop_order 表是否没有软删或归档、永久增长？",
+        "class", 0.80, "defect", (),
+        "shop_order.no_data_lifecycle",
+        note="订单是持续增长的事实表；customer_name 只是字符串引用，没有外键兜底"),
+    "CLASS-PRIMITIVE-NULLABLE-BY-DESIGN": _m(
+        "class.contract_violation", "exact",
+        "DTO 用原始类型 long 承载 DB 的 NOT NULL 列，缺省是否会静默变成 0？",
+        "class", 0.90, "defect", ("CWE-20",),
+        "dto.primitive_hides_missing_required_field",
+        note="原始类型表达不了「没传」：缺省与显式 null 都变成 0，而 0 恰好满足 @Min(0)，"
+             "DTO 的校验看着像防御，实际拦不住任何东西"),
+    "CLASS-CHECK-WITHOUT-DTO-COUNTERPART": _m(
+        "class.invariant", "stretched",
+        "那 3 条 DB CHECK 是否在 DTO 层找不到同义约束？",
+        "class", 0.75, "defect", (),
+        "rule.check_without_dto_counterpart",
+        note="规则只写在迁移文件里，Java 侧读不到、也无法在报错前拦截"),
+    "CLASS-NULLABILITY-ALIGNED": _m(
+        "class.contract_violation", "exact",
+        "可空性三方声明是否一致？",
+        "class", 0.95, "positive", (),
+        "nullability.three_way_aligned"),
+    "CLASS-CHECK-DTO-ALIGNED": _m(
+        "class.invariant", "exact",
+        "DB CHECK 与 DTO 约束是否对齐？",
+        "class", 0.95, "positive", (),
+        "check.dto_aligned"),
+}
+
+# 其余三层：demo 目前还没有这三层的 findings，等真跑出来再标注。
 FUNCTION: dict[str, Meta] = {}
 FILE: dict[str, Meta] = {}
 SERVICE: dict[str, Meta] = {}
-CLASS: dict[str, Meta] = {}
 
 META: dict[str, dict[str, Meta]] = {
     "function": FUNCTION,
@@ -72,7 +151,20 @@ META: dict[str, dict[str, Meta]] = {
 }
 
 # 类层实体定位提示（demo 暂无类层 findings，先留空，接口与 pilot 一致）
-CLASS_FILE_HINTS: dict[str, str] = {}
+CLASS_FILE_HINTS: dict[str, str] = {
+    "CLASS-LSP-POSTCONDITION-CHANGED": "entity/ShopOrder.java",
+    "CLASS-ENCAPSULATION-LEAK-ENTITY-COLLECTION": "service/ProductService.java",
+    "CLASS-CONDITIONAL-ASSEMBLY-DIVERGENCE": "service/MemberPricingStrategy.java",
+    "CLASS-RULE-MISSING-IN-ALL-LAYERS": "",
+    "CLASS-BUSINESS-ERROR-AS-500": "service/OrderService.java",
+    "CLASS-ENTITY-WITHOUT-VALUE-EQUALITY": "entity/ShopOrder.java",
+    "CLASS-CACHE-HOLDS-MUTABLE-CONTAINER": "service/ProductService.java",
+    "NO_DATA_LIFECYCLE": "entity/ShopOrder.java",
+    "CLASS-PRIMITIVE-NULLABLE-BY-DESIGN": "web/dto/CreateOrderRequest.java",
+    "CLASS-CHECK-WITHOUT-DTO-COUNTERPART": "",
+    "CLASS-NULLABILITY-ALIGNED": "",
+    "CLASS-CHECK-DTO-ALIGNED": "",
+}
 COLUMN_FILE_HINTS: dict[str, str] = {}
 
 

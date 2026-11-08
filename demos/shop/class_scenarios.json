@@ -1,0 +1,410 @@
+{
+  "note": "类层探针的项目侧声明（demo-shop）。通用引擎在 pilot/class_probe.py；换项目只换这个文件。探针自己声明它要看什么（表/列/实体/DTO/端点），引擎只负责执行。",
+  "probe_prefix": "ai_probe_",
+  "prefix_fields": {
+    "shop_order": {
+      "dto": [
+        "customerName"
+      ],
+      "db_column": "customer_name"
+    },
+    "shop_customer": {
+      "dto": [
+        "name"
+      ],
+      "db_column": "name"
+    },
+    "shop_product": {
+      "dto": [
+        "name"
+      ],
+      "db_column": "name"
+    },
+    "shop_category": {
+      "dto": [
+        "name"
+      ],
+      "db_column": "name"
+    }
+  },
+  "probes": [
+    {
+      "id": "customer_fixture",
+      "kind": "sql_fixture",
+      "statements": [
+        {
+          "sql": "INSERT INTO shop_customer (name, level, credit_limit_cent) VALUES ('{{prefix}}cust_{{rand6}}', 'VIP', 100000000) RETURNING id, name",
+          "capture": {
+            "customer_id": "id",
+            "customer_name": "name"
+          }
+        }
+      ],
+      "cleanup_sql": [
+        "DELETE FROM shop_order WHERE customer_name = '{{customer_name}}'",
+        "DELETE FROM shop_customer WHERE id = {{customer_id}}"
+      ]
+    },
+    {
+      "id": "contract_boundary",
+      "kind": "contract_boundary",
+      "entity": "shop_order",
+      "method": "POST",
+      "path": "/api/orders",
+      "body": {
+        "customerName": "{{customer_name}}",
+        "quotedAmountCent": 1000,
+        "currency": "CNY"
+      },
+      "read": {
+        "table": "shop_order",
+        "columns": "customer_name, quoted_amount_cent, settled_amount_cent, status"
+      },
+      "cases": [
+        {
+          "label": "customerName 缺省（DTO @NotBlank，DB NOT NULL）",
+          "override": {
+            "customerName": null
+          }
+        },
+        {
+          "label": "quotedAmountCent=null（DTO 原始类型 long，DB NOT NULL）",
+          "override": {
+            "quotedAmountCent": null
+          }
+        },
+        {
+          "label": "currency 缺省（DTO 无约束，DB 无此列）",
+          "override": {
+            "currency": null
+          }
+        },
+        {
+          "label": "quotedAmountCent 为负（DTO @Min(0)）",
+          "override": {
+            "quotedAmountCent": -1
+          }
+        },
+        {
+          "label": "customerName 不存在（服务层抛异常）",
+          "override": {
+            "customerName": "ai_probe_nobody"
+          }
+        }
+      ],
+      "cleanup_sql": [
+        "DELETE FROM shop_order WHERE id = {{id}}"
+      ]
+    },
+    {
+      "id": "nullability",
+      "kind": "nullability",
+      "cases": [
+        {
+          "label": "quotedAmountCent 缺省（DTO 只写了 @Min(0)，DB NOT NULL）",
+          "method": "POST",
+          "path": "/api/orders",
+          "entity": "shop_order",
+          "table": "shop_order",
+          "read_columns": "id, customer_name, quoted_amount_cent, settled_amount_cent, status",
+          "body": {
+            "customerName": "{{customer_name}}",
+            "currency": "CNY"
+          },
+          "cleanup_sql": [
+            "DELETE FROM shop_order WHERE id = {{id}}"
+          ]
+        },
+        {
+          "label": "shop_order.customer_name 缺省（DB NOT NULL, DTO @NotBlank）",
+          "method": "POST",
+          "path": "/api/orders",
+          "entity": "shop_order",
+          "table": "shop_order",
+          "read_columns": "id, customer_name, quoted_amount_cent, status",
+          "body": {
+            "quotedAmountCent": 1000,
+            "currency": "CNY"
+          },
+          "cleanup_sql": [
+            "DELETE FROM shop_order WHERE id = {{id}}"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "db_invariants",
+      "kind": "db_invariants",
+      "orphan_checks": [
+        {
+          "label": "orphan_orders_customer",
+          "sql": "SELECT count(*) FROM shop_order o LEFT JOIN shop_customer c ON c.name = o.customer_name WHERE o.customer_name IS NOT NULL AND c.id IS NULL"
+        }
+      ],
+      "soft_delete_probe": {
+        "label": "shop_order_without_soft_delete",
+        "table": "shop_order",
+        "column": "is_deleted"
+      },
+      "table_sizes_sql": "SELECT relname, pg_size_pretty(pg_total_relation_size(relid)) FROM pg_stat_user_tables ORDER BY pg_total_relation_size(relid) DESC"
+    },
+    {
+      "id": "defense_audit",
+      "kind": "defense_audit",
+      "constraint_probes": [
+        {
+          "name": "chk_shop_product_price",
+          "table": "shop_product",
+          "sql": "INSERT INTO shop_product (name, price_cent, stock, category_id) VALUES ('ai_probe_c1', -1, 1, (SELECT id FROM shop_category LIMIT 1))"
+        },
+        {
+          "name": "chk_shop_customer_credit",
+          "table": "shop_customer",
+          "sql": "INSERT INTO shop_customer (name, level, credit_limit_cent) VALUES ('ai_probe_c2', 'NORMAL', -1)"
+        },
+        {
+          "name": "chk_shop_order_quoted",
+          "table": "shop_order",
+          "sql": "INSERT INTO shop_order (customer_name, quoted_amount_cent, settled_amount_cent, status) VALUES ('ai_probe_c3', -1, 0, 'PENDING')"
+        },
+        {
+          "name": "chk_shop_order_settled",
+          "table": "shop_order",
+          "sql": "INSERT INTO shop_order (customer_name, quoted_amount_cent, settled_amount_cent, status) VALUES ('ai_probe_c4', 0, -1, 'PENDING')"
+        }
+      ],
+      "no_defense_probes": [
+        {
+          "label": "订单报价金额可以为 0（无 CHECK 要求大于 0，DTO 只写 @Min(0)）",
+          "table": "shop_order",
+          "sql": "INSERT INTO shop_order (customer_name, quoted_amount_cent, settled_amount_cent, status) VALUES ('ai_probe_n1', 0, 0, 'PENDING')"
+        },
+        {
+          "label": "订单状态可以是任意字符串（无 CHECK 白名单）",
+          "table": "shop_order",
+          "sql": "INSERT INTO shop_order (customer_name, quoted_amount_cent, settled_amount_cent, status) VALUES ('ai_probe_n2', 1, 1, 'NOT_A_STATUS')"
+        },
+        {
+          "label": "结算金额与报价金额可以任意不一致（无 CHECK 关联两者）",
+          "table": "shop_order",
+          "sql": "INSERT INTO shop_order (customer_name, quoted_amount_cent, settled_amount_cent, status) VALUES ('ai_probe_n3', 100, 999999, 'PENDING')"
+        }
+      ]
+    },
+    {
+      "id": "class_shape",
+      "kind": "class_shape",
+      "classes": [
+        "com.demo.shop.entity.BaseEntity",
+        "com.demo.shop.entity.AuditableEntity",
+        "com.demo.shop.entity.ShopOrder",
+        "com.demo.shop.entity.ShopCustomer",
+        "com.demo.shop.entity.ShopProduct",
+        "com.demo.shop.entity.ShopCategory",
+        "com.demo.shop.service.ProductService",
+        "com.demo.shop.service.PricingService",
+        "com.demo.shop.service.MemberPricingStrategy",
+        "com.demo.shop.service.StandardPricingStrategy"
+      ]
+    },
+    {
+      "id": "instance_pair",
+      "kind": "instance_pair",
+      "entity": "shop_order",
+      "ignore_fields": [
+        "id"
+      ],
+      "request": {
+        "method": "POST",
+        "path": "/api/orders",
+        "body": {
+          "customerName": "{{customer_name}}",
+          "quotedAmountCent": 1000,
+          "currency": "CNY"
+        }
+      },
+      "instances": [
+        {
+          "name": "default",
+          "profile": "default",
+          "base_url": "http://127.0.0.1:8090"
+        },
+        {
+          "name": "vip",
+          "profile": "vip",
+          "base_url": "http://127.0.0.1:8091"
+        }
+      ],
+      "cleanup_sql": [
+        "DELETE FROM shop_order WHERE id = {{id}}"
+      ]
+    }
+  ],
+  "diff_rules": [
+    {
+      "id": "class_shape",
+      "params": {
+        "lsp": {
+          "id": "CLASS-LSP-POSTCONDITION-CHANGED",
+          "severity": "HIGH",
+          "layer": "class",
+          "title": "{{overrider}} 覆写 {{base}}.{{method}} 后置条件变了：{{fields}} 不再相同",
+          "detail": "父类 {{base}} 承诺 {{method}}(actor) 之后 {{fields}} 记的是调用者；子类 {{overrider}} 覆写后把这个字段抹成 null。依赖「调完 {{method}} 就能读到审计信息」的代码，在 {{overrider}} 上读到的是空 —— 继承层次最上层那份承诺被子类悄悄收窄了。实测对比：{{field_diff}}。",
+          "evidence": {
+            "overrider": "{{overrider}}",
+            "base": "{{base}}",
+            "method": "{{method}}",
+            "differing_fields": "{{fields}}",
+            "field_states": "{{field_diff}}"
+          },
+          "file_carrier_detector": "override_postcondition"
+        },
+        "value_equality": {
+          "id": "CLASS-ENTITY-WITHOUT-VALUE-EQUALITY",
+          "severity": "MEDIUM",
+          "layer": "class",
+          "title": "{{simple_name}} 没有值相等：放进集合或当键，语义会变",
+          "detail": "实体没有声明 equals/hashCode，用的是 Object 的默认实现 —— 按对象身份比较，不是按业务主键。业务上「同一个客户」在两处会被当成两个对象：Set 去重失效、Map 键匹配不上、List.contains 永远 false。这不是性能问题而是正确性问题，而且编译期与运行期都不会报错。",
+          "evidence": {
+            "class": "{{class}}",
+            "simple_name": "{{simple_name}}",
+            "declares_equals": false,
+            "declares_hashcode": false
+          },
+          "file_carrier_detector": "entity_value_equality"
+        },
+        "encapsulation": {
+          "id": "CLASS-ENCAPSULATION-LEAK-ENTITY-COLLECTION",
+          "severity": "HIGH",
+          "layer": "class",
+          "title": "{{class}}.{{method}} 把内部实体集合直接交出去",
+          "detail": "public 方法返回 {{returns}}，元素类型是实体 {{entity}}。调用方拿到的不是快照而是内部对象本身 —— 改一个字段就改了服务层的内部状态，绕过所有不变量检查。集合可变、实体也可变，封装在这一行彻底失效。（返回单个实体引用是 JPA 常规用法，不算泄漏；这里只认「实体的集合」。）",
+          "evidence": {
+            "class": "{{class}}",
+            "method": "{{method}}",
+            "returns": "{{returns}}",
+            "entity_type": "{{entity}}"
+          },
+          "file_carrier_detector": "encapsulation_leak"
+        },
+        "cacheable": {
+          "id": "CLASS-CACHE-HOLDS-MUTABLE-CONTAINER",
+          "severity": "MEDIUM",
+          "layer": "class",
+          "title": "{{class}}.{{method}} 缓存里放的是可变容器",
+          "detail": "@Cacheable 直接缓存了 {{returns}} 这个集合实例本身。缓存命中后拿到的还是同一个 List —— 调用方 add/remove 就是在改缓存，后续所有请求都读到被改过的值，而且没有任何一处会报错。元素类型 {{element}}（record：{{element_is_record}}）本身不可变，风险在容器上。",
+          "evidence": {
+            "class": "{{class}}",
+            "method": "{{method}}",
+            "returns": "{{returns}}",
+            "element_type": "{{element}}",
+            "element_is_record": "{{element_is_record}}"
+          },
+          "file_carrier_detector": "cacheable_mutable"
+        }
+      }
+    },
+    {
+      "id": "instance_pair",
+      "params": {
+        "finding_id": "CLASS-CONDITIONAL-ASSEMBLY-DIVERGENCE",
+        "severity": "HIGH",
+        "layer": "class",
+        "title": "同一请求在两个部署实例上结果不同：{{fields}} 分叉",
+        "detail": "实例 {{instances}} 上跑同一个请求，响应字段 {{fields}} 不一致（实测：{{field_values}}）。说明行为取决于部署环境（profile / 条件装配），而不是取决于业务数据 —— 换一套环境，同一份输入算出不同结果。业务维度被绑到了部署维度上：VIP 是客户等级，却用 @Profile（部署维度）来表达，非 vip 部署里会员客户全部按标准价结算。",
+        "evidence": {
+          "divergent_fields": "{{fields}}",
+          "instances": "{{instances}}",
+          "field_values": "{{field_values}}"
+        },
+        "file_carrier_detector": "profile_assembly"
+      }
+    },
+    {
+      "id": "no_data_lifecycle",
+      "params": {
+        "finding_id": "NO_DATA_LIFECYCLE",
+        "severity": "MEDIUM",
+        "layer": "class",
+        "probe_label": "shop_order_without_soft_delete",
+        "table": "shop_order",
+        "title": "{{table}} 表没有软删/归档，永久增长（当前 {{size}}）",
+        "detail": "demo-shop 的业务表都没有 is_deleted / 归档列。订单是持续增长的事实表，没有生命周期意味着「删除」只能是物理删除或者干脆做不到 —— 订单只用 customer_name 字符串引用客户（没有外键），会随着时间推移越来越难保证一致。"
+      }
+    }
+  ],
+  "contract_diff": {
+    "dto_target": {
+      "CreateOrderRequest": [
+        "shop_order",
+        "ShopOrder"
+      ]
+    },
+    "server_derived": [
+      "id",
+      "settledAmountCent",
+      "status"
+    ],
+    "field_notes": [
+      {
+        "match_field": "quotedAmountCent",
+        "probe_label": "quotedAmountCent 缺省（DTO 只写了 @Min(0)，DB NOT NULL）",
+        "evidence_column": "quoted_amount_cent",
+        "id": "CLASS-PRIMITIVE-NULLABLE-BY-DESIGN",
+        "severity": "MEDIUM",
+        "layer": "class",
+        "title": "shop_order.quoted_amount_cent 声明 NOT NULL，DTO 用原始类型 long —— 缺省静默变成 0",
+        "detail": "DB 列 quoted_amount_cent 是 NOT NULL，DTO 写的是原始类型 long + @Min(0)。原始类型没法表达「没传」：Jackson 把缺省塞成 0，而 0 恰好满足 @Min(0)。实测：客户端不传这个字段，接口返回 {{http}}，库里落的是 {{db_value}}。于是「报价金额必须大于 0」这条业务规则在三层里都没有人声明 —— DTO 的 @Min(0) 看着像防御，实际拦不住任何东西。",
+        "evidence": {
+          "dto": "{{dto}}",
+          "field": "{{field}}",
+          "column": "{{column}}",
+          "dto_constraints": [
+            "Min(0)"
+          ],
+          "db_not_null": true,
+          "http": "{{http}}",
+          "db_value": "{{db_value}}"
+        }
+      }
+    ],
+    "rule_notes": {
+      "订单报价金额可以为 0（无 CHECK 要求大于 0，DTO 只写 @Min(0)）": {
+        "http": 200,
+        "note": "缺省报价金额的订单接口返回 200，落库 quoted_amount_cent=0"
+      },
+      "订单状态可以是任意字符串（无 CHECK 白名单）": {
+        "http": null,
+        "note": "DTO 里没有 status 字段，客户端根本传不进来；status 由服务层写死 PENDING"
+      },
+      "结算金额与报价金额可以任意不一致（无 CHECK 关联两者）": {
+        "http": null,
+        "note": "结算金额由服务层按折扣与汇率算出，客户端无法直接写"
+      }
+    },
+    "rule_excludes": [],
+    "rule_missing": {
+      "id": "CLASS-RULE-MISSING-IN-ALL-LAYERS",
+      "severity": "HIGH",
+      "layer": "class",
+      "title": "{{n}} 条业务不变量在 DB / DTO / 服务层三层全都不存在",
+      "detail": "这些不是「某一层写错了」，而是三层都没有表达过 —— DB 放行、DTO 无约束、服务层也不检查。demo-shop 的业务语义（报价金额必须大于 0、订单状态只能取约定的几个值、结算金额必须与报价金额对得上）目前只存在于人的脑子里，不存在于任何一行代码或迁移文件里。"
+    },
+    "error_contract": [
+      {
+        "label_prefix": "customerName 不存在",
+        "http": 500,
+        "id": "CLASS-BUSINESS-ERROR-AS-500",
+        "severity": "HIGH",
+        "layer": "class",
+        "title": "业务规则失败被当成服务器错误抛出去：{{label}} -> HTTP {{http}}",
+        "detail": "实测：{{label}} 时接口返回 HTTP {{http}}。客户端拿到的是一个「服务器坏了」的信号，而不是「客户不存在」—— 响应体里没有业务错误码，文案也没说清真实原因（Spring 默认错误页只写 Internal Server Error）。调用方无法据此重试或提示用户，只能当成不可恢复的故障。这一条业务规则目前只存在于服务层的 if 里，既没有异常类型，也没有错误码映射。",
+        "evidence": {
+          "case": "{{label}}",
+          "http": "{{http}}",
+          "business_error_code": null
+        }
+      }
+    ]
+  }
+}

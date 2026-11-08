@@ -26,7 +26,14 @@ HARNESS = WORK / "harness"
 DEPS_FILE = D / "file_deps.txt"
 OUT = D / "class_contract.json"
 
-SRC_ROOTS = ("dto", "entity")
+def src_roots() -> tuple[str, ...]:
+    """反射要扫的源码根（相对 java 包路径）—— 由项目绑定声明。
+
+    默认 dto,entity；不同项目的 DTO 放在哪不一样（有的在 web/dto 下），
+    引擎不该假设目录布局。
+    """
+    raw = project.paths().get("contract_src_roots") or "dto,entity"
+    return tuple(r.strip() for r in raw.split(",") if r.strip())
 
 
 def db_spec() -> dict:
@@ -109,7 +116,7 @@ def reflection() -> list[dict]:
     run(["javac", "-cp", f"{CLASSES}:{deps}", "-d", str(out_dir), str(src)])
 
     classes = []
-    for root in SRC_ROOTS:
+    for root in src_roots():
         for path in sorted(CLASSES.glob(f"{PKG.replace('.', '/')}/{root}/*.class")):
             if "$" in path.name:
                 continue

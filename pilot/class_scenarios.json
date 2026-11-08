@@ -526,6 +526,363 @@
           ]
         }
       ]
+    },
+    {
+      "id": "class_shape",
+      "kind": "class_shape",
+      "classes": [
+        "com.jiuyan.banquet.entity.BaseEntity",
+        "com.jiuyan.banquet.entity.BanquetOrder",
+        "com.jiuyan.banquet.entity.BanquetPackage",
+        "com.jiuyan.banquet.entity.Category",
+        "com.jiuyan.banquet.entity.PackageItem",
+        "com.jiuyan.banquet.entity.PackageType",
+        "com.jiuyan.banquet.entity.Product",
+        "com.jiuyan.banquet.service.CategoryService",
+        "com.jiuyan.banquet.service.OrderService",
+        "com.jiuyan.banquet.service.PackageService",
+        "com.jiuyan.banquet.service.PackageTypeService",
+        "com.jiuyan.banquet.service.ProductService",
+        "com.jiuyan.banquet.service.UploadService"
+      ]
+    }
+  ],
+  "diff_rules": [
+    {
+      "id": "enum_check_drift",
+      "params": {
+        "enum_file": "OrderStatus.java",
+        "enum_name": "OrderStatus",
+        "table": "orders",
+        "column": "status",
+        "drift_id": "ENUM_CHECK_DRIFT",
+        "severity": "HIGH",
+        "drift_title": "OrderStatus 枚举与 DB CHECK 白名单不一致：仅 Java {{only_java}} / 仅 DB {{only_db}}",
+        "drift_detail": "枚举是 Java 层的状态取值声明，CHECK 是 DB 层的。两份必须一致，否则加一个状态要改两处。",
+        "aligned_id": "ENUM_CHECK_ALIGNED",
+        "aligned_severity": "INFO",
+        "aligned_title": "OrderStatus 枚举与 DB CHECK 白名单完全一致（{{java_n}}/{{db_n}}）",
+        "aligned_detail": "这是一次「没有问题」的差分结论 —— 差分引擎既能报问题也能给出通过结论。"
+      }
+    },
+    {
+      "id": "no_state_machine",
+      "params": {
+        "finding_id": "NO_STATE_MACHINE",
+        "severity": "HIGH",
+        "layer": "class",
+        "title": "状态机缺失：{{allowed_n}}/{{total}} 种迁移全部被接受，含回退",
+        "detail": "DDL 只有取值白名单 CHECK (status IN (...))，没有任何迁移约束；实测 9 种迁移全部 200 成功。业务后果：已付款（DEPOSIT_PAID）/已完成（COMPLETED）的订单可以被改回 PENDING，押金与结算状态和现实不符，而且没有留下任何迁移记录。",
+        "ddl_check": "status IN ('PENDING','DEPOSIT_PAID','COMPLETED')"
+      }
+    },
+    {
+      "id": "index_unusable",
+      "params": {
+        "finding_id": "INDEX_UNUSABLE_FOR_QUERY_PATTERN",
+        "severity": "HIGH",
+        "layer": "class→service",
+        "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（{{like_ms}}ms vs {{exact_ms}}ms，差 {{ratio}} 倍）",
+        "detail": "迁移文件建了 products(name) 索引，但服务层关键词搜索写的是 lower(name) LIKE '%kw%'：lower() 让索引无法用于定位，前导 % 让 btree 本来也用不上。EXPLAIN 显示走 Filter 全量过滤而非 Index Cond。类层把索引交给服务层，但服务层不知道该怎么用它 —— 声明没有传递下去。",
+        "like_label": "like_prefix_lower",
+        "exact_label": "exact_equal",
+        "like_ms_key": "like_prefix_lower_ms",
+        "exact_ms_key": "exact_equal_ms"
+      }
+    },
+    {
+      "id": "soft_delete_resurrect",
+      "params": {
+        "finding_id": "SOFT_DELETE_RESURRECTS_ROW",
+        "severity": "MEDIUM",
+        "layer": "class",
+        "title": "软删除的行会被同名重建「复活」，id 与 sort_order 沿用旧值",
+        "detail": "删除分类后用同名重建，命中的是同一条已软删记录（id 不变、sort_order 沿用旧的），而不是新建。DDL 的 UNIQUE(name) 与软删除语义冲突：删除不是删除，是可复活。id 复用会让历史引用（商品、订单快照）指向一个「看起来是新」的实体。"
+      }
+    },
+    {
+      "id": "no_data_lifecycle",
+      "params": {
+        "finding_id": "NO_DATA_LIFECYCLE",
+        "severity": "MEDIUM",
+        "layer": "class",
+        "probe_label": "orders_without_soft_delete",
+        "table": "orders",
+        "title": "{{table}} 表没有软删/归档，永久增长（当前 {{size}}）",
+        "detail": "products/packages/categories 都有 is_deleted，orders 没有。订单是唯一不设生命周期的表，还带 2 个 jsonb 快照列和 6 个索引 —— 数据量上来后这张表会最先撑爆。"
+      }
+    },
+    {
+      "id": "class_shape",
+      "params": {
+        "lsp": {
+          "id": "CLASS-LSP-POSTCONDITION-CHANGED",
+          "severity": "HIGH",
+          "layer": "class",
+          "title": "{{overrider}} 覆写 {{base}}.{{method}} 后置条件变了：{{fields}} 不再相同",
+          "detail": "父类 {{base}} 承诺 {{method}}(actor) 之后 {{fields}} 记的是调用者；子类 {{overrider}} 覆写后把这个字段抹成 null。依赖「调完 {{method}} 就能读到审计信息」的代码，在 {{overrider}} 上读到的是空 —— 继承层次最上层那份承诺被子类悄悄收窄了。实测对比：{{field_diff}}。",
+          "evidence": {
+            "overrider": "{{overrider}}",
+            "base": "{{base}}",
+            "method": "{{method}}",
+            "differing_fields": "{{fields}}",
+            "field_states": "{{field_diff}}"
+          },
+          "file_carrier_detector": "override_postcondition"
+        },
+        "value_equality": {
+          "id": "CLASS-ENTITY-WITHOUT-VALUE-EQUALITY",
+          "severity": "MEDIUM",
+          "layer": "class",
+          "title": "{{simple_name}} 没有值相等：放进集合或当键，语义会变",
+          "detail": "实体没有声明 equals/hashCode，用的是 Object 的默认实现 —— 按对象身份比较，不是按业务主键。业务上「同一个客户」在两处会被当成两个对象：Set 去重失效、Map 键匹配不上、List.contains 永远 false。这不是性能问题而是正确性问题，而且编译期与运行期都不会报错。",
+          "evidence": {
+            "class": "{{class}}",
+            "simple_name": "{{simple_name}}",
+            "declares_equals": false,
+            "declares_hashcode": false
+          },
+          "file_carrier_detector": "entity_value_equality"
+        },
+        "encapsulation": {
+          "id": "CLASS-ENCAPSULATION-LEAK-ENTITY-COLLECTION",
+          "severity": "HIGH",
+          "layer": "class",
+          "title": "{{class}}.{{method}} 把内部实体集合直接交出去",
+          "detail": "public 方法返回 {{returns}}，元素类型是实体 {{entity}}。调用方拿到的不是快照而是内部对象本身 —— 改一个字段就改了服务层的内部状态，绕过所有不变量检查。集合可变、实体也可变，封装在这一行彻底失效。（返回单个实体引用是 JPA 常规用法，不算泄漏；这里只认「实体的集合」。）",
+          "evidence": {
+            "class": "{{class}}",
+            "method": "{{method}}",
+            "returns": "{{returns}}",
+            "entity_type": "{{entity}}"
+          },
+          "file_carrier_detector": "encapsulation_leak"
+        },
+        "cacheable": {
+          "id": "CLASS-CACHE-HOLDS-MUTABLE-CONTAINER",
+          "severity": "MEDIUM",
+          "layer": "class",
+          "title": "{{class}}.{{method}} 缓存里放的是可变容器",
+          "detail": "@Cacheable 直接缓存了 {{returns}} 这个集合实例本身。缓存命中后拿到的还是同一个 List —— 调用方 add/remove 就是在改缓存，后续所有请求都读到被改过的值，而且没有任何一处会报错。元素类型 {{element}} 本身不可变，风险在容器上。",
+          "evidence": {
+            "class": "{{class}}",
+            "method": "{{method}}",
+            "returns": "{{returns}}",
+            "element_type": "{{element}}"
+          },
+          "file_carrier_detector": "cacheable_mutable"
+        }
+      }
+    }
+  ],
+  "contract_diff": {
+    "dto_target": {
+      "CreateProductRequest": [
+        "products",
+        "Product"
+      ],
+      "UpdateProductRequest": [
+        "products",
+        "Product"
+      ],
+      "CreatePackageRequest": [
+        "packages",
+        "BanquetPackage"
+      ],
+      "UpdatePackageRequest": [
+        "packages",
+        "BanquetPackage"
+      ],
+      "CreateOrderRequest": [
+        "orders",
+        "BanquetOrder"
+      ],
+      "UpdateOrderRequest": [
+        "orders",
+        "BanquetOrder"
+      ],
+      "CreateCategoryRequest": [
+        "categories",
+        "Category"
+      ],
+      "CreatePackageTypeRequest": [
+        "package_types",
+        "PackageType"
+      ],
+      "PackageItemRequest": [
+        "package_items",
+        "PackageItem"
+      ],
+      "AddedItemRequest": [
+        "package_items",
+        "PackageItem"
+      ]
+    },
+    "server_derived": [
+      "orderNo",
+      "packageSnapshot",
+      "addedItemsSnapshot",
+      "createdAt",
+      "updatedAt"
+    ],
+    "field_notes": [
+      {
+        "match_field": "address",
+        "match_table": "orders",
+        "probe_label": "address 缺省（DTO 无约束，DB NOT NULL）",
+        "evidence_column": "address",
+        "id": "CLASS-NOTNULL-BYPASSED-BY-EMPTY-STRING",
+        "severity": "MEDIUM",
+        "layer": "class",
+        "title": "orders.address 声明 NOT NULL，实际用空串绕过 —— 非空约束只挡了 NULL",
+        "detail": "三方声明：DB 列 address 为 NOT NULL，实体 @Column(nullable=false)，但 DTO 的 address 没有任何约束。实测：客户端不传 address，接口返回 {{http}}，库里落的是空串 {{db_value_repr}}。NOT NULL 只证明列不是 NULL，空串照样入库 —— 约束拦不住业务上的空。后果：订单地址为空，宴会执行单拿不到地址，且没有任何一层会报错。",
+        "evidence": {
+          "dto": "{{dto}}",
+          "field": "{{field}}",
+          "column": "{{column}}",
+          "db_not_null": true,
+          "dto_constraints": [],
+          "entity_nullable": "{{entity_nullable}}",
+          "http": "{{http}}",
+          "db_value": "{{db_value}}"
+        }
+      },
+      {
+        "match_field": "finalPriceCent",
+        "probe_label": "finalPriceCent=null（DTO 可空，DB NOT NULL）",
+        "id": "CLASS-REQUIRED-CHECKED-IN-SERVICE-LAYER",
+        "severity": "MEDIUM",
+        "layer": "class",
+        "title": "orders.finalPriceCent 必填性校验落在服务层，DTO 少一条 @NotNull",
+        "detail": "DB 与实体都声明 NOT NULL，DTO 只写了 @Min(0) 而没有 @NotNull —— 字段在传输层是可空的，靠服务层补一句判断拦住。实测：传 null 返回 {{http}} / {{code}}，文案是「{{message}}」。后果一：责任错层，任何绕过服务层的写入方（脚本、数据修复）都会撞 DB 报错；后果二：报错文案说的是「小于 0」，真实原因是「不能为空」，客户端无法据此定位。",
+        "evidence": {
+          "dto": "{{dto}}",
+          "field": "{{field}}",
+          "column": "{{column}}",
+          "dto_constraints": [
+            "Min(0)"
+          ],
+          "db_not_null": true,
+          "http": "{{http}}",
+          "code": "{{code}}",
+          "message": "{{message}}"
+        }
+      },
+      {
+        "match_field": "isActive",
+        "probe_label": "{{table}}.is_active 缺省（DB NOT NULL, DTO 无 @NotNull）",
+        "evidence_column": "is_active",
+        "id": "CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES",
+        "severity": "LOW",
+        "layer": "class",
+        "title": "{{table}}.is_active 的默认值被声明了三遍",
+        "detail": "DB 列有 DEFAULT true，DTO 允许缺省，服务层再兜底成 true。实测：缺省时接口返回 {{http}}，落库 is_active={{db_value}}。同一个默认值写三遍，改任何一处（比如把产品默认改成下架）另外两处不会跟着变，且不会有任何报错 —— 属于典型的静默漂移。",
+        "evidence": {
+          "table": "{{table}}",
+          "column": "{{column}}",
+          "db_default": "{{db_default}}",
+          "dto_constraints": [],
+          "observed_value": "{{db_value}}",
+          "http": "{{http}}"
+        }
+      }
+    ],
+    "rule_notes": {
+      "deposit_cent > final_price_cent（定金大于成交价）": {
+        "http": 200,
+        "note": "定金 999999 > 成交价 1，落库无异常"
+      },
+      "reservation_time 在过去（预订过去的日期）": {
+        "http": 200,
+        "note": "预订时间取一年前，接口照常受理并落库"
+      },
+      "customer_phone 非手机号格式": {
+        "http": 200,
+        "note": "customer_phone 落库为 'not-a-phone'"
+      },
+      "status=COMPLETED 但 deposit_cent=0（未付定金却已完成）": {
+        "http": 200,
+        "note": "订单直接置为已完成，定金为 0"
+      }
+    },
+    "rule_excludes": [
+      "orders.address 为 NULL（DB 声明 NOT NULL）",
+      "products.category_id 指向一个不存在的分类（FK 应拦）"
+    ],
+    "rule_missing": {
+      "id": "CLASS-RULE-MISSING-IN-ALL-LAYERS",
+      "severity": "HIGH",
+      "layer": "class",
+      "title": "{{n}} 条业务不变量在 DB / DTO / 服务层三层全都不存在",
+      "detail": "这些不是「某一层写错了」，而是三层都没有表达过 —— 没有任何一层承担校验责任，实测 API 也全部放行并落库。订单的业务语义（定金不超过成交价、预订时间在未来、联系方式是手机号、完成必有定金）目前只存在于人的脑子里，不存在于任何一行代码或迁移文件里。"
+    },
+    "write_footprint": {
+      "put_action_prefix": "PUT /api/products/{id}",
+      "missing_fk_action_contains": "缺省 categoryId",
+      "put_wipes": {
+        "id": "CLASS-PUT-WIPES-UNSET-FIELD",
+        "severity": "MEDIUM",
+        "layer": "class",
+        "column": "image_url",
+        "title": "PUT 是全量覆盖：不传的 imageUrl 会被抹成 NULL",
+        "detail": "UpdateProductRequest.imageUrl 没有任何约束（可缺省），但 PUT 的语义是全量替换。实测：创建时带图片路径，随后一次不带 imageUrl 的 PUT 之后，image_url 变成 NULL。后果不是校验问题而是数据丢失 —— 磁盘上的图片文件还在，但数据库里的引用没了，文件成为孤儿，前端永远拿不到图。",
+        "evidence": {
+          "entity": "{{entity}}",
+          "id": "{{id}}",
+          "changed_columns": "{{changed_columns}}",
+          "final_row": "{{final_row}}"
+        }
+      },
+      "put_guarded": {
+        "id": "CLASS-PUT-REQUIRED-FK-GUARDED",
+        "severity": "INFO",
+        "layer": "class",
+        "http": 400,
+        "title": "PUT 缺省必填外键被 DTO 的 @NotNull 挡住（400，DB 无脏数据）",
+        "detail": "categoryId 在 DTO 上有 @NotNull，实测缺省时接口返回 400 且行未被改动。这是可空性差分里方向正确的一例：声明在最靠近输入的地方设防。",
+        "evidence": {
+          "http": "{{http}}",
+          "changed": "{{changed}}"
+        }
+      }
+    },
+    "error_contract": [
+      {
+        "label_prefix": "finalPriceCent=null",
+        "http": 422,
+        "id": "CLASS-ERROR-MESSAGE-MISMATCH",
+        "severity": "LOW",
+        "layer": "class",
+        "title": "finalPriceCent=null 的报错文案说的是「小于 0」，真实原因是「不能为空」",
+        "detail": "null 触发的是必填缺失，却复用了一个数值区间的错误文案。客户端拿到 422 后按「价格太小」去提示用户，实际用户根本没填价格。这类错误文案漂移会让前端提示整体失真。",
+        "evidence": {
+          "http": "{{http}}",
+          "code": "{{code}}",
+          "message": "{{message}}",
+          "label": "{{label}}"
+        }
+      },
+      {
+        "label_prefix": "status 小写",
+        "http": 400,
+        "id": "CLASS-ENUM-CASE-SENSITIVE",
+        "severity": "LOW",
+        "layer": "class",
+        "title": "订单状态枚举大小写敏感，小写 pending 直接 400",
+        "detail": "DTO 的 status 字段直接用 OrderStatus 枚举，Jackson 默认大小写敏感。实测传 'pending' 返回 400「订单状态不正确」。对外 API 的枚举值应当约定为大小写不敏感或明确写进 OpenAPI，否则每个新客户端都会踩一次。",
+        "evidence": {
+          "http": "{{http}}",
+          "code": "{{code}}",
+          "message": "{{message}}"
+        }
+      }
+    ]
+  },
+  "file_carrier_exclusions": [
+    {
+      "detector": "encapsulation_leak",
+      "class_pattern": "\\.repository\\.",
+      "reason": "Spring Data 仓储方法返回实体是框架的既定用法 —— 仓储本身就是实体的对外接口；封装泄漏的担心针对的是服务层把内部状态交出去"
     }
   ]
 }
