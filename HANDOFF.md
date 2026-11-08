@@ -854,6 +854,31 @@ agent 还没写 —— 这是 §11-B4 编排化的优先级依据。
 
 ## 14. 最近一次验证记录（2026-11-08）
 
+**第七轮：跨仓库缺陷第一次有了明确归属**
+
+- demo 的跨仓库缺陷（结算额乘了**另一个仓库** python-svc 返回的汇率，而额度占用
+  仍按报价口径校验 —— 本地汇率若是 1.0 就根本不会发生）现在是一条
+  **服务层 own** 的发现：`BI-FX-BASIS-ALIGNMENT` →
+  根因 `order.fx_rate_applied_to_settlement_without_quota_alignment`。
+- 为让「差额来自仓库边界之外」在数据里说得清：**demo 的订单加记了币种**
+  （V2 迁移 + 实体字段 + 服务层记录请求里的币种）—— 真实订单系统本来也该记。
+- 三条不变式的**适用行集合互斥**（基准币种 / VIP∧基准币种 / 非基准币种），
+  所以每个违反只有一个原因；为此给引擎的 `when` 加了**合取**（条件列表）的能力。
+- **涌现门禁的三个注入现在全部 attributed**（含跨仓库那个 `INJ-FX-NONBASE`），
+  结论 **GREEN**（FDR_inj 1.000 / Attr_acc 1.000）。
+- demo 的归属链现在是四层各归其位：
+  `order.quota_checked_on_quoted_amount_ledger_on_settled` → file own / service cite；
+  `pricing.member_tier_bound_to_deployment_profile` → class own / service cite；
+  `order.fx_rate_applied_to_settlement_without_quota_alignment` → **service own**（跨仓库）；
+  `order.quota_ledger_amount_divergence` → integration own。
+- demo 流水线 exit 0；发现 20 → **23**、根因 15 → **18**；硬违规 **0**；残留守卫通过。
+- **B16 剩下的部分**：候选链生成器目前只在**单仓库**的关系网上找链 ——
+  跨仓库的合取链（入口在 A、条件在 B）还没法自动生成。注入目录里那条是人工写的。
+
+---
+
+## 14.1 第六轮验证记录（2026-11-08 深夜）
+
 **第六轮：属性绑定优先级探针 —— 抓到一个真实的部署陷阱**
 
 - 新探针 `pilot/property_binding_probe.py`：对每个属性，把各种绑定形式

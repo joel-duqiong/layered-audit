@@ -3,15 +3,15 @@
   "contract": "/Users/june/.cc-weixin/workspace/layered-audit/layers.yaml",
   "target": "/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/target.json",
   "counts": {
-    "total": 20,
+    "total": 23,
     "by_layer": {
       "file": 2,
-      "class": 15,
+      "class": 17,
       "integration": 1,
-      "service": 2
+      "service": 3
     },
     "by_kind": {
-      "defect": 18,
+      "defect": 21,
       "positive": 2,
       "observation": 0
     }
@@ -109,7 +109,7 @@
       "runtime_fidelity": "stubbed",
       "severity": "HIGH",
       "title": "OrderService 同一文件里两处对同一个订单金额用了不同口径：额度按报价卡、账按结算记",
-      "detail": "OrderService.create 一个方法里，额度检查与记账用了**两个不同的金额**：\n  · quotaService.withinLimit(customer, request.quotedAmountCent()) —— 按**报价**卡；\n  · ledgerService.record(order, settled) —— 按**结算额**记。\n报价 10000、会员九折后结算 9000、客户额度 9500：结算口径下这笔单过得去，报价口径下过不去 —— 结果是**能成交的单被拒了**，而且额度被按一个更大的数占住。\n字节码证据：['com.demo.shop.web.dto.CreateOrderRequest.customerName', 'com.demo.shop.repository.ShopCustomerRepository.findByName', 'java.util.Optional.orElseThrow', 'com.demo.shop.entity.ShopCustomer.getName', 'com.demo.shop.entity.ShopOrder.setCustomerName', 'com.demo.shop.web.dto.CreateOrderRequest.quotedAmountCent', 'java.lang.Long.valueOf', 'com.demo.shop.entity.ShopOrder.setQuotedAmountCent', 'com.demo.shop.entity.ShopOrder.setStatus', 'com.demo.shop.web.dto.CreateOrderRequest.quotedAmountCent', 'com.demo.shop.service.QuotaService.withinLimit', 'com.demo.shop.web.dto.CreateOrderRequest.quotedAmountCent', 'com.demo.shop.service.PricingService.settle', 'com.demo.shop.web.dto.CreateOrderRequest.currency', 'com.demo.shop.client.FxClient.rate', 'com.demo.shop.service.LedgerService.record', 'com.demo.shop.entity.ShopOrder.touch', 'com.demo.shop.repository.ShopOrderRepository.save', 'com.demo.shop.entity.ShopOrder.getId', 'com.demo.shop.entity.ShopOrder.getQuotedAmountCent', 'java.lang.Long.longValue', 'com.demo.shop.entity.ShopOrder.getSettledAmountCent', 'java.lang.Long.longValue', 'com.demo.shop.entity.ShopOrder.getStatus']\n两个口径单独看各自都对（额度检查没错、记账也没错），错在同一个文件里两处用了不同的量。",
+      "detail": "OrderService.create 一个方法里，额度检查与记账用了**两个不同的金额**：\n  · quotaService.withinLimit(customer, request.quotedAmountCent()) —— 按**报价**卡；\n  · ledgerService.record(order, settled) —— 按**结算额**记。\n报价 10000、会员九折后结算 9000、客户额度 9500：结算口径下这笔单过得去，报价口径下过不去 —— 结果是**能成交的单被拒了**，而且额度被按一个更大的数占住。\n字节码证据：['com.demo.shop.web.dto.CreateOrderRequest.customerName', 'com.demo.shop.repository.ShopCustomerRepository.findByName', 'java.util.Optional.orElseThrow', 'com.demo.shop.entity.ShopCustomer.getName', 'com.demo.shop.entity.ShopOrder.setCustomerName', 'com.demo.shop.web.dto.CreateOrderRequest.quotedAmountCent', 'java.lang.Long.valueOf', 'com.demo.shop.entity.ShopOrder.setQuotedAmountCent', 'com.demo.shop.entity.ShopOrder.setStatus', 'com.demo.shop.web.dto.CreateOrderRequest.currency', 'com.demo.shop.web.dto.CreateOrderRequest.currency', 'com.demo.shop.entity.ShopOrder.setCurrency', 'com.demo.shop.web.dto.CreateOrderRequest.quotedAmountCent', 'com.demo.shop.service.QuotaService.withinLimit', 'com.demo.shop.web.dto.CreateOrderRequest.quotedAmountCent', 'com.demo.shop.service.PricingService.settle', 'com.demo.shop.web.dto.CreateOrderRequest.currency', 'com.demo.shop.client.FxClient.rate', 'com.demo.shop.service.LedgerService.record', 'com.demo.shop.entity.ShopOrder.touch', 'com.demo.shop.repository.ShopOrderRepository.save', 'com.demo.shop.entity.ShopOrder.getId', 'com.demo.shop.entity.ShopOrder.getQuotedAmountCent', 'java.lang.Long.longValue', 'com.demo.shop.entity.ShopOrder.getSettledAmountCent', 'java.lang.Long.longValue', 'com.demo.shop.entity.ShopOrder.getStatus']\n两个口径单独看各自都对（额度检查没错、记账也没错），错在同一个文件里两处用了不同的量。",
       "related": [
         "BI-QUOTA-LEDGER-PARITY（服务层：同一根因的端到端差分证据 —— 单条件不违反、双条件才违反）"
       ],
@@ -126,8 +126,57 @@
       }
     },
     {
+      "id": "JPA_COLUMN_MISSING_IN_DDL",
+      "uid": "class:JPA_COLUMN_MISSING_IN_DDL#0",
+      "layer": "class",
+      "category": "UNMAPPED",
+      "category_fit": "unmapped",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "currency",
+        "endpoint": ""
+      },
+      "claim": "（未标注：JPA_COLUMN_MISSING_IN_DDL）",
+      "evidence_refs": [
+        "artifacts/class_findings.json#JPA_COLUMN_MISSING_IN_DDL"
+      ],
+      "repro_cmd": "",
+      "repro_granularity": "none",
+      "confidence": 0.4,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "class",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "unannotated.class.JPA_COLUMN_MISSING_IN_DDL",
+      "related_root_causes": [],
+      "kind": "defect",
+      "runtime_fidelity": "hybrid",
+      "severity": "HIGH",
+      "title": "ShopOrder.currency 映射的列 currency 在 DDL 里不存在",
+      "detail": "JPA 声明与 Flyway 迁移不一致：要么实体是新的而迁移没写，要么列名写错。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "artifacts/class_findings.json",
+        "index": 0
+      },
+      "meta": {
+        "inferred_fields": [
+          "category/claim/owner/confidence/ground_truth/cwe/root_cause_key"
+        ],
+        "confidence_source": "inferred",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
       "id": "CLASS-LSP-POSTCONDITION-CHANGED",
-      "uid": "class:CLASS-LSP-POSTCONDITION-CHANGED#0",
+      "uid": "class:CLASS-LSP-POSTCONDITION-CHANGED#1",
       "layer": "class",
       "category": "class.inheritance_design",
       "category_fit": "exact",
@@ -165,7 +214,7 @@
       "note": "BaseEntity <- AuditableEntity <- ShopOrder 三层继承；AuditableEntity.touch(actor) 承诺 updatedBy=actor，ShopOrder 覆写后置成 null。反射实测：覆写方 updatedBy=null，继承方 updatedBy=actor",
       "source": {
         "file": "artifacts/class_findings.json",
-        "index": 0
+        "index": 1
       },
       "meta": {
         "inferred_fields": [],
@@ -176,7 +225,7 @@
     },
     {
       "id": "CLASS-ENCAPSULATION-LEAK-ENTITY-COLLECTION",
-      "uid": "class:CLASS-ENCAPSULATION-LEAK-ENTITY-COLLECTION#1",
+      "uid": "class:CLASS-ENCAPSULATION-LEAK-ENTITY-COLLECTION#2",
       "layer": "class",
       "category": "class.encapsulation_leak",
       "category_fit": "exact",
@@ -214,7 +263,7 @@
       "note": "ProductService.snapshot() 返回 List<ShopProduct>（JPA 实体本身），调用方改一个字段就改了服务层内部状态",
       "source": {
         "file": "artifacts/class_findings.json",
-        "index": 1
+        "index": 2
       },
       "meta": {
         "inferred_fields": [],
@@ -225,7 +274,7 @@
     },
     {
       "id": "CLASS-CONDITIONAL-ASSEMBLY-DIVERGENCE",
-      "uid": "class:CLASS-CONDITIONAL-ASSEMBLY-DIVERGENCE#2",
+      "uid": "class:CLASS-CONDITIONAL-ASSEMBLY-DIVERGENCE#3",
       "layer": "class",
       "category": "class.invariant",
       "category_fit": "exact",
@@ -263,7 +312,7 @@
       "note": "VIP 是客户等级（业务维度），却用 @Profile（部署维度）表达。实测：default 实例 settled=1000，vip 实例 settled=900。本条是集成层涌现链（EMERG-QUOTA-LEDGER-DIVERGENCE）的低层根因之一",
       "source": {
         "file": "artifacts/class_findings.json",
-        "index": 2
+        "index": 3
       },
       "meta": {
         "inferred_fields": [],
@@ -274,7 +323,7 @@
     },
     {
       "id": "CLASS-RULE-MISSING-IN-ALL-LAYERS",
-      "uid": "class:CLASS-RULE-MISSING-IN-ALL-LAYERS#3",
+      "uid": "class:CLASS-RULE-MISSING-IN-ALL-LAYERS#4",
       "layer": "class",
       "category": "class.invariant",
       "category_fit": "exact",
@@ -312,7 +361,7 @@
       "note": "",
       "source": {
         "file": "artifacts/class_findings.json",
-        "index": 3
+        "index": 4
       },
       "meta": {
         "inferred_fields": [],
@@ -323,7 +372,7 @@
     },
     {
       "id": "CLASS-BUSINESS-ERROR-AS-500",
-      "uid": "class:CLASS-BUSINESS-ERROR-AS-500#4",
+      "uid": "class:CLASS-BUSINESS-ERROR-AS-500#5",
       "layer": "class",
       "category": "class.contract_violation",
       "category_fit": "exact",
@@ -361,62 +410,13 @@
       "note": "客户不存在是业务错误，实测却返回 HTTP 500，响应体里没有业务错误码",
       "source": {
         "file": "artifacts/class_findings.json",
-        "index": 4
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": false
-      }
-    },
-    {
-      "id": "CLASS-ENTITY-WITHOUT-VALUE-EQUALITY",
-      "uid": "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#5",
-      "layer": "class",
-      "category": "class.invariant",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/backend/src/main/java/com/demo/shop/entity/ShopOrder.java",
-        "line": 0,
-        "symbol": "",
-        "endpoint": ""
-      },
-      "claim": "实体是否没有值相等（equals/hashCode）？",
-      "evidence_refs": [
-        "artifacts/class_findings.json#CLASS-ENTITY-WITHOUT-VALUE-EQUALITY"
-      ],
-      "repro_cmd": "",
-      "repro_granularity": "none",
-      "confidence": 0.8,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-595"
-      ],
-      "owner": {
-        "layer": "class",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "entity.no_value_equality",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "hybrid",
-      "severity": "MEDIUM",
-      "title": "ShopOrder 没有值相等：放进集合或当键，语义会变",
-      "detail": "实体没有声明 equals/hashCode，用的是 Object 的默认实现 —— 按对象身份比较，不是按业务主键。业务上「同一个客户」在两处会被当成两个对象：Set 去重失效、Map 键匹配不上、List.contains 永远 false。这不是性能问题而是正确性问题，而且编译期与运行期都不会报错。",
-      "related": [],
-      "note": "按对象身份比较而不是按业务主键：Set 去重失效、Map 键匹配不上",
-      "source": {
-        "file": "artifacts/class_findings.json",
         "index": 5
       },
       "meta": {
         "inferred_fields": [],
         "confidence_source": "manual",
         "ground_truth_source": "manual",
-        "duplicate_id_in_layer": true
+        "duplicate_id_in_layer": false
       }
     },
     {
@@ -453,7 +453,7 @@
       "kind": "defect",
       "runtime_fidelity": "hybrid",
       "severity": "MEDIUM",
-      "title": "ShopCustomer 没有值相等：放进集合或当键，语义会变",
+      "title": "ShopOrder 没有值相等：放进集合或当键，语义会变",
       "detail": "实体没有声明 equals/hashCode，用的是 Object 的默认实现 —— 按对象身份比较，不是按业务主键。业务上「同一个客户」在两处会被当成两个对象：Set 去重失效、Map 键匹配不上、List.contains 永远 false。这不是性能问题而是正确性问题，而且编译期与运行期都不会报错。",
       "related": [],
       "note": "按对象身份比较而不是按业务主键：Set 去重失效、Map 键匹配不上",
@@ -502,7 +502,7 @@
       "kind": "defect",
       "runtime_fidelity": "hybrid",
       "severity": "MEDIUM",
-      "title": "ShopProduct 没有值相等：放进集合或当键，语义会变",
+      "title": "ShopCustomer 没有值相等：放进集合或当键，语义会变",
       "detail": "实体没有声明 equals/hashCode，用的是 Object 的默认实现 —— 按对象身份比较，不是按业务主键。业务上「同一个客户」在两处会被当成两个对象：Set 去重失效、Map 键匹配不上、List.contains 永远 false。这不是性能问题而是正确性问题，而且编译期与运行期都不会报错。",
       "related": [],
       "note": "按对象身份比较而不是按业务主键：Set 去重失效、Map 键匹配不上",
@@ -551,7 +551,7 @@
       "kind": "defect",
       "runtime_fidelity": "hybrid",
       "severity": "MEDIUM",
-      "title": "ShopCategory 没有值相等：放进集合或当键，语义会变",
+      "title": "ShopProduct 没有值相等：放进集合或当键，语义会变",
       "detail": "实体没有声明 equals/hashCode，用的是 Object 的默认实现 —— 按对象身份比较，不是按业务主键。业务上「同一个客户」在两处会被当成两个对象：Set 去重失效、Map 键匹配不上、List.contains 永远 false。这不是性能问题而是正确性问题，而且编译期与运行期都不会报错。",
       "related": [],
       "note": "按对象身份比较而不是按业务主键：Set 去重失效、Map 键匹配不上",
@@ -567,8 +567,57 @@
       }
     },
     {
+      "id": "CLASS-ENTITY-WITHOUT-VALUE-EQUALITY",
+      "uid": "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#9",
+      "layer": "class",
+      "category": "class.invariant",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/backend/src/main/java/com/demo/shop/entity/ShopOrder.java",
+        "line": 0,
+        "symbol": "",
+        "endpoint": ""
+      },
+      "claim": "实体是否没有值相等（equals/hashCode）？",
+      "evidence_refs": [
+        "artifacts/class_findings.json#CLASS-ENTITY-WITHOUT-VALUE-EQUALITY"
+      ],
+      "repro_cmd": "",
+      "repro_granularity": "none",
+      "confidence": 0.8,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-595"
+      ],
+      "owner": {
+        "layer": "class",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "entity.no_value_equality",
+      "related_root_causes": [],
+      "kind": "defect",
+      "runtime_fidelity": "hybrid",
+      "severity": "MEDIUM",
+      "title": "ShopCategory 没有值相等：放进集合或当键，语义会变",
+      "detail": "实体没有声明 equals/hashCode，用的是 Object 的默认实现 —— 按对象身份比较，不是按业务主键。业务上「同一个客户」在两处会被当成两个对象：Set 去重失效、Map 键匹配不上、List.contains 永远 false。这不是性能问题而是正确性问题，而且编译期与运行期都不会报错。",
+      "related": [],
+      "note": "按对象身份比较而不是按业务主键：Set 去重失效、Map 键匹配不上",
+      "source": {
+        "file": "artifacts/class_findings.json",
+        "index": 9
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
+      }
+    },
+    {
       "id": "CLASS-CACHE-HOLDS-MUTABLE-CONTAINER",
-      "uid": "class:CLASS-CACHE-HOLDS-MUTABLE-CONTAINER#9",
+      "uid": "class:CLASS-CACHE-HOLDS-MUTABLE-CONTAINER#10",
       "layer": "class",
       "category": "class.encapsulation_leak",
       "category_fit": "exact",
@@ -606,7 +655,7 @@
       "note": "ProductService.listCached() 缓存 List<ProductResponse> 实例本身，调用方 add/remove 就是在改缓存，后续所有请求都读到被改过的值",
       "source": {
         "file": "artifacts/class_findings.json",
-        "index": 9
+        "index": 10
       },
       "meta": {
         "inferred_fields": [],
@@ -617,7 +666,7 @@
     },
     {
       "id": "NO_DATA_LIFECYCLE",
-      "uid": "class:NO_DATA_LIFECYCLE#10",
+      "uid": "class:NO_DATA_LIFECYCLE#11",
       "layer": "class",
       "category": "class.invariant",
       "category_fit": "stretched",
@@ -653,7 +702,7 @@
       "note": "订单是持续增长的事实表；customer_name 只是字符串引用，没有外键兜底",
       "source": {
         "file": "artifacts/class_findings.json",
-        "index": 10
+        "index": 11
       },
       "meta": {
         "inferred_fields": [],
@@ -664,7 +713,7 @@
     },
     {
       "id": "CLASS-PRIMITIVE-NULLABLE-BY-DESIGN",
-      "uid": "class:CLASS-PRIMITIVE-NULLABLE-BY-DESIGN#11",
+      "uid": "class:CLASS-PRIMITIVE-NULLABLE-BY-DESIGN#12",
       "layer": "class",
       "category": "class.contract_violation",
       "category_fit": "exact",
@@ -702,7 +751,7 @@
       "note": "原始类型表达不了「没传」：缺省与显式 null 都变成 0，而 0 恰好满足 @Min(0)，DTO 的校验看着像防御，实际拦不住任何东西",
       "source": {
         "file": "artifacts/class_findings.json",
-        "index": 11
+        "index": 12
       },
       "meta": {
         "inferred_fields": [],
@@ -712,8 +761,57 @@
       }
     },
     {
+      "id": "CLASS-NULLABILITY-THREE-WAY-MISMATCH",
+      "uid": "class:CLASS-NULLABILITY-THREE-WAY-MISMATCH#13",
+      "layer": "class",
+      "category": "UNMAPPED",
+      "category_fit": "unmapped",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "currency",
+        "endpoint": ""
+      },
+      "claim": "（未标注：CLASS-NULLABILITY-THREE-WAY-MISMATCH）",
+      "evidence_refs": [
+        "artifacts/class_findings.json#CLASS-NULLABILITY-THREE-WAY-MISMATCH"
+      ],
+      "repro_cmd": "",
+      "repro_granularity": "none",
+      "confidence": 0.4,
+      "ground_truth": "verified",
+      "cwe": [],
+      "owner": {
+        "layer": "class",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "unannotated.class.CLASS-NULLABILITY-THREE-WAY-MISMATCH",
+      "related_root_causes": [],
+      "kind": "defect",
+      "runtime_fidelity": "hybrid",
+      "severity": "MEDIUM",
+      "title": "shop_order.currency 三方可空性声明不一致",
+      "detail": "DB 声明 NOT NULL，实体声明 nullable=False，DTO 没有任何非空约束。空值由哪一层兜底没有声明，缺失时行为不可预期。",
+      "related": [],
+      "note": "",
+      "source": {
+        "file": "artifacts/class_findings.json",
+        "index": 13
+      },
+      "meta": {
+        "inferred_fields": [
+          "category/claim/owner/confidence/ground_truth/cwe/root_cause_key"
+        ],
+        "confidence_source": "inferred",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
       "id": "CLASS-CHECK-WITHOUT-DTO-COUNTERPART",
-      "uid": "class:CLASS-CHECK-WITHOUT-DTO-COUNTERPART#12",
+      "uid": "class:CLASS-CHECK-WITHOUT-DTO-COUNTERPART#14",
       "layer": "class",
       "category": "class.invariant",
       "category_fit": "stretched",
@@ -749,7 +847,7 @@
       "note": "规则只写在迁移文件里，Java 侧读不到、也无法在报错前拦截",
       "source": {
         "file": "artifacts/class_findings.json",
-        "index": 12
+        "index": 14
       },
       "meta": {
         "inferred_fields": [],
@@ -760,7 +858,7 @@
     },
     {
       "id": "CLASS-NULLABILITY-ALIGNED",
-      "uid": "class:CLASS-NULLABILITY-ALIGNED#13",
+      "uid": "class:CLASS-NULLABILITY-ALIGNED#15",
       "layer": "class",
       "category": "class.contract_violation",
       "category_fit": "exact",
@@ -790,13 +888,13 @@
       "kind": "positive",
       "runtime_fidelity": "hybrid",
       "severity": "INFO",
-      "title": "可空性三方一致 1/2 列（同向设防 1 · DTO 更严 0 · 都可空 0）",
+      "title": "可空性三方一致 1/3 列（同向设防 1 · DTO 更严 0 · 都可空 0）",
       "detail": "这是差分引擎的通过结论：DTO 的非空声明要么与 DB 一致，要么比 DB 更严（DTO 先拦，留给 DB 兜底），方向正确。不成立的只有下面单列出来的那几列。",
       "related": [],
       "note": "",
       "source": {
         "file": "artifacts/class_findings.json",
-        "index": 13
+        "index": 15
       },
       "meta": {
         "inferred_fields": [],
@@ -807,7 +905,7 @@
     },
     {
       "id": "CLASS-CHECK-DTO-ALIGNED",
-      "uid": "class:CLASS-CHECK-DTO-ALIGNED#14",
+      "uid": "class:CLASS-CHECK-DTO-ALIGNED#16",
       "layer": "class",
       "category": "class.invariant",
       "category_fit": "exact",
@@ -843,7 +941,7 @@
       "note": "",
       "source": {
         "file": "artifacts/class_findings.json",
-        "index": 14
+        "index": 16
       },
       "meta": {
         "inferred_fields": [],
@@ -938,8 +1036,8 @@
       "kind": "defect",
       "runtime_fidelity": "container",
       "severity": "HIGH",
-      "title": "额度占用额（通过授信额度检查的报价）是否等于账本记录额（实付）？",
-      "detail": "授信额度按客户报价检查并占住，账本按实付记录。两个口径必须相等 —— 不相等就意味着「额度被占住了，却没有对应的账目」，差额就是被白占的额度。\n不变式：BI-QUOTA-LEDGER-PARITY　判定原语：field_eq_field\n实测 3 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 586,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 810000,\n    \"ok\": false,\n    \"scenario\": \"vip_on_vip\"\n  }\n]",
+      "title": "基准币种下，额度占用额（报价）与账本记录额（实付）是否相等？",
+      "detail": "授信额度按客户报价检查并占住，账本按实付记录。两个口径必须相等 —— 不相等就意味着「额度被占住了，却没有对应的账目」，差额就是被白占的额度。\n不变式：BI-QUOTA-LEDGER-PARITY　判定原语：field_eq_field\n实测 3 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 673,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 810000,\n    \"ok\": false,\n    \"scenario\": \"vip_on_vip\"\n  }\n]",
       "related": [],
       "note": "服务层 OrderService.create 里额度检查用 quotedAmountCent、账本记录用 settled —— 两个口径。单条件都不分裂：普通客户 + 会员装配不分裂，VIP 客户 + 标准装配也不分裂；两个条件同时成立才分裂（实测 3 个场景里只有这一组违反）。服务层是能给可复现证据的最低层，故 owner 归 service",
       "source": {
@@ -988,12 +1086,61 @@
       "runtime_fidelity": "container",
       "severity": "HIGH",
       "title": "VIP 客户的结算额是否享受了会员价（报价的 9/10）？",
-      "detail": "会员价是**客户等级**维度的价格规则：VIP 客户在任何部署环境下都应当拿到九折。这条不变式只对 VIP 客户适用（when 条件），衡量的是「等级条件有没有真的落到定价上」。\n不变式：BI-VIP-MEMBER-PRICE　判定原语：field_eq_field\n实测 2 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 585,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 810000,\n    \"ok\": false,\n    \"scenario\": \"vip_on_default\"\n  }\n]",
+      "detail": "会员价是**客户等级**维度的价格规则：VIP 客户在任何部署环境下都应当拿到九折。这条不变式只对 VIP 客户适用（when 条件），衡量的是「等级条件有没有真的落到定价上」。\n不变式：BI-VIP-MEMBER-PRICE　判定原语：field_eq_field\n实测 2 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 672,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 810000,\n    \"ok\": false,\n    \"scenario\": \"vip_on_default\"\n  }\n]",
       "related": [],
       "note": "服务层实测到：VIP 客户在标准装配下拿不到九折（结算额 = 报价额）。根因是「业务维度（客户等级）被绑到部署维度（@Profile）」—— 那是类层的结构问题，类层已经 own（CLASS-CONDITIONAL-ASSEMBLY-DIVERGENCE）。本层只作行为佐证，不重复开单",
       "source": {
         "file": "artifacts/business_findings.json",
         "index": 1
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "BI-FX-BASIS-ALIGNMENT",
+      "uid": "service:BI-FX-BASIS-ALIGNMENT#2",
+      "layer": "service",
+      "category": "service.data_consistency",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "POST /api/orders",
+        "endpoint": "POST /api/orders"
+      },
+      "claim": "非基准币种下，结算额与额度占用额是否还在同一个金额基准上？",
+      "evidence_refs": [
+        "artifacts/business_findings.json#BI-FX-BASIS-ALIGNMENT"
+      ],
+      "repro_cmd": "python3 demos/shop/business_probe.py",
+      "repro_granularity": "layer",
+      "confidence": 0.93,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-682"
+      ],
+      "owner": {
+        "layer": "service",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "order.fx_rate_applied_to_settlement_without_quota_alignment",
+      "related_root_causes": [],
+      "kind": "defect",
+      "runtime_fidelity": "container",
+      "severity": "HIGH",
+      "title": "非基准币种下，结算额与额度占用额是否还在同一个金额基准上？",
+      "detail": "结算额被乘了**另一个仓库**返回的汇率（demo-shop → python-svc 的 /fx），而额度占用仍按报价口径校验。两个口径一差，差额来自仓库边界之外 —— 单看本仓库的任何一行都看不出问题。\n不变式：BI-FX-BASIS-ALIGNMENT　判定原语：field_eq_field\n实测 2 个业务场景，违反 2 次：\n[\n  {\n    \"row_id\": 674,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 828000,\n    \"ok\": false,\n    \"scenario\": \"fx_on_default\"\n  },\n  {\n    \"row_id\": 675,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 745200,\n    \"ok\": false,\n    \"scenario\": \"fx_on_vip\"\n  }\n]",
+      "related": [],
+      "note": "**跨仓库的缺陷**：结算额被乘了另一个仓库（python-svc 的 /fx）返回的汇率，而额度占用仍按报价口径校验 —— 两个口径的币种不同，限额的含义被汇率悄悄改了。本地汇率若是 1.0（CNY=100），这条根本不会违反 —— 差额来自仓库边界之外。本仓库任何一行代码单独看都没错。",
+      "source": {
+        "file": "artifacts/business_findings.json",
+        "index": 2
       },
       "meta": {
         "inferred_fields": [],

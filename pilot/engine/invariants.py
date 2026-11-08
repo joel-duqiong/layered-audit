@@ -50,10 +50,16 @@ def _jsonb_path(row: dict[str, Any], path: str) -> Any:
 
 
 def applies(row: dict[str, Any], invariant: dict[str, Any]) -> bool:
-    """不变式的适用条件（when）。不满足则该行不适用这条不变式。"""
+    """不变式的适用条件（when）。不满足则该行不适用这条不变式。
+
+    `when` 可以是单个条件，也可以是**条件列表**（全部满足才算适用）——
+    互斥的不变式常常要按两个维度一起限定（比如「VIP 客户」∧「基准币种」）。
+    """
     w = invariant.get("when")
     if not w:
         return True
+    if isinstance(w, list):
+        return all(applies(row, {**invariant, "when": cond}) for cond in w)
     actual = row.get(w["field"])
     op = w.get("op", "eq")
     expect = w.get("value")

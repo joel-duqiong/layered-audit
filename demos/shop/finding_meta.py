@@ -181,6 +181,15 @@ SERVICE: dict[str, Meta] = {
              "两个口径。单条件都不分裂：普通客户 + 会员装配不分裂，VIP 客户 + 标准装配也不分裂；"
              "两个条件同时成立才分裂（实测 3 个场景里只有这一组违反）。"
              "服务层是能给可复现证据的最低层，故 owner 归 service"),
+    "BI-FX-BASIS-ALIGNMENT": _m(
+        "service.data_consistency", "exact",
+        "非基准币种下，结算额与额度占用额是否还在同一个金额基准上？",
+        "service", 0.93, "defect", ("CWE-682",),
+        "order.fx_rate_applied_to_settlement_without_quota_alignment",
+        note="**跨仓库的缺陷**：结算额被乘了另一个仓库（python-svc 的 /fx）返回的汇率，"
+             "而额度占用仍按报价口径校验 —— 两个口径的币种不同，限额的含义被汇率悄悄改了。"
+             "本地汇率若是 1.0（CNY=100），这条根本不会违反 —— 差额来自仓库边界之外。"
+             "本仓库任何一行代码单独看都没错。"),
     "BI-VIP-MEMBER-PRICE": _m(
         "service.data_consistency", "exact",
         "VIP 客户的结算额是否享受了会员价（报价的 9/10）？",

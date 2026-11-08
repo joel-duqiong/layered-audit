@@ -4,7 +4,7 @@
   "entities": [
     {
       "name": "order",
-      "read_sql": "SELECT o.id, o.customer_name, c.level AS customer_level, o.quoted_amount_cent, o.settled_amount_cent, o.quoted_amount_cent * 9 / 10 AS expected_member_price_cent FROM shop_order o JOIN shop_customer c ON c.name = o.customer_name WHERE o.id IN ({ids})"
+      "read_sql": "SELECT o.id, o.customer_name, c.level AS customer_level, o.quoted_amount_cent, o.settled_amount_cent, o.currency, o.quoted_amount_cent * 9 / 10 AS expected_member_price_cent FROM shop_order o JOIN shop_customer c ON c.name = o.customer_name WHERE o.id IN ({ids})"
     }
   ],
   "invariants": [
@@ -13,14 +13,19 @@
       "entity": "order",
       "severity": "HIGH",
       "category": "service.data_consistency",
-      "claim": "额度占用额（通过授信额度检查的报价）是否等于账本记录额（实付）？",
+      "claim": "基准币种下，额度占用额（报价）与账本记录额（实付）是否相等？",
       "why": "授信额度按客户报价检查并占住，账本按实付记录。两个口径必须相等 —— 不相等就意味着「额度被占住了，却没有对应的账目」，差额就是被白占的额度。",
       "assert": {
         "type": "field_eq_field",
         "left": "quoted_amount_cent",
         "right": "settled_amount_cent"
       },
-      "note": "这条不变式的根因在服务层：OrderService.create 里额度检查用 quotedAmountCent，而账本记录用 settled —— 两个口径。服务层是能给可复现证据的最低层，所以 owner 归 service；集成层的端到端语义结论引用它。"
+      "note": "限定在基准币种 —— 非基准币种的口径对齐是另一条（BI-FX-BASIS-ALIGNMENT），因为那里的差额来自**另一个仓库**返回的汇率，不是本仓库的折扣",
+      "when": {
+        "field": "currency",
+        "op": "eq",
+        "value": "CNY"
+      }
     },
     {
       "id": "BI-VIP-MEMBER-PRICE",
@@ -34,12 +39,37 @@
         "left": "settled_amount_cent",
         "right": "expected_member_price_cent"
       },
-      "when": {
-        "field": "customer_level",
-        "op": "eq",
-        "value": "VIP"
+      "when": [
+        {
+          "field": "customer_level",
+          "op": "eq",
+          "value": "VIP"
+        },
+        {
+          "field": "currency",
+          "op": "eq",
+          "value": "CNY"
+        }
+      ],
+      "note": "只对 VIP 客户适用（普通客户不走会员价，结算额等于报价额是正常的）；也限定在基准币种 —— 非基准币种下结算额里混着**另一个仓库**的汇率，那条归 BI-FX-BASIS-ALIGNMENT（两条不变式的适用行集合必须互斥，否则一个观测会同时算进两个根因）"
+    },
+    {
+      "id": "BI-FX-BASIS-ALIGNMENT",
+      "severity": "HIGH",
+      "category": "service.data_consistency",
+      "claim": "非基准币种下，结算额与额度占用额是否还在同一个金额基准上？",
+      "why": "结算额被乘了**另一个仓库**返回的汇率（demo-shop → python-svc 的 /fx），而额度占用仍按报价口径校验。两个口径一差，差额来自仓库边界之外 —— 单看本仓库的任何一行都看不出问题。",
+      "assert": {
+        "type": "field_eq_field",
+        "left": "quoted_amount_cent",
+        "right": "settled_amount_cent"
       },
-      "note": "只对 VIP 客户适用（普通客户不走会员价，结算额等于报价额是正常的）"
+      "when": {
+        "field": "currency",
+        "op": "ne",
+        "value": "CNY"
+      },
+      "note": "这条不变式**跨仓库**：settled 与 quoted 的差额来自 python-svc 返回的汇率（CNY=100，其它币种=92）。如果汇率是本地的（=100），这条根本不会违反。"
     }
   ]
 }

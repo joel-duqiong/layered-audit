@@ -54,6 +54,7 @@ public class OrderService {
         order.setCustomerName(customer.getName());
         order.setQuotedAmountCent(request.quotedAmountCent());
         order.setStatus("PENDING");
+        order.setCurrency(request.currency() == null ? "CNY" : request.currency());
 
         if (!quotaService.withinLimit(customer, request.quotedAmountCent())) {
             throw new IllegalStateException("超出授信额度");

@@ -17,6 +17,10 @@ public class ShopOrder extends AuditableEntity {
     @Column(nullable = false, length = 16)
     private String status;
 
+    /** 报价与结算额所属的币种（结算额已按该币种的汇率折算过 —— 汇率来自另一个仓库）。 */
+    @Column(nullable = false, length = 8)
+    private String currency;
+
     public String getCustomerName() { return customerName; }
     public void setCustomerName(String v) { this.customerName = v; }
     public Long getQuotedAmountCent() { return quotedAmountCent; }
@@ -25,6 +29,8 @@ public class ShopOrder extends AuditableEntity {
     public void setSettledAmountCent(Long v) { this.settledAmountCent = v; }
     public String getStatus() { return status; }
     public void setStatus(String v) { this.status = v; }
+    public String getCurrency() { return currency; }
+    public void setCurrency(String v) { this.currency = v; }
 
     /**
      * ⚠️ 故意埋的缺陷：覆写父类 touch() 却做了不兼容的事 —— 把审计人清空。

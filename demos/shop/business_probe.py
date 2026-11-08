@@ -66,6 +66,11 @@ def make_scenarios(normal: str, vip: str) -> list[dict[str, Any]]:
     def order(customer: str) -> dict[str, Any]:
         return {"customerName": customer, "quotedAmountCent": QUOTED_CENT, "currency": "CNY"}
 
+    def order_fx(customer: str) -> dict[str, Any]:
+        # 非基准币种：**结算额会乘上另一个仓库（python-svc 的 /fx）返回的汇率**。
+        # 本地若是 1.0（CNY=100），这条就什么都不会发生 —— 差额来自仓库边界之外。
+        return {"customerName": customer, "quotedAmountCent": QUOTED_CENT, "currency": "EUR"}
+
     return [
         {"tag": "normal_on_vip", "instance": "vip", "targets": ["BI-QUOTA-LEDGER-PARITY"],
          "body": order(normal)},
@@ -73,6 +78,11 @@ def make_scenarios(normal: str, vip: str) -> list[dict[str, Any]]:
          "body": order(vip)},
         {"tag": "vip_on_vip", "instance": "vip", "targets": ["BI-QUOTA-LEDGER-PARITY"],
          "body": order(vip)},
+        # 跨仓库场景：币种换成非基准 —— 汇率来自另一个仓库
+        {"tag": "fx_on_default", "instance": "default", "targets": ["BI-FX-BASIS-ALIGNMENT"],
+         "body": order_fx(normal)},
+        {"tag": "fx_on_vip", "instance": "vip", "targets": ["BI-FX-BASIS-ALIGNMENT"],
+         "body": order_fx(vip)},
     ]
 
 
