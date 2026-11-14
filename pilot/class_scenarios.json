@@ -573,7 +573,13 @@
         "layer": "class",
         "title": "状态机缺失：{{allowed_n}}/{{total}} 种迁移全部被接受，含回退",
         "detail": "DDL 只有取值白名单 CHECK (status IN (...))，没有任何迁移约束；实测 9 种迁移全部 200 成功。业务后果：已付款（DEPOSIT_PAID）/已完成（COMPLETED）的订单可以被改回 PENDING，押金与结算状态和现实不符，而且没有留下任何迁移记录。",
-        "ddl_check": "status IN ('PENDING','DEPOSIT_PAID','COMPLETED')"
+        "ddl_check": "status IN ('PENDING','DEPOSIT_PAID','COMPLETED')",
+        "oracle": {
+          "source": "project_doc",
+          "confirmation": "refuted",
+          "reference": "/Users/june/tests/auto-api/docs/业务校验对照.md 第 64 行",
+          "note": "文档「当前未定义、实现也未校验的规则」明列：订单状态流转限制，当前允许任意状态直接切换。9/9 迁移被接受是客观观测，但「所以这是缺陷」需要业务预期，而该预期被文档明确否定。"
+        }
       }
     },
     {
@@ -876,7 +882,33 @@
           "message": "{{message}}"
         }
       }
-    ]
+    ],
+    "rule_oracles": {
+      "deposit_cent > final_price_cent（定金大于成交价）": {
+        "source": "project_doc",
+        "confirmation": "refuted",
+        "reference": "/Users/june/tests/auto-api/docs/业务校验对照.md 第 65 行",
+        "note": "文档「当前未定义、实现也未校验的规则」明列：定金与成交价的大小关系，当前只要求各自 >= 0"
+      },
+      "reservation_time 在过去（预订过去的日期）": {
+        "source": "project_doc",
+        "confirmation": "refuted",
+        "reference": "/Users/june/tests/auto-api/docs/业务校验对照.md 第 62 行",
+        "note": "文档「当前未定义」明列：预约时间是否允许过去时间，当前只要求可解析的 OffsetDateTime"
+      },
+      "customer_phone 非手机号格式": {
+        "source": "project_doc",
+        "confirmation": "confirmed",
+        "reference": "/Users/june/tests/auto-api/docs/业务校验对照.md 第 29-34 行（P1）",
+        "note": "文档 P1「手机号格式：前端有校验，后端没有（建议修复）」，已加 XFAIL 用例 test_create_order_invalid_phone_rejected"
+      },
+      "status=COMPLETED 但 deposit_cent=0（未付定金却已完成）": {
+        "source": "inferred",
+        "confirmation": "unconfirmed",
+        "reference": "",
+        "note": "文档未定义此规则；第 64 行反而把「订单状态流转限制：当前允许任意状态直接切换」列为未定义。属推断预期，待业务确认"
+      }
+    }
   },
   "file_carrier_exclusions": [
     {

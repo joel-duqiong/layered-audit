@@ -16,7 +16,7 @@ import os
 import class_contract_diff
 import project
 import file_carrier
-from class_rules import RULES
+from class_rules import RULES, oracle_gate
 
 D = str(project.artifact_dir())
 
@@ -81,22 +81,48 @@ def main() -> None:
     #   与实际行为相反。）
     ctx = {"decl": decl, "obs": obs, "entity_dir": str(project.entity_dir()),
            "file_detectors": file_carrier.load(D)}
+    rule_held: list[dict] = []
+    rule_suspects: list[dict] = []
+    rule_refuted: list[dict] = []
     for rule in cfg.get("diff_rules", []):
         handler = RULES.get(rule.get("id"))
         if handler is None:
             raise KeyError(f"class_scenarios.json 里引用了未知的差分规则: {rule.get('id')}")
-        findings.extend(handler(rule, ctx))
+        produced = handler(rule, ctx)
+        kept, held = oracle_gate(rule, produced)
+        findings.extend(kept)
+        rule_held.extend(held)
 
     # D3 三方差分（DB 实况 ↔ 实体 ↔ DTO ↔ 实测）
     contract_path = os.path.join(D, "class_contract.json")
     if os.path.exists(contract_path):
-        for f in class_contract_diff.run(os.path.join(D, "class_declaration.json"),
-                                         contract_path,
-                                         os.path.join(D, "class_observation.json"),
-                                         cfg.get("contract_diff", {})):
+        cd = class_contract_diff.run(os.path.join(D, "class_declaration.json"),
+                                     contract_path,
+                                     os.path.join(D, "class_observation.json"),
+                                     cfg.get("contract_diff", {}))
+        for f in cd["findings"]:
             findings.append({"id": f["id"], "severity": f["severity"],
                              "layer": f["layer"], "title": f["title"],
                              "detail": f["detail"], "evidence": f["evidence"]})
+        rule_suspects += cd["rule_suspects"]
+        rule_refuted += cd["rule_refuted"]
+
+    # 预期未确认 / 被文档否定的规则：不进台账，但必须留痕（硬约束 5）。
+    # **无条件写**：没有 class_contract.json 时派发层压下来的结论也不能悄悄消失。
+    unconfirmed = rule_suspects + [
+        h for h in rule_held if h["oracle"]["confirmation"] == "unconfirmed"]
+    refuted = rule_refuted + [
+        h for h in rule_held if h["oracle"]["confirmation"] == "refuted"]
+    with open(os.path.join(D, "class_rule_suspects.json"), "w",
+              encoding="utf-8") as fh:
+        json.dump({"unconfirmed": unconfirmed,
+                   "unconfirmed_count": len(unconfirmed),
+                   "refuted": refuted,
+                   "refuted_count": len(refuted),
+                   "note": "这些规则在 DB/DTO/服务层三层都没有表达，是客观观测；"
+                           "但「所以这是缺陷」需要业务预期。预期未经确认或被文档"
+                           "明确否定，故不进缺陷台账。"}, fh,
+                  ensure_ascii=False, indent=2)
 
     sev_order = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3, "INFO": 4}
     # 覆盖缺口：文件载体看到、但没有任何结论认领的观测 —— 不让它悄悄消失

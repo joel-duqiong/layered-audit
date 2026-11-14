@@ -198,6 +198,45 @@ def diff_nullability(ctx: dict, cfg: dict) -> list[dict]:
 
 
 # ---------------------------------------------------------------- 差分 B
+def rule_oracle_buckets(ctx: dict, cfg: dict) -> dict[str, list[dict]]:
+    """把「三层都没有这条规则」的观测按 oracle 来源分三桶。
+
+    **「三层都没有这条规则」是客观观测；「所以这是缺陷」需要业务预期。**
+    预期没被确认就不能进缺陷台账（硬约束 5）。三桶：
+
+      confirmed   有文档/业务方依据 -> 可以开单
+      unconfirmed 推断的预期        -> 只进待确认疑点
+      refuted     文档明确说未定义  -> 只保留观测，不判缺陷
+
+    缺 oracle 声明按 unconfirmed 处理 —— 宁可少开单，不可编造预期。
+    被 DB 挡住的、已有 CHECK 的、项目声明不适用的，一律不算「规则缺失」。
+    """
+    obs = ctx["obs"]
+    probes = _obs(obs, "defense_audit", "contract_diff.defense_audit")["constraint_probes"]
+    rule_notes: dict = cfg.get("rule_notes", {})
+    rule_excludes = set(cfg.get("rule_excludes", []))
+    rule_oracles: dict = cfg.get("rule_oracles", {})
+    buckets: dict[str, list[dict]] = {"confirmed": [], "unconfirmed": [], "refuted": []}
+    for p in probes:
+        if p.get("constraint") or p.get("blocked"):
+            continue
+        label = p.get("label", "")
+        if label in rule_excludes:
+            continue
+        note = rule_notes.get(label, {})
+        # oracle 是**声明**，属于项目配置；观测产物里也可以自带（探针直传时）
+        oracle = p.get("oracle") or rule_oracles.get(label) or {}
+        state = str(oracle.get("confirmation") or "")
+        if state not in ("confirmed", "unconfirmed", "refuted"):
+            state = "unconfirmed"
+        buckets[state].append({
+            "rule": label, "table": p["table"], "db_blocked": False,
+            "api_http": note.get("http"), "api_note": note.get("note"),
+            "oracle": oracle,
+        })
+    return buckets
+
+
 def diff_rules(ctx: dict, cfg: dict) -> list[dict]:
     """业务规则在 DB CHECK / DTO 约束 / 服务层 三层的分布。"""
     findings: list[dict] = []
@@ -264,19 +303,9 @@ def diff_rules(ctx: dict, cfg: dict) -> list[dict]:
             "改规则要改迁移文件，业务代码读不到这条规则。",
             {"unaligned": unaligned_checks}))
 
-    rule_notes: dict = cfg.get("rule_notes", {})
-    rule_excludes = set(cfg.get("rule_excludes", []))
     missing_cfg = cfg.get("rule_missing", {})
-    missing = []
-    for p in probes:
-        if p.get("constraint") or p.get("blocked"):
-            continue
-        label = p.get("label", "")
-        if label in rule_excludes:
-            continue
-        note = rule_notes.get(label, {})
-        missing.append({"rule": label, "table": p["table"], "db_blocked": False,
-                        "api_http": note.get("http"), "api_note": note.get("note")})
+    # 只有 confirmed 的规则才允许开单；unconfirmed / refuted 走 run() 的旁路留痕
+    missing = rule_oracle_buckets(ctx, cfg)["confirmed"]
     if missing:
         findings.append(_finding(
             missing_cfg.get("id", "CLASS-RULE-MISSING-IN-ALL-LAYERS"),
@@ -354,7 +383,13 @@ def diff_error_contract(ctx: dict, cfg: dict) -> list[dict]:
 
 
 def run(decl_path: str, contract_path: str, obs_path: str,
-        cfg: dict | None = None) -> list[dict]:
+        cfg: dict | None = None) -> dict[str, list[dict]]:
+    """返回 findings + 两条旁路。
+
+    旁路（rule_suspects / rule_refuted）是「有观测但预期未确认 / 被文档否定」
+    的规则。它们**不进缺陷台账**，但必须留痕 —— 对照 class_carrier_gap.json
+    的先例：没人认领的观测不能悄悄消失。
+    """
     cfg = cfg or {}
     ctx = load(decl_path, contract_path, obs_path)
     out: list[dict] = []
@@ -362,4 +397,7 @@ def run(decl_path: str, contract_path: str, obs_path: str,
     out += diff_rules(ctx, cfg)
     out += diff_write_footprint(ctx, cfg)
     out += diff_error_contract(ctx, cfg)
-    return out
+    buckets = rule_oracle_buckets(ctx, cfg)
+    return {"findings": out,
+            "rule_suspects": buckets["unconfirmed"],
+            "rule_refuted": buckets["refuted"]}

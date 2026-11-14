@@ -108,6 +108,34 @@ def enum_check_drift(rule: dict, ctx: dict) -> list[dict]:
                      {"java": enum_vals, "db": db_vals})]
 
 
+def oracle_gate(rule: dict, findings: list[dict]) -> tuple[list[dict], list[dict]]:
+    """按 oracle 来源把结论分成 (可开单, 只留痕)。
+
+    **只对声明了 oracle 的规则生效。** 值相等缺失、封装泄漏、自调用绕过代理
+    这些是语言级客观事实，不需要业务预期，闸门不能误伤它们。
+
+    声明了 oracle 的规则说明它断言的是**业务预期**，于是：
+      confirmed   -> 可开单
+      unconfirmed -> 只留痕（待确认疑点）
+      refuted     -> 只留痕（文档明确说未定义）
+      其它/缺省   -> 按 unconfirmed 处理（宁可少开单，不可编造预期）
+
+    留痕记录带上原结论与规则 id，人工复核才看得到被压下来的是什么。
+    """
+    oracle = (rule.get("params") or {}).get("oracle")
+    if not oracle:
+        return findings, []
+    state = str(oracle.get("confirmation") or "")
+    if state == "confirmed":
+        return findings, []
+    if state not in ("unconfirmed", "refuted"):
+        state = "unconfirmed"
+    held = [{"rule_id": rule.get("id"),
+             "oracle": {**oracle, "confirmation": state},
+             "finding": f} for f in findings]
+    return [], held
+
+
 # ---------------------------------------------------------- 规则：状态机缺失
 def no_state_machine(rule: dict, ctx: dict) -> list[dict]:
     """实测：状态能不能随便跳。"""
