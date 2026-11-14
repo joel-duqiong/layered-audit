@@ -24,7 +24,7 @@ from __future__ import annotations
 import json
 from typing import Any, Callable
 
-from engine.invariants import evaluate_all
+from engine.invariants import FAIL, PASS, evaluate_all
 
 
 def run(invariants: list[dict[str, Any]],
@@ -66,16 +66,32 @@ def run(invariants: list[dict[str, Any]],
 
     results = evaluate_all(rows, invariants)
     by_id = {r["id"]: r for r in results}
+
+    def confirmation(inv: dict[str, Any]) -> str:
+        """oracle 的确认状态 —— 决定这条结论能不能进缺陷台账。
+
+        confirmed   : 有文档/业务方明确依据 -> 可以开单
+        unconfirmed : 推断的预期 -> 只进「待确认疑点」，不开口
+        refuted     : 文档明确说这条规则未定义 -> 只保留观测
+        缺省按 unconfirmed（宁可少开单，不可编造预期）。
+        """
+        oracle = inv.get("oracle") or {}
+        value = str(oracle.get("confirmation") or "")
+        return value if value in ("confirmed", "unconfirmed", "refuted") else "unconfirmed"
+
     findings: list[dict[str, Any]] = []
+    suspects: list[dict[str, Any]] = []
+    refuted: list[dict[str, Any]] = []
     for inv in invariants:
         res = by_id.get(inv["id"])
-        if res is None or res["ok"]:
+        # 只有明确的 fail 才可能开单；unknown 不是违反，pass 不是缺陷。
+        if res is None or res.get("status") != FAIL:
             continue
         samples = []
         for f in res["failure_samples"]:
             row = next((r for r in rows if r.get("id") == f.get("row_id")), {})
             samples.append({**f, "scenario": row.get("_scenario")})
-        findings.append({
+        record = {
             "id": f"BI-{inv['id'][3:]}",
             "severity": inv["severity"],
             "endpoint": endpoint,
@@ -93,15 +109,31 @@ def run(invariants: list[dict[str, Any]],
                 "scenarios": [{"scenario": r.get("_scenario"), "order_id": r.get("id")}
                               for r in rows],
             },
-        })
+        }
+        record["oracle"] = inv.get("oracle") or {}
+        state = confirmation(inv)
+        if state == "confirmed":
+            findings.append(record)
+        elif state == "refuted":
+            # 文档明确说这条规则未定义 —— 观测留着，但不判成缺陷
+            record["note"] = ("这条不变式的 oracle 被文档**明确否定**（规则未定义）。"
+                              "观测本身是真的，但不能当作缺陷 —— 不进台账。")
+            refuted.append(record)
+        else:
+            record["note"] = ("这条不变式的 oracle 是**推断的，未经确认**。"
+                              "观测本身是真的，但「这算不算缺陷」要业务方确认 —— 不进台账。")
+            suspects.append(record)
 
     inv_by_id = {i["id"]: i for i in invariants}
     tag_to_target = {t: sc["tag"] for sc in scenarios for t in sc["targets"]}
     positives: list[dict[str, Any]] = []
     for r in results:
-        if not r["ok"]:
+        # 只有「明确判定成立」才算正面结论；unknown 不是成立。
+        if r.get("status") != PASS:
             continue
         inv = inv_by_id[r["id"]]
+        if confirmation(inv) != "confirmed":
+            continue
         # 如果这条不变式的违规场景在入口就被拒了，那它是结构性保证
         guard = tag_to_target.get(r["id"])
         guard_note = ""
@@ -125,7 +157,11 @@ def run(invariants: list[dict[str, Any]],
         })
 
     return {
+        # service = 能进缺陷台账的（只有 confirmed 的 oracle）
         "service": findings + positives,
+        # 下面两个桶**不进台账**，只给人看
+        "unconfirmed_suspects": suspects,
+        "refuted_observations": refuted,
         "results": results,
         "rejected_scenarios": rejected,
         "scenarios": [{"tag": s["tag"], "targets": s["targets"]} for s in scenarios],

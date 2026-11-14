@@ -25,6 +25,12 @@
         "field": "currency",
         "op": "eq",
         "value": "CNY"
+      },
+      "oracle": {
+        "source": "inferred",
+        "confirmation": "unconfirmed",
+        "reference": "无实现依据：QuotaService.withinLimit 只比较金额不记录占用；LedgerService.record 只写订单字段，没有独立账本",
+        "note": "「额度占用额必须等于账本记录额」是**演示设计里的假设**，代码里没有对应的实体。观测（quoted != settled）是真的，但「这算不算缺陷」要业务方确认 —— 不进台账"
       }
     },
     {
@@ -51,7 +57,13 @@
           "value": "CNY"
         }
       ],
-      "note": "只对 VIP 客户适用（普通客户不走会员价，结算额等于报价额是正常的）；也限定在基准币种 —— 非基准币种下结算额里混着**另一个仓库**的汇率，那条归 BI-FX-BASIS-ALIGNMENT（两条不变式的适用行集合必须互斥，否则一个观测会同时算进两个根因）"
+      "note": "只对 VIP 客户适用（普通客户不走会员价，结算额等于报价额是正常的）；也限定在基准币种 —— 非基准币种下结算额里混着**另一个仓库**的汇率，那条归 BI-FX-BASIS-ALIGNMENT（两条不变式的适用行集合必须互斥，否则一个观测会同时算进两个根因）",
+      "oracle": {
+        "source": "document",
+        "confirmation": "confirmed",
+        "reference": "demo 源码 MemberPricingStrategy 的类注释：「会员价：VIP 九折」",
+        "note": "规则由实现自己在源码里声明，且与 PricingService 的调用链一致 —— 可以作为演示目标已确认的规则"
+      }
     },
     {
       "id": "BI-FX-BASIS-ALIGNMENT",
@@ -69,7 +81,14 @@
         "op": "ne",
         "value": "CNY"
       },
-      "note": "这条不变式**跨仓库**：settled 与 quoted 的差额来自 python-svc 返回的汇率（CNY=100，其它币种=92）。如果汇率是本地的（=100），这条根本不会违反。"
+      "note": "这条不变式**跨仓库**：settled 与 quoted 的差额来自 python-svc 返回的汇率（CNY=100，其它币种=92）。如果汇率是本地的（=100），这条根本不会违反。",
+      "oracle": {
+        "source": "inferred",
+        "confirmation": "unconfirmed",
+        "reference": "同 BI-QUOTA-LEDGER-PARITY：无「额度占用」与「独立账本」的实现",
+        "note": "跨仓库汇率确实会导致 quoted != settled，但「两者必须相等」没有依据"
+      }
     }
-  ]
+  ],
+  "oracle_policy_note": "每条不变式必须声明 oracle 来源。只有 confirmation=confirmed 的才允许进缺陷台账。「额度占用额 == 账本记录额」这类假设没有实现支撑，只能作为待确认疑点。"
 }

@@ -127,10 +127,16 @@ def main() -> int:
     OUT.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     violations = len([f for f in payload["service"] if f["severity"] != "INFO"])
     positives = len(payload["service"]) - violations
-    print(f"业务不变式探针 -> {OUT}  {violations} 条违反 + {positives} 条成立")
+    suspects = len(payload.get("unconfirmed_suspects") or [])
+    refuted = len(payload.get("refuted_observations") or [])
+    print(f"业务不变式探针 -> {OUT}")
+    print(f"  进台账：{violations} 条违反 + {positives} 条成立")
+    print(f"  不进台账：{suspects} 条待确认疑点 + {refuted} 条被文档否定的观测")
     for r in payload["results"]:
         flag = "违反" if not r["ok"] else "成立"
-        print(f"  {flag}  {r['id']:<32}检查 {r['checked']} 场景，违反 {r['violations']} 次")
+        status = r.get("status") or ("缺" if r.get("ok") is None else "?")
+        print(f"  {flag}  {r['id']:<32}检查 {r['checked']} 场景，违反 {r['violations']} 次"
+              f"（{status}）")
     print(f"残留校验：探针数据行 {left} 条（必须为 0）")
     return 0 if left == 0 else 1
 

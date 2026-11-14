@@ -142,7 +142,14 @@ def main() -> None:
     OUT.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     violations = len([f for f in payload["service"] if f["severity"] != "INFO"])
     positives = len(payload["service"]) - violations
-    print(f"业务不变式探针 -> {OUT}  {violations} 条违反 + {positives} 条成立")
+    suspects = len(payload.get("unconfirmed_suspects") or [])
+    refuted = len(payload.get("refuted_observations") or [])
+    print(f"业务不变式探针 -> {OUT}")
+    print(f"  进台账：{violations} 条违反 + {positives} 条成立")
+    print(f"  不进台账：{suspects} 条待确认疑点 + {refuted} 条被文档否定的观测")
+    if suspects or refuted:
+        print("  ↑ 「不进台账」的观测本身是真的，但「算不算缺陷」缺 oracle —— "
+              "需要业务方确认或文档依据")
     for r in payload["results"]:
         flag = "违反" if not r["ok"] else "成立"
         print(f"  {flag}  {r['id']:<42}检查 {r['checked']} 场景，违反 {r['violations']} 次")

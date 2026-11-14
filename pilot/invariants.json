@@ -14,6 +14,12 @@
         "type": "field_lte_field",
         "left": "deposit_cent",
         "right": "final_price_cent"
+      },
+      "oracle": {
+        "source": "document",
+        "confirmation": "refuted",
+        "reference": "/Users/june/tests/auto-api/docs/业务校验对照.md（「当前未定义、实现也未校验的规则」：定金与成交价的大小关系：当前只要求各自 >= 0）",
+        "note": "项目文档**明确说明**定金与成交价的大小关系尚未定义。用这条判定会得到「编造的业务预期」—— 只保留观测，不进缺陷台账"
       }
     },
     {
@@ -31,6 +37,12 @@
         "field": "use_final_price",
         "op": "eq",
         "value": false
+      },
+      "oracle": {
+        "source": "document",
+        "confirmation": "confirmed",
+        "reference": "/Users/june/tests/auto-api/docs/业务校验对照.md（「已确认一致的规则」表：使用成交价时保存成交价，否则保存方案合计；预期来源 AGENTS.md）",
+        "note": "文档明确给出预期，且实现事实已核对一致 —— 这条可以进缺陷台账"
       }
     },
     {
@@ -43,6 +55,12 @@
         "type": "field_lte_field",
         "left": "final_price_cent",
         "right": "package_price_cent"
+      },
+      "oracle": {
+        "source": "inferred",
+        "confirmation": "unconfirmed",
+        "reference": "无文档依据（现有文档只规定金额 >= 0）",
+        "note": "推断：成交价不应高于套餐标价。听起来合理，但文档没写 —— 进待确认清单"
       }
     },
     {
@@ -55,6 +73,12 @@
         "type": "field_eq_field",
         "left": "banquet_type",
         "right": "package_banquet_type"
+      },
+      "oracle": {
+        "source": "inferred",
+        "confirmation": "unconfirmed",
+        "reference": "无文档依据",
+        "note": "推断：订单宴会类型应与套餐一致。文档没写 —— 进待确认清单"
       }
     },
     {
@@ -69,6 +93,12 @@
         "id_field": "productId",
         "ref_path": "package_items",
         "ref_id_field": "productId"
+      },
+      "oracle": {
+        "source": "inferred",
+        "confirmation": "unconfirmed",
+        "reference": "文档只说「订单保存商品快照」，未说明细必须属于套餐",
+        "note": "推断：快照明细应属于所选套餐。相关文档把「无套餐订单误传套餐商品」列为「疑似缺陷，需产品确认」—— 同样是待确认"
       }
     },
     {
@@ -83,7 +113,14 @@
         "id_field": "productId",
         "ref_path": "existing_products",
         "ref_id_field": "productId"
+      },
+      "oracle": {
+        "source": "inferred",
+        "confirmation": "unconfirmed",
+        "reference": "无文档依据（文档已确认的是「套餐商品不可重复」）",
+        "note": "推断：加项商品必须真实存在。合理但未经确认 —— 进待确认清单"
       }
     }
-  ]
+  ],
+  "oracle_policy_note": "每条不变式必须声明 oracle 来源。只有 confirmation=confirmed 的才允许进缺陷台账；unconfirmed 进「待确认疑点」清单；refuted 只保留观测。没有业务规则时，系统可以列出风险，但不能编造预期然后用它证明程序错。"
 }
