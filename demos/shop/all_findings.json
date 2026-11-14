@@ -6,9 +6,9 @@
     "total": 23,
     "by_layer": {
       "file": 2,
-      "class": 17,
+      "class": 16,
       "integration": 1,
-      "service": 3
+      "service": 4
     },
     "by_kind": {
       "defect": 21,
@@ -55,7 +55,7 @@
       "runtime_fidelity": "stubbed",
       "severity": "HIGH",
       "title": "FxClient 汇率取不到时兜底成 1（=1%），把结算金额砍到 1/100",
-      "detail": "FxClient.rate 从**另一个仓库**（python-svc）取汇率，正常刻度是 100（=1.0）。取不到时 catch 分支返回 **1** —— 但调用方是按 `settled * rate / 100` 折算的，所以 rate=1 意味着「结算额只剩 1%」。\n实测：报价 10000、会员九折 9000、汇率服务不可达 -> 结算额只有 90，而不是 9000。\n跨仓库契约的两端都没说清刻度：调用方默默假设「100 = 1.0」，被调用方返回 100/92，而**兜底值的刻度写错了** —— 正常刻度 100，兜底写成了 1。\n这一条里跨仓库的那一半是「不可达」，不是「返回了别的值」—— 但根因同样在量纲上。",
+      "detail": "FxClient.rate 从**另一个仓库**（python-svc）取汇率，正常刻度是 100（=1.0）。取不到时 catch 分支返回 **1** —— 但调用方是按 `settled * rate / 100` 折算的，所以 rate=1 意味着「结算额只剩 1%」。\n实测：报价 10000、会员九折 9000、汇率服务不可达 -> 结算额只有 None，而不是 9000。\n跨仓库契约的两端都没说清刻度：调用方默默假设「100 = 1.0」，被调用方返回 100/92，而**兜底值的刻度写错了** —— 正常刻度 100，兜底写成了 1。\n这一条里跨仓库的那一半是「不可达」，不是「返回了别的值」—— 但根因同样在量纲上。",
       "related": [
         "跨仓库：python-svc 的 /fx 契约未声明刻度，调用方默默假设 100 = 1.0"
       ],
@@ -109,7 +109,7 @@
       "runtime_fidelity": "stubbed",
       "severity": "HIGH",
       "title": "OrderService 同一文件里两处对同一个订单金额用了不同口径：额度按报价卡、账按结算记",
-      "detail": "OrderService.create 一个方法里，额度检查与记账用了**两个不同的金额**：\n  · quotaService.withinLimit(customer, request.quotedAmountCent()) —— 按**报价**卡；\n  · ledgerService.record(order, settled) —— 按**结算额**记。\n报价 10000、会员九折后结算 9000、客户额度 9500：结算口径下这笔单过得去，报价口径下过不去 —— 结果是**能成交的单被拒了**，而且额度被按一个更大的数占住。\n字节码证据：['com.demo.shop.web.dto.CreateOrderRequest.customerName', 'com.demo.shop.repository.ShopCustomerRepository.findByName', 'java.util.Optional.orElseThrow', 'com.demo.shop.entity.ShopCustomer.getName', 'com.demo.shop.entity.ShopOrder.setCustomerName', 'com.demo.shop.web.dto.CreateOrderRequest.quotedAmountCent', 'java.lang.Long.valueOf', 'com.demo.shop.entity.ShopOrder.setQuotedAmountCent', 'com.demo.shop.entity.ShopOrder.setStatus', 'com.demo.shop.web.dto.CreateOrderRequest.currency', 'com.demo.shop.web.dto.CreateOrderRequest.currency', 'com.demo.shop.entity.ShopOrder.setCurrency', 'com.demo.shop.web.dto.CreateOrderRequest.quotedAmountCent', 'com.demo.shop.service.QuotaService.withinLimit', 'com.demo.shop.web.dto.CreateOrderRequest.quotedAmountCent', 'com.demo.shop.service.PricingService.settle', 'com.demo.shop.web.dto.CreateOrderRequest.currency', 'com.demo.shop.client.FxClient.rate', 'com.demo.shop.service.LedgerService.record', 'com.demo.shop.entity.ShopOrder.touch', 'com.demo.shop.repository.ShopOrderRepository.save', 'com.demo.shop.entity.ShopOrder.getId', 'com.demo.shop.entity.ShopOrder.getQuotedAmountCent', 'java.lang.Long.longValue', 'com.demo.shop.entity.ShopOrder.getSettledAmountCent', 'java.lang.Long.longValue', 'com.demo.shop.entity.ShopOrder.getStatus']\n两个口径单独看各自都对（额度检查没错、记账也没错），错在同一个文件里两处用了不同的量。",
+      "detail": "OrderService.create 一个方法里，额度检查与记账用了**两个不同的金额**：\n  · quotaService.withinLimit(customer, request.quotedAmountCent()) —— 按**报价**卡；\n  · ledgerService.record(order, settled) —— 按**结算额**记。\n报价 10000、会员九折后结算 9000、客户额度 9500：结算口径下这笔单过得去，报价口径下过不去 —— 结果是**能成交的单被拒了**，而且额度被按一个更大的数占住。\n字节码证据：['com.demo.shop.web.dto.CreateOrderRequest.customerName', 'com.demo.shop.repository.ShopCustomerRepository.findByName', 'java.util.Optional.orElseThrow', 'com.demo.shop.entity.ShopCustomer.getName', 'com.demo.shop.entity.ShopOrder.setCustomerName', 'com.demo.shop.web.dto.CreateOrderRequest.quotedAmountCent', 'java.lang.Long.valueOf', 'com.demo.shop.entity.ShopOrder.setQuotedAmountCent', 'com.demo.shop.entity.ShopOrder.setStatus', 'com.demo.shop.web.dto.CreateOrderRequest.currency', 'com.demo.shop.web.dto.CreateOrderRequest.currency', 'com.demo.shop.entity.ShopOrder.setCurrency', 'com.demo.shop.web.dto.CreateOrderRequest.quotedAmountCent', 'com.demo.shop.service.QuotaService.withinLimit', 'com.demo.shop.web.dto.CreateOrderRequest.quotedAmountCent', 'com.demo.shop.service.PricingService.settle', 'com.demo.shop.web.dto.CreateOrderRequest.currency', 'com.demo.shop.client.FxClient.rate', 'com.demo.shop.service.LedgerService.record', 'com.demo.shop.entity.ShopOrder.touch', 'com.demo.shop.repository.ShopOrderRepository.save', 'com.demo.shop.web.dto.CreateOrderRequest.quotedAmountCent', 'com.demo.shop.service.QuotaService.occupy', 'com.demo.shop.service.LedgerService.book', 'com.demo.shop.entity.ShopOrder.getId', 'com.demo.shop.entity.ShopOrder.getQuotedAmountCent', 'java.lang.Long.longValue', 'com.demo.shop.entity.ShopOrder.getSettledAmountCent', 'java.lang.Long.longValue', 'com.demo.shop.entity.ShopOrder.getStatus']\n两个口径单独看各自都对（额度检查没错、记账也没错），错在同一个文件里两处用了不同的量。",
       "related": [
         "BI-QUOTA-LEDGER-PARITY（服务层：同一根因的端到端差分证据 —— 单条件不违反、双条件才违反）"
       ],
@@ -322,57 +322,8 @@
       }
     },
     {
-      "id": "CLASS-RULE-MISSING-IN-ALL-LAYERS",
-      "uid": "class:CLASS-RULE-MISSING-IN-ALL-LAYERS#4",
-      "layer": "class",
-      "category": "class.invariant",
-      "category_fit": "exact",
-      "suggested_category": "",
-      "location": {
-        "file": "",
-        "line": 0,
-        "symbol": "",
-        "endpoint": ""
-      },
-      "claim": "那 3 条业务不变量在 DB / DTO / 服务层是否全都不存在？",
-      "evidence_refs": [
-        "artifacts/class_findings.json#CLASS-RULE-MISSING-IN-ALL-LAYERS"
-      ],
-      "repro_cmd": "",
-      "repro_granularity": "none",
-      "confidence": 0.85,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-840"
-      ],
-      "owner": {
-        "layer": "class",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "rule.missing_in_db_dto_service",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "hybrid",
-      "severity": "HIGH",
-      "title": "3 条业务不变量在 DB / DTO / 服务层三层全都不存在",
-      "detail": "这些不是「某一层写错了」，而是三层都没有表达过 —— DB 放行、DTO 无约束、服务层也不检查。demo-shop 的业务语义（报价金额必须大于 0、订单状态只能取约定的几个值、结算金额必须与报价金额对得上）目前只存在于人的脑子里，不存在于任何一行代码或迁移文件里。",
-      "related": [],
-      "note": "",
-      "source": {
-        "file": "artifacts/class_findings.json",
-        "index": 4
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": false
-      }
-    },
-    {
       "id": "CLASS-BUSINESS-ERROR-AS-500",
-      "uid": "class:CLASS-BUSINESS-ERROR-AS-500#5",
+      "uid": "class:CLASS-BUSINESS-ERROR-AS-500#4",
       "layer": "class",
       "category": "class.contract_violation",
       "category_fit": "exact",
@@ -410,13 +361,62 @@
       "note": "客户不存在是业务错误，实测却返回 HTTP 500，响应体里没有业务错误码",
       "source": {
         "file": "artifacts/class_findings.json",
-        "index": 5
+        "index": 4
       },
       "meta": {
         "inferred_fields": [],
         "confidence_source": "manual",
         "ground_truth_source": "manual",
         "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "CLASS-ENTITY-WITHOUT-VALUE-EQUALITY",
+      "uid": "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#5",
+      "layer": "class",
+      "category": "class.invariant",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/backend/src/main/java/com/demo/shop/entity/ShopOrder.java",
+        "line": 0,
+        "symbol": "",
+        "endpoint": ""
+      },
+      "claim": "实体是否没有值相等（equals/hashCode）？",
+      "evidence_refs": [
+        "artifacts/class_findings.json#CLASS-ENTITY-WITHOUT-VALUE-EQUALITY"
+      ],
+      "repro_cmd": "",
+      "repro_granularity": "none",
+      "confidence": 0.8,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-595"
+      ],
+      "owner": {
+        "layer": "class",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "entity.no_value_equality",
+      "related_root_causes": [],
+      "kind": "defect",
+      "runtime_fidelity": "hybrid",
+      "severity": "MEDIUM",
+      "title": "ShopOrder 没有值相等：放进集合或当键，语义会变",
+      "detail": "实体没有声明 equals/hashCode，用的是 Object 的默认实现 —— 按对象身份比较，不是按业务主键。业务上「同一个客户」在两处会被当成两个对象：Set 去重失效、Map 键匹配不上、List.contains 永远 false。这不是性能问题而是正确性问题，而且编译期与运行期都不会报错。",
+      "related": [],
+      "note": "按对象身份比较而不是按业务主键：Set 去重失效、Map 键匹配不上",
+      "source": {
+        "file": "artifacts/class_findings.json",
+        "index": 5
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
       }
     },
     {
@@ -453,7 +453,7 @@
       "kind": "defect",
       "runtime_fidelity": "hybrid",
       "severity": "MEDIUM",
-      "title": "ShopOrder 没有值相等：放进集合或当键，语义会变",
+      "title": "ShopCustomer 没有值相等：放进集合或当键，语义会变",
       "detail": "实体没有声明 equals/hashCode，用的是 Object 的默认实现 —— 按对象身份比较，不是按业务主键。业务上「同一个客户」在两处会被当成两个对象：Set 去重失效、Map 键匹配不上、List.contains 永远 false。这不是性能问题而是正确性问题，而且编译期与运行期都不会报错。",
       "related": [],
       "note": "按对象身份比较而不是按业务主键：Set 去重失效、Map 键匹配不上",
@@ -502,7 +502,7 @@
       "kind": "defect",
       "runtime_fidelity": "hybrid",
       "severity": "MEDIUM",
-      "title": "ShopCustomer 没有值相等：放进集合或当键，语义会变",
+      "title": "ShopProduct 没有值相等：放进集合或当键，语义会变",
       "detail": "实体没有声明 equals/hashCode，用的是 Object 的默认实现 —— 按对象身份比较，不是按业务主键。业务上「同一个客户」在两处会被当成两个对象：Set 去重失效、Map 键匹配不上、List.contains 永远 false。这不是性能问题而是正确性问题，而且编译期与运行期都不会报错。",
       "related": [],
       "note": "按对象身份比较而不是按业务主键：Set 去重失效、Map 键匹配不上",
@@ -551,7 +551,7 @@
       "kind": "defect",
       "runtime_fidelity": "hybrid",
       "severity": "MEDIUM",
-      "title": "ShopProduct 没有值相等：放进集合或当键，语义会变",
+      "title": "ShopCategory 没有值相等：放进集合或当键，语义会变",
       "detail": "实体没有声明 equals/hashCode，用的是 Object 的默认实现 —— 按对象身份比较，不是按业务主键。业务上「同一个客户」在两处会被当成两个对象：Set 去重失效、Map 键匹配不上、List.contains 永远 false。这不是性能问题而是正确性问题，而且编译期与运行期都不会报错。",
       "related": [],
       "note": "按对象身份比较而不是按业务主键：Set 去重失效、Map 键匹配不上",
@@ -567,57 +567,8 @@
       }
     },
     {
-      "id": "CLASS-ENTITY-WITHOUT-VALUE-EQUALITY",
-      "uid": "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#9",
-      "layer": "class",
-      "category": "class.invariant",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/.cc-weixin/workspace/layered-audit/demos/shop/backend/src/main/java/com/demo/shop/entity/ShopOrder.java",
-        "line": 0,
-        "symbol": "",
-        "endpoint": ""
-      },
-      "claim": "实体是否没有值相等（equals/hashCode）？",
-      "evidence_refs": [
-        "artifacts/class_findings.json#CLASS-ENTITY-WITHOUT-VALUE-EQUALITY"
-      ],
-      "repro_cmd": "",
-      "repro_granularity": "none",
-      "confidence": 0.8,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-595"
-      ],
-      "owner": {
-        "layer": "class",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "entity.no_value_equality",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "hybrid",
-      "severity": "MEDIUM",
-      "title": "ShopCategory 没有值相等：放进集合或当键，语义会变",
-      "detail": "实体没有声明 equals/hashCode，用的是 Object 的默认实现 —— 按对象身份比较，不是按业务主键。业务上「同一个客户」在两处会被当成两个对象：Set 去重失效、Map 键匹配不上、List.contains 永远 false。这不是性能问题而是正确性问题，而且编译期与运行期都不会报错。",
-      "related": [],
-      "note": "按对象身份比较而不是按业务主键：Set 去重失效、Map 键匹配不上",
-      "source": {
-        "file": "artifacts/class_findings.json",
-        "index": 9
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": true
-      }
-    },
-    {
       "id": "CLASS-CACHE-HOLDS-MUTABLE-CONTAINER",
-      "uid": "class:CLASS-CACHE-HOLDS-MUTABLE-CONTAINER#10",
+      "uid": "class:CLASS-CACHE-HOLDS-MUTABLE-CONTAINER#9",
       "layer": "class",
       "category": "class.encapsulation_leak",
       "category_fit": "exact",
@@ -655,7 +606,7 @@
       "note": "ProductService.listCached() 缓存 List<ProductResponse> 实例本身，调用方 add/remove 就是在改缓存，后续所有请求都读到被改过的值",
       "source": {
         "file": "artifacts/class_findings.json",
-        "index": 10
+        "index": 9
       },
       "meta": {
         "inferred_fields": [],
@@ -666,7 +617,7 @@
     },
     {
       "id": "NO_DATA_LIFECYCLE",
-      "uid": "class:NO_DATA_LIFECYCLE#11",
+      "uid": "class:NO_DATA_LIFECYCLE#10",
       "layer": "class",
       "category": "class.invariant",
       "category_fit": "stretched",
@@ -702,7 +653,7 @@
       "note": "订单是持续增长的事实表；customer_name 只是字符串引用，没有外键兜底",
       "source": {
         "file": "artifacts/class_findings.json",
-        "index": 11
+        "index": 10
       },
       "meta": {
         "inferred_fields": [],
@@ -713,7 +664,7 @@
     },
     {
       "id": "CLASS-PRIMITIVE-NULLABLE-BY-DESIGN",
-      "uid": "class:CLASS-PRIMITIVE-NULLABLE-BY-DESIGN#12",
+      "uid": "class:CLASS-PRIMITIVE-NULLABLE-BY-DESIGN#11",
       "layer": "class",
       "category": "class.contract_violation",
       "category_fit": "exact",
@@ -751,7 +702,7 @@
       "note": "原始类型表达不了「没传」：缺省与显式 null 都变成 0，而 0 恰好满足 @Min(0)，DTO 的校验看着像防御，实际拦不住任何东西",
       "source": {
         "file": "artifacts/class_findings.json",
-        "index": 12
+        "index": 11
       },
       "meta": {
         "inferred_fields": [],
@@ -762,7 +713,7 @@
     },
     {
       "id": "CLASS-NULLABILITY-THREE-WAY-MISMATCH",
-      "uid": "class:CLASS-NULLABILITY-THREE-WAY-MISMATCH#13",
+      "uid": "class:CLASS-NULLABILITY-THREE-WAY-MISMATCH#12",
       "layer": "class",
       "category": "UNMAPPED",
       "category_fit": "unmapped",
@@ -798,7 +749,7 @@
       "note": "",
       "source": {
         "file": "artifacts/class_findings.json",
-        "index": 13
+        "index": 12
       },
       "meta": {
         "inferred_fields": [
@@ -811,7 +762,7 @@
     },
     {
       "id": "CLASS-CHECK-WITHOUT-DTO-COUNTERPART",
-      "uid": "class:CLASS-CHECK-WITHOUT-DTO-COUNTERPART#14",
+      "uid": "class:CLASS-CHECK-WITHOUT-DTO-COUNTERPART#13",
       "layer": "class",
       "category": "class.invariant",
       "category_fit": "stretched",
@@ -847,7 +798,7 @@
       "note": "规则只写在迁移文件里，Java 侧读不到、也无法在报错前拦截",
       "source": {
         "file": "artifacts/class_findings.json",
-        "index": 14
+        "index": 13
       },
       "meta": {
         "inferred_fields": [],
@@ -858,7 +809,7 @@
     },
     {
       "id": "CLASS-NULLABILITY-ALIGNED",
-      "uid": "class:CLASS-NULLABILITY-ALIGNED#15",
+      "uid": "class:CLASS-NULLABILITY-ALIGNED#14",
       "layer": "class",
       "category": "class.contract_violation",
       "category_fit": "exact",
@@ -894,7 +845,7 @@
       "note": "",
       "source": {
         "file": "artifacts/class_findings.json",
-        "index": 15
+        "index": 14
       },
       "meta": {
         "inferred_fields": [],
@@ -905,7 +856,7 @@
     },
     {
       "id": "CLASS-CHECK-DTO-ALIGNED",
-      "uid": "class:CLASS-CHECK-DTO-ALIGNED#16",
+      "uid": "class:CLASS-CHECK-DTO-ALIGNED#15",
       "layer": "class",
       "category": "class.invariant",
       "category_fit": "exact",
@@ -941,7 +892,7 @@
       "note": "",
       "source": {
         "file": "artifacts/class_findings.json",
-        "index": 16
+        "index": 15
       },
       "meta": {
         "inferred_fields": [],
@@ -988,7 +939,7 @@
       "runtime_fidelity": "container",
       "severity": "HIGH",
       "title": "额度占用额（报价）与账本记录额（实付）在会员链路上口径分裂",
-      "detail": "授信额度按客户报价检查并占用，账本按折后实付记录；会员价一旦生效（VIP 客户 + 会员装配），两个口径不再相等 —— 额度被占住却没有对应账目。任何一个条件单独都不足以造成分裂：单独 VIP 客户在标准装配下拿不到折扣（结算额=报价），单独会员装配作用在非 VIP 客户上也不打折。\n\n裁决：EMERGENT_CONJUNCTIVE（合起来违反目标不变式，每条单独都不违反；最小核心集 = 缺陷集（INJ-TIER-VIP+INJ-PROFILE-VIP），没有冗余注入）\n活性检查：INJ-FX-NONBASE=死；INJ-PROFILE-VIP=活；INJ-TIER-VIP=活\n最小核心集：INJ-TIER-VIP+INJ-PROFILE-VIP\n\n证据步骤：\n  1. [ALIVE-CHECK --alive-check INJ-TIER-VIP] 注入 INJ-TIER-VIP（service 层，缺陷 pricing.member_tier_bound_to_deployment_profile）活性检查：实例 default（profile=default），请求 {\"currency\": \"CNY\", \"customerName\": \"ai_probe_emerg_cust\", \"quotedAmountCent\": 900000}，HTTP 200，响应 {\"id\": 320, \"quotedAmountCent\": 900000, \"settledAmountCent\": 900000, \"status\": \"PENDING\"}，探针不变式 BI-VIP-MEMBER-PRICE 实测 violated（期望 violated）→ 活\n  2. [ALIVE-CHECK --alive-check INJ-PROFILE-VIP] 注入 INJ-PROFILE-VIP（service 层，缺陷 order.quota_checked_on_quoted_amount_ledger_on_settled）活性检查：实例 vip（profile=vip），请求 {\"currency\": \"CNY\", \"customerName\": \"ai_probe_emerg_cust\", \"quotedAmountCent\": 900000}，HTTP 200，响应 {\"id\": 321, \"quotedAmountCent\": 900000, \"settledAmountCent\": 810000, \"status\": \"PENDING\"}，探针不变式 BI-VIP-MEMBER-PRICE 实测 satisfied（期望 satisfied）→ 活\n  3. [POST /api/orders] 基线（不注入任何条件）｜实例 default（profile=default）｜请求 {\"currency\": \"CNY\", \"customerName\": \"ai_probe_emerg_cust\", \"quotedAmountCent\": 900000}｜HTTP 200｜响应 {\"id\": 322, \"quotedAmountCent\": 900000, \"settledAmountCent\": 900000, \"status\": \"PENDING\"}｜DB 行 quoted_amount_cent=900000 settled_amount_cent=900000 customer_level=NORMAL｜目标不变式 BI-QUOTA-LEDGER-PARITY：成立（偏离量 0）\n  4. [POST /api/orders] 合起来注入 INJ-TIER-VIP+INJ-PROFILE-VIP｜实例 vip（profile=vip）｜请求 {\"currency\": \"CNY\", \"customerName\": \"ai_probe_emerg_cust\", \"quotedAmountCent\": 900000}｜HTTP 200｜响应 {\"id\": 323, \"quotedAmountCent\": 900000, \"settledAmountCent\": 810000, \"status\": \"PENDING\"}｜DB 行 quoted_amount_cent=900000 settled_amount_cent=810000 customer_level=VIP｜目标不变式 BI-QUOTA-LEDGER-PARITY：违反（偏离量 90000）\n  5. [POST /api/orders] 只注入 INJ-TIER-VIP｜实例 default（profile=default）｜请求 {\"currency\": \"CNY\", \"customerName\": \"ai_probe_emerg_cust\", \"quotedAmountCent\": 900000}｜HTTP 200｜响应 {\"id\": 324, \"quotedAmountCent\": 900000, \"settledAmountCent\": 900000, \"status\": \"PENDING\"}｜DB 行 quoted_amount_cent=900000 settled_amount_cent=900000 customer_level=VIP｜目标不变式 BI-QUOTA-LEDGER-PARITY：成立（偏离量 0）\n  6. [POST /api/orders] 只注入 INJ-PROFILE-VIP｜实例 vip（profile=vip）｜请求 {\"currency\": \"CNY\", \"customerName\": \"ai_probe_emerg_cust\", \"quotedAmountCent\": 900000}｜HTTP 200｜响应 {\"id\": 325, \"quotedAmountCent\": 900000, \"settledAmountCent\": 900000, \"status\": \"PENDING\"}｜DB 行 quoted_amount_cent=900000 settled_amount_cent=900000 customer_level=NORMAL｜目标不变式 BI-QUOTA-LEDGER-PARITY：成立（偏离量 0）",
+      "detail": "授信额度按客户报价检查并占用，账本按折后实付记录；会员价一旦生效（VIP 客户 + 会员装配），两个口径不再相等 —— 额度被占住却没有对应账目。任何一个条件单独都不足以造成分裂：单独 VIP 客户在标准装配下拿不到折扣（结算额=报价），单独会员装配作用在非 VIP 客户上也不打折。\n\n裁决：EMERGENT_CONJUNCTIVE（合起来违反目标不变式，每条单独都不违反；最小核心集 = 缺陷集（INJ-TIER-VIP+INJ-PROFILE-VIP），没有冗余注入）\n活性检查：INJ-FX-NONBASE=死；INJ-PROFILE-VIP=活；INJ-TIER-VIP=活\n最小核心集：INJ-TIER-VIP+INJ-PROFILE-VIP\n\n证据步骤：\n  1. [ALIVE-CHECK --alive-check INJ-TIER-VIP] 注入 INJ-TIER-VIP（service 层，缺陷 pricing.member_tier_bound_to_deployment_profile）活性检查：实例 default（profile=default），请求 {\"currency\": \"CNY\", \"customerName\": \"ai_probe_emerg_cust\", \"quotedAmountCent\": 900000}，HTTP 200，响应 {\"id\": 1206, \"quotedAmountCent\": 900000, \"settledAmountCent\": 900000, \"status\": \"PENDING\"}，探针不变式 BI-VIP-MEMBER-PRICE 实测 violated（期望 violated）→ 活\n  2. [ALIVE-CHECK --alive-check INJ-PROFILE-VIP] 注入 INJ-PROFILE-VIP（service 层，缺陷 order.quota_checked_on_quoted_amount_ledger_on_settled）活性检查：实例 vip（profile=vip），请求 {\"currency\": \"CNY\", \"customerName\": \"ai_probe_emerg_cust\", \"quotedAmountCent\": 900000}，HTTP 200，响应 {\"id\": 1207, \"quotedAmountCent\": 900000, \"settledAmountCent\": 810000, \"status\": \"PENDING\"}，探针不变式 BI-VIP-MEMBER-PRICE 实测 satisfied（期望 satisfied）→ 活\n  3. [POST /api/orders] 基线（不注入任何条件）｜实例 default（profile=default）｜请求 {\"currency\": \"CNY\", \"customerName\": \"ai_probe_emerg_cust\", \"quotedAmountCent\": 900000}｜HTTP 200｜响应 {\"id\": 1208, \"quotedAmountCent\": 900000, \"settledAmountCent\": 900000, \"status\": \"PENDING\"}｜DB 行 quoted_amount_cent=900000 settled_amount_cent=900000 customer_level=NORMAL｜目标不变式 BI-QUOTA-LEDGER-PARITY：成立（偏离量 0）\n  4. [POST /api/orders] 合起来注入 INJ-TIER-VIP+INJ-PROFILE-VIP｜实例 vip（profile=vip）｜请求 {\"currency\": \"CNY\", \"customerName\": \"ai_probe_emerg_cust\", \"quotedAmountCent\": 900000}｜HTTP 200｜响应 {\"id\": 1209, \"quotedAmountCent\": 900000, \"settledAmountCent\": 810000, \"status\": \"PENDING\"}｜DB 行 quoted_amount_cent=900000 settled_amount_cent=810000 customer_level=VIP｜目标不变式 BI-QUOTA-LEDGER-PARITY：违反（偏离量 90000）\n  5. [POST /api/orders] 只注入 INJ-TIER-VIP｜实例 default（profile=default）｜请求 {\"currency\": \"CNY\", \"customerName\": \"ai_probe_emerg_cust\", \"quotedAmountCent\": 900000}｜HTTP 200｜响应 {\"id\": 1210, \"quotedAmountCent\": 900000, \"settledAmountCent\": 900000, \"status\": \"PENDING\"}｜DB 行 quoted_amount_cent=900000 settled_amount_cent=900000 customer_level=VIP｜目标不变式 BI-QUOTA-LEDGER-PARITY：成立（偏离量 0）\n  6. [POST /api/orders] 只注入 INJ-PROFILE-VIP｜实例 vip（profile=vip）｜请求 {\"currency\": \"CNY\", \"customerName\": \"ai_probe_emerg_cust\", \"quotedAmountCent\": 900000}｜HTTP 200｜响应 {\"id\": 1211, \"quotedAmountCent\": 900000, \"settledAmountCent\": 900000, \"status\": \"PENDING\"}｜DB 行 quoted_amount_cent=900000 settled_amount_cent=900000 customer_level=NORMAL｜目标不变式 BI-QUOTA-LEDGER-PARITY：成立（偏离量 0）\n  7. [POST /api/orders] 只注入 INJ-TIER-VIP｜实例 default（profile=default）｜请求 {\"currency\": \"CNY\", \"customerName\": \"ai_probe_emerg_cust\", \"quotedAmountCent\": 900000}｜HTTP 200｜响应 {\"id\": 1212, \"quotedAmountCent\": 900000, \"settledAmountCent\": 900000, \"status\": \"PENDING\"}｜DB 行 quoted_amount_cent=900000 settled_amount_cent=900000 customer_level=VIP｜目标不变式 BI-QUOTA-LEDGER-PARITY：成立（偏离量 0）\n  8. [POST /api/orders] 只注入 INJ-PROFILE-VIP｜实例 vip（profile=vip）｜请求 {\"currency\": \"CNY\", \"customerName\": \"ai_probe_emerg_cust\", \"quotedAmountCent\": 900000}｜HTTP 200｜响应 {\"id\": 1213, \"quotedAmountCent\": 900000, \"settledAmountCent\": 900000, \"status\": \"PENDING\"}｜DB 行 quoted_amount_cent=900000 settled_amount_cent=900000 customer_level=NORMAL｜目标不变式 BI-QUOTA-LEDGER-PARITY：成立（偏离量 0）",
       "related": [],
       "note": "涌现链（EMERGENT_CONJUNCTIVE）：单独注入 INJ-TIER-VIP / INJ-PROFILE-VIP 都不触发，只有两条合起来才违反「额度占用额 == 账本记录额」。两个低层各自都对，根因落在它们的组合上，故由集成层开单。",
       "source": {
@@ -1003,8 +954,57 @@
       }
     },
     {
+      "id": "BI-QUOTA-LEDGER-PARITY",
+      "uid": "service:BI-QUOTA-LEDGER-PARITY#0",
+      "layer": "service",
+      "category": "service.data_consistency",
+      "category_fit": "exact",
+      "suggested_category": "",
+      "location": {
+        "file": "",
+        "line": 0,
+        "symbol": "POST /api/orders",
+        "endpoint": "POST /api/orders"
+      },
+      "claim": "同一笔订单的额度占用记录（按报价）与账本分录（按实付），金额是否对得上？",
+      "evidence_refs": [
+        "artifacts/business_findings.json#BI-QUOTA-LEDGER-PARITY"
+      ],
+      "repro_cmd": "python3 demos/shop/business_probe.py",
+      "repro_granularity": "layer",
+      "confidence": 0.93,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-840"
+      ],
+      "owner": {
+        "layer": "file",
+        "relation": "cite",
+        "basis": "根因归 file；本层拥有链级后果"
+      },
+      "root_cause_key": "order.quota_checked_on_quoted_amount_ledger_on_settled",
+      "related_root_causes": [],
+      "kind": "defect",
+      "runtime_fidelity": "container",
+      "severity": "HIGH",
+      "title": "同一笔订单的额度占用记录与账本分录，金额是否对得上？",
+      "detail": "额度占用按下单报价记一笔（QuotaService.occupy），账本按实际结算记一笔（LedgerService.book）。两条记录说的是同一笔交易，金额必须对得上 —— 对不上就意味着「额度被占住了，却没有对应的账目」，差额就是被白占的额度。\n不变式：BI-QUOTA-LEDGER-PARITY　判定原语：field_eq_field\n实测 3 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 1264,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 810000,\n    \"verdict\": \"fail\",\n    \"ok\": false,\n    \"scenario\": \"vip_on_vip\"\n  }\n]",
+      "related": [],
+      "note": "服务层 OrderService.create 里额度检查用 quotedAmountCent、账本记录用 settled —— 两个口径。单条件都不分裂：普通客户 + 会员装配不分裂，VIP 客户 + 标准装配也不分裂；两个条件同时成立才分裂（实测 3 个场景里只有这一组违反）。服务层是能给可复现证据的最低层，故 owner 归 service",
+      "source": {
+        "file": "artifacts/business_findings.json",
+        "index": 0
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": false
+      }
+    },
+    {
       "id": "BI-VIP-MEMBER-PRICE",
-      "uid": "service:BI-VIP-MEMBER-PRICE#0",
+      "uid": "service:BI-VIP-MEMBER-PRICE#1",
       "layer": "service",
       "category": "service.data_consistency",
       "category_fit": "exact",
@@ -1037,12 +1037,12 @@
       "runtime_fidelity": "container",
       "severity": "HIGH",
       "title": "VIP 客户的结算额是否享受了会员价（报价的 9/10）？",
-      "detail": "会员价是**客户等级**维度的价格规则：VIP 客户在任何部署环境下都应当拿到九折。这条不变式只对 VIP 客户适用（when 条件），衡量的是「等级条件有没有真的落到定价上」。\n不变式：BI-VIP-MEMBER-PRICE　判定原语：field_eq_field\n实测 2 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 907,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 810000,\n    \"verdict\": \"fail\",\n    \"ok\": false,\n    \"scenario\": \"vip_on_default\"\n  }\n]",
+      "detail": "会员价是**客户等级**维度的价格规则：VIP 客户在任何部署环境下都应当拿到九折。这条不变式只对 VIP 客户适用（when 条件），衡量的是「等级条件有没有真的落到定价上」。\n不变式：BI-VIP-MEMBER-PRICE　判定原语：field_eq_field\n实测 2 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 1263,\n    \"type\": \"field_eq_field\",\n    \"left\": 900000,\n    \"right\": 810000,\n    \"verdict\": \"fail\",\n    \"ok\": false,\n    \"scenario\": \"vip_on_default\"\n  }\n]",
       "related": [],
       "note": "服务层实测到：VIP 客户在标准装配下拿不到九折（结算额 = 报价额）。根因是「业务维度（客户等级）被绑到部署维度（@Profile）」—— 那是类层的结构问题，类层已经 own（CLASS-CONDITIONAL-ASSEMBLY-DIVERGENCE）。本层只作行为佐证，不重复开单",
       "source": {
         "file": "artifacts/business_findings.json",
-        "index": 0
+        "index": 1
       },
       "meta": {
         "inferred_fields": [],

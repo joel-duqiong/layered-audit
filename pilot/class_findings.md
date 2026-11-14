@@ -1,13 +1,12 @@
 # 类层差分报告（jiuyan）
 
-JPA 实体 7 个 | DDL 表 6 张 | 索引 22 个 | finding 23 条
+JPA 实体 7 个 | DDL 表 6 张 | 索引 22 个 | finding 22 条
 
 | 级别 | 层 | 缺陷 |
 |---|---|---|
-| HIGH | class | 状态机缺失：9/9 种迁移全部被接受，含回退 |
-| HIGH | class→service | DDL 声明的 idx_products_name 对服务层查询模式无效（7.671ms vs 0.013ms，差 590 倍） |
+| HIGH | class→service | DDL 声明的 idx_products_name 对服务层查询模式无效（8.982ms vs 0.015ms，差 599 倍） |
 | HIGH | class | com.jiuyan.banquet.entity.BanquetPackage.getItems 把内部实体集合直接交出去 |
-| HIGH | class | 4 条业务不变量在 DB / DTO / 服务层三层全都不存在 |
+| HIGH | class | 1 条业务不变量在 DB / DTO / 服务层三层全都不存在 |
 | MEDIUM | class | 软删除的行会被同名重建「复活」，id 与 sort_order 沿用旧值 |
 | MEDIUM | class | orders 表没有软删/归档，永久增长（当前 184 kB） |
 | MEDIUM | class | BanquetOrder 没有值相等：放进集合或当键，语义会变 |
@@ -28,40 +27,14 @@ JPA 实体 7 个 | DDL 表 6 张 | 索引 22 个 | finding 23 条
 | INFO | class | 8/8 条 DB CHECK 在 DTO 层都有同义约束，防线链条闭合 |
 | INFO | class | PUT 缺省必填外键被 DTO 的 @NotNull 挡住（400，DB 无脏数据） |
 
-## [HIGH] 状态机缺失：9/9 种迁移全部被接受，含回退
-
-DDL 只有取值白名单 CHECK (status IN (...))，没有任何迁移约束；实测 9 种迁移全部 200 成功。业务后果：已付款（DEPOSIT_PAID）/已完成（COMPLETED）的订单可以被改回 PENDING，押金与结算状态和现实不符，而且没有留下任何迁移记录。
-
-```json
-{
-  "allowed": [
-    "PENDING->PENDING",
-    "PENDING->DEPOSIT_PAID",
-    "PENDING->COMPLETED",
-    "DEPOSIT_PAID->PENDING",
-    "DEPOSIT_PAID->DEPOSIT_PAID",
-    "DEPOSIT_PAID->COMPLETED",
-    "COMPLETED->PENDING",
-    "COMPLETED->DEPOSIT_PAID",
-    "COMPLETED->COMPLETED"
-  ],
-  "backward_transitions": [
-    "PENDING->DEPOSIT_PAID",
-    "PENDING->COMPLETED",
-    "DEPOSIT_PAID->COMPLETED"
-  ],
-  "ddl_check": "status IN ('PENDING','DEPOSIT_PAID','COMPLETED')"
-}
-```
-
-## [HIGH] DDL 声明的 idx_products_name 对服务层查询模式无效（7.671ms vs 0.013ms，差 590 倍）
+## [HIGH] DDL 声明的 idx_products_name 对服务层查询模式无效（8.982ms vs 0.015ms，差 599 倍）
 
 迁移文件建了 products(name) 索引，但服务层关键词搜索写的是 lower(name) LIKE '%kw%'：lower() 让索引无法用于定位，前导 % 让 btree 本来也用不上。EXPLAIN 显示走 Filter 全量过滤而非 Index Cond。类层把索引交给服务层，但服务层不知道该怎么用它 —— 声明没有传递下去。
 
 ```json
 {
-  "like_prefix_lower_ms": 7.671,
-  "exact_equal_ms": 0.013,
+  "like_prefix_lower_ms": 8.982,
+  "exact_equal_ms": 0.015,
   "index_cond_present": true,
   "like_has_index_cond": false,
   "scale_rows": 50000
@@ -93,7 +66,7 @@ public 方法返回 java.util.List<com.jiuyan.banquet.entity.PackageItem>，元�
 }
 ```
 
-## [HIGH] 4 条业务不变量在 DB / DTO / 服务层三层全都不存在
+## [HIGH] 1 条业务不变量在 DB / DTO / 服务层三层全都不存在
 
 这些不是「某一层写错了」，而是三层都没有表达过 —— 没有任何一层承担校验责任，实测 API 也全部放行并落库。订单的业务语义（定金不超过成交价、预订时间在未来、联系方式是手机号、完成必有定金）目前只存在于人的脑子里，不存在于任何一行代码或迁移文件里。
 
@@ -101,32 +74,17 @@ public 方法返回 java.util.List<com.jiuyan.banquet.entity.PackageItem>，元�
 {
   "rules": [
     {
-      "rule": "deposit_cent > final_price_cent（定金大于成交价）",
-      "table": "orders",
-      "db_blocked": false,
-      "api_http": 200,
-      "api_note": "定金 999999 > 成交价 1，落库无异常"
-    },
-    {
-      "rule": "reservation_time 在过去（预订过去的日期）",
-      "table": "orders",
-      "db_blocked": false,
-      "api_http": 200,
-      "api_note": "预订时间取一年前，接口照常受理并落库"
-    },
-    {
       "rule": "customer_phone 非手机号格式",
       "table": "orders",
       "db_blocked": false,
       "api_http": 200,
-      "api_note": "customer_phone 落库为 'not-a-phone'"
-    },
-    {
-      "rule": "status=COMPLETED 但 deposit_cent=0（未付定金却已完成）",
-      "table": "orders",
-      "db_blocked": false,
-      "api_http": 200,
-      "api_note": "订单直接置为已完成，定金为 0"
+      "api_note": "customer_phone 落库为 'not-a-phone'",
+      "oracle": {
+        "source": "project_doc",
+        "confirmation": "confirmed",
+        "reference": "/Users/june/tests/auto-api/docs/业务校验对照.md 第 29-34 行（P1）",
+        "note": "文档 P1「手机号格式：前端有校验，后端没有（建议修复）」，已加 XFAIL 用例 test_create_order_invalid_phone_rejected"
+      }
     }
   ]
 }
@@ -138,13 +96,13 @@ public 方法返回 java.util.List<com.jiuyan.banquet.entity.PackageItem>，元�
 
 ```json
 {
-  "category": "ai_probe_cat_47f5de",
+  "category": "ai_probe_cat_9300e3",
   "create": 200,
   "delete": 200,
   "recreate": 200,
   "db_rows": [
     [
-      "328",
+      "340",
       "f"
     ]
   ]
@@ -357,7 +315,7 @@ UpdateProductRequest.imageUrl 没有任何约束（可缺省），但 PUT 的语
 ```json
 {
   "entity": "products",
-  "id": 5557158,
+  "id": 5857503,
   "changed_columns": [
     "description",
     "image_url",
@@ -368,15 +326,15 @@ UpdateProductRequest.imageUrl 没有任何约束（可缺省），但 PUT 的语
     "updated_at"
   ],
   "final_row": {
-    "id": 5557158,
+    "id": 5857503,
     "name": "ai_probe_fp2",
     "unit": "克",
     "image_url": null,
     "is_active": false,
-    "created_at": "2026-11-14T11:07:27.549287+00:00",
+    "created_at": "2026-11-14T16:55:33.771199+00:00",
     "is_deleted": true,
     "price_cent": 9999,
-    "updated_at": "2026-11-14T11:07:27.993591+00:00",
+    "updated_at": "2026-11-14T16:55:34.119342+00:00",
     "category_id": 2,
     "description": "changed"
   }

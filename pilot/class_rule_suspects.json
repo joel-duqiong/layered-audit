@@ -1,0 +1,83 @@
+{
+  "unconfirmed": [
+    {
+      "rule": "status=COMPLETED 但 deposit_cent=0（未付定金却已完成）",
+      "table": "orders",
+      "db_blocked": false,
+      "api_http": 200,
+      "api_note": "订单直接置为已完成，定金为 0",
+      "oracle": {
+        "source": "inferred",
+        "confirmation": "unconfirmed",
+        "reference": "",
+        "note": "文档未定义此规则；第 64 行反而把「订单状态流转限制：当前允许任意状态直接切换」列为未定义。属推断预期，待业务确认"
+      }
+    }
+  ],
+  "unconfirmed_count": 1,
+  "refuted": [
+    {
+      "rule": "deposit_cent > final_price_cent（定金大于成交价）",
+      "table": "orders",
+      "db_blocked": false,
+      "api_http": 200,
+      "api_note": "定金 999999 > 成交价 1，落库无异常",
+      "oracle": {
+        "source": "project_doc",
+        "confirmation": "refuted",
+        "reference": "/Users/june/tests/auto-api/docs/业务校验对照.md 第 65 行",
+        "note": "文档「当前未定义、实现也未校验的规则」明列：定金与成交价的大小关系，当前只要求各自 >= 0"
+      }
+    },
+    {
+      "rule": "reservation_time 在过去（预订过去的日期）",
+      "table": "orders",
+      "db_blocked": false,
+      "api_http": 200,
+      "api_note": "预订时间取一年前，接口照常受理并落库",
+      "oracle": {
+        "source": "project_doc",
+        "confirmation": "refuted",
+        "reference": "/Users/june/tests/auto-api/docs/业务校验对照.md 第 62 行",
+        "note": "文档「当前未定义」明列：预约时间是否允许过去时间，当前只要求可解析的 OffsetDateTime"
+      }
+    },
+    {
+      "rule_id": "no_state_machine",
+      "oracle": {
+        "source": "project_doc",
+        "confirmation": "refuted",
+        "reference": "/Users/june/tests/auto-api/docs/业务校验对照.md 第 64 行",
+        "note": "文档「当前未定义、实现也未校验的规则」明列：订单状态流转限制，当前允许任意状态直接切换。9/9 迁移被接受是客观观测，但「所以这是缺陷」需要业务预期，而该预期被文档明确否定。"
+      },
+      "finding": {
+        "id": "NO_STATE_MACHINE",
+        "severity": "HIGH",
+        "layer": "class",
+        "title": "状态机缺失：9/9 种迁移全部被接受，含回退",
+        "detail": "DDL 只有取值白名单 CHECK (status IN (...))，没有任何迁移约束；实测 9 种迁移全部 200 成功。业务后果：已付款（DEPOSIT_PAID）/已完成（COMPLETED）的订单可以被改回 PENDING，押金与结算状态和现实不符，而且没有留下任何迁移记录。",
+        "evidence": {
+          "allowed": [
+            "PENDING->PENDING",
+            "PENDING->DEPOSIT_PAID",
+            "PENDING->COMPLETED",
+            "DEPOSIT_PAID->PENDING",
+            "DEPOSIT_PAID->DEPOSIT_PAID",
+            "DEPOSIT_PAID->COMPLETED",
+            "COMPLETED->PENDING",
+            "COMPLETED->DEPOSIT_PAID",
+            "COMPLETED->COMPLETED"
+          ],
+          "backward_transitions": [
+            "PENDING->DEPOSIT_PAID",
+            "PENDING->COMPLETED",
+            "DEPOSIT_PAID->COMPLETED"
+          ],
+          "ddl_check": "status IN ('PENDING','DEPOSIT_PAID','COMPLETED')"
+        }
+      }
+    }
+  ],
+  "refuted_count": 3,
+  "note": "这些规则在 DB/DTO/服务层三层都没有表达，是客观观测；但「所以这是缺陷」需要业务预期。预期未经确认或被文档明确否定，故不进缺陷台账。"
+}

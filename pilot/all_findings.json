@@ -3,16 +3,16 @@
   "contract": "/Users/june/.cc-weixin/workspace/layered-audit/layers.yaml",
   "target": "/Users/june/.cc-weixin/workspace/layered-audit/pilot/target.json",
   "counts": {
-    "total": 96,
+    "total": 95,
     "by_layer": {
       "function": 15,
       "file": 18,
       "service": 23,
-      "class": 25,
+      "class": 24,
       "integration": 15
     },
     "by_kind": {
-      "defect": 79,
+      "defect": 78,
       "positive": 15,
       "observation": 2
     }
@@ -1637,7 +1637,7 @@
       "evidence_refs": [
         "findings.json#INTERNAL_LEAK"
       ],
-      "repro_cmd": "curl -X PATCH /api/orders/2455/status",
+      "repro_cmd": "curl -X PATCH /api/orders/2596/status",
       "repro_granularity": "request",
       "confidence": 0.92,
       "ground_truth": "verified",
@@ -1686,7 +1686,7 @@
       "evidence_refs": [
         "findings.json#INTERNAL_LEAK"
       ],
-      "repro_cmd": "curl -X PATCH /api/packages/465/status",
+      "repro_cmd": "curl -X PATCH /api/packages/486/status",
       "repro_granularity": "request",
       "confidence": 0.92,
       "ground_truth": "verified",
@@ -1735,7 +1735,7 @@
       "evidence_refs": [
         "findings.json#INTERNAL_LEAK"
       ],
-      "repro_cmd": "curl -X PATCH /api/products/5507153/status",
+      "repro_cmd": "curl -X PATCH /api/products/5807498/status",
       "repro_granularity": "request",
       "confidence": 0.92,
       "ground_truth": "verified",
@@ -1882,7 +1882,7 @@
       "evidence_refs": [
         "findings.json#INTERNAL_LEAK"
       ],
-      "repro_cmd": "curl -X PUT /api/packages/465",
+      "repro_cmd": "curl -X PUT /api/packages/486",
       "repro_granularity": "request",
       "confidence": 0.92,
       "ground_truth": "verified",
@@ -1931,7 +1931,7 @@
       "evidence_refs": [
         "findings.json#INTERNAL_LEAK"
       ],
-      "repro_cmd": "curl -X PUT /api/products/5507153",
+      "repro_cmd": "curl -X PUT /api/products/5807498",
       "repro_granularity": "request",
       "confidence": 0.92,
       "ground_truth": "verified",
@@ -1964,57 +1964,8 @@
       }
     },
     {
-      "id": "NO_STATE_MACHINE",
-      "uid": "class:NO_STATE_MACHINE#0",
-      "layer": "class",
-      "category": "class.invariant",
-      "category_fit": "exact",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/BanquetOrder.java",
-        "line": 0,
-        "symbol": "",
-        "endpoint": ""
-      },
-      "claim": "订单状态迁移是否没有任何约束，9/9 种迁移全被接受？",
-      "evidence_refs": [
-        "class_findings.json#NO_STATE_MACHINE"
-      ],
-      "repro_cmd": "python3 class_dynamic.py",
-      "repro_granularity": "layer",
-      "confidence": 0.96,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-840"
-      ],
-      "owner": {
-        "layer": "class",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "order.status.transition_unconstrained",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "hybrid",
-      "severity": "HIGH",
-      "title": "状态机缺失：9/9 种迁移全部被接受，含回退",
-      "detail": "DDL 只有取值白名单 CHECK (status IN (...))，没有任何迁移约束；实测 9 种迁移全部 200 成功。业务后果：已付款（DEPOSIT_PAID）/已完成（COMPLETED）的订单可以被改回 PENDING，押金与结算状态和现实不符，而且没有留下任何迁移记录。",
-      "related": [],
-      "note": "",
-      "source": {
-        "file": "class_findings.json",
-        "index": 0
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": false
-      }
-    },
-    {
       "id": "INDEX_UNUSABLE_FOR_QUERY_PATTERN",
-      "uid": "class:INDEX_UNUSABLE_FOR_QUERY_PATTERN#1",
+      "uid": "class:INDEX_UNUSABLE_FOR_QUERY_PATTERN#0",
       "layer": "class",
       "category": "service.service_latency",
       "category_fit": "stretched",
@@ -2044,13 +1995,13 @@
       "kind": "defect",
       "runtime_fidelity": "hybrid",
       "severity": "HIGH",
-      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.671ms vs 0.013ms，差 590 倍）",
+      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（8.982ms vs 0.015ms，差 599 倍）",
       "detail": "迁移文件建了 products(name) 索引，但服务层关键词搜索写的是 lower(name) LIKE '%kw%'：lower() 让索引无法用于定位，前导 % 让 btree 本来也用不上。EXPLAIN 显示走 Filter 全量过滤而非 Index Cond。类层把索引交给服务层，但服务层不知道该怎么用它 —— 声明没有传递下去。",
       "related": [],
       "note": "检测在 class 层（实体与 DDL 对齐），归属层是 service（查询模式在服务层）",
       "source": {
         "file": "class_findings.json",
-        "index": 1
+        "index": 0
       },
       "meta": {
         "inferred_fields": [],
@@ -2061,7 +2012,7 @@
     },
     {
       "id": "CLASS-ENCAPSULATION-LEAK-ENTITY-COLLECTION",
-      "uid": "class:CLASS-ENCAPSULATION-LEAK-ENTITY-COLLECTION#2",
+      "uid": "class:CLASS-ENCAPSULATION-LEAK-ENTITY-COLLECTION#1",
       "layer": "class",
       "category": "class.encapsulation_leak",
       "category_fit": "exact",
@@ -2099,7 +2050,7 @@
       "note": "BanquetPackage.getItems() 把实体集合本身交出去，调用方改一个字段就改了服务层的内部状态",
       "source": {
         "file": "class_findings.json",
-        "index": 2
+        "index": 1
       },
       "meta": {
         "inferred_fields": [],
@@ -2110,7 +2061,7 @@
     },
     {
       "id": "CLASS-RULE-MISSING-IN-ALL-LAYERS",
-      "uid": "class:CLASS-RULE-MISSING-IN-ALL-LAYERS#3",
+      "uid": "class:CLASS-RULE-MISSING-IN-ALL-LAYERS#2",
       "layer": "class",
       "category": "class.invariant",
       "category_fit": "exact",
@@ -2142,13 +2093,13 @@
       "kind": "defect",
       "runtime_fidelity": "hybrid",
       "severity": "HIGH",
-      "title": "4 条业务不变量在 DB / DTO / 服务层三层全都不存在",
+      "title": "1 条业务不变量在 DB / DTO / 服务层三层全都不存在",
       "detail": "这些不是「某一层写错了」，而是三层都没有表达过 —— 没有任何一层承担校验责任，实测 API 也全部放行并落库。订单的业务语义（定金不超过成交价、预订时间在未来、联系方式是手机号、完成必有定金）目前只存在于人的脑子里，不存在于任何一行代码或迁移文件里。",
       "related": [],
       "note": "",
       "source": {
         "file": "class_findings.json",
-        "index": 3
+        "index": 2
       },
       "meta": {
         "inferred_fields": [],
@@ -2159,7 +2110,7 @@
     },
     {
       "id": "SOFT_DELETE_RESURRECTS_ROW",
-      "uid": "class:SOFT_DELETE_RESURRECTS_ROW#4",
+      "uid": "class:SOFT_DELETE_RESURRECTS_ROW#3",
       "layer": "class",
       "category": "class.invariant",
       "category_fit": "exact",
@@ -2197,7 +2148,7 @@
       "note": "",
       "source": {
         "file": "class_findings.json",
-        "index": 4
+        "index": 3
       },
       "meta": {
         "inferred_fields": [],
@@ -2208,7 +2159,7 @@
     },
     {
       "id": "NO_DATA_LIFECYCLE",
-      "uid": "class:NO_DATA_LIFECYCLE#5",
+      "uid": "class:NO_DATA_LIFECYCLE#4",
       "layer": "class",
       "category": "class.invariant",
       "category_fit": "stretched",
@@ -2244,13 +2195,62 @@
       "note": "类层无「生命周期」类别；资源上限语义更接近 service.resource_leak",
       "source": {
         "file": "class_findings.json",
-        "index": 5
+        "index": 4
       },
       "meta": {
         "inferred_fields": [],
         "confidence_source": "manual",
         "ground_truth_source": "manual",
         "duplicate_id_in_layer": false
+      }
+    },
+    {
+      "id": "CLASS-ENTITY-WITHOUT-VALUE-EQUALITY",
+      "uid": "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#5",
+      "layer": "class",
+      "category": "class.invariant",
+      "category_fit": "stretched",
+      "suggested_category": "",
+      "location": {
+        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/BanquetOrder.java",
+        "line": 0,
+        "symbol": "",
+        "endpoint": ""
+      },
+      "claim": "实体是否没有值相等（equals/hashCode）？",
+      "evidence_refs": [
+        "class_findings.json#CLASS-ENTITY-WITHOUT-VALUE-EQUALITY"
+      ],
+      "repro_cmd": "python3 class_dynamic.py",
+      "repro_granularity": "layer",
+      "confidence": 0.8,
+      "ground_truth": "verified",
+      "cwe": [
+        "CWE-595"
+      ],
+      "owner": {
+        "layer": "class",
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
+      },
+      "root_cause_key": "entity.no_value_equality",
+      "related_root_causes": [],
+      "kind": "defect",
+      "runtime_fidelity": "hybrid",
+      "severity": "MEDIUM",
+      "title": "BanquetOrder 没有值相等：放进集合或当键，语义会变",
+      "detail": "实体没有声明 equals/hashCode，用的是 Object 的默认实现 —— 按对象身份比较，不是按业务主键。业务上「同一个客户」在两处会被当成两个对象：Set 去重失效、Map 键匹配不上、List.contains 永远 false。这不是性能问题而是正确性问题，而且编译期与运行期都不会报错。",
+      "related": [],
+      "note": "按对象身份比较而不是按业务主键：Set 去重失效、Map 键匹配不上、List.contains 永远 false。编译期与运行期都不会报错",
+      "source": {
+        "file": "class_findings.json",
+        "index": 5
+      },
+      "meta": {
+        "inferred_fields": [],
+        "confidence_source": "manual",
+        "ground_truth_source": "manual",
+        "duplicate_id_in_layer": true
       }
     },
     {
@@ -2287,7 +2287,7 @@
       "kind": "defect",
       "runtime_fidelity": "hybrid",
       "severity": "MEDIUM",
-      "title": "BanquetOrder 没有值相等：放进集合或当键，语义会变",
+      "title": "BanquetPackage 没有值相等：放进集合或当键，语义会变",
       "detail": "实体没有声明 equals/hashCode，用的是 Object 的默认实现 —— 按对象身份比较，不是按业务主键。业务上「同一个客户」在两处会被当成两个对象：Set 去重失效、Map 键匹配不上、List.contains 永远 false。这不是性能问题而是正确性问题，而且编译期与运行期都不会报错。",
       "related": [],
       "note": "按对象身份比较而不是按业务主键：Set 去重失效、Map 键匹配不上、List.contains 永远 false。编译期与运行期都不会报错",
@@ -2336,7 +2336,7 @@
       "kind": "defect",
       "runtime_fidelity": "hybrid",
       "severity": "MEDIUM",
-      "title": "BanquetPackage 没有值相等：放进集合或当键，语义会变",
+      "title": "Category 没有值相等：放进集合或当键，语义会变",
       "detail": "实体没有声明 equals/hashCode，用的是 Object 的默认实现 —— 按对象身份比较，不是按业务主键。业务上「同一个客户」在两处会被当成两个对象：Set 去重失效、Map 键匹配不上、List.contains 永远 false。这不是性能问题而是正确性问题，而且编译期与运行期都不会报错。",
       "related": [],
       "note": "按对象身份比较而不是按业务主键：Set 去重失效、Map 键匹配不上、List.contains 永远 false。编译期与运行期都不会报错",
@@ -2385,7 +2385,7 @@
       "kind": "defect",
       "runtime_fidelity": "hybrid",
       "severity": "MEDIUM",
-      "title": "Category 没有值相等：放进集合或当键，语义会变",
+      "title": "PackageItem 没有值相等：放进集合或当键，语义会变",
       "detail": "实体没有声明 equals/hashCode，用的是 Object 的默认实现 —— 按对象身份比较，不是按业务主键。业务上「同一个客户」在两处会被当成两个对象：Set 去重失效、Map 键匹配不上、List.contains 永远 false。这不是性能问题而是正确性问题，而且编译期与运行期都不会报错。",
       "related": [],
       "note": "按对象身份比较而不是按业务主键：Set 去重失效、Map 键匹配不上、List.contains 永远 false。编译期与运行期都不会报错",
@@ -2434,7 +2434,7 @@
       "kind": "defect",
       "runtime_fidelity": "hybrid",
       "severity": "MEDIUM",
-      "title": "PackageItem 没有值相等：放进集合或当键，语义会变",
+      "title": "PackageType 没有值相等：放进集合或当键，语义会变",
       "detail": "实体没有声明 equals/hashCode，用的是 Object 的默认实现 —— 按对象身份比较，不是按业务主键。业务上「同一个客户」在两处会被当成两个对象：Set 去重失效、Map 键匹配不上、List.contains 永远 false。这不是性能问题而是正确性问题，而且编译期与运行期都不会报错。",
       "related": [],
       "note": "按对象身份比较而不是按业务主键：Set 去重失效、Map 键匹配不上、List.contains 永远 false。编译期与运行期都不会报错",
@@ -2483,7 +2483,7 @@
       "kind": "defect",
       "runtime_fidelity": "hybrid",
       "severity": "MEDIUM",
-      "title": "PackageType 没有值相等：放进集合或当键，语义会变",
+      "title": "Product 没有值相等：放进集合或当键，语义会变",
       "detail": "实体没有声明 equals/hashCode，用的是 Object 的默认实现 —— 按对象身份比较，不是按业务主键。业务上「同一个客户」在两处会被当成两个对象：Set 去重失效、Map 键匹配不上、List.contains 永远 false。这不是性能问题而是正确性问题，而且编译期与运行期都不会报错。",
       "related": [],
       "note": "按对象身份比较而不是按业务主键：Set 去重失效、Map 键匹配不上、List.contains 永远 false。编译期与运行期都不会报错",
@@ -2499,57 +2499,8 @@
       }
     },
     {
-      "id": "CLASS-ENTITY-WITHOUT-VALUE-EQUALITY",
-      "uid": "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#11",
-      "layer": "class",
-      "category": "class.invariant",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/BanquetOrder.java",
-        "line": 0,
-        "symbol": "",
-        "endpoint": ""
-      },
-      "claim": "实体是否没有值相等（equals/hashCode）？",
-      "evidence_refs": [
-        "class_findings.json#CLASS-ENTITY-WITHOUT-VALUE-EQUALITY"
-      ],
-      "repro_cmd": "python3 class_dynamic.py",
-      "repro_granularity": "layer",
-      "confidence": 0.8,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-595"
-      ],
-      "owner": {
-        "layer": "class",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "entity.no_value_equality",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "hybrid",
-      "severity": "MEDIUM",
-      "title": "Product 没有值相等：放进集合或当键，语义会变",
-      "detail": "实体没有声明 equals/hashCode，用的是 Object 的默认实现 —— 按对象身份比较，不是按业务主键。业务上「同一个客户」在两处会被当成两个对象：Set 去重失效、Map 键匹配不上、List.contains 永远 false。这不是性能问题而是正确性问题，而且编译期与运行期都不会报错。",
-      "related": [],
-      "note": "按对象身份比较而不是按业务主键：Set 去重失效、Map 键匹配不上、List.contains 永远 false。编译期与运行期都不会报错",
-      "source": {
-        "file": "class_findings.json",
-        "index": 11
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": true
-      }
-    },
-    {
       "id": "CLASS-NOTNULL-BYPASSED-BY-EMPTY-STRING",
-      "uid": "class:CLASS-NOTNULL-BYPASSED-BY-EMPTY-STRING#12",
+      "uid": "class:CLASS-NOTNULL-BYPASSED-BY-EMPTY-STRING#11",
       "layer": "class",
       "category": "class.invariant",
       "category_fit": "exact",
@@ -2587,7 +2538,7 @@
       "note": "",
       "source": {
         "file": "class_findings.json",
-        "index": 12
+        "index": 11
       },
       "meta": {
         "inferred_fields": [],
@@ -2598,7 +2549,7 @@
     },
     {
       "id": "CLASS-REQUIRED-CHECKED-IN-SERVICE-LAYER",
-      "uid": "class:CLASS-REQUIRED-CHECKED-IN-SERVICE-LAYER#13",
+      "uid": "class:CLASS-REQUIRED-CHECKED-IN-SERVICE-LAYER#12",
       "layer": "class",
       "category": "class.contract_violation",
       "category_fit": "stretched",
@@ -2634,7 +2585,7 @@
       "note": "",
       "source": {
         "file": "class_findings.json",
-        "index": 13
+        "index": 12
       },
       "meta": {
         "inferred_fields": [],
@@ -2645,7 +2596,7 @@
     },
     {
       "id": "CLASS-PUT-WIPES-UNSET-FIELD",
-      "uid": "class:CLASS-PUT-WIPES-UNSET-FIELD#14",
+      "uid": "class:CLASS-PUT-WIPES-UNSET-FIELD#13",
       "layer": "class",
       "category": "class.contract_violation",
       "category_fit": "exact",
@@ -2683,7 +2634,7 @@
       "note": "",
       "source": {
         "file": "class_findings.json",
-        "index": 14
+        "index": 13
       },
       "meta": {
         "inferred_fields": [],
@@ -2694,7 +2645,7 @@
     },
     {
       "id": "CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES",
-      "uid": "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#15",
+      "uid": "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#14",
       "layer": "class",
       "category": "UNMAPPED",
       "category_fit": "unmapped",
@@ -2730,7 +2681,7 @@
       "note": "缺陷跨三个文件（cohesion 信号），但 class 层的 escalation_to 只有 service，不能把归属上提到 file；owner 留在 class，与 manifest 的 attribution 一致",
       "source": {
         "file": "class_findings.json",
-        "index": 15
+        "index": 14
       },
       "meta": {
         "inferred_fields": [],
@@ -2741,7 +2692,7 @@
     },
     {
       "id": "CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES",
-      "uid": "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#16",
+      "uid": "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#15",
       "layer": "class",
       "category": "UNMAPPED",
       "category_fit": "unmapped",
@@ -2777,7 +2728,7 @@
       "note": "缺陷跨三个文件（cohesion 信号），但 class 层的 escalation_to 只有 service，不能把归属上提到 file；owner 留在 class，与 manifest 的 attribution 一致",
       "source": {
         "file": "class_findings.json",
-        "index": 16
+        "index": 15
       },
       "meta": {
         "inferred_fields": [],
@@ -2788,7 +2739,7 @@
     },
     {
       "id": "CLASS-ERROR-MESSAGE-MISMATCH",
-      "uid": "class:CLASS-ERROR-MESSAGE-MISMATCH#17",
+      "uid": "class:CLASS-ERROR-MESSAGE-MISMATCH#16",
       "layer": "class",
       "category": "class.contract_violation",
       "category_fit": "stretched",
@@ -2824,7 +2775,7 @@
       "note": "",
       "source": {
         "file": "class_findings.json",
-        "index": 17
+        "index": 16
       },
       "meta": {
         "inferred_fields": [],
@@ -2835,7 +2786,7 @@
     },
     {
       "id": "CLASS-ENUM-CASE-SENSITIVE",
-      "uid": "class:CLASS-ENUM-CASE-SENSITIVE#18",
+      "uid": "class:CLASS-ENUM-CASE-SENSITIVE#17",
       "layer": "class",
       "category": "class.contract_violation",
       "category_fit": "stretched",
@@ -2871,7 +2822,7 @@
       "note": "",
       "source": {
         "file": "class_findings.json",
-        "index": 18
+        "index": 17
       },
       "meta": {
         "inferred_fields": [],
@@ -2882,7 +2833,7 @@
     },
     {
       "id": "ENUM_CHECK_ALIGNED",
-      "uid": "class:ENUM_CHECK_ALIGNED#19",
+      "uid": "class:ENUM_CHECK_ALIGNED#18",
       "layer": "class",
       "category": "class.contract_violation",
       "category_fit": "exact",
@@ -2918,7 +2869,7 @@
       "note": "",
       "source": {
         "file": "class_findings.json",
-        "index": 19
+        "index": 18
       },
       "meta": {
         "inferred_fields": [],
@@ -2929,7 +2880,7 @@
     },
     {
       "id": "CLASS-NULLABILITY-ALIGNED",
-      "uid": "class:CLASS-NULLABILITY-ALIGNED#20",
+      "uid": "class:CLASS-NULLABILITY-ALIGNED#19",
       "layer": "class",
       "category": "class.invariant",
       "category_fit": "exact",
@@ -2965,7 +2916,7 @@
       "note": "",
       "source": {
         "file": "class_findings.json",
-        "index": 20
+        "index": 19
       },
       "meta": {
         "inferred_fields": [],
@@ -2976,7 +2927,7 @@
     },
     {
       "id": "CLASS-CHECK-DTO-ALIGNED",
-      "uid": "class:CLASS-CHECK-DTO-ALIGNED#21",
+      "uid": "class:CLASS-CHECK-DTO-ALIGNED#20",
       "layer": "class",
       "category": "class.contract_violation",
       "category_fit": "exact",
@@ -3012,7 +2963,7 @@
       "note": "",
       "source": {
         "file": "class_findings.json",
-        "index": 21
+        "index": 20
       },
       "meta": {
         "inferred_fields": [],
@@ -3023,7 +2974,7 @@
     },
     {
       "id": "CLASS-PUT-REQUIRED-FK-GUARDED",
-      "uid": "class:CLASS-PUT-REQUIRED-FK-GUARDED#22",
+      "uid": "class:CLASS-PUT-REQUIRED-FK-GUARDED#21",
       "layer": "class",
       "category": "class.contract_violation",
       "category_fit": "exact",
@@ -3059,7 +3010,7 @@
       "note": "",
       "source": {
         "file": "class_findings.json",
-        "index": 22
+        "index": 21
       },
       "meta": {
         "inferred_fields": [],
@@ -3787,7 +3738,7 @@
       "runtime_fidelity": "container",
       "severity": "MEDIUM",
       "title": "分页 total 是纯开销：后端每次列表请求都跑 count(*) 全表扫描，前端从不读这个数",
-      "detail": "每个列表接口都带分页参数，后端对每次请求额外跑一条 count(*) 全表扫描（Seq Scan，因为 idx_products_name 对 lower(name) LIKE '%…%' 不可用）。实测数据量阶梯：30 行 → 6.26ms；2030 行 → 12.68ms；10030 行 → 19.87ms；50030 行 → 37.62ms。\n在 50030 行时，count(*) 单条耗时 12.024ms，占带 keyword 列表接口端到端延迟的 32.0%，占不带 keyword 接口的 42.8%。\n而前端 banquetApi.js 的 listProducts / listPackages / listOrders 三个函数一律只取 data.items.map(...)，total 从未被读取 —— 这份开销 100% 浪费。\n本轮判定「端到端延迟随数据量塌陷」为 PARTIALLY_CONFIRMED：延迟确实随数据量线性增长，但 50030 行时端到端仅 37.62ms，按每行 0.000752ms 折算，要到约 1329877 行才触及 1 秒预算。\n结论：结构性 O(N) 成立，但当前规模下后果未兑现 —— 真正该修的不是「加索引」，而是别让后端算一个没人要的数。",
+      "detail": "每个列表接口都带分页参数，后端对每次请求额外跑一条 count(*) 全表扫描（Seq Scan，因为 idx_products_name 对 lower(name) LIKE '%…%' 不可用）。实测数据量阶梯：30 行 → 1.02ms；2030 行 → 3.97ms；10030 行 → 11.02ms；50030 行 → 29.97ms。\n在 50030 行时，count(*) 单条耗时 10.824ms，占带 keyword 列表接口端到端延迟的 36.1%，占不带 keyword 接口的 97.3%。\n而前端 banquetApi.js 的 listProducts / listPackages / listOrders 三个函数一律只取 data.items.map(...)，total 从未被读取 —— 这份开销 100% 浪费。\n本轮判定「端到端延迟随数据量塌陷」为 PARTIALLY_CONFIRMED：延迟确实随数据量线性增长，但 50030 行时端到端仅 29.97ms，按每行 0.000599ms 折算，要到约 1669336 行才触及 1 秒预算。\n结论：结构性 O(N) 成立，但当前规模下后果未兑现 —— 真正该修的不是「加索引」，而是别让后端算一个没人要的数。",
       "related": [],
       "note": "实测 5 万行时 count(*) 占端到端 31%（带 keyword）/ 40%（不带 keyword）；前端 listProducts/listPackages/listOrders 三个函数都只取 items，total 从未被读",
       "source": {
@@ -3834,7 +3785,7 @@
       "runtime_fidelity": "container",
       "severity": "MEDIUM",
       "title": "三个列表接口每次都为前端丢弃的 total 付一次全表扫描",
-      "detail": "三个列表接口（GET /api/products、/api/packages、/api/orders）在集权层实测中，每次请求的 count(*) 部分占端到端延迟的 32.0%~42.8%，而这个 total 前端从头到尾没读过。\n也就是说：用户每翻一次列表，后端就多付一次全表扫描的钱，收益为零。同时前端把 page 固定成 1、pageSize 固定成 100，超出部分永远不可见 —— 分页机制在这条链路上同时是「成本」和「不可用」。",
+      "detail": "三个列表接口（GET /api/products、/api/packages、/api/orders）在集权层实测中，每次请求的 count(*) 部分占端到端延迟的 36.1%~97.3%，而这个 total 前端从头到尾没读过。\n也就是说：用户每翻一次列表，后端就多付一次全表扫描的钱，收益为零。同时前端把 page 固定成 1、pageSize 固定成 100，超出部分永远不可见 —— 分页机制在这条链路上同时是「成本」和「不可用」。",
       "related": [],
       "note": "链级后果归集成层，根因（后端白算一次 count）归服务层",
       "source": {
@@ -4024,7 +3975,7 @@
       "runtime_fidelity": "container",
       "severity": "MEDIUM",
       "title": "并发编辑同一订单会静默丢掉对方的修改：没有版本号、没有冲突检测",
-      "detail": "订单编辑走 PUT /api/orders/{id}，服务层在事务里整行覆盖，没有乐观锁（无 version / ETag / If-Match），也没有任何冲突检测。\n两个客户端同时编辑同一订单、各改一个字段时，后提交的那个用自己那份完整快照覆盖了整行，先提交的人的修改直接消失 —— 没有报错、没有冲突提示，两边都以为自己改成功了。\n实测：{\"property\": \"两个并发 PUT 分别改 customerPhone 与 address，最终行必须同时含两个新值\", \"ok\": false, \"order_id\": 2495, \"http_status\": {\"B\": 200, \"A\": 200}, \"final_row\": {\"remark\": \"ai_probe_conc_dc1_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc1_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13900000001\", \"final_price_cent\": 1}, \"phone_applied\": true, \"address_applied\": false, \"lost_update\": true}\n谈单场景下的具体后果：销售 A 改了成交价、销售 B 同时改了电话，A 的改价凭空消失，订单金额回到旧值，而 A 的界面显示他改成功了。",
+      "detail": "订单编辑走 PUT /api/orders/{id}，服务层在事务里整行覆盖，没有乐观锁（无 version / ETag / If-Match），也没有任何冲突检测。\n两个客户端同时编辑同一订单、各改一个字段时，后提交的那个用自己那份完整快照覆盖了整行，先提交的人的修改直接消失 —— 没有报错、没有冲突提示，两边都以为自己改成功了。\n实测：{\"property\": \"两个并发 PUT 分别改 customerPhone 与 address，最终行必须同时含两个新值\", \"ok\": false, \"order_id\": 2636, \"http_status\": {\"A\": 200, \"B\": 200}, \"final_row\": {\"remark\": \"ai_probe_conc_dc1_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_addr_concurrent\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"phone_applied\": false, \"address_applied\": true, \"lost_update\": true}\n谈单场景下的具体后果：销售 A 改了成交价、销售 B 同时改了电话，A 的改价凭空消失，订单金额回到旧值，而 A 的界面显示他改成功了。",
       "related": [],
       "note": "两个并发 PUT 各改一个字段，都返回 200，但最终行只含后写者的完整快照 —— 先写者的修改凭空消失，两边都以为自己成功了，没有任何冲突提示",
       "source": {
@@ -4071,7 +4022,7 @@
       "runtime_fidelity": "container",
       "severity": "INFO",
       "title": "被拒的写请求不会在订单行留下部分写入（事务边界有效）",
-      "detail": "同一个 PUT 里塞一个非法字段（tableCount=0，@Min(1) 拒绝）和一个合法字段的改动，服务返回 4xx 后，订单行与请求前逐字段一致 —— 没有出现「校验失败但另一部分已经写进去」的半截状态。\n实测：{\"property\": \"被拒的 PUT 不能在订单行留下任何部分写入\", \"ok\": true, \"order_id\": 2496, \"http_status\": 400, \"before\": {\"remark\": \"ai_probe_conc_dc2_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc2_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"after\": {\"remark\": \"ai_probe_conc_dc2_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc2_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"partial_write\": false}",
+      "detail": "同一个 PUT 里塞一个非法字段（tableCount=0，@Min(1) 拒绝）和一个合法字段的改动，服务返回 4xx 后，订单行与请求前逐字段一致 —— 没有出现「校验失败但另一部分已经写进去」的半截状态。\n实测：{\"property\": \"被拒的 PUT 不能在订单行留下任何部分写入\", \"ok\": true, \"order_id\": 2637, \"http_status\": 400, \"before\": {\"remark\": \"ai_probe_conc_dc2_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc2_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"after\": {\"remark\": \"ai_probe_conc_dc2_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc2_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"partial_write\": false}",
       "related": [],
       "note": "正面结论：校验失败后订单行与请求前逐字段一致，没有半截写入",
       "source": {
@@ -4120,7 +4071,7 @@
       "runtime_fidelity": "container",
       "severity": "MEDIUM",
       "title": "下单接口没有幂等：同一个请求重发一次就产生两个订单",
-      "detail": "POST /api/orders 不接受也不返回幂等键，没有按业务键去重，也没有唯一约束能挡住重复。客户端在超时后重试（这是所有 HTTP 客户端的标准行为），就会多出一张订单。\n实测：{\"property\": \"同一个 POST 重发两次，只能有一个订单落库（POST 必须幂等或带幂等键）\", \"ok\": false, \"http_status\": [200, 200], \"first_order_id\": 2497, \"second_order_id\": 2498, \"orders_in_db\": 2, \"same_id\": false}\n在零鉴权的前提下，这个接口同时也是「随便重发就能灌订单」的放大器。",
+      "detail": "POST /api/orders 不接受也不返回幂等键，没有按业务键去重，也没有唯一约束能挡住重复。客户端在超时后重试（这是所有 HTTP 客户端的标准行为），就会多出一张订单。\n实测：{\"property\": \"同一个 POST 重发两次，只能有一个订单落库（POST 必须幂等或带幂等键）\", \"ok\": false, \"http_status\": [200, 200], \"first_order_id\": 2638, \"second_order_id\": 2639, \"orders_in_db\": 2, \"same_id\": false}\n在零鉴权的前提下，这个接口同时也是「随便重发就能灌订单」的放大器。",
       "related": [],
       "note": "同一个 POST 发两次 → 两个订单 id、库里 2 行；没有幂等键，也没有业务键去重",
       "source": {
@@ -4547,7 +4498,7 @@
       "runtime_fidelity": "container",
       "severity": "INFO",
       "title": "上传失败时错误响应不泄露服务器文件系统路径",
-      "detail": "把上传目录破坏掉（products 目录换成一个普通文件，Files.createDirectories 必然失败）后，接口返回的是固定的业务错误，响应体里没有任何路径片段：\n{\"success\": false, \"code\": \"IMAGE_UPLOAD_FAILED\", \"message\": \"图片上传失败\", \"traceId\": \"064d0ab1-e2a1-4729-b2e0-5bfe78abf3c8\", \"timestamp\": \"2026-11-14T19:08:25.028588763+08:00\"}\n扫描的片段：[]（空 = 没泄露）。\n对照：文件层已开的 INTERNAL_LEAK（25 处）是**其它**接口把框架异常原文透传，上传这条是干净的。",
+      "detail": "把上传目录破坏掉（products 目录换成一个普通文件，Files.createDirectories 必然失败）后，接口返回的是固定的业务错误，响应体里没有任何路径片段：\n{\"success\": false, \"code\": \"IMAGE_UPLOAD_FAILED\", \"message\": \"图片上传失败\", \"traceId\": \"0362db13-759f-4408-8f5d-e4b9f0e46aa5\", \"timestamp\": \"2026-11-15T00:56:36.490861722+08:00\"}\n扫描的片段：[]（空 = 没泄露）。\n对照：文件层已开的 INTERNAL_LEAK（25 处）是**其它**接口把框架异常原文透传，上传这条是干净的。",
       "related": [],
       "note": "正面结论：把上传目录破坏掉后，响应是固定业务错误，扫不到任何路径片段",
       "source": {

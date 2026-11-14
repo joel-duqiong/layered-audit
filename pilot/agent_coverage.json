@@ -7,10 +7,10 @@
     "verified_ratio": 0.0846,
     "obligations": {
       "satisfied": 33,
-      "violated": 65,
+      "violated": 58,
       "unknown": 2055
     },
-    "root_causes_with_multiple_carriers": 12
+    "root_causes_with_multiple_carriers": 9
   },
   "top_blind_spots": [
     {
@@ -688,18 +688,11 @@
     "index.idx_products_name_unusable": [
       "service:api"
     ],
-    "order.added_items_existence_checked": [
-      "service:api"
-    ],
     "order.amount_consistent_when_not_overridden": [
       "service:api"
     ],
     "order.apply.amount_invariants_weak": [
-      "com.jiuyan.banquet.service.OrderService#apply",
-      "service:api"
-    ],
-    "order.banquet_type_not_checked_against_package": [
-      "service:api"
+      "com.jiuyan.banquet.service.OrderService#apply"
     ],
     "order.create.n_plus_one_per_item": [
       "service:api"
@@ -709,13 +702,6 @@
     ],
     "order.item_quantity_unvalidated": [
       "com.jiuyan.banquet.service.OrderService#normalizePackageItems"
-    ],
-    "order.snapshot.item_ownership_unchecked": [
-      "service:api"
-    ],
-    "order.status.transition_unconstrained": [
-      "BanquetOrder",
-      "com.jiuyan.banquet.entity.BanquetOrder"
     ],
     "order.update.no_concurrency_control": [
       "service:api"
@@ -740,8 +726,7 @@
       "service:api"
     ],
     "price.final_price.upper_bound_unvalidated": [
-      "com.jiuyan.banquet.service.OrderService#resolveFinalPrice",
-      "service:api"
+      "com.jiuyan.banquet.service.OrderService#resolveFinalPrice"
     ],
     "service.helpers.duplicated": [
       "com.jiuyan.banquet.service.OrderService"

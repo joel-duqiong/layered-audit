@@ -165,17 +165,12 @@
     }
   ],
   "layer_roles": {
-    "file": [
-      "file.cohesion",
-      "file.contract_alignment",
-      "file.error_handling_pattern",
-      "file.state_consistency"
-    ],
-    "function": [
-      "function.boundary",
-      "function.complexity",
-      "function.exception_path",
-      "function.numeric"
+    "integration": [
+      "integration.cross_layer_correlation",
+      "integration.cross_service_attack_chain",
+      "integration.cross_service_performance",
+      "integration.emergent_masking",
+      "integration.end_to_end_business"
     ],
     "service": [
       "service.authz",
@@ -191,12 +186,17 @@
       "class.inheritance_design",
       "class.invariant"
     ],
-    "integration": [
-      "integration.cross_layer_correlation",
-      "integration.cross_service_attack_chain",
-      "integration.cross_service_performance",
-      "integration.emergent_masking",
-      "integration.end_to_end_business"
+    "file": [
+      "file.cohesion",
+      "file.contract_alignment",
+      "file.error_handling_pattern",
+      "file.state_consistency"
+    ],
+    "function": [
+      "function.boundary",
+      "function.complexity",
+      "function.exception_path",
+      "function.numeric"
     ]
   },
   "counts": {
@@ -13904,24 +13904,22 @@
       "violated_categories": [],
       "case_ids": [],
       "finding_ids": [
-        "class:NO_STATE_MACHINE#0",
-        "class:NO_DATA_LIFECYCLE#5",
+        "class:NO_DATA_LIFECYCLE#4",
+        "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#5",
         "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#6",
         "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#7",
         "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#8",
         "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#9",
         "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#10",
-        "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#11",
-        "class:CLASS-NOTNULL-BYPASSED-BY-EMPTY-STRING#12",
-        "class:CLASS-REQUIRED-CHECKED-IN-SERVICE-LAYER#13",
-        "class:CLASS-ERROR-MESSAGE-MISMATCH#17"
+        "class:CLASS-NOTNULL-BYPASSED-BY-EMPTY-STRING#11",
+        "class:CLASS-REQUIRED-CHECKED-IN-SERVICE-LAYER#12",
+        "class:CLASS-ERROR-MESSAGE-MISMATCH#16"
       ],
       "root_cause_keys": [
         "db.notnull_bypassed_by_empty_string",
         "dto.required_check_missing",
         "entity.no_value_equality",
         "error.message_mismatch",
-        "order.status.transition_unconstrained",
         "orders.no_data_lifecycle"
       ],
       "obligation_template": "",
@@ -13950,8 +13948,8 @@
       "violated_categories": [],
       "case_ids": [],
       "finding_ids": [
-        "class:CLASS-ENCAPSULATION-LEAK-ENTITY-COLLECTION#2",
-        "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#16"
+        "class:CLASS-ENCAPSULATION-LEAK-ENTITY-COLLECTION#1",
+        "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#15"
       ],
       "root_cause_keys": [
         "banquet_package.items_exposed",
@@ -14118,8 +14116,8 @@
       "violated_categories": [],
       "case_ids": [],
       "finding_ids": [
-        "class:CLASS-PUT-WIPES-UNSET-FIELD#14",
-        "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#15"
+        "class:CLASS-PUT-WIPES-UNSET-FIELD#13",
+        "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#14"
       ],
       "root_cause_keys": [
         "api.put_full_overwrite",
@@ -14722,24 +14720,22 @@
       ],
       "case_ids": [],
       "finding_ids": [
-        "class:NO_STATE_MACHINE#0",
-        "class:NO_DATA_LIFECYCLE#5",
+        "class:NO_DATA_LIFECYCLE#4",
+        "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#5",
         "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#6",
         "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#7",
         "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#8",
         "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#9",
         "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#10",
-        "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#11",
-        "class:CLASS-NOTNULL-BYPASSED-BY-EMPTY-STRING#12",
-        "class:CLASS-REQUIRED-CHECKED-IN-SERVICE-LAYER#13",
-        "class:CLASS-ERROR-MESSAGE-MISMATCH#17"
+        "class:CLASS-NOTNULL-BYPASSED-BY-EMPTY-STRING#11",
+        "class:CLASS-REQUIRED-CHECKED-IN-SERVICE-LAYER#12",
+        "class:CLASS-ERROR-MESSAGE-MISMATCH#16"
       ],
       "root_cause_keys": [
         "db.notnull_bypassed_by_empty_string",
         "dto.required_check_missing",
         "entity.no_value_equality",
         "error.message_mismatch",
-        "order.status.transition_unconstrained",
         "orders.no_data_lifecycle"
       ],
       "obligation_template": "",
@@ -14770,8 +14766,8 @@
       ],
       "case_ids": [],
       "finding_ids": [
-        "class:CLASS-ENCAPSULATION-LEAK-ENTITY-COLLECTION#2",
-        "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#16"
+        "class:CLASS-ENCAPSULATION-LEAK-ENTITY-COLLECTION#1",
+        "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#15"
       ],
       "root_cause_keys": [
         "banquet_package.items_exposed",
@@ -14913,8 +14909,8 @@
       ],
       "case_ids": [],
       "finding_ids": [
-        "class:CLASS-PUT-WIPES-UNSET-FIELD#14",
-        "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#15"
+        "class:CLASS-PUT-WIPES-UNSET-FIELD#13",
+        "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#14"
       ],
       "root_cause_keys": [
         "api.put_full_overwrite",
@@ -14965,16 +14961,16 @@
         "service:INTERNAL_LEAK#7",
         "service:INTERNAL_LEAK#8",
         "service:INTERNAL_LEAK#9",
-        "class:INDEX_UNUSABLE_FOR_QUERY_PATTERN#1",
+        "class:INDEX_UNUSABLE_FOR_QUERY_PATTERN#0",
         "service:SVC-PAGINATION-COUNT-DISCARDED#0",
         "service:SVC-CONCURRENT-WRITE-LOST-UPDATE#0",
         "service:SVC-FAILED-WRITE-LEAVES-NO-PARTIAL-STATE#1",
         "service:SVC-POST-NOT-IDEMPOTENT#2",
-        "service:BI-DEPOSIT-LTE-FINAL-AMOUNT#0",
-        "service:BI-FINAL-AMOUNT-LTE-PACKAGE-PRICE#1",
-        "service:BI-BANQUET-TYPE-MATCH-PACKAGE#2",
-        "service:BI-SNAPSHOT-ITEMS-SUBSET-OF-PACKAGE#3",
-        "service:BI-NOT-FINAL-PRICE-AMOUNT-EQ-PLAN#4"
+        "service:BI-NOT-FINAL-PRICE-AMOUNT-EQ-PLAN#0",
+        "service:SVC-ORM-N-PLUS-ONE-ORDER-ITEMS#0",
+        "service:SVC-ORM-N-PLUS-ONE-PACKAGE-LIST#1",
+        "service:CFG-CORS-EMPTY-ALLOWS-ANY-ORIGIN#0",
+        "service:CFG-CORS-STAR-ALLOWS-ANY-ORIGIN#1"
       ],
       "root_cause_keys": [
         "authz.no_authorization_layer",
@@ -14985,18 +14981,13 @@
         "errhandler.client_error_mapped_to_500",
         "errhandler.internal_detail_leak",
         "index.idx_products_name_unusable",
-        "order.added_items_existence_checked",
         "order.amount_consistent_when_not_overridden",
-        "order.apply.amount_invariants_weak",
-        "order.banquet_type_not_checked_against_package",
         "order.create.n_plus_one_per_item",
         "order.create.not_idempotent",
-        "order.snapshot.item_ownership_unchecked",
         "order.update.no_concurrency_control",
         "order.update.transaction_boundary_holds",
         "package.list.n_plus_one_per_package",
         "pagination.count_total_computed_but_discarded",
-        "price.final_price.upper_bound_unvalidated",
         "spring.transaction_effectiveness_verified",
         "upload.error.no_path_leak"
       ],
