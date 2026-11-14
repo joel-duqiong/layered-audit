@@ -11,7 +11,7 @@
 影响半径超阈值），就一律 run —— 宁可多跑，不可漏跑。
 
 **退出码约定**（给 shell 用）：
-  0 = 该跑；1 = 该跳过；2 = 决策不出来（按「该跑」处理）
+  0 = 该跑；3 = 该跳过；2 = 决策不出来（按「该跑」处理）；1 = 执行错误
 """
 from __future__ import annotations
 
@@ -180,7 +180,7 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(description="增量调度决策")
     parser.add_argument("--should-run", metavar="LAYER",
-                        help="判断某层该不该跑（退出码 0=跑 1=跳过 2=不确定）")
+                        help="判断某层该不该跑（退出码 0=跑 3=跳过 2=不确定 1=错误）")
     parser.add_argument("--write", action="store_true", help="写出决策文件")
     parser.add_argument("--selftest", action="store_true", help="闸门自检")
     args = parser.parse_args()
@@ -200,7 +200,7 @@ def main() -> None:
         decision = layer["decision"]
         if decision == "skip":
             print(f"[增量] 跳过 {args.should_run}：{layer['reason']}")
-            raise SystemExit(1)
+            raise SystemExit(3)
         print(f"[增量] 跑 {args.should_run}：{layer['reason']}")
         raise SystemExit(0)
     print(f"增量决策 -> {PLAN_FILE}")

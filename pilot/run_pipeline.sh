@@ -11,22 +11,32 @@ if ! mkdir "$LOCK_DIR" 2>/dev/null; then
   echo "如确认没有进程在跑，手动 rm -rf $LOCK_DIR 后重试。"
   exit 2
 fi
-trap 'rmdir "$LOCK_DIR" 2>/dev/null || true' EXIT
+on_exit () {
+  local rc=$?
+  trap - EXIT
+  if [ "$rc" -ne 0 ]; then
+    echo "流水线未成功结束，检查探针残留（不自动删除）。" >&2
+    python3 probe_residue_check.py || echo "残留检查失败或发现残留，请查看上面的报告。" >&2
+  fi
+  rmdir "$LOCK_DIR" 2>/dev/null || true
+  exit "$rc"
+}
+trap on_exit EXIT
 # 增量调度：没受本次改动影响的层整层跳过（产物文件原样保留 = 复用上次的）。
-# 退出码：0=跑 1=跳过 2=判断不出来（按「跑」处理，宁可多跑不可漏跑）
+# 退出码：0=跑 3=跳过 2=判断不出来（按「跑」处理） 1=错误
 run_layer () {
   local layer="$1"; shift
   local rc=0
-  # A skip is encoded as exit 1. Capture it in a conditional context so
+  # A skip has its own exit code. Capture it in a conditional context so
   # `set -e` does not abort before the skip branch can run.
-  python3 engine/incremental_plan.py --should-run "$layer" >/dev/null 2>&1 || rc=$?
-  if [ "$rc" -eq 1 ]; then
-    echo "  [增量] 跳过 $layer（未受本次改动影响，复用上次产物）"
+  python3 engine/incremental_plan.py --should-run "$layer" >/dev/null || rc=$?
+  if [ "$rc" -eq 3 ]; then
+    echo "  [增量] 跳过 ${layer}（未受本次改动影响，复用上次产物）"
   elif [ "$rc" -eq 0 ] || [ "$rc" -eq 2 ]; then
     # Exit 2 means the plan cannot decide; follow the conservative run policy.
     "$@"
   else
-    echo "增量计划执行失败（layer=$layer, exit=$rc），停止流水线。" >&2
+    echo "增量计划执行失败（layer=${layer}, exit=${rc}），停止流水线。" >&2
     return "$rc"
   fi
 }
@@ -122,3 +132,6 @@ echo "=== 残留守卫（探针容器 / ai_ 行 / 非种子上传，必须全 0�
 # 先自检：守卫必须能证明自己抓得到（谓词写错时「0 行」是假的）
 python3 probe_residue_check.py --selftest
 python3 probe_residue_check.py
+if [ "$emergence_rc" -eq 2 ]; then
+  exit 2
+fi

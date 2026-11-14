@@ -123,15 +123,21 @@ def main() -> None:
         pending = [t for t in pending if t.task_id not in attempted]
         if not pending:
             break
-    merged = _merge_outputs()
+    merge_error = ""
+    try:
+        merged = _merge_outputs()
+    except Exception as exc:
+        merged = {}
+        merge_error = f"{type(exc).__name__}: {exc}"
     report = {
         "limits": limits,
         "tasks_total": len(load_tasks(TASKS_FILE)),
         "rounds": rounds,
         "merged_outputs": merged,
-        "all_done": not pending and not failed,
+        "all_done": not pending and not failed and not merge_error,
         "failed_tasks": failed,
-        "completion": "failed" if failed else "incomplete" if pending else "complete",
+        "completion": "failed" if failed or merge_error else "incomplete" if pending else "complete",
+        "merge_error": merge_error,
         "pending_task_ids": [t.task_id for t in pending],
     }
     REPORT.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -146,7 +152,9 @@ def main() -> None:
     if failed:
         print(f"  失败 {len(failed)} 个作业（不会自动重试）："
               f" {[t['task_id'] for t in failed]}")
-    if failed:
+    if merge_error:
+        print(f"  产物合并失败：{merge_error}")
+    if failed or merge_error:
         raise SystemExit(1)
     if pending:
         raise SystemExit(2)

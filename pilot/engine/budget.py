@@ -71,6 +71,7 @@ class BudgetLedger:
         chosen: set[str] = set()
 
         def take(t: ProbeTask) -> bool:
+            nonlocal used_tokens
             if t.task_id in chosen:
                 return False
             if len(result.admitted) >= self.max_agents:
@@ -79,6 +80,7 @@ class BudgetLedger:
                 return False
             chosen.add(t.task_id)
             result.admitted.append(t)
+            used_tokens += t.tokens
             return True
 
         # 第一轮：每个 oracle 先保一个最高优先任务（多样性保底）

@@ -109,12 +109,12 @@ def ai_row_counts() -> dict[str, int]:
 def upload_files() -> list[str]:
     container = app_container()
     if not container:
-        return []
+        raise RuntimeError("未配置应用容器，无法检查上传残留")
     try:
         return docker("exec", container, "find", upload_dir(), "-type", "f",
                       "-not", "-path", "*/seed/*").split()
-    except RuntimeError:
-        return []
+    except RuntimeError as exc:
+        raise RuntimeError(f"无法检查上传残留: {exc}") from exc
 
 
 def stray_dirs() -> list[str]:
@@ -136,14 +136,18 @@ def collect_problems() -> tuple[list[str], dict]:
             problems.append(f"残留 {table} 行 {n}")
         elif n < 0:
             problems.append(f"{table} 残留行数查不到（守卫失效，不算干净）")
-    uploads = upload_files()
-    if uploads:
-        problems.append(f"残留非种子上传文件 {len(uploads)} 个: {uploads[:5]}")
+    try:
+        uploads = upload_files()
+        if uploads:
+            problems.append(f"残留非种子上传文件 {len(uploads)} 个: {uploads[:5]}")
+    except RuntimeError as exc:
+        uploads = None
+        problems.append(str(exc))
     stray = stray_dirs()
     if stray:
         problems.append(f"工作目录里出现散落的落盘目录（探针写错了上传路径）: {stray}")
     detail = {"probe_containers": names, "ai_prefix_rows": counts,
-              "non_seed_uploads": len(uploads), "stray_dirs": stray}
+              "non_seed_uploads": len(uploads) if uploads is not None else None, "stray_dirs": stray}
     return problems, detail
 
 
