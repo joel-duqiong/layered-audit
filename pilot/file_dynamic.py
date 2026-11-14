@@ -139,7 +139,7 @@ def eval_check(chk: dict[str, Any], ctx: dict[str, Any]) -> dict[str, Any]:
 
 # --------------------------------------------------------------------- 主流程
 
-def main() -> None:
+def main() -> int:
     ap = argparse.ArgumentParser(description="文件层动态侧：通用 harness + 容器探针")
     ap.add_argument("--cases-file", default="",
                     help="用例文件（含打桩、构造与期望观测）；不给就用项目绑定的 file_cases")
@@ -198,6 +198,17 @@ def main() -> None:
     if detectors:
         print(f"  检查器 -> {det_out}")
 
+    # 清理失败必须判红。db_query 抛错只让错误可见，产物里记一条 deleted=-1
+    # 并不等于门禁失败 —— 而探针可能用种子客户名造数据，残留守卫按前缀查不到。
+    # 产物已落盘，证据不丢；退出码非 0 让流水线停下来。
+    bad = file_http_probe.cleanup_failures(http_raw)
+    if bad:
+        for b in bad:
+            print(f"  !! 探针清理失败：{b.get('table')} —— {b.get('error', '')}")
+        print("  文件层判红：探针未能自收干净")
+        return 1
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

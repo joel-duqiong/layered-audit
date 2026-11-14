@@ -146,6 +146,10 @@ def db_query(db: dict[str, Any], sql: str) -> str:
     rc = subprocess.run(
         ["docker", "exec", db["container"], "psql", "-U", db["user"], "-d", db["database"],
          "-tAc", sql], capture_output=True, text=True)
+    # 失败必须抛：以前只看 stdout，外键挡住 DELETE 时 stdout 是空的，
+    # 清理于是报「deleted 0」—— 看着干净，库里其实留着垃圾。
+    if rc.returncode != 0:
+        raise RuntimeError(f"psql 失败(rc={rc.returncode}): {rc.stderr.strip()[-300:]}")
     return rc.stdout.strip()
 
 
@@ -262,10 +266,17 @@ def run_cleanup(cfg: dict[str, Any], cleanups: list[dict[str, Any]],
     for c in cleanups:
         table = c.get("table", "")
         idc = c.get("id_column", "id")
+        if table not in baselines:
+            # 基线缺失绝不许退化成 0：`WHERE id > 0` 会删光种子数据。
+            # 宁可显式失败，也不许「看起来清理了」。
+            results.append({"table": table, "sql": c.get("sql", ""), "deleted": -1,
+                            "refused": True,
+                            "error": "基线水位缺失，拒绝执行清理（避免删掉种子数据）"})
+            continue
         sql = (c.get("sql", "")
                .replace("{table}", table)
                .replace("{id_column}", idc)
-               .replace("{max_id_before}", baselines.get(table, "0")))
+               .replace("{max_id_before}", baselines[table]))
         if not sql:
             continue
         try:
@@ -281,6 +292,17 @@ def run_cleanup(cfg: dict[str, Any], cleanups: list[dict[str, Any]],
     return results
 
 
+def cleanup_failures(http_raw: dict[str, Any]) -> list[dict[str, Any]]:
+    """清理失败的条目。deleted<0 表示 SQL 报错或被拒绝执行。
+
+    为什么需要它：db_query 抛错只让错误**可见**，产物里记一条 deleted=-1
+    并不等于判红。探针造的数据可能用种子客户名，残留守卫按前缀查不到 ——
+    没有任何检查消费这个字段的话，「零残留」就是假绿。
+    """
+    results = ((http_raw.get("_cleanup") or {}).get("results") or [])
+    return [r for r in results if int(r.get("deleted", 0)) < 0]
+
+
 def run(cfg: dict[str, Any]) -> dict[str, dict]:
     """跑完配置里的全部探针，返回 {探针 id: 原始观测}。
 
@@ -288,6 +310,9 @@ def run(cfg: dict[str, Any]) -> dict[str, dict]:
     """
     out: dict[str, dict] = {}
     cleanups = cfg.get("cleanup") or []
+    # 基线获取**故意**留在 try 之外：拿不到水位就不许跑写探针（fail-fast，此时
+    # 一行都还没造，没有残留）。挪进 try 会让 finally 拿着空基线去清理，
+    # 而空基线意味着 `WHERE id > 0` —— 删光种子数据。run_cleanup 另有兜底拒绝。
     baselines = cleanup_baselines(cfg, cleanups)
     try:
         for probe in cfg.get("probes", []):
