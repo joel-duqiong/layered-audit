@@ -1,0 +1,29 @@
+{
+  "schema": "business-rules/1",
+  "target": "jiuyan",
+  "note": "项目文档中的候选规则，尚未获用户逐条确认。字段名来自现有观测配置；不接入门禁。",
+  "rules": [
+    {
+      "id": "order.final_matches_plan_when_not_overridden",
+      "scope": "order",
+      "claim": "不使用成交价时，保存的成交金额等于方案合计。",
+      "source": {"kind": "document", "reference": "/Users/june/jiuyan/docs/API.md:335", "confirmation": "unconfirmed"},
+      "when": {"field": "use_final_price", "op": "eq", "value": false},
+      "assert": {"type": "field_eq_field", "left": "final_price_cent", "right": "plan_total_cent"}
+    },
+    {
+      "id": "order.deposit_nonnegative",
+      "scope": "order",
+      "claim": "定金金额不得小于零。",
+      "source": {"kind": "document", "reference": "/Users/june/jiuyan/AGENTS.md:202", "confirmation": "unconfirmed"},
+      "assert": {"type": "field_gte_const", "left": "deposit_cent", "value": 0}
+    },
+    {
+      "id": "order.deposit_vs_final_unconfirmed",
+      "scope": "order",
+      "claim": "定金与成交金额的大小关系尚待业务确认。",
+      "source": {"kind": "document", "reference": "/Users/june/tests/auto-api/docs/业务校验对照.md:60", "confirmation": "unconfirmed"},
+      "assert": {"type": "field_lte_field", "left": "deposit_cent", "right": "final_price_cent"}
+    }
+  ]
+}

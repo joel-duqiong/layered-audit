@@ -6,6 +6,7 @@
 > 原始目标见本文 §2；`VISION_AND_ROADMAP.md` 是待比较的候选架构；层契约以 `layers.yaml` 为准。
 > `CLAUDE.md` / `HANDOFF.md` 中的进度数字是历史记录，判断当前状态时要核对对应产物。**不要靠猜。**
 > demo D6 的业务后果尚无独立证据；方案比较及证据边界见 `EXPERIMENT_PROTOCOL.md`。
+> 旧业务不变式判定路径存在缺字段、无适用行和请求失败被误判为正面结论的风险；历史结果不能直接视作可靠门禁，见 `RULE_ONBOARDING.md`。
 
 ---
 
