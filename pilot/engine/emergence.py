@@ -44,10 +44,13 @@ VERDICT_MASKING = "EMERGENT_MASKING"
 VERDICT_NOT_INDEPENDENT = "NOT_EMERGENT_INDEPENDENT"
 VERDICT_NOT_ADDITIVE = "NOT_EMERGENT_ADDITIVE"
 VERDICT_FALSIFIED = "FALSIFIED_CHAIN"
+# 第八态：有场景执行失败 —— 「没测出来」不等于「没违反」，本链不予裁决、不开单
+VERDICT_UNDECIDABLE = "UNDECIDABLE"
 
 ALL_VERDICTS: tuple[str, ...] = (
     VERDICT_CONJUNCTIVE, VERDICT_CONJUNCTIVE_CORE, VERDICT_AMPLIFIED,
     VERDICT_MASKING, VERDICT_NOT_INDEPENDENT, VERDICT_NOT_ADDITIVE, VERDICT_FALSIFIED,
+    VERDICT_UNDECIDABLE,
 )
 
 # 三态：与 layers.yaml 的 ground_truth 枚举对齐
@@ -291,19 +294,38 @@ def load_catalog(path: str | Path) -> Catalog:
 # ------------------------------------------------------------------ 判定
 
 def _minimal_core(chain: Chain, executor: ScenarioExecutor,
-                  alive_ids: Sequence[str]) -> tuple[str, ...]:
+                  alive_ids: Sequence[str],
+                  observations: list[Observation]) -> tuple[str, ...]:
     """leave-one-out：逐个剔除注入，看目标不变式是否仍然被违反。
 
     结果是**包含意义下最小**的核心集：去掉任何一个成员，链就不再违反不变式。
+    每次探测的观测都进 observations —— 它执行失败时必须能被三态闸门看见。
     """
     core = list(alive_ids)
     for inj_id in sorted(alive_ids):
         candidate = tuple(x for x in core if x != inj_id)
         if not candidate:
             continue
-        if executor.run(chain, candidate).violated:
+        obs = executor.run(chain, candidate)
+        observations.append(obs)
+        if obs.violated:
             core = list(candidate)
     return tuple(core)
+
+
+def _undecidable(chain: Chain, observations: Sequence[Observation],
+                 alive_map: Mapping[str, bool], warnings: Sequence[str],
+                 failed: Sequence[Observation]) -> Judgement:
+    """执行失败的观测 -> UNDECIDABLE：不开单、ground_truth 降级、失败子集留痕。"""
+    detail = "；".join(
+        f"[{'+'.join(o.subset) or '基线'}] {o.detail or o.status}" for o in failed)
+    return Judgement(
+        chain_id=chain.id, verdict=VERDICT_UNDECIDABLE,
+        owner_layer="", owner_relation="", category="",
+        core=(), observations=tuple(observations), alive=alive_map,
+        warnings=tuple(warnings) + (f"场景执行失败，无法裁决: {detail}",),
+        rationale="有场景执行失败 —— 「没测出来」不等于「没违反」，本链不予裁决",
+        ground_truth=GT_UNVERIFIED, filings=())
 
 
 def _overlap(singles: Mapping[str, Observation], combined: Observation) -> bool:
@@ -414,16 +436,18 @@ def adjudicate(chain: Chain, executor: ScenarioExecutor, *,
 
     observations: list[Observation] = []
 
+    def undecidable() -> Judgement | None:
+        """三态闸门：凡是执行失败的观测，一律不许当成「没违反」。"""
+        failed = [o for o in observations if o.status != "ok"]
+        if not failed:
+            return None
+        return _undecidable(chain, observations, alive_map, warnings, failed)
+
     base = executor.run(chain, ())
     observations.append(base)
-    if base.status != "ok":
-        return Judgement(
-            chain_id=chain.id, verdict=VERDICT_FALSIFIED,
-            owner_layer="", owner_relation="", category="",
-            core=(), observations=tuple(observations), alive=alive_map,
-            warnings=tuple(warnings + [f"基线场景执行失败: {base.detail}"]),
-            rationale="基线场景执行失败，链的前提不成立",
-            ground_truth=GT_UNVERIFIED, filings=())
+    blocked = undecidable()
+    if blocked is not None:
+        return blocked
     if base.violated:
         warnings.append("基线（不注入任何条件）就已经违反目标不变式 —— 违反不是注入造成的")
         return Judgement(
@@ -442,6 +466,10 @@ def adjudicate(chain: Chain, executor: ScenarioExecutor, *,
         obs = executor.run(chain, (inj_id,))
         singles[inj_id] = obs
         observations.append(obs)
+
+    blocked = undecidable()
+    if blocked is not None:
+        return blocked
 
     triggered = [i for i in alive_ids if singles[i].violated]
     core: tuple[str, ...] = tuple(alive_ids)
@@ -478,7 +506,10 @@ def adjudicate(chain: Chain, executor: ScenarioExecutor, *,
             "合起来也不违反目标不变式，链的前提不成立", (), ())
 
     if not triggered:
-        core = _minimal_core(chain, executor, alive_ids)
+        core = _minimal_core(chain, executor, alive_ids, observations)
+        blocked = undecidable()
+        if blocked is not None:
+            return blocked
         if len(core) < len(alive_ids):
             v = VERDICT_CONJUNCTIVE_CORE
             rationale = (f"合起来违反目标不变式，每条单独都不违反；"
@@ -510,6 +541,9 @@ def adjudicate(chain: Chain, executor: ScenarioExecutor, *,
             observations.append(obs)
             if not obs.violated:
                 masking_pairs.append((t, other))
+    blocked = undecidable()
+    if blocked is not None:
+        return blocked
     if masking_pairs:
         masking_ids = sorted({b for _a, b in masking_pairs})
         fallback = injections[masking_pairs[0][1]].layer
