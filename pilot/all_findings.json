@@ -1637,7 +1637,7 @@
       "evidence_refs": [
         "findings.json#INTERNAL_LEAK"
       ],
-      "repro_cmd": "curl -X PATCH /api/orders/2192/status",
+      "repro_cmd": "curl -X PATCH /api/orders/2302/status",
       "repro_granularity": "request",
       "confidence": 0.92,
       "ground_truth": "verified",
@@ -1686,7 +1686,7 @@
       "evidence_refs": [
         "findings.json#INTERNAL_LEAK"
       ],
-      "repro_cmd": "curl -X PATCH /api/packages/428/status",
+      "repro_cmd": "curl -X PATCH /api/packages/444/status",
       "repro_granularity": "request",
       "confidence": 0.92,
       "ground_truth": "verified",
@@ -1735,7 +1735,7 @@
       "evidence_refs": [
         "findings.json#INTERNAL_LEAK"
       ],
-      "repro_cmd": "curl -X PATCH /api/products/4956576/status",
+      "repro_cmd": "curl -X PATCH /api/products/5206810/status",
       "repro_granularity": "request",
       "confidence": 0.92,
       "ground_truth": "verified",
@@ -1882,7 +1882,7 @@
       "evidence_refs": [
         "findings.json#INTERNAL_LEAK"
       ],
-      "repro_cmd": "curl -X PUT /api/packages/428",
+      "repro_cmd": "curl -X PUT /api/packages/444",
       "repro_granularity": "request",
       "confidence": 0.92,
       "ground_truth": "verified",
@@ -1931,7 +1931,7 @@
       "evidence_refs": [
         "findings.json#INTERNAL_LEAK"
       ],
-      "repro_cmd": "curl -X PUT /api/products/4956576",
+      "repro_cmd": "curl -X PUT /api/products/5206810",
       "repro_granularity": "request",
       "confidence": 0.92,
       "ground_truth": "verified",
@@ -2044,7 +2044,7 @@
       "kind": "defect",
       "runtime_fidelity": "hybrid",
       "severity": "HIGH",
-      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（8.094ms vs 0.013ms，差 623 倍）",
+      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.955ms vs 0.014ms，差 568 倍）",
       "detail": "迁移文件建了 products(name) 索引，但服务层关键词搜索写的是 lower(name) LIKE '%kw%'：lower() 让索引无法用于定位，前导 % 让 btree 本来也用不上。EXPLAIN 显示走 Filter 全量过滤而非 Index Cond。类层把索引交给服务层，但服务层不知道该怎么用它 —— 声明没有传递下去。",
       "related": [],
       "note": "检测在 class 层（实体与 DDL 对齐），归属层是 service（查询模式在服务层）",
@@ -3787,7 +3787,7 @@
       "runtime_fidelity": "container",
       "severity": "MEDIUM",
       "title": "分页 total 是纯开销：后端每次列表请求都跑 count(*) 全表扫描，前端从不读这个数",
-      "detail": "每个列表接口都带分页参数，后端对每次请求额外跑一条 count(*) 全表扫描（Seq Scan，因为 idx_products_name 对 lower(name) LIKE '%…%' 不可用）。实测数据量阶梯：30 行 → 6.22ms；2030 行 → 10.28ms；10030 行 → 19.27ms；50030 行 → 35.66ms。\n在 50030 行时，count(*) 单条耗时 14.526ms，占带 keyword 列表接口端到端延迟的 40.7%，占不带 keyword 接口的 45.4%。\n而前端 banquetApi.js 的 listProducts / listPackages / listOrders 三个函数一律只取 data.items.map(...)，total 从未被读取 —— 这份开销 100% 浪费。\n本轮判定「端到端延迟随数据量塌陷」为 PARTIALLY_CONFIRMED：延迟确实随数据量线性增长，但 50030 行时端到端仅 35.66ms，按每行 0.000713ms 折算，要到约 1402972 行才触及 1 秒预算。\n结论：结构性 O(N) 成立，但当前规模下后果未兑现 —— 真正该修的不是「加索引」，而是别让后端算一个没人要的数。",
+      "detail": "每个列表接口都带分页参数，后端对每次请求额外跑一条 count(*) 全表扫描（Seq Scan，因为 idx_products_name 对 lower(name) LIKE '%…%' 不可用）。实测数据量阶梯：30 行 → 7.11ms；2030 行 → 10.13ms；10030 行 → 16.82ms；50030 行 → 37.59ms。\n在 50030 行时，count(*) 单条耗时 17.934ms，占带 keyword 列表接口端到端延迟的 47.7%，占不带 keyword 接口的 45.7%。\n而前端 banquetApi.js 的 listProducts / listPackages / listOrders 三个函数一律只取 data.items.map(...)，total 从未被读取 —— 这份开销 100% 浪费。\n本轮判定「端到端延迟随数据量塌陷」为 PARTIALLY_CONFIRMED：延迟确实随数据量线性增长，但 50030 行时端到端仅 37.59ms，按每行 0.000751ms 折算，要到约 1330939 行才触及 1 秒预算。\n结论：结构性 O(N) 成立，但当前规模下后果未兑现 —— 真正该修的不是「加索引」，而是别让后端算一个没人要的数。",
       "related": [],
       "note": "实测 5 万行时 count(*) 占端到端 31%（带 keyword）/ 40%（不带 keyword）；前端 listProducts/listPackages/listOrders 三个函数都只取 items，total 从未被读",
       "source": {
@@ -3834,7 +3834,7 @@
       "runtime_fidelity": "container",
       "severity": "MEDIUM",
       "title": "三个列表接口每次都为前端丢弃的 total 付一次全表扫描",
-      "detail": "三个列表接口（GET /api/products、/api/packages、/api/orders）在集权层实测中，每次请求的 count(*) 部分占端到端延迟的 40.7%~45.4%，而这个 total 前端从头到尾没读过。\n也就是说：用户每翻一次列表，后端就多付一次全表扫描的钱，收益为零。同时前端把 page 固定成 1、pageSize 固定成 100，超出部分永远不可见 —— 分页机制在这条链路上同时是「成本」和「不可用」。",
+      "detail": "三个列表接口（GET /api/products、/api/packages、/api/orders）在集权层实测中，每次请求的 count(*) 部分占端到端延迟的 47.7%~45.7%，而这个 total 前端从头到尾没读过。\n也就是说：用户每翻一次列表，后端就多付一次全表扫描的钱，收益为零。同时前端把 page 固定成 1、pageSize 固定成 100，超出部分永远不可见 —— 分页机制在这条链路上同时是「成本」和「不可用」。",
       "related": [],
       "note": "链级后果归集成层，根因（后端白算一次 count）归服务层",
       "source": {
@@ -4024,7 +4024,7 @@
       "runtime_fidelity": "container",
       "severity": "MEDIUM",
       "title": "并发编辑同一订单会静默丢掉对方的修改：没有版本号、没有冲突检测",
-      "detail": "订单编辑走 PUT /api/orders/{id}，服务层在事务里整行覆盖，没有乐观锁（无 version / ETag / If-Match），也没有任何冲突检测。\n两个客户端同时编辑同一订单、各改一个字段时，后提交的那个用自己那份完整快照覆盖了整行，先提交的人的修改直接消失 —— 没有报错、没有冲突提示，两边都以为自己改成功了。\n实测：{\"property\": \"两个并发 PUT 分别改 customerPhone 与 address，最终行必须同时含两个新值\", \"ok\": false, \"order_id\": 2232, \"http_status\": {\"B\": 200, \"A\": 200}, \"final_row\": {\"remark\": \"ai_probe_conc_dc1_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc1_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13900000001\", \"final_price_cent\": 1}, \"phone_applied\": true, \"address_applied\": false, \"lost_update\": true}\n谈单场景下的具体后果：销售 A 改了成交价、销售 B 同时改了电话，A 的改价凭空消失，订单金额回到旧值，而 A 的界面显示他改成功了。",
+      "detail": "订单编辑走 PUT /api/orders/{id}，服务层在事务里整行覆盖，没有乐观锁（无 version / ETag / If-Match），也没有任何冲突检测。\n两个客户端同时编辑同一订单、各改一个字段时，后提交的那个用自己那份完整快照覆盖了整行，先提交的人的修改直接消失 —— 没有报错、没有冲突提示，两边都以为自己改成功了。\n实测：{\"property\": \"两个并发 PUT 分别改 customerPhone 与 address，最终行必须同时含两个新值\", \"ok\": false, \"order_id\": 2342, \"http_status\": {\"A\": 200, \"B\": 200}, \"final_row\": {\"remark\": \"ai_probe_conc_dc1_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_addr_concurrent\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"phone_applied\": false, \"address_applied\": true, \"lost_update\": true}\n谈单场景下的具体后果：销售 A 改了成交价、销售 B 同时改了电话，A 的改价凭空消失，订单金额回到旧值，而 A 的界面显示他改成功了。",
       "related": [],
       "note": "两个并发 PUT 各改一个字段，都返回 200，但最终行只含后写者的完整快照 —— 先写者的修改凭空消失，两边都以为自己成功了，没有任何冲突提示",
       "source": {
@@ -4071,7 +4071,7 @@
       "runtime_fidelity": "container",
       "severity": "INFO",
       "title": "被拒的写请求不会在订单行留下部分写入（事务边界有效）",
-      "detail": "同一个 PUT 里塞一个非法字段（tableCount=0，@Min(1) 拒绝）和一个合法字段的改动，服务返回 4xx 后，订单行与请求前逐字段一致 —— 没有出现「校验失败但另一部分已经写进去」的半截状态。\n实测：{\"property\": \"被拒的 PUT 不能在订单行留下任何部分写入\", \"ok\": true, \"order_id\": 2233, \"http_status\": 400, \"before\": {\"remark\": \"ai_probe_conc_dc2_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc2_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"after\": {\"remark\": \"ai_probe_conc_dc2_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc2_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"partial_write\": false}",
+      "detail": "同一个 PUT 里塞一个非法字段（tableCount=0，@Min(1) 拒绝）和一个合法字段的改动，服务返回 4xx 后，订单行与请求前逐字段一致 —— 没有出现「校验失败但另一部分已经写进去」的半截状态。\n实测：{\"property\": \"被拒的 PUT 不能在订单行留下任何部分写入\", \"ok\": true, \"order_id\": 2343, \"http_status\": 400, \"before\": {\"remark\": \"ai_probe_conc_dc2_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc2_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"after\": {\"remark\": \"ai_probe_conc_dc2_remark\", \"status\": \"PENDING\", \"address\": \"ai_probe_conc_dc2_addr\", \"deposit_cent\": 0, \"customer_phone\": \"13800000999\", \"final_price_cent\": 1}, \"partial_write\": false}",
       "related": [],
       "note": "正面结论：校验失败后订单行与请求前逐字段一致，没有半截写入",
       "source": {
@@ -4120,7 +4120,7 @@
       "runtime_fidelity": "container",
       "severity": "MEDIUM",
       "title": "下单接口没有幂等：同一个请求重发一次就产生两个订单",
-      "detail": "POST /api/orders 不接受也不返回幂等键，没有按业务键去重，也没有唯一约束能挡住重复。客户端在超时后重试（这是所有 HTTP 客户端的标准行为），就会多出一张订单。\n实测：{\"property\": \"同一个 POST 重发两次，只能有一个订单落库（POST 必须幂等或带幂等键）\", \"ok\": false, \"http_status\": [200, 200], \"first_order_id\": 2234, \"second_order_id\": 2235, \"orders_in_db\": 2, \"same_id\": false}\n在零鉴权的前提下，这个接口同时也是「随便重发就能灌订单」的放大器。",
+      "detail": "POST /api/orders 不接受也不返回幂等键，没有按业务键去重，也没有唯一约束能挡住重复。客户端在超时后重试（这是所有 HTTP 客户端的标准行为），就会多出一张订单。\n实测：{\"property\": \"同一个 POST 重发两次，只能有一个订单落库（POST 必须幂等或带幂等键）\", \"ok\": false, \"http_status\": [200, 200], \"first_order_id\": 2344, \"second_order_id\": 2345, \"orders_in_db\": 2, \"same_id\": false}\n在零鉴权的前提下，这个接口同时也是「随便重发就能灌订单」的放大器。",
       "related": [],
       "note": "同一个 POST 发两次 → 两个订单 id、库里 2 行；没有幂等键，也没有业务键去重",
       "source": {
@@ -4263,7 +4263,7 @@
       "runtime_fidelity": "container",
       "severity": "HIGH",
       "title": "订单定金是否不得超过订单本身的金额？",
-      "detail": "定金是订单金额里的一部分。定金大于订单金额，业务上不可能成立 —— 系统没有任何折扣或溢价模型能解释它。\n不变式：BI-DEPOSIT-LTE-FINAL-AMOUNT　判定原语：field_lte_field\n实测 6 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 2227,\n    \"type\": \"field_lte_field\",\n    \"left\": 999999,\n    \"right\": 1,\n    \"ok\": false,\n    \"scenario\": \"deposit_over\"\n  }\n]",
+      "detail": "定金是订单金额里的一部分。定金大于订单金额，业务上不可能成立 —— 系统没有任何折扣或溢价模型能解释它。\n不变式：BI-DEPOSIT-LTE-FINAL-AMOUNT　判定原语：field_lte_field\n实测 6 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 2337,\n    \"type\": \"field_lte_field\",\n    \"left\": 999999,\n    \"right\": 1,\n    \"ok\": false,\n    \"scenario\": \"deposit_over\"\n  }\n]",
       "related": [],
       "note": "根因已由函数层 FN-APPLY-AMOUNT-INVARIANTS 开单，这里用不变式给出可判定的证据",
       "source": {
@@ -4312,7 +4312,7 @@
       "runtime_fidelity": "container",
       "severity": "HIGH",
       "title": "订单金额是否不超过所选套餐的标价？",
-      "detail": "套餐价是系统里唯一的商品价格基准。订单金额高于套餐标价，等于凭空多收钱。\n不变式：BI-FINAL-AMOUNT-LTE-PACKAGE-PRICE　判定原语：field_lte_field\n实测 6 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 2229,\n    \"type\": \"field_lte_field\",\n    \"left\": 999999999,\n    \"right\": 46800,\n    \"ok\": false,\n    \"scenario\": \"over_pkg_price\"\n  }\n]",
+      "detail": "套餐价是系统里唯一的商品价格基准。订单金额高于套餐标价，等于凭空多收钱。\n不变式：BI-FINAL-AMOUNT-LTE-PACKAGE-PRICE　判定原语：field_lte_field\n实测 6 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 2339,\n    \"type\": \"field_lte_field\",\n    \"left\": 999999999,\n    \"right\": 46800,\n    \"ok\": false,\n    \"scenario\": \"over_pkg_price\"\n  }\n]",
       "related": [],
       "note": "根因已由函数层 FN-PRICE-CLIENT-CONTROLLED 开单，这里用不变式给出可判定的证据",
       "source": {
@@ -4359,7 +4359,7 @@
       "runtime_fidelity": "container",
       "severity": "MEDIUM",
       "title": "订单的宴会类型是否与所选套餐的宴会类型一致？",
-      "detail": "套餐带 banquetType（婚宴 / 满月酒 / 寿宴这类分类），订单也带 banquetType。两者指向同一场宴席就必须一致 —— 不一致就是数据自相矛盾（订单说婚宴、套餐说寿宴）。\n不变式：BI-BANQUET-TYPE-MATCH-PACKAGE　判定原语：field_eq_field\n实测 6 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 2230,\n    \"type\": \"field_eq_field\",\n    \"left\": \"寿宴\",\n    \"right\": \"升学宴\",\n    \"ok\": false,\n    \"scenario\": \"wrong_btype\"\n  }\n]",
+      "detail": "套餐带 banquetType（婚宴 / 满月酒 / 寿宴这类分类），订单也带 banquetType。两者指向同一场宴席就必须一致 —— 不一致就是数据自相矛盾（订单说婚宴、套餐说寿宴）。\n不变式：BI-BANQUET-TYPE-MATCH-PACKAGE　判定原语：field_eq_field\n实测 6 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 2340,\n    \"type\": \"field_eq_field\",\n    \"left\": \"寿宴\",\n    \"right\": \"升学宴\",\n    \"ok\": false,\n    \"scenario\": \"wrong_btype\"\n  }\n]",
       "related": [],
       "note": "订单 banquetType 直接取客户端值，服务层从不与所选套餐的 banquetType 比对；宴会类型是同一场宴席的分类，不一致就是数据自相矛盾（订单说婚宴、套餐说寿宴）",
       "source": {
@@ -4408,7 +4408,7 @@
       "runtime_fidelity": "container",
       "severity": "HIGH",
       "title": "订单快照里的明细是否都属于所选套餐？",
-      "detail": "快照是订单金额与交付内容的凭据。混进不属于该套餐的商品，快照就不再代表这份套餐。\n不变式：BI-SNAPSHOT-ITEMS-SUBSET-OF-PACKAGE　判定原语：jsonb_subset_of\n实测 6 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 2231,\n    \"type\": \"jsonb_subset_of\",\n    \"item_ids\": [\n      30\n    ],\n    \"ref_ids\": [\n      1,\n      4,\n      7,\n      10,\n      11,\n      13,\n      19,\n      21,\n      25,\n      26\n    ],\n    \"outside_ref\": [\n      30\n    ],\n    \"ok\": false,\n    \"scenario\": \"foreign_item\"\n  }\n]",
+      "detail": "快照是订单金额与交付内容的凭据。混进不属于该套餐的商品，快照就不再代表这份套餐。\n不变式：BI-SNAPSHOT-ITEMS-SUBSET-OF-PACKAGE　判定原语：jsonb_subset_of\n实测 6 个业务场景，违反 1 次：\n[\n  {\n    \"row_id\": 2341,\n    \"type\": \"jsonb_subset_of\",\n    \"item_ids\": [\n      30\n    ],\n    \"ref_ids\": [\n      1,\n      4,\n      7,\n      10,\n      11,\n      13,\n      19,\n      21,\n      25,\n      26\n    ],\n    \"outside_ref\": [\n      30\n    ],\n    \"ok\": false,\n    \"scenario\": \"foreign_item\"\n  }\n]",
       "related": [],
       "note": "根因已由函数层 FN-SNAPSHOT-SEMANTICS 开单，这里用不变式给出可判定的证据",
       "source": {
@@ -4788,7 +4788,7 @@
       "runtime_fidelity": "container",
       "severity": "INFO",
       "title": "上传失败时错误响应不泄露服务器文件系统路径",
-      "detail": "把上传目录破坏掉（products 目录换成一个普通文件，Files.createDirectories 必然失败）后，接口返回的是固定的业务错误，响应体里没有任何路径片段：\n{\"success\": false, \"code\": \"IMAGE_UPLOAD_FAILED\", \"message\": \"图片上传失败\", \"traceId\": \"5fce6493-a972-4d40-90dd-9d506603464c\", \"timestamp\": \"2026-11-08T22:43:14.252026626+08:00\"}\n扫描的片段：[]（空 = 没泄露）。\n对照：文件层已开的 INTERNAL_LEAK（25 处）是**其它**接口把框架异常原文透传，上传这条是干净的。",
+      "detail": "把上传目录破坏掉（products 目录换成一个普通文件，Files.createDirectories 必然失败）后，接口返回的是固定的业务错误，响应体里没有任何路径片段：\n{\"success\": false, \"code\": \"IMAGE_UPLOAD_FAILED\", \"message\": \"图片上传失败\", \"traceId\": \"ce2dacd9-8840-4f6e-ab5e-2f5d93ac3297\", \"timestamp\": \"2026-11-08T22:58:47.524512752+08:00\"}\n扫描的片段：[]（空 = 没泄露）。\n对照：文件层已开的 INTERNAL_LEAK（25 处）是**其它**接口把框架异常原文透传，上传这条是干净的。",
       "related": [],
       "note": "正面结论：把上传目录破坏掉后，响应是固定业务错误，扫不到任何路径片段",
       "source": {

@@ -29,11 +29,11 @@
     "id": "INDEX_UNUSABLE_FOR_QUERY_PATTERN",
     "severity": "HIGH",
     "layer": "class→service",
-    "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（8.094ms vs 0.013ms，差 623 倍）",
+    "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.955ms vs 0.014ms，差 568 倍）",
     "detail": "迁移文件建了 products(name) 索引，但服务层关键词搜索写的是 lower(name) LIKE '%kw%'：lower() 让索引无法用于定位，前导 % 让 btree 本来也用不上。EXPLAIN 显示走 Filter 全量过滤而非 Index Cond。类层把索引交给服务层，但服务层不知道该怎么用它 —— 声明没有传递下去。",
     "evidence": {
-      "like_prefix_lower_ms": 8.094,
-      "exact_equal_ms": 0.013,
+      "like_prefix_lower_ms": 7.955,
+      "exact_equal_ms": 0.014,
       "index_cond_present": true,
       "like_has_index_cond": false,
       "scale_rows": 50000
@@ -110,13 +110,13 @@
     "title": "软删除的行会被同名重建「复活」，id 与 sort_order 沿用旧值",
     "detail": "删除分类后用同名重建，命中的是同一条已软删记录（id 不变、sort_order 沿用旧的），而不是新建。DDL 的 UNIQUE(name) 与软删除语义冲突：删除不是删除，是可复活。id 复用会让历史引用（商品、订单快照）指向一个「看起来是新」的实体。",
     "evidence": {
-      "category": "ai_probe_cat_e3d64a",
+      "category": "ai_probe_cat_d9ad0a",
       "create": 200,
       "delete": 200,
       "recreate": 200,
       "db_rows": [
         [
-          "307",
+          "316",
           "f"
         ]
       ]
@@ -329,7 +329,7 @@
     "detail": "UpdateProductRequest.imageUrl 没有任何约束（可缺省），但 PUT 的语义是全量替换。实测：创建时带图片路径，随后一次不带 imageUrl 的 PUT 之后，image_url 变成 NULL。后果不是校验问题而是数据丢失 —— 磁盘上的图片文件还在，但数据库里的引用没了，文件成为孤儿，前端永远拿不到图。",
     "evidence": {
       "entity": "products",
-      "id": 5006581,
+      "id": 5256815,
       "changed_columns": [
         "description",
         "image_url",
@@ -340,15 +340,15 @@
         "updated_at"
       ],
       "final_row": {
-        "id": 5006581,
+        "id": 5256815,
         "name": "ai_probe_fp2",
         "unit": "克",
         "image_url": null,
         "is_active": false,
-        "created_at": "2026-11-08T14:42:29.518709+00:00",
+        "created_at": "2026-11-08T14:57:55.860076+00:00",
         "is_deleted": true,
         "price_cent": 9999,
-        "updated_at": "2026-11-08T14:42:29.906214+00:00",
+        "updated_at": "2026-11-08T14:57:56.181798+00:00",
         "category_id": 2,
         "description": "changed"
       }

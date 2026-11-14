@@ -21,6 +21,23 @@ from typing import Any
 from class_rules import render_json, render_text
 
 
+def _obs(obs: dict[str, Any], name: str, rule_id: str = "",
+         optional: bool = False) -> Any:
+    """取观测通道。
+
+    **必需**的通道缺了 → 说清楚是哪条规则要哪个通道（不抛裸 KeyError）。
+    **可选**的通道缺了 → 返回 None：这个探针本来就是项目可选的
+    （比如没有写操作的类就没有 write_footprint 探针），
+    缺了只是「这一项没得比」，不是「配错了」。
+    """
+    if name in obs:
+        return obs[name]
+    if optional:
+        return None
+    where = f"（规则 {rule_id}）" if rule_id else ""
+    raise KeyError(f"观测通道 {name!r} 不存在{where}；可用通道：{sorted(obs.keys())}")
+
+
 def camel_to_snake(name: str) -> str:
     return re.sub(r"(?<!^)(?=[A-Z])", "_", name).lower()
 
@@ -95,7 +112,7 @@ def diff_nullability(ctx: dict, cfg: dict) -> list[dict]:
 
     probe_by_label: dict[str, dict] = {}
     for group in ("contract_boundary", "nullability"):
-        for c in obs.get(group, []):
+        for c in _obs(obs, group, "contract_diff.nullability", optional=True) or []:
             probe_by_label[c["label"]] = c
 
     # 同一列在 Create/Update 两个 DTO 里都会出现，按 (表, 列) 去重后再比
@@ -187,7 +204,7 @@ def diff_rules(ctx: dict, cfg: dict) -> list[dict]:
     contract, obs = ctx["contract"], ctx["obs"]
     dtos = _dto_index(contract)
     db_tables = contract["db_actual"]["tables"]
-    probes = obs["defense_audit"]["constraint_probes"]
+    probes = _obs(obs, "defense_audit", "contract_diff.defense_audit")["constraint_probes"]
     dto_target: dict = cfg.get("dto_target", {})
 
     aligned_checks: list[dict] = []
@@ -283,7 +300,7 @@ def diff_write_footprint(ctx: dict, cfg: dict) -> list[dict]:
     missing_fk = wf.get("missing_fk_action_contains", "")
     wipes_cfg = wf.get("put_wipes")
     guarded_cfg = wf.get("put_guarded")
-    for w in obs.get("write_footprint", []):
+    for w in _obs(obs, "write_footprint", "contract_diff.write_footprint", optional=True) or []:
         steps = {s["action"]: s for s in w["steps"]}
         if wipes_cfg:
             put = next((s for a, s in steps.items()
@@ -321,7 +338,7 @@ def diff_error_contract(ctx: dict, cfg: dict) -> list[dict]:
     for rule in cfg.get("error_contract", []):
         prefix = rule.get("label_prefix", "")
         want_http = rule.get("http")
-        for c in obs.get("contract_boundary", []):
+        for c in _obs(obs, "contract_boundary", "contract_diff.contract_boundary", optional=True) or []:
             if not c["label"].startswith(prefix):
                 continue
             if want_http is not None and c["http"] != want_http:
