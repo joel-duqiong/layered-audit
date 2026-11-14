@@ -74,13 +74,26 @@ def run_round(tasks: list[ProbeTask], ledger: BudgetLedger, round_no: int) -> di
     admission = ledger.admit(tasks)
     executed: list[dict[str, Any]] = []
     for task in admission.admitted:
-        proc = subprocess.run(
-            ["python3", task.script, *task.argv],
-            capture_output=True, text=True, timeout=1800, cwd=str(PROJECT_DIR))
+        error = ""
+        try:
+            proc = subprocess.run(
+                ["python3", task.script, *task.argv],
+                capture_output=True, text=True, timeout=1800, cwd=str(PROJECT_DIR))
+            returncode = proc.returncode
+            stderr = proc.stderr
+        except subprocess.TimeoutExpired as exc:
+            returncode = 124
+            stderr = exc.stderr or ""
+            error = "timeout after 1800 seconds"
+        except OSError as exc:
+            returncode = 127
+            stderr = ""
+            error = f"could not start task: {exc}"
         executed.append({
             "task_id": task.task_id, "script": task.script, "oracle": task.oracle,
-            "returncode": proc.returncode,
-            "stderr_tail": proc.stderr.strip()[-200:] if proc.returncode else "",
+            "returncode": returncode,
+            "stderr_tail": str(stderr).strip()[-200:] if returncode else "",
+            "error": error,
         })
     return {
         "round": round_no,
@@ -97,13 +110,17 @@ def main() -> None:
                           max_tokens_per_round=limits["max_tokens_per_round"])
     pending = load_tasks(TASKS_FILE)
     rounds: list[dict[str, Any]] = []
+    failed: list[dict[str, Any]] = []
     round_no = 0
     while pending and round_no < 20:
         round_no += 1
         result = run_round(pending, ledger, round_no)
         rounds.append(result)
-        done = {e["task_id"] for e in result["executed"] if e["returncode"] == 0}
-        pending = [t for t in pending if t.task_id not in done]
+        # A failed task is recorded once, not retried automatically: probes may
+        # mutate databases, containers, or files, so retry safety is unknown.
+        attempted = {e["task_id"] for e in result["executed"]}
+        failed.extend(e for e in result["executed"] if e["returncode"] != 0)
+        pending = [t for t in pending if t.task_id not in attempted]
         if not pending:
             break
     merged = _merge_outputs()
@@ -112,7 +129,9 @@ def main() -> None:
         "tasks_total": len(load_tasks(TASKS_FILE)),
         "rounds": rounds,
         "merged_outputs": merged,
-        "all_done": not pending,
+        "all_done": not pending and not failed,
+        "failed_tasks": failed,
+        "completion": "failed" if failed else "incomplete" if pending else "complete",
         "pending_task_ids": [t.task_id for t in pending],
     }
     REPORT.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -124,6 +143,13 @@ def main() -> None:
     if pending:
         print(f"  未完成 {len(pending)} 个作业（预算不够，需下一轮或放宽 max_agents）："
               f" {[t.task_id for t in pending]}")
+    if failed:
+        print(f"  失败 {len(failed)} 个作业（不会自动重试）："
+              f" {[t['task_id'] for t in failed]}")
+    if failed:
+        raise SystemExit(1)
+    if pending:
+        raise SystemExit(2)
 
 
 def _contract_limits(contract: Path) -> dict[str, int]:

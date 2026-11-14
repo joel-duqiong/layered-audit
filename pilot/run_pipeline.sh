@@ -16,12 +16,18 @@ trap 'rmdir "$LOCK_DIR" 2>/dev/null || true' EXIT
 # 退出码：0=跑 1=跳过 2=判断不出来（按「跑」处理，宁可多跑不可漏跑）
 run_layer () {
   local layer="$1"; shift
-  python3 engine/incremental_plan.py --should-run "$layer" >/dev/null 2>&1
-  local rc=$?
+  local rc=0
+  # A skip is encoded as exit 1. Capture it in a conditional context so
+  # `set -e` does not abort before the skip branch can run.
+  python3 engine/incremental_plan.py --should-run "$layer" >/dev/null 2>&1 || rc=$?
   if [ "$rc" -eq 1 ]; then
     echo "  [增量] 跳过 $layer（未受本次改动影响，复用上次产物）"
-  else
+  elif [ "$rc" -eq 0 ] || [ "$rc" -eq 2 ]; then
+    # Exit 2 means the plan cannot decide; follow the conservative run policy.
     "$@"
+  else
+    echo "增量计划执行失败（layer=$layer, exit=$rc），停止流水线。" >&2
+    return "$rc"
   fi
 }
 
