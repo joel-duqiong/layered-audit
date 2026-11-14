@@ -3,8 +3,9 @@
 > **这个文件是给「下一个接手的人 / AI」看的。** 先读它，再读 `VISION_AND_ROADMAP.md`（目标架构与实施路线）、
 > `HANDOFF.md`（交接细节）、`EMERGENCE.md`（外部工作引用与映射）、`layers.yaml`（层契约，单一事实来源）。
 >
-> 原始目标见本文 §2，目标架构与路线以 `VISION_AND_ROADMAP.md` 为准；契约以 `layers.yaml` 为准。
+> 原始目标见本文 §2；`VISION_AND_ROADMAP.md` 是待比较的候选架构；层契约以 `layers.yaml` 为准。
 > `CLAUDE.md` / `HANDOFF.md` 中的进度数字是历史记录，判断当前状态时要核对对应产物。**不要靠猜。**
+> demo D6 的业务后果尚无独立证据；方案比较及证据边界见 `EXPERIMENT_PROTOCOL.md`。
 
 ---
 
