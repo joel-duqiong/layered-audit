@@ -194,7 +194,13 @@ class DemoExecutor:
                               and r["id"] not in excluded)
         detail = {r["id"]: {"violations": r["violations"], "checked": r["checked"],
                             "samples": r["failure_samples"]} for r in results}
-        return violated, magnitude, violated_ids, {"rows": rows, "invariants": detail}
+        # 目标判据检查了几行 —— 0 行意味着**不适用**，不是「没违反」。
+        # 不变式引擎已经用 ok=None 表达了这一点，这里不许把它压掉。
+        target_checked = int(target["checked"]) if target else 0
+        target_known = bool(target) and target["ok"] is not None
+        return violated, magnitude, violated_ids, {
+            "rows": rows, "invariants": detail, "target_checked": target_checked,
+            "target_known": target_known}
 
     # -- 引擎协议 --
 
@@ -210,6 +216,14 @@ class DemoExecutor:
                                          detail=detail)
         order_id = int(payload["id"])
         violated, magnitude, violated_ids, detail = self._judge(chain, order_id)
+        if not detail["target_known"]:
+            why = (f"目标判据 {chain.target_invariant} 在本组合下不适用或判不出"
+                   f"（when 适用域把这行排除了，或字段缺失）—— "
+                   f"「不适用」不是「没违反」，本观测不参与裁决")
+            self.scenario_log[subset] = {"subset": list(subset), "instance": instance,
+                                         "status": status, "error": why, **detail}
+            return emergence.Observation(subset=subset, violated=False,
+                                         status="not_applicable", detail=why)
         row = detail["rows"][0] if detail["rows"] else {}
         evidence = {
             "instance": instance,
