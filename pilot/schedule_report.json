@@ -183,84 +183,96 @@
           "script": "transaction_probe.py",
           "oracle": "trace_analysis",
           "returncode": 0,
-          "stderr_tail": ""
+          "stderr_tail": "",
+          "error": ""
         },
         {
           "task_id": "business-props",
           "script": "business_probe.py",
           "oracle": "property_based_test",
           "returncode": 0,
-          "stderr_tail": ""
+          "stderr_tail": "",
+          "error": ""
         },
         {
           "task_id": "perf-load-sweep",
           "script": "perf_load.py",
           "oracle": "load_test",
           "returncode": 0,
-          "stderr_tail": ""
+          "stderr_tail": "",
+          "error": ""
         },
         {
           "task_id": "concurrency-props",
           "script": "concurrency_props.py",
           "oracle": "concurrency_test",
           "returncode": 0,
-          "stderr_tail": ""
+          "stderr_tail": "",
+          "error": ""
         },
         {
           "task_id": "relation-net",
           "script": "engine/relation_net.py",
           "oracle": "graph_correlation",
           "returncode": 0,
-          "stderr_tail": ""
+          "stderr_tail": "",
+          "error": ""
         },
         {
           "task_id": "java-feature-scan",
           "script": "java_feature_scan.py",
           "oracle": "static_analysis",
           "returncode": 0,
-          "stderr_tail": ""
+          "stderr_tail": "",
+          "error": ""
         },
         {
           "task_id": "config-cors-empty",
           "script": "config_probe.py",
           "oracle": "chaos_experiment",
           "returncode": 0,
-          "stderr_tail": ""
+          "stderr_tail": "",
+          "error": ""
         },
         {
           "task_id": "mutation-MUT-DROP-DUPLICATE-ITEM-GUARD",
           "script": "mutation_test.py",
           "oracle": "mutation_test",
           "returncode": 0,
-          "stderr_tail": ""
+          "stderr_tail": "",
+          "error": ""
         },
         {
           "task_id": "numeric-props",
           "script": "numeric_props.py",
           "oracle": "property_based_test",
           "returncode": 0,
-          "stderr_tail": ""
+          "stderr_tail": "",
+          "error": ""
         },
         {
           "task_id": "config-cors-star",
           "script": "config_probe.py",
           "oracle": "chaos_experiment",
           "returncode": 0,
-          "stderr_tail": ""
+          "stderr_tail": "",
+          "error": ""
         },
         {
           "task_id": "orm-query-amplification",
           "script": "orm_query_probe.py",
           "oracle": "load_test",
           "returncode": 0,
-          "stderr_tail": ""
+          "stderr_tail": "",
+          "error": ""
         },
         {
           "task_id": "mutation-MUT-DROP-NEGATIVE-PRICE-GUARD",
           "script": "mutation_test.py",
           "oracle": "mutation_test",
           "returncode": 0,
-          "stderr_tail": ""
+          "stderr_tail": "",
+          "error": ""
         }
       ],
       "deferred": [
@@ -354,28 +366,32 @@
           "script": "mutation_test.py",
           "oracle": "mutation_test",
           "returncode": 0,
-          "stderr_tail": ""
+          "stderr_tail": "",
+          "error": ""
         },
         {
           "task_id": "config-upload-dir-broken",
           "script": "config_probe.py",
           "oracle": "chaos_experiment",
           "returncode": 0,
-          "stderr_tail": ""
+          "stderr_tail": "",
+          "error": ""
         },
         {
           "task_id": "config-upload-dir-bad",
           "script": "config_probe.py",
           "oracle": "chaos_experiment",
           "returncode": 0,
-          "stderr_tail": ""
+          "stderr_tail": "",
+          "error": ""
         },
         {
           "task_id": "config-upload-relative",
           "script": "config_probe.py",
           "oracle": "chaos_experiment",
           "returncode": 0,
-          "stderr_tail": ""
+          "stderr_tail": "",
+          "error": ""
         }
       ],
       "deferred": []
@@ -386,5 +402,8 @@
     "mutation_findings": 2
   },
   "all_done": true,
+  "failed_tasks": [],
+  "completion": "complete",
+  "merge_error": "",
   "pending_task_ids": []
 }

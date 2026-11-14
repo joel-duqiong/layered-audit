@@ -7,8 +7,8 @@
     "verified_ratio": 0.0846,
     "obligations": {
       "satisfied": 33,
-      "violated": 64,
-      "unknown": 2056
+      "violated": 65,
+      "unknown": 2055
     },
     "root_causes_with_multiple_carriers": 12
   },

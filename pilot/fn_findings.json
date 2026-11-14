@@ -4,8 +4,8 @@
     "carrier": "JVM 内反射直调（静态字节码 + 动态属性/边界用例）",
     "functions_declared": 461,
     "cases": 121,
-    "failed_cases": 31,
-    "passed_cases": 90,
+    "failed_cases": 35,
+    "passed_cases": 86,
     "total": 10,
     "by_severity": {
       "CRITICAL": 2,
@@ -511,40 +511,16 @@
       "actual": "期望 [2026-11-01, 2026-12-01)，实际 [2026-11-01, 2026-12-01)"
     },
     {
-      "case_id": "PDS-TODAY",
-      "function": "com.jiuyan.banquet.service.OrderService#parseDateScope",
-      "invariant": "TODAY 区间边界必须与独立实现一致",
-      "actual": "期望 [2026-11-08, 2026-11-09)，实际 [2026-11-08, 2026-11-09)"
-    },
-    {
-      "case_id": "PDS-WEEK",
-      "function": "com.jiuyan.banquet.service.OrderService#parseDateScope",
-      "invariant": "WEEK 区间边界必须与独立实现一致",
-      "actual": "期望 [2026-11-02, 2026-11-09)，实际 [2026-11-02, 2026-11-09)"
-    },
-    {
       "case_id": "PDS-bad",
       "function": "com.jiuyan.banquet.service.OrderService#parseDateScope",
       "invariant": "非法区间必须 400",
       "actual": "VALIDATION_ERROR / HTTP 400"
     },
     {
-      "case_id": "PDS-lower",
-      "function": "com.jiuyan.banquet.service.OrderService#parseDateScope",
-      "invariant": "大小写不敏感",
-      "actual": "期望 [2026-11-08, 2026-11-09)，实际 [2026-11-08, 2026-11-09)"
-    },
-    {
       "case_id": "PDS-null",
       "function": "com.jiuyan.banquet.service.OrderService#parseDateScope",
       "invariant": "空区间不过滤",
       "actual": "期望 null，实际 None"
-    },
-    {
-      "case_id": "PDS-trim",
-      "function": "com.jiuyan.banquet.service.OrderService#parseDateScope",
-      "invariant": "首尾空白需 trim",
-      "actual": "期望 [2026-11-08, 2026-11-09)，实际 [2026-11-08, 2026-11-09)"
     },
     {
       "case_id": "PG-PKG-01",

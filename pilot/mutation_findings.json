@@ -72,20 +72,6 @@
       "mutation_score": 0.0
     },
     {
-      "id": "MUT-DROP-DUPLICATE-ITEM-GUARD",
-      "status": "OK",
-      "desc": "删掉 normalizePackageItems 的「套餐商品不能重复」检查",
-      "should_kill": "NPI-*（套餐明细重复必须被拒）",
-      "killed_by_verdict": [
-        "NPI-03"
-      ],
-      "survived": [],
-      "changed_behaviour_cases": [
-        "NPI-03"
-      ],
-      "mutation_score": 1.0
-    },
-    {
       "id": "MUT-DROP-NEGATIVE-PRICE-GUARD",
       "status": "OK",
       "desc": "删掉 resolveFinalPrice 的「成交价不得为负」检查",
@@ -96,6 +82,20 @@
       "survived": [],
       "changed_behaviour_cases": [
         "RFP-04"
+      ],
+      "mutation_score": 1.0
+    },
+    {
+      "id": "MUT-DROP-DUPLICATE-ITEM-GUARD",
+      "status": "OK",
+      "desc": "删掉 normalizePackageItems 的「套餐商品不能重复」检查",
+      "should_kill": "NPI-*（套餐明细重复必须被拒）",
+      "killed_by_verdict": [
+        "NPI-03"
+      ],
+      "survived": [],
+      "changed_behaviour_cases": [
+        "NPI-03"
       ],
       "mutation_score": 1.0
     }

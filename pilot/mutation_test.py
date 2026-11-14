@@ -127,15 +127,24 @@ def _compile_mutant(mut: dict[str, Any], work: Path) -> Path | None:
     return out
 
 
-def _run_harness(classes: Path, cases_file: Path, obs_file: Path) -> list[dict[str, Any]] | None:
-    """用变异后的 class 跑 harness（classpath 覆盖：变异目录排最前）。"""
+def _run_harness(classes: Path, cases_file: Path, obs_file: Path) -> dict[str, Any] | None:
+    """用变异后的 class 跑通用 harness（classpath 覆盖：变异目录排最前）。
+
+    与函数层走**同一个** harness（`fn_harness/GenericHarness.java`）——
+    以前这里用的是旧的 `FunctionHarness`，而 `fn_dynamic.py` 切到通用 harness
+    之后就不再编译旧的那个了，于是变异测试悄悄坏掉（「基线 harness 跑不起来」）。
+    坏掉的那段时间，失败的作业被调度器静默重试掉了，没人发现。
+    """
     deps = (WORK / "deps.txt").read_text().strip()
-    cp = os.pathsep.join([str(WORK / "harness"), str(classes), str(WORK / "classes"), deps])
+    harness = fd.ensure_generic_harness()
+    cp = os.pathsep.join([harness[0], str(classes), str(WORK / "classes"), deps])
     proc = subprocess.run(
-        ["java", "-cp", cp, "FunctionHarness", str(cases_file), str(obs_file),
+        ["java", "-cp", cp, "GenericHarness", str(cases_file), str(obs_file),
          str(WORK / "uploads")],
         capture_output=True, text=True, timeout=300)
     if proc.returncode != 0:
+        print(f"  harness 失败（rc={proc.returncode}）: "
+              f"{(proc.stderr or proc.stdout or '')[-400:]}", file=sys.stderr)
         return None
     return json.loads(obs_file.read_text(encoding="utf-8"))
 
@@ -159,9 +168,13 @@ def main() -> None:
     SUT_SRC = backend / "src/main/java"
 
     fn_static.ensure_compiled()
-    cases = fd.build_cases()
+    # 用例直接读项目配置（与函数层同一个文件）—— 不再调 fd.build_cases()：
+    # 那条路径在切换到「用例文件驱动」之后已经不是函数层实际跑的那批用例了。
+    cases_path = project.project_dir() / project.path("fn_cases", "fn_cases.json")
+    spec = json.loads(cases_path.read_text(encoding="utf-8"))
+    cases = spec["cases"]
     cases_file = WORK / "cases.json"
-    cases_file.write_text(json.dumps(cases, ensure_ascii=False))
+    cases_file.write_text(json.dumps(spec, ensure_ascii=False))
 
     baseline_obs = _run_harness(WORK / "classes", cases_file, WORK / "observation_raw.json")
     if baseline_obs is None:

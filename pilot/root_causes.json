@@ -1,9 +1,9 @@
 {
   "generated_from": "aggregate_findings.py",
   "summary": {
-    "findings": 101,
-    "root_causes": 73,
-    "collapsed": 28,
+    "findings": 96,
+    "root_causes": 71,
+    "collapsed": 25,
     "violations": 1
   },
   "root_causes": [
@@ -15,34 +15,30 @@
       "categories": [
         "function.boundary",
         "function.numeric",
-        "integration.end_to_end_business",
-        "service.data_consistency"
+        "integration.end_to_end_business"
       ],
       "category_fit": [
         "exact",
         "stretched"
       ],
-      "finding_count": 6,
+      "finding_count": 5,
       "finding_uids": [
         "function:FN-PRICE-CLIENT-CONTROLLED#0",
         "function:FN-SEMANTIC-PRICE-UPPER-BOUND#9",
         "integration:PRICE_CLIENT_CONTROLLED_XL#2",
         "integration:INT-THREE-PRICES-NO-DETAIL-TOTAL#4",
-        "function:FN-NUMERIC-BIGINT-PRECISION-LOSS#2",
-        "service:BI-FINAL-AMOUNT-LTE-PACKAGE-PRICE#1"
+        "function:FN-NUMERIC-BIGINT-PRECISION-LOSS#2"
       ],
       "layers_own": [
         "function"
       ],
       "layers_all": [
         "function",
-        "service",
         "integration"
       ],
       "cited_from": [
         "function",
-        "integration",
-        "service"
+        "integration"
       ],
       "cwe": [
         "CWE-840"
@@ -50,7 +46,6 @@
       "confidence": 0.97,
       "ground_truth": "verified",
       "repro_cmds": [
-        "python3 business_probe.py",
         "python3 fn_dynamic.py --case APL-15",
         "python3 fn_dynamic.py --case OB-RESOLVE-PRICE-UPPER-BOUND",
         "python3 integration_chain.py --chain CHAIN-D",
@@ -63,7 +58,7 @@
       "evidence_fidelity": "stubbed",
       "fidelity_breakdown": {
         "stubbed": 3,
-        "container": 3
+        "container": 2
       },
       "related_root_causes": [
         "frontend.detail_total_not_surfaced"
@@ -219,60 +214,6 @@
       "related_root_causes": []
     },
     {
-      "root_cause_key": "order.snapshot.item_ownership_unchecked",
-      "title": "订单快照：明细归属不校验，空明细静默回退成套餐默认明细",
-      "severity": "HIGH",
-      "owner_layer": "function",
-      "categories": [
-        "function.boundary",
-        "integration.end_to_end_business",
-        "service.data_consistency"
-      ],
-      "category_fit": [
-        "exact",
-        "stretched"
-      ],
-      "finding_count": 3,
-      "finding_uids": [
-        "function:FN-SNAPSHOT-SEMANTICS#3",
-        "integration:PACKAGE_ITEM_NOT_VALIDATED#6",
-        "service:BI-SNAPSHOT-ITEMS-SUBSET-OF-PACKAGE#3"
-      ],
-      "layers_own": [
-        "function"
-      ],
-      "layers_all": [
-        "function",
-        "service",
-        "integration"
-      ],
-      "cited_from": [
-        "integration",
-        "service"
-      ],
-      "cwe": [
-        "CWE-20"
-      ],
-      "confidence": 0.94,
-      "ground_truth": "verified",
-      "repro_cmds": [
-        "python3 business_probe.py",
-        "python3 fn_dynamic.py --case APL-17",
-        "python3 integration_dynamic.py --scenario SC02_FOREIGN_ITEM_IN_PACKAGE"
-      ],
-      "violations": [],
-      "notes": [],
-      "merges": [],
-      "evidence_fidelity": "stubbed",
-      "fidelity_breakdown": {
-        "stubbed": 1,
-        "container": 2
-      },
-      "related_root_causes": [
-        "order.item_quantity_unvalidated"
-      ]
-    },
-    {
       "root_cause_key": "cors.allowed_origin_patterns_too_broad",
       "title": "CORS 白名单等于「整个内网 + 所有本地端口」，且全是明文 http",
       "severity": "HIGH",
@@ -362,40 +303,41 @@
       "related_root_causes": []
     },
     {
-      "root_cause_key": "order.apply.amount_invariants_weak",
-      "title": "apply 的金额/状态不变量只查了 >= 0：定金可以大于套餐总价，状态与预订时间可为空",
+      "root_cause_key": "order.snapshot.item_ownership_unchecked",
+      "title": "订单快照：明细归属不校验，空明细静默回退成套餐默认明细",
       "severity": "HIGH",
       "owner_layer": "function",
       "categories": [
         "function.boundary",
-        "service.data_consistency"
+        "integration.end_to_end_business"
       ],
       "category_fit": [
-        "exact"
+        "exact",
+        "stretched"
       ],
       "finding_count": 2,
       "finding_uids": [
-        "function:FN-APPLY-AMOUNT-INVARIANTS#4",
-        "service:BI-DEPOSIT-LTE-FINAL-AMOUNT#0"
+        "function:FN-SNAPSHOT-SEMANTICS#3",
+        "integration:PACKAGE_ITEM_NOT_VALIDATED#6"
       ],
       "layers_own": [
         "function"
       ],
       "layers_all": [
         "function",
-        "service"
+        "integration"
       ],
       "cited_from": [
-        "service"
+        "integration"
       ],
       "cwe": [
-        "CWE-840"
+        "CWE-20"
       ],
-      "confidence": 0.92,
+      "confidence": 0.94,
       "ground_truth": "verified",
       "repro_cmds": [
-        "python3 business_probe.py",
-        "python3 fn_dynamic.py --case APL-12"
+        "python3 fn_dynamic.py --case APL-17",
+        "python3 integration_dynamic.py --scenario SC02_FOREIGN_ITEM_IN_PACKAGE"
       ],
       "violations": [],
       "notes": [],
@@ -405,7 +347,9 @@
         "stubbed": 1,
         "container": 1
       },
-      "related_root_causes": []
+      "related_root_causes": [
+        "order.item_quantity_unvalidated"
+      ]
     },
     {
       "root_cause_key": "audit.client_ip_trusted_from_header",
@@ -562,7 +506,7 @@
     },
     {
       "root_cause_key": "index.idx_products_name_unusable",
-      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.955ms vs 0.014ms，差 568 倍）",
+      "title": "DDL 声明的 idx_products_name 对服务层查询模式无效（7.671ms vs 0.013ms，差 590 倍）",
       "severity": "HIGH",
       "owner_layer": "service",
       "categories": [
@@ -753,13 +697,13 @@
       "confidence": 0.92,
       "ground_truth": "verified",
       "repro_cmds": [
-        "curl -X PATCH /api/orders/2302/status",
-        "curl -X PATCH /api/packages/444/status",
-        "curl -X PATCH /api/products/5206810/status",
+        "curl -X PATCH /api/orders/2455/status",
+        "curl -X PATCH /api/packages/465/status",
+        "curl -X PATCH /api/products/5507153/status",
         "curl -X POST /api/packages",
         "curl -X POST /api/products",
-        "curl -X PUT /api/packages/444",
-        "curl -X PUT /api/products/5206810"
+        "curl -X PUT /api/packages/465",
+        "curl -X PUT /api/products/5507153"
       ],
       "violations": [],
       "notes": [],
@@ -1322,39 +1266,41 @@
       "related_root_causes": []
     },
     {
-      "root_cause_key": "order.banquet_type_not_checked_against_package",
-      "title": "订单的宴会类型是否与所选套餐的宴会类型一致？",
+      "root_cause_key": "order.apply.amount_invariants_weak",
+      "title": "apply 的金额/状态不变量只查了 >= 0：定金可以大于套餐总价，状态与预订时间可为空",
       "severity": "MEDIUM",
-      "owner_layer": "service",
+      "owner_layer": "function",
       "categories": [
-        "service.data_consistency"
+        "function.boundary"
       ],
       "category_fit": [
         "exact"
       ],
       "finding_count": 1,
       "finding_uids": [
-        "service:BI-BANQUET-TYPE-MATCH-PACKAGE#2"
+        "function:FN-APPLY-AMOUNT-INVARIANTS#4"
       ],
       "layers_own": [
-        "service"
+        "function"
       ],
       "layers_all": [
-        "service"
+        "function"
       ],
       "cited_from": [],
-      "cwe": [],
-      "confidence": 0.93,
+      "cwe": [
+        "CWE-840"
+      ],
+      "confidence": 0.92,
       "ground_truth": "verified",
       "repro_cmds": [
-        "python3 business_probe.py"
+        "python3 fn_dynamic.py --case APL-12"
       ],
       "violations": [],
       "notes": [],
       "merges": [],
-      "evidence_fidelity": "container",
+      "evidence_fidelity": "stubbed",
       "fidelity_breakdown": {
-        "container": 1
+        "stubbed": 1
       },
       "related_root_causes": []
     },
@@ -2513,43 +2459,6 @@
       "related_root_causes": []
     },
     {
-      "root_cause_key": "order.added_items_existence_checked",
-      "title": "加购明细里的商品是否都真实存在且未软删？",
-      "severity": "INFO",
-      "owner_layer": "service",
-      "categories": [
-        "service.data_consistency"
-      ],
-      "category_fit": [
-        "exact"
-      ],
-      "finding_count": 1,
-      "finding_uids": [
-        "service:BI-ADDED-ITEMS-EXIST#5"
-      ],
-      "layers_own": [
-        "service"
-      ],
-      "layers_all": [
-        "service"
-      ],
-      "cited_from": [],
-      "cwe": [],
-      "confidence": 0.9,
-      "ground_truth": "verified",
-      "repro_cmds": [
-        "python3 business_probe.py"
-      ],
-      "violations": [],
-      "notes": [],
-      "merges": [],
-      "evidence_fidelity": "container",
-      "fidelity_breakdown": {
-        "container": 1
-      },
-      "related_root_causes": []
-    },
-    {
       "root_cause_key": "order.amount_consistent_when_not_overridden",
       "title": "未使用成交价时，订单金额是否等于套餐总价？",
       "severity": "INFO",
@@ -2562,7 +2471,7 @@
       ],
       "finding_count": 1,
       "finding_uids": [
-        "service:BI-NOT-FINAL-PRICE-AMOUNT-EQ-PLAN#4"
+        "service:BI-NOT-FINAL-PRICE-AMOUNT-EQ-PLAN#0"
       ],
       "layers_own": [
         "service"
@@ -2903,7 +2812,7 @@
         "interface_contract": 11,
         "resilience": 2,
         "authz": 3,
-        "data_consistency": 9,
+        "data_consistency": 4,
         "resource_leak": 0,
         "service_latency": 3
       },
@@ -2976,10 +2885,7 @@
         "api.snapshot_structure_undeclared",
         "dto.unknown_field_silent_drop",
         "errhandler.internal_detail_leak",
-        "order.added_items_existence_checked",
         "order.amount_consistent_when_not_overridden",
-        "order.apply.amount_invariants_weak",
-        "order.banquet_type_not_checked_against_package",
         "order.create.n_plus_one_per_item",
         "order.create.not_idempotent",
         "order.item_quantity_unvalidated",
@@ -3024,7 +2930,7 @@
         "price.final_price.upper_bound_unvalidated"
       ]
     },
-    "root_cause_count": 73,
-    "finding_count": 101
+    "root_cause_count": 71,
+    "finding_count": 96
   }
 }
