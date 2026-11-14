@@ -89,7 +89,63 @@
 | **模型轨的产出被冻结成回归守卫（11 条）** | ✅ 模型在「应该拒绝什么」这个任务形态下连续两轮共提出 13 条断言，**11 条经确定性层跑通 + 人工复核源码后冻结进人工轨** —— 它们现在是**回归守卫**：那个「找不到就拒绝」「金额不能为负」的校验被删掉，断言就会红并开单。冻结后覆盖率 36 → **45（6.77% → 8.46%）**，且**没有新增缺陷**（守卫本来就成立 ✅） | `pilot/semantic_map.json`、`pilot/finding_meta.py` |
 | **类层补齐：接入类形状通用探针 + 第二载体复核** | ✅ ① `class_shape` 通用探针（继承/覆写后置条件/值相等/封装泄漏/缓存可变，纯反射不碰 DB）接进 **jiuyan** —— 类层 16 → 23 条，**新开 7 条真实发现**（6 实体缺值相等 + 1 封装泄漏），类别与归属都正确；② **第二载体复核**：文件载体（字节码）的 6 个通用检查器原本检出的是**类层类别**、无人消费 —— 现在把它的观测挂到类层结论上（同一结论被两个独立载体复现），没人认领的观测写成**覆盖缺口**（`class_carrier_gap.json`），项目可声明「已知不适用」并留理由。jiuyan：10 观测 → 复现 7 + 声明不适用 3 + **真缺口 0**；demo：10 观测 → 复现 7 + **真缺口 3** | `pilot/class_shape_probe.py`、`pilot/file_carrier.py`、`pilot/class_rules.py`、`pilot/class_diff.py`、`pilot/class_carrier_gap.json` |
 | **涌现维度接进流水线** | ✅ demo-shop 有了自己的流水线（类层 → 关系网 → 候选链 → 真跑裁决 → FDR 门禁 → 收口 → 残留守卫）；jiuyan 的流水线显式报告涌现维度（退出码 2 = 没查完，不是绿灯）。demo 流水线 exit 1 是**预期**：门禁把「根因只被引用、无人 own」的漏归属逼出来了 | `demos/shop/run_pipeline.sh`、`pilot/run_pipeline.sh` |
-| **涌现候选链生成器 + FDR 门禁** | ✅ 候选链生成（关系网 + 不变式 → **锚定已声明不变式**的可执行候选链：八条剪枝硬约束 + 枢纽度四维合成 + Monte-Carlo 级联估计，固定种子 20261107）；FDR 门禁（分母/分子/分母哈希/集合哈希/分类别 FDR/漏检清单，退出码 0 绿 / 1 红 / 2 没查完）。**demo-shop 实测**：生成候选 **2 条**（T3 ×2），已知链召回 **1/1 条件覆盖 full**，候选真跑裁决仍 `EMERGENT_CONJUNCTIVE`（核心集 INJ-TIER-VIP+INJ-PROFILE-VIP），门禁第一轮 **FDR_inj=0.500 / Attr_acc=0.500**（分母 2 / 检出 2 / 归属正确 1），漏检 `INJ-PROFILE-VIP`（service 层根因只被引用、无人 own 开单）→ 判红退出码 1；删掉检不出来的注入 FDR 会变 1.0，但分母哈希漂移照样判红。**第二轮补上 demo 的服务层后：FDR_inj=1.000 / Attr_acc=1.000 → GREEN**（见上一行） | `pilot/engine/emergence_candidates.py`、`pilot/engine/emergence_gate.py`、`demos/shop/emergence_candidate_run.py`、`pilot/emergence_baseline.json`、`pilot/EMERGENCE_CANDIDATES_RESULT.md` |
+| **涌现候选链生成器 + FDR 门禁** | ✅ 候选链生成（关系网 + 不变式 → **锚定已声明不变式**的可执行候选链：八条剪枝硬约束 + 枢纽度四维合成 + Monte-Carlo 级联估计，固定种子 20261107）；FDR 门禁（分母/分子/分母哈希/集合哈希/分类别 FDR/漏检清单，退出码 0 绿 / 1 红 / 2 没查完）。**demo-shop 实测**：生成候选 **2 条**（T3 ×2），已知链召回 **1/1 条件覆盖 full**，~~候选真跑裁决~~ **（2026-11-15 更正：当时真跑的是人写的链，候选只事后对槽位种类，见下方「候选链物化」一行）** 仍 `EMERGENT_CONJUNCTIVE`（核心集 INJ-TIER-VIP+INJ-PROFILE-VIP），门禁第一轮 **FDR_inj=0.500 / Attr_acc=0.500**（分母 2 / 检出 2 / 归属正确 1），漏检 `INJ-PROFILE-VIP`（service 层根因只被引用、无人 own 开单）→ 判红退出码 1；删掉检不出来的注入 FDR 会变 1.0，但分母哈希漂移照样判红。**第二轮补上 demo 的服务层后：FDR_inj=1.000 / Attr_acc=1.000 → GREEN**（见上一行） | `pilot/engine/emergence_candidates.py`、`pilot/engine/emergence_gate.py`、`demos/shop/emergence_candidate_run.py`、`pilot/emergence_baseline.json`、`pilot/EMERGENCE_CANDIDATES_RESULT.md` |
+
+### 本轮新增（2026-11-14 ~ 11-15：把编造清出去）
+
+| 块 | 状态 | 位置 |
+|---|---|---|
+| **oracle 门禁装在每一扇开单的门上** | ✅ 服务层之外，类层的两扇门也装上了（规则桶按 label 分桶 / 规则派发层通用闸门）。jiuyan 两条假 HIGH 被压下来：台账 **96 → 95**、根因 **71 → 70**、HIGH **12 → 11**；被压的结论进 `class_rule_suspects.json` 留痕（unconfirmed 1 / refuted 3），**不悄悄消失**。值相等/封装泄漏/自调用绕过代理这些语言级客观事实不受影响（闸门只对声明了 oracle 的规则生效） | `pilot/class_contract_diff.py`、`pilot/class_rules.py`、`pilot/class_diff.py`、`pilot/tests/test_class_rule_oracle.py`（16 条）、`test_class_diff_oracle_gate.py`（7 条） |
+| **涌现引擎第八态 `UNDECIDABLE`（D17）** | ✅ 执行失败不再被当成「没违反」—— 闸门装在基线 / 合起来+单注 / 留一法 / 成对组合四条路径上；留一法的观测也进证据列表。`UNDECIDABLE` 不在开单映射里，结构上不可能开单 | `pilot/engine/emergence.py`、`pilot/tests/test_emergence_unknown_status.py`（11 条） |
+| **demo D6 从「声明的缺陷」变成「真埋下去的缺陷」** | ✅ 实测推翻原判据（两个独立复核都表明单条件即触发，详见硬约束 5）。V3 建 `shop_quota_occupancy` / `shop_ledger_entry`，`QuotaService.occupy` 按报价写、`LedgerService.book` 按实付写 —— 判据这才有了实现依据，升 confirmed。裁决仍 `EMERGENT_CONJUNCTIVE`、核心集不变、门禁 **GREEN**（分母哈希 `6cd68a40b6a5d3b9` / 集合哈希 `8661e3c30899ed59` 与改前**逐字节一致**）、残留守卫 0、demo 流水线 exit 0 | `demos/shop/backend/.../V3__quota_occupancy_and_ledger.sql`、`QuotaService` / `LedgerService` / `OrderService`、`demos/shop/test_d6_fixture.py`（6 条） |
+| **服务层多出一条 cite 证据** | ✅ 判据升 confirmed 后，`BI-QUOTA-LEDGER-PARITY` 不再被门禁压住，服务层开出 **cite**（根因归 file，不重复开单）—— 实测 3 个场景只有「VIP 客户 + 会员装配」违反，left=900000 / right=810000 来自两条真实记录 | `demos/shop/artifacts/business_findings.json`、`demos/shop/finding_meta.py` |
+
+### 本轮新增（2026-11-15：让生成的候选自己驱动执行）
+
+| 块 | 状态 | 位置 |
+|---|---|---|
+| **更正：候选生成器此前不产生任何新东西** | ⚠️ 实测：它只提出 `data:table:shop_customer` 这样的**空槽位**，具体值 `level=VIP` 来自人写的注入目录；执行器 `for chain in catalog.chains` 遍历的是**人写的链**。所以「自动生成的候选链能自己抓出涌现」当时**没有证据**，「召回 1/1」量的是槽位种类重叠，不是独立发现。与 D6 编造同族：结论跑在证据前面 | `demos/shop/emergence_candidate_run.py:107,114`（旧行为，保留作对照轨） |
+| **候选链物化器（值不看答案）** | ✅ 候选的条件槽 → 具体注入：data 取库里该列的 DISTINCT 值、instance 取声明的装配清单、request 取声明的取值域。基线值不产生注入（空操作），候选没提出的槽位不凭空补，没取值源的槽位进 `unmatched` 留痕。**demo 实测：C0000 独立跑出 `EMERGENT_CONJUNCTIVE`，核心集 = GEN-INSTANCE-VIP + GEN-DATA-SHOP-CUSTOMER-LEVEL-VIP；C0001 判 `FALSIFIED_CHAIN`（基线即违反）—— 生成器能自己区分涌现与非涌现** | `pilot/engine/emergence_materialize.py`、`pilot/tests/test_emergence_materialize.py`（28 条）、`demos/shop/emergence_generated_run.py`、`value_sources.json`、`scenario_template.json` |
+| **适用域钉值（D18）** | ✅ 判据的 `when` 就是适用域声明，机器能读。被 `eq` 约束的字段钉在域内值上（含基线），不枚举出去 —— 否则观测被推出适用域，判据变「不适用」。列别名（`customer_level` vs `level`）由取值源 `read_as` 声明；钉不上的约束进 `unmatched_pins` 告警，不静默失效 | 同上 |
+| **三态漏洞：项目侧判据把「不适用」压成「没违反」** | ✅ 实测：注入 EUR 后 `BI-QUOTA-LEDGER-PARITY` 的 `when` 排除了该行，不变式引擎正确返回 `ok=None/checked=0`，但 `_judge` 压成 `violated=False, status=ok` → 判出**假 `FALSIFIED_CHAIN`**。修法：`ok is None` 一律 `status=not_applicable`，交给引擎的 UNDECIDABLE 闸门 | `demos/shop/emergence_probe.py`、`demos/shop/test_probe_three_state.py`（4 条） |
+| **静默失败：`db_query` 吞掉 psql 错误** | ✅ 实测：V3 的外键挡住文件层清理的 DELETE，psql rc=1 / stdout 空 → 清理报「deleted 0」看着干净。修法：rc≠0 直接抛。配套把文件层清理改成先删附属记录 | `pilot/file_http_probe.py`、`demos/shop/file_cases.json` |
+| **零残留漏洞：跨仓库探针用种子客户下单不删** | ✅ 实测：`xrepo_probe` 用种子客户 `demo-vip` 真下一单观测对端计数，从来不删；客户名没有 `ai_probe_` 前缀，**残留守卫按前缀查看不见它**。修法：按外键顺序自删，id 只接受纯数字（外部数据）。清理结果进产物与 stdout | `pilot/xrepo_probe.py`、`pilot/tests/test_xrepo_cleanup.py`（3 条） |
+| **demo 库回到种子基线** | ✅ 清掉历史残留后实测：**29 笔订单 / 0 条占用 / 0 条分录 / max id 923**，流水线跑完仍是这个数。门禁 GREEN，分母哈希 `6cd68a40b6a5d3b9` / 集合哈希 `8661e3c30899ed59` 不变 | `demos/shop/run_pipeline.sh` |
+
+**本轮实测汇总**：引擎测试 93 条 + 5 subtests 全过；demo 侧 10 条全过；三个纯度守卫 rc=0；
+涌现自证 35/35；demo 流水线 exit 0；残留守卫容器 0 / ai_ 行 0 / 非种子上传 0。
+
+**已知边界（不许当成已解决）**：
+- request 取值域仍是人声明的（`value_sources.json`），只有 data 值是机器从库里读的
+- demo 只有 2 条候选、取值域各 2 个值 —— 证明的是**机制成立**，不是规模能力
+- 残留守卫仍按 `ai_probe_` 前缀查，用种子客户的探针它看不见（本轮靠探针自删补上，守卫本身没改）
+
+### 独立审查补洞（2026-11-15：本轮新代码被审出 2 HIGH + 6 MEDIUM）
+
+把本轮新代码交给独立审查 agent（不给它我的结论，只给代码 + 五个我自己拿不准的点）。
+它用最小复现确认了 8 处缺陷，**两条 HIGH 恰好打在我声称已修好的「零残留」上**：
+
+| 级别 | 缺陷 | 修法 |
+|---|---|---|
+| HIGH | 跨仓库探针清理失败只打印，`main` 无退出码 → **exit 0**；且「200 但响应解析不出 id」被当成「没造数据」跳过清理，而 `@Transactional` 的 200 意味着订单已提交 | `residue_risks()` 纯函数 + `main` 返回 1；`_order_entry()` 补捕 `AttributeError`（响应是 list/标量时 `.get` 会崩在清理之前） |
+| HIGH | 文件层 `run_cleanup` 把 `db_query` 的异常降格成 `deleted=-1` 写进产物，**全仓库没有任何检查消费它** —— 我这轮只做到「错误可见」，没做到「判红」 | `cleanup_failures()` + `file_dynamic.main` 返回 1（产物先落盘，证据不丢） |
+| MEDIUM | `http_post` 只捕 `HTTPError`，不捕 `URLError`（两者不是父子，反向才是）。实例容器没起 → 异常穿透 → **绕过 D17 的 UNDECIDABLE 闸门**（闸门只消费 executor 返回的 Observation） | 补捕 `URLError/TimeoutError/OSError` → `(-1, {transport_error})`，走既有 error 分支 |
+| MEDIUM | 落库校验跨两条序列化链比字符串：reader 走 `to_jsonb`→JSON→Python（`numeric(10,2)` 的 100.00 变 `'100.0'`、boolean 的 true 变 `'True'`），校验走 `psql -tAc`（`'100.00'`/`'true'`）→ 已落库被判死 → 从分母剔除 → **真合取翻成假 FALSIFIED_CHAIN** | 比较交给 DB：`WHERE col = '字面量'` 由 Postgres 按列类型 coerce；字面量转义单引号 |
+| MEDIUM | `pins_from_when` 守卫用 `.get` 查 field/op，取值却硬下标 `clause["value"]` → 缺 value 的 eq 子句 `KeyError`。而 `invariants.applies` 用 `.get` 容忍它 —— **同一份配置判据引擎接受、物化器崩** | 缺 value / value 为 None 一律跳过（与 `applies` 语义对齐；`str(None)` 还会把基线污染成字面 `"None"`） |
+| MEDIUM | 钉值回写硬下标 flow 块，而 `build_domains` 对缺块是容忍的 → 同一份配置「无钉值时正常、有钉值时崩」 | 回写前检查块存在，钉不上留在 `unmatched_pins`，不静默当成钉好了 |
+| MEDIUM | 注入 id 不含表名 → 两张表同列名同取值时 id 相撞，第二条被 `setdefault` **静默丢掉** → 链少一个条件 → 假 FALSIFIED_CHAIN。违反模块自己声明的「不静默丢」 | id 纳入槽位（相邻重复段去掉，request/instance 的 id 不变） |
+
+**推回的一条建议**：审查建议把 `cleanup_baselines` 挪进 `try`（理由是基线查询失败会让整个文件层崩溃）。
+**这个修法会制造更大的洞**：`run_cleanup` 在基线缺失时把 `{max_id_before}` 替换成 `"0"`，
+SQL 就变成 `DELETE FROM shop_order WHERE id > 0` —— **删光种子数据**。
+现在它在 `try` 外抛错反而是安全的：写探针一个都没跑，没有残留。
+改成加固 `run_cleanup` 本身（基线缺失拒绝执行并记 `refused`），并在调用处写明为什么不能挪。
+
+**审查确认无问题的点**（不重复修）：三态修复本身正确（基线/单注/合起来任一路径 `not_applicable` 都判 UNDECIDABLE 且零开单）；
+`cleanup_statements` 的外键顺序正确；unicode 数字经 `int()` 归一后拼 SQL，无注入；
+`deepcopy` 覆盖全部 flow 回写路径，模板不可变性成立；物化取值确实不来自注入目录的 `chains`。
+
+补洞后实测：引擎测试 **112 条 + 5 subtests**（+19）、demo 侧 **16 条**（+6）、三个纯度守卫 rc=0。
 
 ### 规模数字（以 `pilot/root_causes.json` 为准）
 
@@ -128,7 +184,7 @@
 | **A** | **Agent 群不是真的「群」** —— 骨架有了，但没有编排/调度/并发 | 「有关系才调用，没关系不调用」未落地 | 🟡 骨架 ✅，编排 ❌ |
 | **B** | **增量更新** —— 影响分析能算了，但各层脚本还不能只跑受影响的靶区 | 「改一处只动一处」只完成一半 | 🟡 分析 ✅，调度 ❌（设计已出 `DESIGN.md` §5） |
 | **B2** | **载体的「动态侧」还有一层没通用化** | 换项目只能跑静态层，动态层要重写 | 🟡 函数层 / 类层 / 文件层的**探针**已通用化，服务层的 `contract_probe.py` 与 `contract_diff.py` 已通用；**还差**：函数层与文件层的差分判定层仍是项目专属（`fn_diff.py` / `file_diff.py`）|
-| **C** | **涌现目前只有 1 条真链** —— 图 ✅ 裁决器 ✅ **候选链生成 ✅ FDR 门禁 ✅（本轮补上）**：demo-shop 上自动生成的候选已能命中那条真涌现（召回 1/1，真跑仍 `EMERGENT_CONJUNCTIVE`）。但**场景物化还是人给的**（候选只提出条件槽，schema 驱动的造数器没做）、七个模式只命中 T3、jiuyan 尚无注入目录（门禁对 jiuyan 退出码 2） | 系统的存在理由目前兑现了 1/∞ | 🟡 设计 ✅ 裁决 ✅ 链生成 ✅ 门禁 ✅；造数器 ❌ 模式覆盖 ❌ |
+| **C** | **涌现目前只有 1 条真链** —— 图 ✅ 裁决器 ✅ 候选链生成 ✅ FDR 门禁 ✅ **物化器 ✅（2026-11-15 补上）**：候选的条件槽现在能自己长出值（库内 DISTINCT + 装配清单 + 声明的取值域），并按判据 `when` 钉住适用域。**demo 实测：生成的候选独立跑出 `EMERGENT_CONJUNCTIVE`，另一条判 `FALSIFIED_CHAIN` —— 不看答案也能区分涌现与非涌现**。**还差**：request 取值域仍是人声明的；候选只有 2 条、取值域各 2 个值（机制成立 ≠ 规模能力）；七个模式只命中 T3；jiuyan 尚无注入目录（门禁对 jiuyan 退出码 2） | 系统的存在理由目前兑现了 1/∞ | 🟡 设计 ✅ 裁决 ✅ 链生成 ✅ 门禁 ✅ 物化 ✅；取值域自动化 ❌ 规模 ❌ 模式覆盖 ❌ |
 | **B16** | **跨仓库的涌现链** | 🟡 demo 的跨仓库**探针**通了（面清单 + 跨仓库图 + 契约漂移 + 归属），跨仓库的**缺陷**也开出来了（文件层 own 的「汇率兜底量纲错」）；但**跨仓库的涌现链**（两个仓库的条件组合才出问题）还没做 —— 关系网目前只画单仓库 | 与 B10 同一条线：候选链生成器换一张跨仓库的图 |
 | **D** | **语义地图** —— 结构有了，「这个函数是干什么的」要变成**可执行断言** | Agent 的「使命」只有一半 | 🟡 断言编译 + 执行已通（**10 条职责 / 9 单元**，其中 2 条由模型轨提出、人工复核后冻结为**回归守卫**）；**模型轨真跑通了**（任务书 → 封闭模板目录 → 编译四道闸 → 真跑 → advisory），**隔离性做成了可执行证明**：把模型写的自由文本换成垃圾，编译出的断言逐字节一致（D2）；模型的候选开不出缺陷单（`all_findings` 仍是 100 条，含 OB-MODEL 的 0 条）。**关键经验**：任务形态决定质量 —— 问「应该拒绝什么」（错误码可枚举）产出的断言可用，问「应该返回什么」只产出一堆 `not_null` | `pilot/semantic_model_brief.py`、`pilot/semantic_model_report.py`、`pilot/SEMANTIC_MODEL_TRACK.md` |
 | **E** | **跨仓库** —— 只会审一个仓库 | 「两群 Agent 互相调用」未实现 | 🟡 骨架 ✅（面清单 + 跨仓库图 + 契约漂移 + 归属），实测 2 仓库 / 1 条确认边 / 0 漂移；**跨仓库涌现还没做** |
@@ -170,6 +226,54 @@
      而 `QuotaService` 只比较不记录占用、`LedgerService` 只写订单字段、没有独立账本
 
    **没有业务规则时，系统可以列出风险，但不能编造预期然后用它证明程序错。**
+
+   **推论的推论（2026-11-14 补）：oracle 门禁必须装在「每一扇开单的门」上，
+   不是只装一扇。** 第一次只改了服务层 `business_verdict.py`，结果类层走
+   `class_scenarios.json` 的另一份规则清单**完全绕过门禁**，两条 HIGH 继续
+   标着 `ground_truth=verified` 在编造预期：
+
+   | 假 HIGH | 文档原话 |
+   |---|---|
+   | `CLASS-RULE-MISSING-IN-ALL-LAYERS`（4 条规则） | 第 65 行「定金与成交价的大小关系：当前只要求各自 >= 0」、第 62 行「预约时间是否允许过去时间」—— 都在「当前未定义」标题下 |
+   | `NO_STATE_MACHINE`（9/9 迁移全接受） | 第 64 行「订单状态流转限制：当前允许任意状态直接切换」—— 同样列为未定义 |
+
+   现在两扇门都装上了：
+   · `class_contract_diff.rule_oracle_buckets` —— 规则三层全缺，按 `contract_diff.rule_oracles`（按 label 索引）分桶
+   · `class_rules.oracle_gate` —— 规则派发层通用闸门，**只对声明了 oracle 的规则生效**
+     （值相等/封装泄漏/自调用绕过代理是语言级客观事实，不需要业务预期，不能误伤）
+
+   被压下来的结论进 `class_rule_suspects.json` 留痕，**不悄悄消失**
+   （对照 `class_carrier_gap.json` 的先例）。
+   锁在 `pilot/tests/test_class_rule_oracle.py`（16 条）与
+   `pilot/tests/test_class_diff_oracle_gate.py`（7 条）。
+
+   **关键区分：「三层都没有这条规则」是客观观测；「所以这是缺陷」需要业务预期。**
+   修好后 jiuyan 那条 HIGH 从「4 条规则」缩到「1 条」（手机号格式，文档 P1
+   明确「前端有校验，后端没有，建议修复」，已有 XFAIL 用例）—— 这一条是真的。
+
+   **实现依据（2026-11-15 补）：判据必须有实现依据 —— 声明了却没埋进实现的缺陷，
+   等于编造。** demo 的 D6「真涌现」写在 README 与 `OrderService.create` 的注释里
+   （「额度被占住 900000，账上只有 810000，差 90000 无对应账目」），但实测源码：
+   `QuotaService.withinLimit` 只返回 boolean、`LedgerService.record` 只 set 订单字段
+   —— **没有占用记录，也没有独立账本**。判据 `BI-QUOTA-LEDGER-PARITY`
+   oracle=unconfirmed，建立在它之上的 `EMERGENT_CONJUNCTIVE` 是编造的真值表。
+
+   两个独立复核都推翻了「合取」：
+
+   | 换成什么判据 | 实测 | 结论 |
+   |---|---|---|
+   | `BI-VIP-MEMBER-PRICE`（源码注释「会员价：VIP 九折」确认） | 只注 VIP 客户就违反 | 单条件即触发，不是合取 |
+   | 部署不变性（同请求换部署，业务结果必须相同） | 只注 VIP 客户就分叉：default 900000 / vip 810000 | 同上 |
+
+   处置：**把声明的缺陷真正埋进夹具** —— V3 迁移建 `shop_quota_occupancy` /
+   `shop_ledger_entry`，`QuotaService.occupy` 按报价写、`LedgerService.book` 按实付写，
+   两个服务单独看都履行了自己的契约。判据这才有了实现依据，升为 confirmed。
+   夹具契约锁在 `demos/shop/test_d6_fixture.py`（6 条：两条记录各自落地、
+   两个单条件都不分裂、只有合取才差 90000、零残留覆盖两张新表）。
+
+   **没有走的路**：换一个判据去凑出想要的真值表。部署不变性判据只要「无条件比较
+   两个部署」就能凑出合取，但那是把测量轴偷偷塞进判据 —— 编造换个地方继续。
+
 6. **归属唯一**：owner = 能给出可复现证据的最低层；高层可引用低层但不得重复开单。
 7. **commit 前先展示 diff 等确认；不自动 push。**
 8. **代码/日志/commit 里不出现密钥、token、密码、JWT。**
@@ -210,6 +314,7 @@ python3 engine/check_engine_purity.py   # 引擎纯净度守卫（退出码 1 = 
 | `pilot/file_carrier.py` | **第二载体复核**：把文件载体的观测挂到类层结论上，并算出「有观测但没人开单」的覆盖缺口 |
 | `pilot/class_carrier_gap.json` | 覆盖缺口清单（无人认领的观测 + 项目声明不适用的观测及理由） |
 | `pilot/engine/emergence_candidates.py` / `emergence_gate.py` / `relation_net.py` / `surface.py` | 涌现候选链生成 / FDR 门禁 / 通用可执行依赖图 / 跨仓库面清单与归属 |
+| `pilot/engine/emergence_materialize.py` | 候选条件槽 → 具体注入（值取自被测系统自身，按判据 `when` 钉适用域）|
 | `pilot/baselines/` | **等价性基线**：通用化改造前的结论快照，让「通用化没回归」永远可复核 |
 | `pilot/mutation_findings.json` | 变异测试结果（killed / survived） |
 | `pilot/target.json` 的 `carriers` | 每个载体「能观察到什么 / 观察不到什么」+ 保真度 |
@@ -265,6 +370,8 @@ python3 engine/check_engine_purity.py   # 引擎纯净度守卫（退出码 1 = 
 | **D10** | **classpath 覆盖可行** → 变异测试证明力完整 | `fn_dynamic` 的 classpath 是 `[harness, CLASSES, deps]`，变异目录插到最前即可 | ✅ 已实现 `mutation_test.py` |
 | **D15** | **两个载体看到同一件事时，结论由「契约里类别所属的层」开单，另一个载体只做复核** | 文件层载体检出的类别（封装泄漏/不变式/继承设计/契约违反）全属类层 —— 让文件层开单是越界开单，让两层都开单违反「不得重复开单」。所以低层观测挂到高层结论的证据上（两个独立载体复现同一结论），**没人认领的观测必须变成覆盖缺口清单，不能让它悄悄消失** | ✅ `pilot/file_carrier.py` + `class_carrier_gap.json` |
 | **D16** | **「没查完」要能被看见，且不能伪装成绿灯** | jiuyan 没有注入目录 ⇒ 涌现维度根本没检查过。决议 D8 要求「没查完」与「查了没问题」区分开：流水线显式打出来 + 覆盖度矩阵里该类别零覆盖 + 门禁第三态退出码 2，三处口径一致 | ✅ `pilot/run_pipeline.sh` 涌现步骤 |
+| **D17** | **执行失败的观测一律判 `UNDECIDABLE`（第八态），不许当成「没违反」** | 引擎原先只检查**基线**的 status，`combined` / 单注 / 留一法 / 成对组合全看 `.violated` —— 一次 502 会被当成「这个条件不触发」，判出**假的 EMERGENT_CONJUNCTIVE**。与「字段名拼错得到一张通过的成绩单」同族。留一法的观测现在也进证据列表，否则它失败了没人看得见 | ✅ `engine/emergence.py` 的 `undecidable()` 闸门装在四条执行路径上；`UNDECIDABLE` 不在 `VERDICT_FILING` 里（结构上不可能开单）；锁在 `pilot/tests/test_emergence_unknown_status.py`（11 条，含「全 ok 时裁决一个字不许变」的回归） |
+| **D18** | **判据的 `when` 是适用域，物化时钉住，不许枚举出去** | 枚举把观测推出适用域后，判据返回「不适用」—— 而「不适用」不是「没违反」。实测：注入 EUR 让 `BI-QUOTA-LEDGER-PARITY` 不适用，旧代码压成「没违反」，判出假 `FALSIFIED_CHAIN`。决议：① 被 `eq` 约束的字段钉在域内值上（**含基线**，否则基线观测就不适用）；② 只有 `eq` 能钉出单一值，`gt/lt` 不猜；③ 列别名由取值源 `read_as` 声明；④ 钉不上的约束进 `unmatched_pins` 告警。配套：项目侧判据 `ok is None` 一律 `not_applicable`，交给 D17 的闸门 | ✅ `engine/emergence_materialize.py`（`pins_from_when` / `read_as` / 基线改写）；锁在 `pilot/tests/test_emergence_materialize.py`（28 条）与 `demos/shop/test_probe_three_state.py`（4 条） |
 
 ## 9. 我砍掉了什么（独立判断记录）
 
