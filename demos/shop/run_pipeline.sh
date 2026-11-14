@@ -58,6 +58,9 @@ python3 engine/emergence_candidates.py \
 echo "=== 涌现：候选链真跑裁决（真容器 + 真库 + 零残留自证）==="
 python3 "$DEMO/emergence_candidate_run.py"
 
+echo "=== 涌现：物化链真跑（值由被测系统自身枚举，不看答案）==="
+python3 "$DEMO/emergence_generated_run.py"
+
 echo "=== 证据归一化 + 根因聚合 ==="
 normalize_rc=0
 python3 engine/normalize_findings.py || normalize_rc=$?

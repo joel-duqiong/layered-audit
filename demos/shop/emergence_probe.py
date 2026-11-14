@@ -97,6 +97,12 @@ def http_post(base_url: str, path: str, body: dict[str, Any]) -> tuple[int, Any]
             return exc.code, json.loads(raw)
         except ValueError:
             return exc.code, raw
+    except (urllib.error.URLError, TimeoutError, OSError) as exc:
+        # 连接级失败（容器没起 / 超时）必须变成可裁决的观测，不许炸进程 ——
+        # D17 的 UNDECIDABLE 闸门只消费 executor **返回的** Observation，
+        # 异常穿透就没有 Observation，三态保证在这条路上不成立。
+        # HTTPError 是 URLError 的子类，所以这一条必须排在它后面。
+        return -1, {"transport_error": f"{type(exc).__name__}: {exc}"}
 
 
 # ------------------------------------------------------------------ 执行器
@@ -244,6 +250,50 @@ class DemoExecutor:
                                      violated_invariants=tuple(violated_ids),
                                      evidence=evidence)
 
+    def _alive_applied(self, chain: emergence.Chain,
+                       injection: emergence.Injection) -> emergence.AliveResult:
+        """answer-free 活性检查：条件**施加成功**即活，不预设症状。
+
+        物化链用这一种。手写的 `scenario` 活性检查更强（断言单独注入就该看到
+        某个症状），但它要知道答案；而且「单独 inert、合起来才起作用」的条件
+        会被它判成死注入 —— 那恰恰是涌现。所以物化链只验「施加上了没有」：
+        下单成功，且数据类注入的值真的落进了库。
+
+        这是**更弱**的判据，不是等价替代：它证明条件到达了系统，
+        不证明条件造成了什么。造成什么由留一法去测。
+        """
+        self._reset(chain)
+        instance, overrides = self._apply(chain, (injection.id,))
+        status, payload = self._place(chain, instance, overrides)
+        if status != 200 or not isinstance(payload, dict) or "id" not in payload:
+            detail = f"施加后下单失败 http={status} 响应={payload}"
+            self.alive_log[injection.id] = {"status": status, "error": detail}
+            return emergence.AliveResult(injection.id, False, detail=detail)
+
+        mutation = injection.mutation
+        evidence: dict[str, Any] = {"instance": instance, "http_status": status,
+                                    "order_id": int(payload["id"]), "overrides": overrides}
+        if mutation.get("kind") == "data":
+            cust = chain.flow["customer"]["name"]
+            for column, value in (mutation.get("set") or {}).items():
+                assert IDENT.match(column), f"{injection.id}: 非法列名 {column}"
+                # 比较交给 DB：reader 走 to_jsonb->JSON->Python（numeric(10,2) 的
+                # 100.00 变 '100.0'、boolean 的 true 变 'True'），psql -tAc 走另一条
+                # 序列化链。跨链比字符串会把「已落库」误判成死注入，进而翻转裁决。
+                # 未定型字面量由 Postgres 按列类型 coerce，两条链的差异就不存在了。
+                literal = str(value).replace("'", "''")
+                applied = self.db.exec(
+                    f"SELECT count(*) FROM shop_customer WHERE name = '{cust}' "
+                    f"AND {column} = '{literal}'")
+                evidence[f"db_{column}_applied"] = applied
+                if applied != "1":
+                    detail = f"数据注入没落库：{column} 期望 {value}，库内匹配行数 {applied}"
+                    self.alive_log[injection.id] = {**evidence, "error": detail}
+                    return emergence.AliveResult(injection.id, False, detail=detail)
+        self.alive_log[injection.id] = evidence
+        return emergence.AliveResult(injection.id, True, evidence=evidence,
+                                     detail="条件施加成功（下单成功且注入值已生效）")
+
     def alive(self, chain: emergence.Chain, injection: emergence.Injection) -> emergence.AliveResult:
         """活性检查：证明这条注入代表的条件在当前环境里是活的。
 
@@ -252,6 +302,8 @@ class DemoExecutor:
         从分母剔除并告警。
         """
         check = injection.alive_check
+        if check.get("kind") == "applied":
+            return self._alive_applied(chain, injection)
         if check.get("kind") != "scenario":
             return emergence.AliveResult(injection.id, False,
                                          detail=f"未知的活性检查类型 {check.get('kind')}")

@@ -1,0 +1,27 @@
+{
+  "schema": "emergence-values/1",
+  "note": "物化取值源（项目侧）。data 段的值由探针从库里读 DISTINCT，不写死；request 段是声明的取值域 —— 这一项仍是人给的，是本方案的已知边界，不是机器推出来的。两处都不含「哪个值会触发缺陷」的信息。",
+  "data": [
+    {
+      "table": "shop_customer",
+      "target": "customer",
+      "columns": [
+        "level"
+      ],
+      "read_as": {
+        "level": "customer_level"
+      },
+      "why": "判据的 when 用读出来的列别名 customer_level，注入用真实列名 level —— 别名在这里声明，钉值才对得上"
+    }
+  ],
+  "request": [
+    {
+      "field": "currency",
+      "values": [
+        "CNY",
+        "EUR"
+      ],
+      "why": "系统接受的币种域。种子订单只有 CNY，fx 服务对非 CNY 一律返回 92 —— 域本身来自接口契约，不来自缺陷答案。"
+    }
+  ]
+}

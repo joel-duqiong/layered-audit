@@ -1,0 +1,12 @@
+{
+  "schema": "emergence-template/1",
+  "note": "物化模板（项目侧）：怎么在这个系统里下一单，以及基线长什么样。**不含答案** —— 没有 VIP、没有 vip 装配、没有 EUR。那些值由物化器从取值源枚举出来。",
+  "entity": "order",
+  "baseline_instance": "default",
+  "injection_layer": "service",
+  "location": {"endpoint": "POST /api/orders", "symbol": "OrderService.create"},
+  "flow": {
+    "customer": {"name": "ai_probe_gen_cust", "level": "NORMAL", "creditLimitCent": 1000000},
+    "orders": [{"quotedAmountCent": 900000, "currency": "CNY"}]
+  }
+}
