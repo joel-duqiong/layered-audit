@@ -138,7 +138,8 @@
           },
           "active": false
         }
-      ]
+      ],
+      "notes": "判据依据（2026-11-15 补齐）：BI-QUOTA-LEDGER-PARITY 比较的是两条**真实落地的记录** —— shop_quota_occupancy（QuotaService.occupy 按报价写）与 shop_ledger_entry（LedgerService.book 按实付写），V3 迁移建表。在此之前 QuotaService 只比较不记录、LedgerService 只写订单字段，本链的判据没有实现依据（oracle=unconfirmed），裁决出的合取真值表是编造的；夹具契约现锁在 demos/shop/test_d6_fixture.py。"
     }
   ]
 }

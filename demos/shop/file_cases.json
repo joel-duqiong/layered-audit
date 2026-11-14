@@ -603,6 +603,18 @@
     ],
     "cleanup": [
       {
+        "table": "shop_quota_occupancy",
+        "id_column": "id",
+        "sql": "DELETE FROM {table} WHERE {id_column} > {max_id_before}",
+        "note": "订单的附属记录，外键指向 shop_order —— 必须先删它，否则订单删不掉"
+      },
+      {
+        "table": "shop_ledger_entry",
+        "id_column": "id",
+        "sql": "DELETE FROM {table} WHERE {id_column} > {max_id_before}",
+        "note": "订单的附属记录，外键指向 shop_order —— 必须先删它，否则订单删不掉"
+      },
+      {
         "table": "shop_order",
         "id_column": "id",
         "sql": "DELETE FROM {table} WHERE {id_column} > {max_id_before} AND quoted_amount_cent = 888888"

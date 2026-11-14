@@ -67,6 +67,10 @@ public class OrderService {
         ledgerService.record(order, settled);
         order.touch("system");
         ShopOrder saved = orderRepository.save(order);
+        // 两条记录各自落地：额度按报价占、账本按实付记。
+        // 每个服务单独看都履行了自己的契约 —— 对不上是合起来才出现的事。
+        quotaService.occupy(saved, request.quotedAmountCent());
+        ledgerService.book(saved, settled);
         return new OrderResponse(saved.getId(), saved.getQuotedAmountCent(),
                 saved.getSettledAmountCent(), saved.getStatus());
     }

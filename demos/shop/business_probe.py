@@ -35,7 +35,7 @@ for p in (str(PILOT), str(PILOT / "engine"), str(HERE)):
 
 import emergence  # noqa: E402
 from engine import business_verdict  # noqa: E402
-from emergence_probe import Db, http_post  # noqa: E402
+from emergence_probe import Db, _delete_probe_orders, http_post  # noqa: E402
 
 CATALOG_FILE = HERE / "emergence_injections.json"
 INVARIANTS_FILE = HERE / "invariants.json"
@@ -54,7 +54,7 @@ def seed_customers(db: Db) -> tuple[str, str]:
     """造两个探针客户：一个普通、一个 VIP。额度给足，避免额度检查先挡下来。"""
     normal = f"{PFX}biz_normal"
     vip = f"{PFX}biz_vip"
-    db.exec(f"DELETE FROM shop_order WHERE starts_with(customer_name, '{PFX}')")
+    _delete_probe_orders(db, f"starts_with(customer_name, '{PFX}')")
     db.exec(f"DELETE FROM shop_customer WHERE starts_with(name, '{PFX}')")
     for cust in (_customer(normal, "NORMAL"), _customer(vip, "VIP")):
         db.exec(f"INSERT INTO shop_customer(name, level, credit_limit_cent) VALUES "
@@ -87,7 +87,7 @@ def make_scenarios(normal: str, vip: str) -> list[dict[str, Any]]:
 
 
 def cleanup(db: Db) -> int:
-    db.exec(f"DELETE FROM shop_order WHERE starts_with(customer_name, '{PFX}')")
+    _delete_probe_orders(db, f"starts_with(customer_name, '{PFX}')")
     db.exec(f"DELETE FROM shop_customer WHERE starts_with(name, '{PFX}')")
     left = db.exec(f"SELECT count(*) FROM shop_order WHERE starts_with(customer_name, '{PFX}')")
     return int(left or 0)

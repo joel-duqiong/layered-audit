@@ -4,7 +4,7 @@
   "entities": [
     {
       "name": "order",
-      "read_sql": "SELECT o.id, o.customer_name, c.level AS customer_level, o.quoted_amount_cent, o.settled_amount_cent, o.currency, o.quoted_amount_cent * 9 / 10 AS expected_member_price_cent FROM shop_order o JOIN shop_customer c ON c.name = o.customer_name WHERE o.id IN ({ids})"
+      "read_sql": "SELECT o.id, o.customer_name, c.level AS customer_level, o.quoted_amount_cent, o.settled_amount_cent, o.currency, o.quoted_amount_cent * 9 / 10 AS expected_member_price_cent, q.amount_cent AS occupancy_amount_cent, l.amount_cent AS ledger_amount_cent FROM shop_order o JOIN shop_customer c ON c.name = o.customer_name LEFT JOIN shop_quota_occupancy q ON q.order_id = o.id LEFT JOIN shop_ledger_entry l ON l.order_id = o.id WHERE o.id IN ({ids})"
     }
   ],
   "invariants": [
@@ -13,24 +13,24 @@
       "entity": "order",
       "severity": "HIGH",
       "category": "service.data_consistency",
-      "claim": "基准币种下，额度占用额（报价）与账本记录额（实付）是否相等？",
-      "why": "授信额度按客户报价检查并占住，账本按实付记录。两个口径必须相等 —— 不相等就意味着「额度被占住了，却没有对应的账目」，差额就是被白占的额度。",
+      "claim": "同一笔订单的额度占用记录与账本分录，金额是否对得上？",
+      "why": "额度占用按下单报价记一笔（QuotaService.occupy），账本按实际结算记一笔（LedgerService.book）。两条记录说的是同一笔交易，金额必须对得上 —— 对不上就意味着「额度被占住了，却没有对应的账目」，差额就是被白占的额度。",
       "assert": {
         "type": "field_eq_field",
-        "left": "quoted_amount_cent",
-        "right": "settled_amount_cent"
+        "left": "occupancy_amount_cent",
+        "right": "ledger_amount_cent"
       },
-      "note": "限定在基准币种 —— 非基准币种的口径对齐是另一条（BI-FX-BASIS-ALIGNMENT），因为那里的差额来自**另一个仓库**返回的汇率，不是本仓库的折扣",
+      "note": "限定在基准币种 —— 非基准币种的口径对齐是另一条（BI-FX-BASIS-ALIGNMENT），因为那里的差额来自**另一个仓库**返回的汇率，不是本仓库的折扣。两条记录缺失（LEFT JOIN 取不到）时按三态判 unknown，不许当成相等。",
       "when": {
         "field": "currency",
         "op": "eq",
         "value": "CNY"
       },
       "oracle": {
-        "source": "inferred",
-        "confirmation": "unconfirmed",
-        "reference": "无实现依据：QuotaService.withinLimit 只比较金额不记录占用；LedgerService.record 只写订单字段，没有独立账本",
-        "note": "「额度占用额必须等于账本记录额」是**演示设计里的假设**，代码里没有对应的实体。观测（quoted != settled）是真的，但「这算不算缺陷」要业务方确认 —— 不进台账"
+        "source": "document",
+        "confirmation": "confirmed",
+        "reference": "demos/shop/README.md「D6：真正的涌现」+ OrderService.create 的类注释（「额度按大的口径占，账按小的口径记 ⇒ 额度被占住却没有对应账目」）；实现依据：V3__quota_occupancy_and_ledger.sql 两张记录表 + QuotaService.occupy / LedgerService.book",
+        "note": "2026-11-15 之前这条是 unconfirmed：当时 QuotaService 只比较不记录、LedgerService 只写订单字段，声明的缺陷没有实现依据，判据是编造的。现在两条记录各自落地（夹具契约锁在 demos/shop/test_d6_fixture.py），规则由夹具自己的设计文档声明 —— 与 BI-VIP-MEMBER-PRICE 同一档依据。"
       }
     },
     {
@@ -90,5 +90,5 @@
       }
     }
   ],
-  "oracle_policy_note": "每条不变式必须声明 oracle 来源。只有 confirmation=confirmed 的才允许进缺陷台账。「额度占用额 == 账本记录额」这类假设没有实现支撑，只能作为待确认疑点。"
+  "oracle_policy_note": "每条不变式必须声明 oracle 来源。只有 confirmation=confirmed 的才允许进缺陷台账。没有实现支撑的假设只能作为待确认疑点 —— BI-FX-BASIS-ALIGNMENT 仍是这一档。BI-QUOTA-LEDGER-PARITY 原先也是这一档（声明了缺陷但没埋进实现），2026-11-15 补上 V3 的两张记录表后才有实现依据，升为 confirmed。"
 }

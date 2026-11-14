@@ -24,7 +24,9 @@
       "shop_product": "name",
       "shop_category": "name",
       "shop_customer": "name",
-      "shop_order": "customer_name"
+      "shop_order": "customer_name",
+      "shop_quota_occupancy": "customer_name",
+      "shop_ledger_entry": "customer_name"
     },
     "upload_dir": "/app/uploads",
     "probe_container_prefixes": [

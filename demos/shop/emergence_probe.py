@@ -71,6 +71,18 @@ class Db:
         return [json.loads(line) for line in out.splitlines() if line.strip()]
 
 
+# 订单的两条附属记录（额度占用 / 账本分录）。外键指向订单，必须先删它们。
+ORDER_RECORD_TABLES = ("shop_quota_occupancy", "shop_ledger_entry")
+
+
+def _delete_probe_orders(db: Db, order_predicate: str) -> None:
+    """按同一个谓词删掉订单及其附属记录 —— 顺序错了外键会挡住。"""
+    for table in ORDER_RECORD_TABLES:
+        db.exec(f"DELETE FROM {table} WHERE order_id IN "
+                f"(SELECT id FROM shop_order WHERE {order_predicate})")
+    db.exec(f"DELETE FROM shop_order WHERE {order_predicate}")
+
+
 def http_post(base_url: str, path: str, body: dict[str, Any]) -> tuple[int, Any]:
     req = urllib.request.Request(
         base_url + path, data=json.dumps(body).encode("utf-8"),
@@ -113,7 +125,7 @@ class DemoExecutor:
         cust = chain.flow["customer"]
         name = cust["name"]
         assert IDENT.match(name), f"探针客户名不合法: {name}"
-        self.db.exec(f"DELETE FROM shop_order WHERE customer_name = '{name}'")
+        _delete_probe_orders(self.db, f"customer_name = '{name}'")
         self.db.exec(f"DELETE FROM shop_customer WHERE name = '{name}'")
         self.db.exec(
             f"INSERT INTO shop_customer(name, level, credit_limit_cent) VALUES "
@@ -467,11 +479,13 @@ def cleanup(db: Db) -> dict[str, Any]:
     而计数照样返回 0：「没有残留」变成假象，还很难发现。
     starts_with 是纯前缀比较，没有通配语义，写错会立刻暴露成残留行。
     """
-    db.exec(f"DELETE FROM shop_order WHERE starts_with(customer_name, '{PFX}')")
+    _delete_probe_orders(db, f"starts_with(customer_name, '{PFX}')")
     db.exec(f"DELETE FROM shop_customer WHERE starts_with(name, '{PFX}')")
     left = db.rows(
         f"SELECT id FROM shop_order WHERE starts_with(customer_name, '{PFX}') "
-        f"UNION ALL SELECT id FROM shop_customer WHERE starts_with(name, '{PFX}')")
+        f"UNION ALL SELECT id FROM shop_customer WHERE starts_with(name, '{PFX}') "
+        f"UNION ALL SELECT id FROM shop_quota_occupancy WHERE starts_with(customer_name, '{PFX}') "
+        f"UNION ALL SELECT id FROM shop_ledger_entry WHERE starts_with(customer_name, '{PFX}')")
     return {"rows": len(left), "ids": [r["id"] for r in left]}
 
 

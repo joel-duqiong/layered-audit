@@ -41,6 +41,8 @@
         }
       ],
       "cleanup_sql": [
+        "DELETE FROM shop_quota_occupancy WHERE order_id IN (SELECT id FROM shop_order WHERE customer_name = '{{customer_name}}')",
+        "DELETE FROM shop_ledger_entry WHERE order_id IN (SELECT id FROM shop_order WHERE customer_name = '{{customer_name}}')",
         "DELETE FROM shop_order WHERE customer_name = '{{customer_name}}'",
         "DELETE FROM shop_customer WHERE id = {{customer_id}}"
       ]
@@ -93,6 +95,8 @@
         }
       ],
       "cleanup_sql": [
+        "DELETE FROM shop_quota_occupancy WHERE order_id IN (SELECT id FROM shop_order WHERE id = {{id}})",
+        "DELETE FROM shop_ledger_entry WHERE order_id IN (SELECT id FROM shop_order WHERE id = {{id}})",
         "DELETE FROM shop_order WHERE id = {{id}}"
       ]
     },
@@ -112,6 +116,8 @@
             "currency": "CNY"
           },
           "cleanup_sql": [
+            "DELETE FROM shop_quota_occupancy WHERE order_id IN (SELECT id FROM shop_order WHERE id = {{id}})",
+            "DELETE FROM shop_ledger_entry WHERE order_id IN (SELECT id FROM shop_order WHERE id = {{id}})",
             "DELETE FROM shop_order WHERE id = {{id}}"
           ]
         },
@@ -127,6 +133,8 @@
             "currency": "CNY"
           },
           "cleanup_sql": [
+            "DELETE FROM shop_quota_occupancy WHERE order_id IN (SELECT id FROM shop_order WHERE id = {{id}})",
+            "DELETE FROM shop_ledger_entry WHERE order_id IN (SELECT id FROM shop_order WHERE id = {{id}})",
             "DELETE FROM shop_order WHERE id = {{id}}"
           ]
         }
@@ -236,6 +244,8 @@
         }
       ],
       "cleanup_sql": [
+        "DELETE FROM shop_quota_occupancy WHERE order_id IN (SELECT id FROM shop_order WHERE id = {{id}})",
+        "DELETE FROM shop_ledger_entry WHERE order_id IN (SELECT id FROM shop_order WHERE id = {{id}})",
         "DELETE FROM shop_order WHERE id = {{id}}"
       ]
     }

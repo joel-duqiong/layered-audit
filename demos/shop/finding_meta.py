@@ -173,7 +173,7 @@ FILE: dict[str, Meta] = {
 SERVICE: dict[str, Meta] = {
     "BI-QUOTA-LEDGER-PARITY": _m(
         "service.data_consistency", "exact",
-        "额度占用额（通过授信额度检查的报价）是否等于账本记录额（实付）？",
+        "同一笔订单的额度占用记录（按报价）与账本分录（按实付），金额是否对得上？",
         "file", 0.93, "defect", ("CWE-840",),
         "order.quota_checked_on_quoted_amount_ledger_on_settled",
         relation="cite",
