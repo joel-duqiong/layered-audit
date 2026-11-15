@@ -9,6 +9,7 @@
 """
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -681,54 +682,43 @@ def test_default_gate_preserves_chinese_subject_rules(tmp_path):
     assert any(o["assert"]["type"] == "in" for o in oracles)
     assert any(o["assert"]["type"] == "field_cmp" for o in oracles)
 
-# ---- 出处自足：产物必须与采集时的 cwd 无关（锁 .resolve()，退回 str(p) 必红）----
-def test_provenance_is_cwd_independent_and_self_sufficient(tmp_path, monkeypatch):
-    """消费者只拿产物、不知道采集时 cwd，也要能解析每一条判据的出处。
+# ---- 出处可移植：声明根 + 相对路径，既 cwd 无关又跨机器（锁 schema_version 2）----
+def _build_provenance_fixture(base: Path) -> Path:
+    """四类输入全给（相对路径）+ 符号链接 openapi。返回采集 cwd。
 
-    实测缺陷：inputs.openapi 曾原样记录调用者传入的 'openapi.json'，
-    60/341 条判据的出处事后无法解析（指针本身全对，丢的是目录）。
+    四类齐全才能杀 migrations/java_roots 那两处变异；符号链接用来锁 basename 不撕裂。
     """
     import json
-    from engine import oracle_harvest as oh
-
-    harvest_cwd = tmp_path / "harvest"
-    harvest_cwd.mkdir()
-    (harvest_cwd / "d.md").write_text("## Check\n\n- `price_cent >= 0`\n", encoding="utf-8")
-    # 四类输入全给，且全用相对路径 —— 否则 migrations/java_roots 恒空，那两处变异杀不死
-    (harvest_cwd / "mig").mkdir()
-    (harvest_cwd / "mig" / "V1__t.sql").write_text(
+    base.mkdir(parents=True, exist_ok=True)
+    (base / "d.md").write_text("## Check\n\n- `price_cent >= 0`\n", encoding="utf-8")
+    (base / "mig").mkdir()
+    (base / "mig" / "V1__t.sql").write_text(
         "CREATE TABLE t (\n  id BIGINT NOT NULL\n);\n", encoding="utf-8")
-    (harvest_cwd / "src").mkdir()
-    (harvest_cwd / "src" / "ThingRequest.java").write_text(
+    (base / "src").mkdir()
+    (base / "src" / "ThingRequest.java").write_text(
         "public record ThingRequest(\n    @NotNull Long id\n) {}\n", encoding="utf-8")
-    # 符号链接：reference 的 basename 必须与 inputs 记录一致，否则出处撕裂
-    (harvest_cwd / "real").mkdir()
-    (harvest_cwd / "real" / "spec.json").write_text(json.dumps(
+    (base / "real").mkdir()
+    (base / "real" / "spec.json").write_text(json.dumps(
         {"components": {"schemas": {"Thing": {
             "required": ["name"],
             "properties": {"name": {"type": "string"}}}}}}), encoding="utf-8")
-    (harvest_cwd / "link.json").symlink_to(harvest_cwd / "real" / "spec.json")
+    (base / "link.json").symlink_to(base / "real" / "spec.json")
+    return base
 
-    monkeypatch.chdir(harvest_cwd)
-    monkeypatch.setattr(sys, "argv", [
-        "oracle_harvest", "--docs", "d.md", "--migrations", "mig",
-        "--java-root", "src", "--openapi", "link.json", "--out", "out.json"])
-    oh.main()
-    report = json.loads((harvest_cwd / "out.json").read_text())
 
-    # 换一个 cwd 当消费者：此后只许用产物里记的路径
-    consumer = tmp_path / "consumer"
-    consumer.mkdir()
-    monkeypatch.chdir(consumer)
+def _verify_provenance(oh, report: dict, root_override=None) -> int:
+    """消费者视角：只用产物重建出处，逐条回原文。返回核到的判据数。
 
-    recorded = [Path(p) for p in report["inputs"]["docs"]]
-    recorded += [Path(p) for p in report["inputs"]["migrations"]]
-    recorded += [Path(p) for p in report["inputs"]["java_roots"]]
-    if report["inputs"]["openapi"]:
-        recorded.append(Path(report["inputs"]["openapi"]))
+    不变式：重建路径绝对且存在；pointer 型 basename 与 inputs 不撕裂；行号在界内。
+    """
+    import json
+    resolved = oh.resolve_inputs(report, root_override=root_override)
+    recorded = list(resolved["docs"]) + list(resolved["migrations"]) + list(resolved["java_roots"])
+    if resolved["openapi"]:
+        recorded.append(resolved["openapi"])
     assert recorded, "产物没记任何输入"
     for p in recorded:
-        assert p.is_absolute(), f"出处依赖 cwd，消费者无法解析: {p}"
+        assert p.is_absolute(), f"重建后仍非绝对路径: {p}"
         assert p.exists(), f"出处指向不存在的文件: {p}"
 
     def resolve_pointer(doc, pointer):
@@ -741,11 +731,9 @@ def test_provenance_is_cwd_independent_and_self_sufficient(tmp_path, monkeypatch
     for o in report["oracles"]:
         ref = o["source"]["reference"]
         if "#" in ref:
-            # 撕裂 invariant：reference 的 basename 必须与 inputs 记录的 basename 一致。
-            # 「指针能解开」检不到它 —— 符号链接下两侧可能各用一个名字。
-            assert ref.partition(":")[0] == Path(report["inputs"]["openapi"]).name, \
+            assert ref.partition(":")[0] == resolved["openapi"].name, \
                 f"pointer 出处 basename 与 inputs 撕裂: {ref}"
-            spec = json.loads(Path(report["inputs"]["openapi"]).read_text())
+            spec = json.loads(resolved["openapi"].read_text())
             resolve_pointer(spec, ref.partition(":")[2])
             checked += 1
         else:
@@ -756,8 +744,504 @@ def test_provenance_is_cwd_independent_and_self_sufficient(tmp_path, monkeypatch
             assert 1 <= int(lineno.split("-")[0]) <= len(lines), f"行号越界: {ref}"
             checked += 1
     assert checked == len(report["oracles"]) > 0, "没有真正逐条回原文"
+    return checked
+
+
+def test_provenance_is_cwd_independent_and_self_sufficient(tmp_path, monkeypatch):
+    """消费者只拿产物、不知采集时 cwd，也要能解析每条判据出处（坑 69 不回归）。
+
+    新不变式：产物记**根相对路径**（不再机器相关），消费者用 resolve_inputs 重建。
+    退回绝对路径记录 / 丢根 / 退回 cwd 依赖，都会被变异矩阵判红。
+    """
+    import json
+    from engine import oracle_harvest as oh
+
+    harvest_cwd = _build_provenance_fixture(tmp_path / "harvest")
+    monkeypatch.chdir(harvest_cwd)
+    monkeypatch.setattr(sys, "argv", [
+        "oracle_harvest", "--docs", "d.md", "--migrations", "mig",
+        "--java-root", "src", "--openapi", "link.json", "--out", "out.json"])
+    oh.main()
+    report = json.loads((harvest_cwd / "out.json").read_text())
+
+    assert report["schema_version"] == 2
+    assert report["inputs"]["root"], "产物必须声明根绑定"
+    raw = list(report["inputs"]["docs"]) + list(report["inputs"]["migrations"]) \
+        + list(report["inputs"]["java_roots"]) + [report["inputs"]["openapi"]]
+    for p in raw:
+        assert not Path(p).is_absolute(), f"出处仍是机器相关绝对路径，不可移植: {p}"
+
+    # 换一个 cwd 当消费者：此后只许用产物 + resolve_inputs
+    consumer = tmp_path / "consumer"
+    consumer.mkdir()
+    monkeypatch.chdir(consumer)
+    checked = _verify_provenance(oh, report)
     kinds = {o["source"]["kind"] for o in report["oracles"]}
     assert {"document", "ddl", "annotation", "openapi"} <= kinds, \
         f"夹具必须覆盖四类输入，否则对应那处变异杀不死；实际 {kinds}"
     assert any("#" in o["source"]["reference"] for o in report["oracles"]), \
         "夹具没产生 pointer 型判据，这条守卫会是空的"
+    assert checked > 0
+
+
+def test_provenance_root_portable_across_machines(tmp_path, monkeypatch):
+    """新不变式：换 root（模拟另一台机器）后仍能逐条回原文。
+
+    把整棵输入树搬到新根、删掉旧根，只重声明 root —— 全部判据出处仍须解析。
+    """
+    import json
+    import shutil
+    from engine import oracle_harvest as oh
+
+    machine_a = _build_provenance_fixture(tmp_path / "machineA")
+    monkeypatch.chdir(machine_a)
+    monkeypatch.setattr(sys, "argv", [
+        "oracle_harvest", "--docs", "d.md", "--migrations", "mig",
+        "--java-root", "src", "--openapi", "link.json", "--out", "out.json"])
+    oh.main()
+    report = json.loads((machine_a / "out.json").read_text())
+    out_copy = tmp_path / "report.json"
+    out_copy.write_text(json.dumps(report), encoding="utf-8")
+
+    # 模拟另一台机器：整棵树搬到 machineB，旧根不复存在
+    machine_b = tmp_path / "machineB"
+    shutil.move(str(machine_a), str(machine_b))
+    assert not machine_a.exists()
+    report = json.loads(out_copy.read_text())
+
+    monkeypatch.chdir(tmp_path)  # 消费者 cwd 与任何根都无关
+    checked = _verify_provenance(oh, report, root_override=machine_b)
+    assert checked == len(report["oracles"]) > 0
+
+
+def test_resolve_inputs_backward_compatible_with_absolute_artifact(tmp_path):
+    """向后兼容（限定口径）：**全绝对路径**旧产物（schema_version 1，无 root）原样返回。
+
+    注意：这只覆盖全绝对旧产物。裸相对无 root 的坑69原缺陷态由
+    test_resolve_inputs_real_legacy_artifact_fails_loud 喂真产物锁定（显式抛错）。
+    """
+    from engine import oracle_harvest as oh
+    f = tmp_path / "V1__t.sql"
+    f.write_text("CREATE TABLE t (\n  id BIGINT NOT NULL\n);\n", encoding="utf-8")
+    old = {"schema_version": 1, "inputs": {
+        "migrations": [str(f)], "java_roots": [], "docs": [], "openapi": None}}
+    resolved = oh.resolve_inputs(old)
+    assert resolved["migrations"] == [f]
+    assert resolved["migrations"][0].exists()
+    # 混合：绝对路径条目即便声明了 root 也原样保留（绝对路径优先）
+    mixed = {"inputs": {"root": str(tmp_path), "migrations": [str(f)],
+                        "java_roots": [], "docs": [], "openapi": None}}
+    assert oh.resolve_inputs(mixed)["migrations"] == [f]
+
+
+def test_resolve_inputs_real_legacy_artifact_fails_loud():
+    """必修1（坑142）：守卫喂**仓库里真那份**旧产物，不是合成理想化的旧产物。
+
+    真旧产物正是坑69原缺陷态（openapi="openapi.json" 裸相对、无 root）→ 助手显式抛错
+    （这条路径分子是 0，不是 215；215 是绕开助手字面读 inputs 的严格算法 A 的数）。
+    抛错是设计正确（绝不猜 cwd）；全绝对条目本身仍可解析，兼容口径限定在全绝对旧产物。
+    """
+    import json
+    import pytest
+    from engine import oracle_harvest as oh
+    pilot = Path(__file__).resolve().parent.parent
+    real = pilot / "oracles_harvested.json"
+    if not real.is_file():
+        pytest.skip("真实旧产物不在本机")
+    old = json.loads(real.read_text(encoding="utf-8"))
+    assert old.get("schema_version") == 1 and not old["inputs"].get("root")
+    assert old["inputs"]["openapi"] == "openapi.json", "真旧产物应是坑69原缺陷态"
+    with pytest.raises(ValueError, match="openapi.json"):
+        oh.resolve_inputs(old)
+    # 全绝对条目（migrations/java_roots/docs）单独喂仍可解析 —— 兼容口径的真实边界
+    abs_only = {"inputs": {"migrations": old["inputs"]["migrations"],
+                           "java_roots": old["inputs"]["java_roots"],
+                           "docs": old["inputs"]["docs"], "openapi": None}}
+    r = oh.resolve_inputs(abs_only)
+    assert r["migrations"] and all(p.is_absolute() for p in r["migrations"])
+
+
+def test_resolve_inputs_relative_without_root_raises(tmp_path):
+    """相对路径却无根可声明 → 显式抛错，绝不静默退回 cwd（那会重新引入坑 69）。"""
+    import pytest
+    from engine import oracle_harvest as oh
+    bad = {"inputs": {"migrations": ["mig/V1__t.sql"], "java_roots": [],
+                      "docs": [], "openapi": None}}
+    with pytest.raises(ValueError):
+        oh.resolve_inputs(bad)
+
+
+def test_resolve_inputs_rejects_relative_root_override(tmp_path, monkeypatch):
+    """必修2（坑144）：相对 root_override 显式拒绝 —— 「cwd 永不参与」对参数侧也成立。
+
+    绝对 override 则与 cwd 无关：重建结果是绝对路径，重建后换 cwd 仍存在（不漂）。
+    """
+    import pytest
+    from engine import oracle_harvest as oh
+    report = {"inputs": {"root": str(tmp_path), "migrations": ["mig/V1.sql"],
+                         "java_roots": [], "docs": [], "openapi": None}}
+    with pytest.raises(ValueError, match="绝对路径"):
+        oh.resolve_inputs(report, root_override="relative/root")
+    (tmp_path / "mig").mkdir()
+    (tmp_path / "mig" / "V1.sql").write_text("x", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    p = oh.resolve_inputs(report, root_override=str(tmp_path))["migrations"][0]
+    assert p.is_absolute() and p.exists()
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+    assert p.exists(), "绝对 override 的重建结果随 cwd 漂移（坑144 回归）"
+
+
+def test_resolve_inputs_rejects_relative_artifact_root():
+    """**无绝对 override 时**产物声明的 root 若是相对路径，显式拒绝（cwd 入口逐个堵，坑144）。
+
+    有绝对 override 时相对产物 root 被遮蔽、不参与重建 —— 那是合法接受，不是缺陷。
+    """
+    import pytest
+    from engine import oracle_harvest as oh
+    bad = {"inputs": {"root": "relative/root", "migrations": ["mig/V1.sql"],
+                      "java_roots": [], "docs": [], "openapi": None}}
+    with pytest.raises(ValueError, match="绝对路径"):
+        oh.resolve_inputs(bad)
+    # 绝对 override 遮蔽相对产物 root：接受，且 cwd 未参与（重建为 override 下的绝对路径）
+    ok = oh.resolve_inputs(bad, root_override="/abs/root")
+    assert ok["migrations"] == [Path("/abs/root/mig/V1.sql")]
+
+
+def test_provenance_legit_symlink_not_false_red(tmp_path, monkeypatch):
+    """反向（坑 78）：合法符号链接输入（路径非规范）不得被误红 —— basename 一致即合法。"""
+    import json
+    from engine import oracle_harvest as oh
+    harvest_cwd = _build_provenance_fixture(tmp_path / "harvest")
+    monkeypatch.chdir(harvest_cwd)
+    monkeypatch.setattr(sys, "argv", [
+        "oracle_harvest", "--docs", "d.md", "--migrations", "mig",
+        "--java-root", "src", "--openapi", "link.json", "--out", "out.json"])
+    oh.main()
+    report = json.loads((harvest_cwd / "out.json").read_text())
+    # openapi 经符号链接采集，记录的是解析后的规范相对路径；reference basename 必须一致
+    assert report["inputs"]["openapi"].endswith("spec.json")
+    monkeypatch.chdir(tmp_path)
+    _verify_provenance(oh, report)  # 不抛即合法不误红
+
+
+# ---- 入库变异矩阵（坑 123）：精确复刻缺陷态，指名红名；空对照与等价变异须存活 ----
+# 每个变异只改一处、复刻一个可移植性缺陷态；消费者脚本独立重建出处并逐条回原文。
+_CONSUMER_SCRIPT = r'''
+import importlib.util, json, os, shutil, sys, tempfile
+from pathlib import Path
+spec = importlib.util.spec_from_file_location("oh_mut", sys.argv[1])
+oh = importlib.util.module_from_spec(spec); spec.loader.exec_module(oh)
+fails = []
+def check(name, fn):
+    try:
+        fn()
+    except Exception as e:
+        fails.append(f"RED:{name}: {type(e).__name__} {e}")
+work = Path(tempfile.mkdtemp())
+A = work / "A"; A.mkdir()
+(A / "d.md").write_text("## Check\n\n- `price_cent >= 0`\n", encoding="utf-8")
+(A / "mig").mkdir(); (A / "mig" / "V1__t.sql").write_text("CREATE TABLE t (\n  id BIGINT NOT NULL\n);\n", encoding="utf-8")
+(A / "src").mkdir(); (A / "src" / "ThingRequest.java").write_text("public record ThingRequest(\n    @NotNull Long id\n) {}\n", encoding="utf-8")
+(A / "real").mkdir(); (A / "real" / "spec.json").write_text(json.dumps({"components": {"schemas": {"Thing": {"required": ["name"], "properties": {"name": {"type": "string"}}}}}}), encoding="utf-8")
+(A / "link.json").symlink_to(A / "real" / "spec.json")
+os.chdir(A)
+sys.argv = ["oh", "--docs", "d.md", "--migrations", "mig", "--java-root", "src", "--openapi", "link.json", "--out", "out.json"]
+oh.main()
+report = json.loads((A / "out.json").read_text())
+
+def verify(root_override=None):
+    r = oh.resolve_inputs(report, root_override=root_override)
+    rec = list(r["docs"]) + list(r["migrations"]) + list(r["java_roots"]) + ([r["openapi"]] if r["openapi"] else [])
+    for p in rec:
+        assert p.is_absolute() and p.exists(), f"bad path {p}"
+    for o in report["oracles"]:
+        ref = o["source"]["reference"]
+        if "#" in ref:
+            assert ref.partition(":")[0] == r["openapi"].name, "torn basename"
+            json.loads(r["openapi"].read_text())
+        else:
+            name, _, ln = ref.partition(":")
+            m = [p for p in rec if p.name == name]
+            assert m, f"no source for {name}"
+            assert 1 <= int(ln) <= len(m[0].read_text(encoding="utf-8").splitlines())
+
+def _root_declared():
+    assert report["inputs"].get("root"), "root missing"
+check("root_declared", _root_declared)
+def _relative():
+    raw = list(report["inputs"]["docs"]) + list(report["inputs"]["migrations"]) + list(report["inputs"]["java_roots"]) + [report["inputs"]["openapi"]]
+    for p in raw:
+        assert not Path(p).is_absolute(), f"absolute recorded {p}"
+check("recorded_relative", _relative)
+def _cwd():
+    B = work / "B"; B.mkdir(exist_ok=True); os.chdir(B)
+    verify()
+check("cwd_independent", _cwd)
+def _compat():
+    f = A / "mig" / "V1__t.sql"
+    old = {"schema_version": 1, "inputs": {"migrations": [str(f)], "java_roots": [], "docs": [], "openapi": None}}
+    rr = oh.resolve_inputs(old)
+    assert rr["migrations"] == [f] and rr["migrations"][0].exists(), "old absolute artifact broken"
+check("backward_compatible", _compat)
+def _portable():
+    C = work / "C"
+    shutil.move(str(A), str(C))
+    verify(root_override=C)
+check("root_portable", _portable)
+if fails:
+    print("\n".join(fails)); sys.exit(1)
+print("OK all provenance invariants hold")
+'''
+
+# (变异名, 原文锚点, 缺陷态替换, 期望指名红名)
+_PROVENANCE_MUTATIONS = [
+    ("M1_root_dropped",
+     '"root": str(root) if root is not None else None,',
+     '"root": None,',
+     "root_declared"),
+    ("M2_absolute_recorded",
+     'return str(p.relative_to(root)) if root is not None else str(p)',
+     'return str(p)',
+     "recorded_relative"),
+    ("M3_cwd_fallback",
+     'base = Path(root)\n',
+     'base = Path.cwd()\n',
+     "cwd_independent"),
+    ("M4_backward_compat_mangled",
+     'if pp.is_absolute():\n            return pp',
+     'if pp.is_absolute():\n            return (base or Path.cwd()) / pp.name',
+     "backward_compatible"),
+    ("M5_ignore_root_override",
+     'base = Path(root_override)\n',
+     'base = Path(root)\n',
+     "root_portable"),
+]
+
+
+def _run_consumer(engine_file: Path, tmp_path: Path) -> subprocess.CompletedProcess:
+    import subprocess
+    script = tmp_path / "consumer.py"
+    script.write_text(_CONSUMER_SCRIPT, encoding="utf-8")
+    # PATH 挡板（做法 49）：采集器只读文件，但任何变异都不许调起外部工具链
+    blocker = tmp_path / "blocker"
+    blocker.mkdir(exist_ok=True)
+    for tool in ("javac", "java", "mvn", "docker", "psql"):
+        stub = blocker / tool
+        stub.write_text(f'#!/bin/sh\necho "W24 PATH BLOCKER: {tool} called (forbidden)" >&2\nexit 99\n')
+        stub.chmod(0o755)
+    env = dict(os.environ, PATH=f"{blocker}{os.pathsep}{os.environ['PATH']}")
+    return subprocess.run([sys.executable, str(script), str(engine_file)],
+                          capture_output=True, text=True, timeout=120, env=env)
+
+
+def test_provenance_mutation_matrix_kills_each_defect(tmp_path):
+    """五个精确变异各复刻一个可移植性缺陷态，必须被指名守卫判红（坑 78/123）。"""
+    import shutil
+    from engine import oracle_harvest as oh
+    src = Path(oh.__file__).read_text(encoding="utf-8")
+    for name, anchor, defect, expected_red in _PROVENANCE_MUTATIONS:
+        assert src.count(anchor) == 1, f"{name}: 锚点不唯一/不存在，变异矩阵须更新"
+        sandbox = tmp_path / name
+        sandbox.mkdir()
+        mutated = sandbox / "oracle_harvest.py"
+        mutated.write_text(src.replace(anchor, defect), encoding="utf-8")
+        proc = _run_consumer(mutated, sandbox)
+        assert proc.returncode != 0, f"{name} 存活（守卫无牙）: {proc.stdout[-300:]}"
+        assert f"RED:{expected_red}" in proc.stdout, \
+            f"{name} 未命中指名红名 {expected_red}: {proc.stdout[-400:]}"
+
+
+def test_provenance_mutation_empty_control_and_equivalent_survive(tmp_path):
+    """双向（坑 78 反向）：空对照与等价变异必须全绿 —— 守卫不误红合法实现。"""
+    from engine import oracle_harvest as oh
+    src = Path(oh.__file__).read_text(encoding="utf-8")
+    # 空对照：未变异引擎
+    ctrl = tmp_path / "control"
+    ctrl.mkdir()
+    (ctrl / "oracle_harvest.py").write_text(src, encoding="utf-8")
+    p0 = _run_consumer(ctrl / "oracle_harvest.py", ctrl)
+    assert p0.returncode == 0, f"空对照红 = 守卫自己错了（坑 92）: {p0.stdout[-400:]}"
+    # 等价变异：`or []` → `, []`。产物里 docs 恒为列表（非 None），两种写法语义相同。
+    # （曾误以为「去掉 is_absolute 分支」等价 —— 实测被 backward_compatible 判红：
+    #  旧产物无 root，绝对路径会落到 base is None 抛错。pathlib 等价只在 base 非 None 时成立。）
+    anchor = 'inputs.get("docs") or []'
+    assert src.count(anchor) == 1
+    eq = tmp_path / "equivalent"
+    eq.mkdir()
+    (eq / "oracle_harvest.py").write_text(
+        src.replace(anchor, 'inputs.get("docs", [])'), encoding="utf-8")
+    p1 = _run_consumer(eq / "oracle_harvest.py", eq)
+    assert p1.returncode == 0, f"等价变异被误红（守卫过度）: {p1.stdout[-400:]}"
+
+
+# ---- 必修3（坑143 N1/N2、做法70 N5）：生产者侧根覆盖 + 消费侧异名符号链接 ----
+# 入库合成夹具 cwd==root 且单根 → 生产者侧「拿 cwd 当根」(N1) 与「根漏算输入类」(N2)
+# 都不可区分；采集侧符号链接已被引擎 resolve → 「重建强制 resolve」(N5) 不可达。
+# 本脚本用 cwd≠root / 多根 / 消费侧异名符号链接三种夹具把这些缺陷态变可达，崩溃映射到指名红。
+_ROOT_COVERAGE_SCRIPT = r'''
+import importlib.util, json, os, shutil, sys, tempfile
+from pathlib import Path
+spec = importlib.util.spec_from_file_location("oh_rc", sys.argv[1])
+oh = importlib.util.module_from_spec(spec); spec.loader.exec_module(oh)
+mode = sys.argv[2]
+fails = []
+def check(name, fn):
+    try:
+        fn()
+    except Exception as e:
+        fails.append(f"RED:{name}: {type(e).__name__} {e}")
+work = Path(tempfile.mkdtemp())
+parent = work / "parent"; parent.mkdir()
+repoA = parent / "repoA"; repoA.mkdir()
+(repoA / "mig").mkdir(); (repoA / "mig" / "V1__t.sql").write_text("CREATE TABLE t (\n  id BIGINT NOT NULL\n);\n", encoding="utf-8")
+(repoA / "src").mkdir(); (repoA / "src" / "ThingRequest.java").write_text("public record ThingRequest(\n    @NotNull Long id\n) {}\n", encoding="utf-8")
+SPEC = json.dumps({"components": {"schemas": {"Thing": {"required": ["name"], "properties": {"name": {"type": "string"}}}}}})
+if mode == "n2":
+    repoB = parent / "repoB"; repoB.mkdir()
+    (repoB / "docs").mkdir(); (repoB / "docs" / "d.md").write_text("## Check\n\n- `price_cent >= 0`\n", encoding="utf-8")
+    (repoB / "spec.json").write_text(SPEC, encoding="utf-8")
+    docs = repoB / "docs"; openapi = repoB / "spec.json"
+else:
+    (repoA / "d.md").write_text("## Check\n\n- `price_cent >= 0`\n", encoding="utf-8")
+    (repoA / "spec.json").write_text(SPEC, encoding="utf-8")
+    docs = repoA / "d.md"; openapi = repoA / "spec.json"
+os.chdir(parent)  # n1: cwd=parent 是 root(repoA) 的祖先 → cwd != root
+out = work / "out.json"
+def harvest():
+    sys.argv = ["oh", "--migrations", str(repoA / "mig"), "--java-root", str(repoA / "src"),
+                "--docs", str(docs), "--openapi", str(openapi), "--out", str(out)]
+    oh.main()
+check("producer_root_coverage", harvest)  # 生产者崩溃（根漏算→relative_to 抛错）映射到指名红
+if out.exists():
+    report = json.loads(out.read_text(encoding="utf-8"))
+    def verify(root_override=None):
+        r = oh.resolve_inputs(report, root_override=root_override)
+        rec = list(r["docs"]) + list(r["migrations"]) + list(r["java_roots"]) + ([r["openapi"]] if r["openapi"] else [])
+        for p in rec:
+            assert p.is_absolute() and p.exists(), f"bad path {p}"
+        for o in report["oracles"]:
+            ref = o["source"]["reference"]
+            if "#" in ref:
+                assert ref.partition(":")[0] == r["openapi"].name, "torn basename"
+                json.loads(r["openapi"].read_text(encoding="utf-8"))
+            else:
+                name, _, ln = ref.partition(":")
+                m = [p for p in rec if p.name == name]
+                assert m, f"no source for {name}"
+                assert 1 <= int(ln) <= len(m[0].read_text(encoding="utf-8").splitlines())
+    if mode in ("n1", "n2"):
+        check("root_covers_all_inputs", lambda: verify())
+    elif mode == "n5":
+        def _n5():
+            root = Path(report["inputs"]["root"])
+            C_root = work / "C_repoA"
+            shutil.copytree(root, C_root)
+            oa_rel = Path(report["inputs"]["openapi"])
+            target_oa = C_root / oa_rel
+            content = target_oa.read_text(encoding="utf-8")
+            target_oa.unlink()
+            (target_oa.parent / "spec-v2.json").write_text(content, encoding="utf-8")
+            target_oa.symlink_to("spec-v2.json")  # 目标机上 openapi 是异名符号链接
+            verify(root_override=C_root)
+        check("no_basename_tearing", _n5)  # 夹具搭建也在 check 内：跨模式变异崩溃亦映射到指名红
+if fails:
+    print("\n".join(fails)); sys.exit(1)
+print("OK root coverage invariants hold")
+'''
+
+# (变异名, 原文锚点, 缺陷态, 可达夹具模式, 期望指名红名)
+_COVERAGE_MUTATIONS = [
+    ("N1_cwd_as_root",
+     'return str(p.relative_to(root)) if root is not None else str(p)',
+     'return str(p.relative_to(Path.cwd())) if root is not None else str(p)',
+     "n1", "root_covers_all_inputs"),
+    ("N2_root_omits_input_classes",
+     '_provenance_root(ddl_files + java_files + doc_files + ([openapi] if openapi else []))',
+     '_provenance_root(ddl_files + java_files)',
+     "n2", "producer_root_coverage"),
+    ("N5_consumer_resolve_tears",
+     'return base / pp',
+     'return (base / pp).resolve()',
+     "n5", "no_basename_tearing"),
+]
+
+
+def _run_coverage(engine_file: Path, tmp_path: Path, mode: str) -> subprocess.CompletedProcess:
+    import subprocess
+    script = tmp_path / "coverage.py"
+    script.write_text(_ROOT_COVERAGE_SCRIPT, encoding="utf-8")
+    blocker = tmp_path / "blocker"
+    blocker.mkdir(exist_ok=True)
+    for tool in ("javac", "java", "mvn", "docker", "psql"):
+        stub = blocker / tool
+        stub.write_text(f'#!/bin/sh\necho "W24 PATH BLOCKER: {tool} called (forbidden)" >&2\nexit 99\n')
+        stub.chmod(0o755)
+    env = dict(os.environ, PATH=f"{blocker}{os.pathsep}{os.environ['PATH']}")
+    return subprocess.run([sys.executable, str(script), str(engine_file), mode],
+                          capture_output=True, text=True, timeout=120, env=env)
+
+
+def test_root_coverage_mutation_matrix_kills_N1_N2_N5(tmp_path):
+    """必修3：三个 V22 锚点在可达夹具下各被指名判红（坑143 N1/N2、做法70 N5）。"""
+    from engine import oracle_harvest as oh
+    src = Path(oh.__file__).read_text(encoding="utf-8")
+    for name, anchor, defect, mode, expected_red in _COVERAGE_MUTATIONS:
+        assert src.count(anchor) == 1, f"{name}: 锚点不唯一/不存在"
+        sandbox = tmp_path / name
+        sandbox.mkdir()
+        mutated = sandbox / "oracle_harvest.py"
+        mutated.write_text(src.replace(anchor, defect), encoding="utf-8")
+        proc = _run_coverage(mutated, sandbox, mode)
+        assert proc.returncode != 0, f"{name} 存活（守卫无牙）: {proc.stdout[-300:]}"
+        assert f"RED:{expected_red}" in proc.stdout, \
+            f"{name} 未命中指名红名 {expected_red}: {proc.stdout[-400:]}"
+
+
+def test_root_coverage_empty_control_all_modes(tmp_path):
+    """空对照在三种夹具下全绿（坑92：空对照红=守卫自己错）。"""
+    from engine import oracle_harvest as oh
+    src = Path(oh.__file__).read_text(encoding="utf-8")
+    for mode in ("n1", "n2", "n5"):
+        ctrl = tmp_path / f"ctrl_{mode}"
+        ctrl.mkdir()
+        (ctrl / "oracle_harvest.py").write_text(src, encoding="utf-8")
+        p = _run_coverage(ctrl / "oracle_harvest.py", ctrl, mode)
+        assert p.returncode == 0, f"空对照 {mode} 红: {p.stdout[-400:]}"
+
+
+def test_root_coverage_N1_N2_survive_in_wrong_fixture(tmp_path):
+    """夹具依赖性自证（坑61/做法70）：N1 在 cwd==root 夹具存活、N2 在单根夹具存活。
+
+    证明旧入库夹具确实测不出这两个生产者侧缺陷，新夹具不是装饰。
+    """
+    from engine import oracle_harvest as oh
+    src = Path(oh.__file__).read_text(encoding="utf-8")
+    n1 = _COVERAGE_MUTATIONS[0]
+    sb = tmp_path / "n1_wrong"
+    sb.mkdir()
+    (sb / "oracle_harvest.py").write_text(src.replace(n1[1], n1[2]), encoding="utf-8")
+    p = _run_consumer(sb / "oracle_harvest.py", sb)  # 原消费夹具 cwd==root 单根
+    assert p.returncode == 0, f"N1 应在 cwd==root 夹具存活（证明旧夹具缺口真实）: {p.stdout[-300:]}"
+    n2 = _COVERAGE_MUTATIONS[1]
+    sb2 = tmp_path / "n2_wrong"
+    sb2.mkdir()
+    (sb2 / "oracle_harvest.py").write_text(src.replace(n2[1], n2[2]), encoding="utf-8")
+    p2 = _run_coverage(sb2 / "oracle_harvest.py", sb2, "n1")  # 单根夹具
+    assert p2.returncode == 0, f"N2 应在单根夹具存活: {p2.stdout[-300:]}"
+
+
+def test_root_coverage_N4_equivalent_survives(tmp_path):
+    """N4 真等价变异（去 `if p is not None`，调用方永不含 None）三夹具均须存活（不误红）。"""
+    from engine import oracle_harvest as oh
+    src = Path(oh.__file__).read_text(encoding="utf-8")
+    anchor = 'parents = [str(p.parent) for p in paths if p is not None]'
+    assert src.count(anchor) == 1
+    defect = 'parents = [str(p.parent) for p in paths]'
+    for mode in ("n1", "n2", "n5"):
+        sb = tmp_path / f"n4_{mode}"
+        sb.mkdir()
+        (sb / "oracle_harvest.py").write_text(src.replace(anchor, defect), encoding="utf-8")
+        p = _run_coverage(sb / "oracle_harvest.py", sb, mode)
+        assert p.returncode == 0, f"N4 等价变异在 {mode} 被误红: {p.stdout[-400:]}"

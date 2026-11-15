@@ -6151,3 +6151,384 @@ covered = [labels[e] != "inconsistent" or                       # 条件A 一致
 **四轮累计**:V21 共提出 4 个反例(CE1/CE2/CE5/CE6)+ 1 个选择性反例(CE8)+ 22 个自选变异锚点,
 查出 2 个假论断、1 个双向错的冗余判据、6 个可达守卫缺口;W23 每轮先独立重放反例再动手,全部修正到位。
 **本轮无新发现,零残留,判定 PASS。**
+
+### 坑 141:出处可移植的设计张力 —— 绝对路径修好 cwd 依赖却制造机器依赖;「50 文件」诊断过度归因(W24 实测)
+
+> **V22 证伪后更正见坑 145**:本条「向后兼容」声称过宽(真旧产物一喂就抛)、「全由禁改引擎产出」过宽
+> (5 个是手写声明)、局限自述过悲观(整树搬任意路径其实 341/341)、分解混用清理前后快照且把 file_deps.txt
+> 误计入 JSON。下文已就地标注更正。
+
+**任务诊断**:仓库已 public,50 个文件含开发者绝对路径,根因是坑 69 把 `inputs` 改成绝对路径,
+要求「声明根 + 相对路径」。**独立复核后三处推回(带证据)**:
+
+1. **计数与分解都错**(做法 50)。实测含 `/Users/june` 的是 **59 文件**(非 50):
+   28 pilot JSON 产物 + 1 file_deps.txt + 10 pilot 文档/脚本 + 13 demos + 3 pilot 测试 + 4 根文档(禁改)。
+   按字段普查(不是笼统「50 文件」):大头是 `location.file`(all_findings 55)、
+   `edges[].evidence[].file`(62)、`warrant.evidence`、`oracle.reference`/`corroborated_by`、`repro_cmd`
+   —— **这些多数由禁改引擎产出**(*_diff/聚合/warrant/registry/relation_net/capability_map);
+   **另有 5 个是手写项目声明**(target.json ×2、class_scenarios、file_findings_config、jiuyan-layer-manifest),非引擎产出。
+   **`oracle_harvest.py` 只拥有 55 个可改文件里的 1 个**(oracles_harvested.json 的 inputs)。
+   「改 oracle_harvest 解决 50 文件」是把 1/55 当成了全部。
+
+2. **单根前提错**。oracles_harvested 的 inputs 横跨**三个根**:被测仓库(jiuyan)、
+   验收套件(tests/auto-api)、审计仓库自身(openapi 快照)。「记一个被测仓库根」覆盖不了。
+   最小可行解:根 = 全部输入路径的**公共祖先**(`os.path.commonpath` of parents),各输入记根相对路径。
+   局限(显式声明,不假装解决):**单根不限制「整树搬任意路径」**(异父链深目录实测 341/341,V22 独立证实);
+   真局限是**三仓库各自独立搬迁**(单根最好 183/341),那才需 roots-map 扩展。
+
+3. **冻结产物撞 W23 守卫**。`test_higher_order.py:701` M10 语料重放(坑126)钉死
+   oracles_harvested.json 的**整文件 sha256**。重生它(让 inputs 可移植)必红 W23 刚收口的守卫。
+   **不 unilateral 改**:引擎修好让**未来**采集可移植;冻结产物列为残留,交编排者裁定是否重钉哈希。
+   且该冻结产物是**修前世代**:`inputs.openapi="openapi.json"`(裸相对,坑69 原缺陷态)、
+   java_roots 只记目录 —— 严格算法换 cwd 实测 **215/341**(坑71 的数原样复现)。
+
+**正确解法(已实现)**:`inputs` 升级 schema_version 2 = `{root, migrations[], java_roots[], docs[], openapi}`,
+路径全根相对;消费者助手 `resolve_inputs(report, root_override=None)` 用「根+相对」重建,
+`root_override` 模拟换机器。**向后兼容(限定口径,坑145 更正)**:兼容**全绝对路径**旧产物(原样返回);
+裸相对无 root 的坑69原缺陷态(真旧产物)仍**显式抛错**(0/341),绝不静默退回 cwd。
+reference 仍是 basename:line / basename:#pointer,与 inputs 的 basename 不撕裂(坑78 不变式保留)。
+
+**实测(真实 341 条语料,采集到 /tmp 不碰冻结产物)**:
+新格式换 cwd **341/341**;整棵输入树搬到 machineB(复制 79 文件)+ 重声明 root + 换 cwd **341/341**。
+旧冻结产物**绕开助手、字面读 inputs 跑严格算法 A** 换 cwd **215/341**(60 openapi + 66 annotation);
+**这不是交付助手的数**——助手对真旧产物直接抛错(0/341,坑142)。
+
+**双向变异矩阵(入库 test_oracle_harvest.py,坑123,PATH 挡板)**:5 缺陷态各指名判红 ——
+M1 丢根→`root_declared`;M2 退回绝对记录→`recorded_relative`;M3 base=cwd→`cwd_independent`;
+M4 篡改绝对路径兼容→`backward_compatible`(单红,精确);M5 忽略 root_override→`root_portable`(单红,精确)。
+空对照 rc=0;等价变异(`or []`→`, []`)存活。全量 pilot **1464→1470**(+6 守卫)零回归,纯净度 rc=0。
+
+**教训**:① 修「出处依赖 X」先问消费者算法与分母归属,别把单引擎的修复说成全局清理;
+② 绝对路径不是可移植性的终点,「可重声明的根 + 相对路径」才是;③ 动已落盘产物前先 grep 谁钉了它的哈希。
+
+### 做法 69:等价变异要实测,别靠推理 —— 「pathlib 绝对右操作数胜出」只在 base 非 None 时成立(W24 自踩)
+
+设计变异矩阵时我认定「去掉 `resolve_inputs` 的 `if pp.is_absolute(): return pp` 分支」是等价变异,
+推理依据:pathlib 里 `base / 绝对路径 == 绝对路径`,早返回多余。**实测被守卫判红**(backward_compatible):
+旧产物**无 root**(base=None),绝对路径去掉早返回后落到 `if base is None: raise`。
+推理漏了 base 可为 None 这一支 —— 等价只在 base 非 None 时成立,而旧产物恰恰 base=None。
+改用真正的等价变异(`inputs.get("docs") or []` → `inputs.get("docs", [])`,docs 恒为列表)才存活。
+**规约**:等价变异与缺陷变异一样要跑一遍再定性(坑99 同源:推理代替实验就会错);
+「显然等价」的代数律往往有未声明的前提(base 非 None、键恒存在),前提正是缺陷藏身处。
+
+### 坑 142:「向后兼容」守卫喂的是合成旧产物 —— 仓库里真那份一喂就抛,215/341 不是交付助手的数(V22 实测 W24)
+
+**实测**:W24 声称 `resolve_inputs` 向后兼容旧产物,并报「旧冻结产物·严格算法·换 cwd = 215/341」。
+拿**仓库里真那份** `pilot/oracles_harvested.json`(sha256 `82fa1e91…367f7`,schema_version 1)喂交付助手:
+
+```
+ValueError: 相对出处路径但产物未声明 root，无法重建: openapi.json
+```
+
+**0/341,直接抛错**。原因:真旧产物正是坑 69 原缺陷态 —— `inputs.openapi="openapi.json"` 裸相对且无 root。
+`resolve_inputs` 的「相对无根必抛」是**设计正确**(绝不退回 cwd),但它的 `backward_compatible` 守卫
+(`test_oracle_harvest.py:817`)喂的是**自己合成的全绝对旧产物**(openapi=None),永远走不到那一支。
+
+**215/341 我独立复现了,但口径不同**:绕开助手、直接字面读 `inputs` 跑严格算法 A,
+得 **215/341,失败分类 openapi=60 / annotation=66**,与坑 71 的数逐位吻合。
+所以那个数真,但**不是交付的消费者助手能达到的数** —— 表格把它列在「新消费者」语境下是口径错(坑 71 同源)。
+
+**规约**:
+1. 声称「向后兼容旧产物」,守卫必须喂**仓库里真实存在的那份旧产物**,不是合成一个理想化的旧产物。
+   合成夹具会恰好避开真实旧产物的缺陷态(此处:裸相对 openapi)。
+2. 「兼容」与「fail-loud 抛错」可以是同一份代码的两种正确行为,但**报数时必须说清是哪条路径产生的**。
+   抛错路径的分子是 0,不是 215。
+3. 与坑 71(不声明消费者算法,分子分母任意)、坑 138(夹具覆盖形态要普查)同源。
+
+### 坑 143:根相对路径的守卫夹具 cwd==root —— 生产者侧「拿 cwd 当根」与「拿声明根」不可区分(V22 实测 W24)
+
+**实测**:W24 的 M3 只把**消费者侧** `base` 改成 `Path.cwd()`。我在**生产者侧**下锚点:
+`rel()` 的 `p.relative_to(root)` → `p.relative_to(Path.cwd())`(记 N1);另下 N2:根只由 ddl+java 算,漏 docs/openapi。
+
+| 通道 | N1 | N2 |
+|---|---|---|
+| 入库合成夹具(`_CONSUMER_SCRIPT`,cwd==root,单根) | **SURVIVED** | **SURVIVED** |
+| 真实 341 语料(cwd=/tmp/…,root=/Users/june,三根) | KILLED(harvest 崩 ValueError) | KILLED(同) |
+
+根因:入库夹具在 `A/` 里采集且全部输入都在 `A/` 下 → **cwd 恰好等于 root**,两种写法产出逐字节相同;
+且夹具只有一个根,**「根必须覆盖全部输入类」这条不变式无输入可测**。
+W24 自己推回编排者「单根前提错、inputs 横跨三根」,但**它的守卫夹具正是单根** —— 论断与守卫粒度不匹配(做法 35)。
+
+**注意杀法**:N1/N2 在真实语料上是被**未捕获的 ValueError 崩溃**杀的,不是被指名守卫断言杀的。
+若要入库,期望红名得先设计(崩溃 ≠ 指名红,坑 78 的代杀家族)。
+
+**规约**:凡是「相对某个根」的修复,夹具必须让 **cwd ≠ root** 且 **输入跨多个根**;
+否则生产者侧的 cwd 依赖与根覆盖缺口都测不出来。消费者侧变异杀得掉,不代表生产者侧有守卫。
+
+### 坑 144:`root_override` 传相对路径 → 静默重新引入 cwd 依赖,「cwd 永不参与」对参数也得成立(V22 实测 W24)
+
+**实测**:同一份 schema v2 产物、同一个**相对** `root_override="level5"`:
+
+| 消费者 cwd | 严格算法 A |
+|---|---|
+| 新根的父目录 | **341/341** |
+| 无关目录 | **0/341** |
+
+绝对 override 对照:两种 cwd 都 **341/341**。
+`resolve_inputs` 里 `base = Path(root_override)`,不校验绝对性 → `base / pp` 仍是相对路径,重建结果随 cwd 漂。
+docstring 明写「**cwd 永不参与重建**」,该不变式**只对产物侧成立,对参数侧不成立**。
+入库 7 条 provenance 守卫无一覆盖(它们的 override 全是绝对路径)。
+
+**这是坑 69 的同族回归,只是入口从「产物记裸相对」换成了「消费者传裸相对」。**
+修法一行:`base = Path(root_override).resolve()`(或显式拒绝非绝对 override),并补一条相对 override 的守卫。
+
+**规约**:声明「X 永不参与」时,要把**所有能引入 X 的入口**都列出来逐个堵 ——
+产物字段堵了、函数参数没堵,等于没堵。与坑 130(同一语义两处实现会一精一粗漂移)同源。
+
+### 做法 70:反向夹具要放在**消费侧**,不只采集侧 —— 采集侧符号链接已被引擎 resolve,撕裂不可达(V22)
+
+**实测**:W24 有反向守卫 `test_provenance_legit_symlink_not_false_red`,在**采集侧**放
+`link.json -> real/spec.json`。但引擎采集前已 `.resolve()`,记录路径必规范 → 该夹具下
+「重建时强制 resolve」这个缺陷态**不可达**。我下锚点 N5:`return base / pp` → `return (base / pp).resolve()`:
+
+- 入库夹具:SURVIVED;真实 341 语料:SURVIVED;我的 8 个合法场景(含符号链接根、含 `..` 的根):全 SURVIVED。
+- **只在一个新场景可达**:搬迁后的目标机上,`spec/openapi.json` 是**异名符号链接** → `openapi-v2.json`。
+  交付实现 `base/pp` 保住 basename `openapi.json`,与 reference 一致 → **2/2 不误红**;
+  N5 resolve 后 basename 变 `openapi-v2.json` → **撕裂判红**。
+
+**定性纪律(坑 61/做法 69)**:N5 在前 3 类夹具下全存活时,我**没有**直接报「守卫无牙」,
+而是继续找可达态;找到了才定性为覆盖缺口。找不到就该报等价变异。
+
+**反向锚点结果**:8 个合法场景(稳定名符号链接 / 单文件直接在根 / openapi=None 部分输入 /
+符号链接根 override / 含 `..` 的根 override / 旧全绝对无 root / 混合 root+绝对),
+交付实现**误红 0**;真等价变异 N4(去 `if p is not None` 过滤,调用方永不含 None)两通道均存活。
+
+**自踩一处(做法 39)**:我第一版 `..` override 写成 `real_tree/mig/../..`,多跳一级指向了 real_tree 的**父目录**,
+于是把交付实现判成「误红」。那是**我的用例造错**,不是它的缺陷。修正为 `mig/..` 并加自证断言
+(`normpath(override) == real_tree` 且 `(override/"d.md").exists()`)后重跑,误红归零。
+**报反向假阳性前,先自证夹具本身合法。**
+
+### V22 独立验证结论:W24 出处可移植性修复 —— **PARTIAL**(机制真且比声称更强;三处推回全成立;1 条声称被证伪 + 1 个新洞 + 3 处守卫覆盖缺口)
+
+**快照(坑 126)**:324 个 tracked 文件聚合 sha256 `122b67e1dc4fe4b7b28112671b596fdb6afa6608dc73176a8222d26ac9be8326`;
+`oracles_harvested.json` `82fa1e91…367f7`、`test_higher_order.py` `ca01e323…60c92`、`oracle_harvest.py` `4b899f8c…5a992`。
+验证全程只读 + /tmp 副本 + PATH 挡板(javac/mvn/docker/java/jar/gradle),结束后 324 文件逐字节复核**零差异**,
+git status 与开场一致;挡板唯一命中是我自己的 `javac -version` 自证,套件与变异**零工具链调用**。
+
+**基线差值(先量再报)**:HEAD 独立树(`git archive` + 补齐 212 个未跟踪产物)= **1464 passed + 12 subtests**;
+工作树同源双树 = **1470 passed + 12 subtests** → **+6 守卫**,与声称一致,零回归。
+(第一次 HEAD 树只跑 1460+4 skip,原因是 `git archive` 不含 gitignore 的流水线产物 —— 是我的树缺文件,不是回归。)
+
+**三处推回**:
+1. **方向成立,绝对数不可复现**。编排者的「50」恰等于 **git tracked HEAD 计数**(我实测 50)。
+   工作树含未跟踪实测 **57**(清理前 62);W24 报 59→54。**差值 5 精确吻合**,但绝对数差 3。
+   12 个未跟踪命中文件 mtime 全 ≤14:39,W24 改文件在 22:49 → **无语料漂移**,差 3 属口径差,无其 harness 不可判定。
+   分解逐项核:demos 13 ✓、根文档 4 ✓、pilot 文档/脚本 10 ✓(清理后)、pilot 测试 3 ✓(清理前)、pilot JSON 28(它报 29)。
+   **它的分解混用了清理前/后两个时刻**(测试数取清理前、文档数取清理后)。
+2. **成立,字段数精确吻合**。`pilot/all_findings.json` `findings[].location.file`=**55** ✓、
+   `pilot/edges.json` `edges[].evidence[].file`=**62** ✓、warrant.evidence / oracle.reference / corroborated_by / repro_cmd 均在。
+   加权(做法 50):53 个可改文件 = 引擎 JSON 产物 34 + 手写配置/项目声明 5 + 脚本 5 + 文档 7 + 测试 2;
+   `oracle_harvest` 只拥有 **1/53(1.9%)**、**1/34 引擎产物(2.9%)** → 过度归因成立。
+   **一处措辞过宽**:「全由禁改引擎产出」不确切 —— 5 个是手写配置/项目声明(target.json ×2、class_scenarios、
+   file_findings_config、jiuyan-layer-manifest),不是引擎产出。
+3. **成立,决定性实验**。三根实测 = `jiuyan` / `tests/auto-api` / `.cc-weixin`(审计快照);
+   我独立重算 `commonpath(parents)` = **`/Users/june`**,与产物记的根相同;**79/79** 条「根+相对」逐条回原文命中。
+   `test_higher_order.py:701` 钉整文件 sha256 `82fa1e91…`;在 /tmp 副本上把产物换成 v2 重生产物 →
+   **M10 立即红**(rc=1,正是「语料快照漂移」断言),原产物 rc=0。冻结产物与 `test_higher_order.py`
+   的 git blob hash 与 HEAD **完全相同**(`19269f0d…` / `d4778528…`)→ **未 unilateral 改,授权边界守住**。
+
+**声称实测独立重跑**:新格式原根换 cwd **341/341** ✓;旧产物严格算法 A **215/341**(openapi 60 + annotation 66)✓;
+5 变异我独立重放**全指名杀、零代杀**(M1 红 root_declared+cwd_independent、M2 recorded_relative+root_portable、
+M3 cwd_independent+root_portable、M4 **单红** backward_compatible、M5 **单红** root_portable);
+空对照 rc=0、等价变异存活 ✓;矩阵**真入库可重跑**(`_PROVENANCE_MUTATIONS` + `_CONSUMER_SCRIPT`,7 条 provenance 守卫全绿,坑 123 满足)。
+
+**比声称更强的一处**:它自己的换根守卫是 `tmp_path/machineA → tmp_path/machineB`(**同父目录**)。
+我换成**完全不同的父目录链 + 不同深度**(`/tmp/v22/exp/machineB/deep/nested/level4/level5`,复制 79 文件,原根仍存在)
+→ **341/341**,且全部重建路径都在新根下(未偷用原根)。**「换 root」不依赖同父目录**,
+它自认的局限比实际更悲观;真正的局限是**三仓库各自独立搬迁**:单根最好成绩 **183/341**(root=indepA),局限如实声明 ✓。
+
+**证伪与新洞**:坑 142(真旧产物一喂就抛,215 不是助手的数)、坑 144(相对 root_override → 341 vs 0 随 cwd 漂)。
+**守卫覆盖缺口**:坑 143(N1 生产者侧 cwd 当根、N2 根漏算输入类,入库夹具全存活)、做法 70(N5 消费侧异名符号链接才可达)。
+
+**残留**:
+1. **修 inputs 不能让该产物脱离绝对路径普查**:新采集产物实测仍含 `/Users/june` **2 处** ——
+   `inputs.root` 本身就是 `/Users/june`(设计如此,可重声明),以及 `untranscribed[].source.text`
+   (转录的 jiuyan/AGENTS.md 原文,属证据内容,不该改)。故「重生它就能清掉这个文件」不成立。
+2. 根 = **home 目录**,绑定极宽:可移植要求目标机保持三仓库在 home 下的同一相对布局。
+3. 冻结产物未修(授权外),旧产物 60 openapi + 66 annotation 出处仍断;且交付助手对它直接抛错。
+4. 三仓库独立搬迁需 roots-map 扩展(已声明)。
+
+**V22 新锚点清单(坑 123,供重建;harness 在 /tmp/v22/{anchors,reverse,n5reach}.py,一次性不可重放)**:
+
+| 锚点 | 原文 → 缺陷态 | 入库夹具 | 真实语料 | 期望红名 |
+|---|---|---|---|---|
+| N1 | `p.relative_to(root)` → `p.relative_to(Path.cwd())` | SURVIVED | 崩溃 | 无(需新设计) |
+| N2 | `_provenance_root(ddl+java+docs+openapi)` → `(ddl+java)` | SURVIVED | 崩溃 | 无(需新设计) |
+| N4 | 去 `if p is not None`(真等价) | SURVIVED | SURVIVED | 须存活 |
+| N5 | `base / pp` → `(base / pp).resolve()` | SURVIVED | SURVIVED | 消费侧异名符号链接夹具:basename 撕裂 |
+| N3 | 反向 8 合法场景(非变异) | — | — | 交付实现误红须为 0(实测 0) |
+
+### 坑 145:V22 证伪后重修 —— 「向后兼容」要喂真旧产物、cwd 不变式要堵参数侧、生产者侧守卫要 cwd≠root+多根(W24 重修)
+
+V22 判 PARTIAL:机制真且比声称更强,但 1 条声称被证伪 + 1 个新洞 + 3 处守卫覆盖缺口。逐条修(全部独立重放后动手):
+
+**必修1(坑142,证伪命中)——选「如实限定」,不加 cwd 回退**。真旧产物 `pilot/oracles_harvested.json`
+(schema_version 1,openapi="openapi.json" 裸相对无 root)喂 `resolve_inputs` 直接 ValueError,**0/341**;
+我原 `backward_compatible` 守卫喂的是合成全绝对旧产物(openapi=None),永远走不到那一支。
+**路线选择理由**:助手核心不变式是「cwd 永不参与重建」,V22 已双向确认无根抛错正确、坑69 未回归;
+若加「cwd 下可唯一解析则用之+告警」(路线①),会把坑69 的 cwd 依赖从产物侧搬到消费者侧重新引入,
+告警只是可见不是修复。故选路线②:**兼容口径限定为「全绝对旧产物」;裸相对无 root 的坑69原缺陷态仍抛错**。
+**V22 二轮补的三条更硬论据(路线①不可接受的实质)**:
+① **唯一匹配≠正确匹配**——在 cwd 下种一个同名文件,路线①会把它当出处接受;审计系统里这是**静默替换证据**,
+比解析不了严重:**解析不了会红,替换了会绿着错**。② **非确定性**——「唯一」随目录内容变,同产物不同 cwd 解析到不同文件。
+③ **信息采集时已丢**——裸相对 openapi 的目录在采集那一刻就丢了,消费者侧任何猜法都是事后伪造,不是恢复。
+215/341 是**绕开助手字面读 inputs 跑严格算法 A** 的数,不是助手能达到的数(助手抛错路径分子是 0)。
+新守卫 `test_resolve_inputs_real_legacy_artifact_fails_loud` **喂仓库里真那份**(不在本机则 skip),
+断言抛错 match openapi.json,并把全绝对条目单独喂证明兼容边界。
+
+**必修2(坑144,新洞)——显式拒绝相对 root_override(无绝对 override 时也拒绝相对产物 root)**。实测相对 override
+随 cwd 漂(从 /tmp 78/78 → 从子目录 0/78),绝对 override 恒稳。docstring「cwd 永不参与」原先只对产物侧成立、
+对参数侧不成立。**选择理由**:把同一不变式堵到所有入口(坑144 规约)——相对 override 强制按调用时 cwd 解释,
+即便 `.resolve()` 规范化也是 cwd 参与了;拒绝它最干净、最不意外。新守卫锁:相对 override → ValueError;
+**无绝对 override 时**相对产物 root → ValueError(**有绝对 override 时相对产物 root 被遮蔽、接受且 cwd 未参与**,V22 二轮核明非缺陷);
+绝对 override 重建后换 cwd 路径仍存在。
+
+**必修3(坑143 N1/N2、做法70 N5)——补可达夹具,崩溃映射到指名红**。原入库夹具 cwd==root 且单根,
+生产者侧 N1(`relative_to(root)`→`relative_to(Path.cwd())`)、N2(根漏算 docs/openapi)都不可区分;
+采集侧符号链接已被引擎 resolve,N5(`base/pp`→`(base/pp).resolve()`)不可达。新 `_ROOT_COVERAGE_SCRIPT` 三模式:
+- n1:cwd=parent 是 root(repoA) 的**祖先**(cwd≠root),单根 → N1 记录路径多套一层 → 消费侧 `root_covers_all_inputs` 红(不崩溃)。
+- n2:**多根**(repoA mig+java / repoB docs+openapi)→ N2 根=repoA 漏 repoB → `relative_to` 抛错 → harvest 崩溃映射到 `producer_root_coverage` 红。
+- n5:**消费侧异名符号链接**(目标机 spec.json→spec-v2.json)→ N5 resolve 后 basename 撕裂 → `no_basename_tearing` 红。
+三变异各**单红精确**;空对照三模式 rc=0;**夹具依赖性自证**:N1 在原 cwd==root 夹具存活、N2 在单根夹具存活
+(证明旧缺口真实,新夹具不是装饰);N4 真等价(去 `if p is not None`,调用方永不含 None)三模式存活。
+
+**必修4(措辞 + 快照口径,坑126)**:① 「全由禁改引擎产出」改「多数由禁改引擎产出,5 个是手写项目声明」
+(target.json ×2、class_scenarios、file_findings_config、jiuyan-layer-manifest)。② 分解混用清理前/后快照且
+**把 file_deps.txt 误计入 JSON**(我报 29,V22 数 28)。③ **计数口径终极值(坑147 钉值)**:我报 54 是用扩展名过滤
+漏了 3 个(.mjs ×2 + maven inputFiles.lst ×1);V22 同口径 **57**。改用无扩展名过滤、仅排 __pycache__ 的口径:
+**57 = 45 tracked + 11 ignored + 1 untracked**(28 JSON + 1 txt + 9 文档/脚本 + 2 测试 + 13 demos + 4 根),
+钉值见坑147(除 append-only 的 LESSONS.md 外 56 文件聚合 sha256 `6e349d8f…225985`)。
+
+**局限自述改正(V22 比声称更强)**:整树搬**完全不同父目录链+不同深度**(/tmp/w24_deep/a/b/c/d/level5,原根仍在)
+独立重放 **341/341** → 「换 root」**不依赖同父目录**;真局限只是三仓库独立搬迁(单根最好 **183/341**,root 覆盖 jiuyan)。
+
+**实测差值**:全量 pilot **1470→1477**(+7 守卫:真旧产物/拒相对 override/拒相对产物 root/N1N2N5 矩阵/三模式空对照/
+夹具依赖自证/N4 等价),rc=0 零回归,纯净度 rc=0。冻结产物 sha 未动(M10 绿),jiuyan 未改,禁改文件未碰。
+
+### 坑 146:看着像 off-by-one 的缺陷被代数中和 —— 「根=文件而非父目录」与「校验没堵全」两次都是我的假指控(V22 第二轮自踩)
+
+第二轮我下了两个新锚点/指控,**两个都被决定性实验否掉**,记下来防再犯:
+
+1. **P1「根算成文件本身」**:`_provenance_root` 的 `str(p.parent)` → `str(p)`。看着是 off-by-one:
+   单输入时 `commonpath([文件])` = 文件本身,根就成了文件。它在**入库三模式 + 旧消费夹具全存活**,
+   我造单输入夹具想证可达,结果 **1/1 仍解析成功**。原因:`rel(p) = p.relative_to(p) = "."`,
+   而 `Path(文件) / "." == Path(文件)` —— **pathlib 把 `"."` 中和掉了**。多输入时
+   `commonpath(文件集) == commonpath(父目录集)`(文件不能同时是目录,不存在前缀包含)。
+   ⇒ **真等价变异,不是守卫缺口**。按坑 61/做法 69 定性为等价,不许报「无牙」。
+2. **「绝对 override + 相对产物 root 未抛错」**:我第一版判 FAIL,以为坑 144 没堵全。
+   决定性实验:同一产物同一绝对 override,在两个 cwd 下重建 → **路径逐条相同、全绝对且存在**
+   ⇒ **cwd 根本没参与**,不变式成立。相对 root 被绝对 override **遮蔽(shadow)**, never used。
+   ⇒ 不是缺陷,只是「拒绝相对产物 root」这句措辞该限定为「无绝对 override 时」。
+   而且在此处强行拒绝反而会**误红合法输入**(消费者已有绝对根,不该被产物里的陈旧字段卡住)。
+
+**规约**:
+1. 报「守卫无牙」前必须找到**可达缺陷态**;代数中和(`x / "."`、`commonpath` 幂等)会让缺陷态不可达。
+   找不到就报等价变异,别把等价写成缺口(坑 61)。
+2. 报「入口没堵全」要按**不变式是否被破坏**判,不是按「有没有那句校验」判。
+   被遮蔽的字段不构成入口。判据实验 = 换 cwd 比对重建结果是否逐条相同。
+3. 与做法 39(先怀疑自己的 scope 与用例)、坑 99(撤回/指控都要先做能判定的实验)同源。
+   本轮我还在 `..` override 上造错过一次层级(第一轮),**反向指控前先自证夹具合法**已成硬规。
+
+### 做法 71:拒绝「cwd 下可唯一解析则用之+告警」—— 那不是可见性不足,是**静默替换证据** + 非确定性(V22 裁定 W24 路线②)
+
+W24 必修1 在两条路线里选了②(如实限定兼容口径,不加 cwd 回退),理由「告警只是可见不是修复」。
+**我同意,且理由比它说的更硬**:
+
+1. **唯一匹配不等于正确匹配**。消费者的 cwd 与采集时 cwd 是**两个不同的目录**;
+   在消费者 cwd 下恰好唯一命中,是巧合不是证据。第一轮 E6b 我已实测:在 cwd 下**种一个同名文件**,
+   交付实现仍抛错。若走路线①,那个种下的文件会被当成出处接受 —— 在审计系统里这是
+   **用错误的文件替换真证据**,比「解析不了」严重得多:解析不了会红,替换了会**绿着错**。
+2. **非确定性**:「唯一」随目录内容变化。今天唯一命中、明天别处多一个同名文件就变成歧义或命中另一个,
+   **同一份产物的出处解释随时间漂**,违反产物自足(坑 71)。
+3. **信息不在产物里,消费者算法造不出来**。真旧产物的 openapi 目录在采集时就丢了(坑 69),
+   任何消费者侧猜测都不能恢复它。唯一真修法是重采,而重采撞 M10 整文件 sha 钉死 →
+   **正确动作是升级给编排者裁定,不是 unilateral 改**(W24 做对了)。
+
+**规约**:出处/证据类解析,**fail-loud 优于 best-effort + 告警**。
+「告警」把判断责任推给人,而人看到的是绿;审计链路里宁可红着停,不可绿着错。
+与坑 69(绝不静默退回 cwd)、做法 38(诚实的 false 不是缺陷)同源。
+
+### V22 第二轮复验结论:W24 四条重修 —— **PASS**(机制与全部核心声称成立;残留仅文档口径与夹具健壮性,零机制缺陷)
+
+**快照(坑 126)**:324 tracked 文件聚合 sha256 `08e16a753404be24c6ba000e184b59a40bef270625465da3830fdb98bf22e272`;
+`oracle_harvest.py` `d9ba7dac…b9591`、`test_oracle_harvest.py` `48c7a9ec…a245c`;
+冻结 `oracles_harvested.json` `82fa1e91…367f7`、`test_higher_order.py` `ca01e323…60c92` **均未动**。
+全程只读 + /tmp 双树 + PATH 挡板;结束后 324 文件逐字节复核**零差异**,挡板零命中(除我自己的自证)。
+
+**基线**:工作树同源双树 **1477 passed + 12 subtests**,rc=0(第一轮 1470 → **+7** ✓);M10 单跑 rc=0;
+8 变异入库矩阵单跑 rc=0。
+
+**必修1 —— PASS,且证明它真读仓库那份**:守卫单跑 **PASSED 非 SKIPPED**。
+决定性实验(在 /tmp 副本上):把产物换成**合成全绝对 v1** → 守卫**判红**「真旧产物应是坑69原缺陷态」(rc=1);
+把产物删掉 → **SKIPPED**(reason=真实旧产物不在本机)。⇒ 它读的是真文件、断言的是真缺陷态,
+**没有重犯上轮「合成夹具替代真产物」的病根**。路线②理由成立(见做法 71,我给出更硬的两条论据)。
+
+**必修2 —— PASS,入口堵全**:相对 override + 绝对产物 root / 两者都相对 / 相对产物 root 无 override → 均 ValueError;
+另测 5 种边界形态(`""`、`"."`、`"./x"`、`"rel/../abs"`、`Path("relative")`)与 3 种相对产物 root → **8/8 全拒绝**。
+绝对 override:原根换 cwd **341/341**;**异父链深目录搬迁**(复制 79 文件、原根仍在)两个 cwd 各 **341/341**。
+**一处措辞残留(非缺陷)**:绝对 override + 相对产物 root 被接受 —— 经换 cwd 逐条比对证明 cwd 未参与,
+相对 root 被遮蔽;措辞应限定为「无绝对 override 时拒绝相对产物 root」。
+
+**必修3 —— PASS,三模式各单红指名、零代杀**(我独立重放,非照抄):
+N1[n1]→`root_covers_all_inputs` 单红;N2[n2]→`producer_root_coverage` 单红(崩溃映射);
+N5[n5]→`no_basename_tearing` 单红。空对照三模式 rc=0。
+**夹具依赖性自证独立重跑成立**:N1 在旧消费夹具(cwd==root 单根)**rc=0 存活**;
+N2 在单根夹具(mode n1)**rc=0 存活**、在旧消费夹具亦存活 ⇒ 旧缺口真实,新夹具不是装饰。
+交叉模式:N2/N5 在另两模式存活(因子隔离正确);N1 在 n2 存活。
+**N4 等价性我独立重推**:唯一调用点实参 `ddl_files + java_files + doc_files + ([openapi] if openapi else [])`,
+三个列表由 `.extend()` 构造永不为 None,末项三元已过滤 openapi ⇒ **None 不可进入**,去过滤真等价;
+实测三模式 + 旧夹具**四处全存活**。(我第一版正则启发式误判「需查」,已按实参结构重推。)
+M1–M5 在第二轮引擎上独立重放:**5/5 指名杀、零代杀**(M3 本轮变单红)。
+
+**V22 第二轮新锚点(它 M/N 系列与我上轮 N 系列之外)**:
+| 锚点 | 缺陷态 | 结果 | 定性 |
+|---|---|---|---|
+| P1 | `str(p.parent)` → `str(p)`(根=文件) | 三模式+旧夹具+单输入夹具**全存活** | **真等价**(`文件/"."==文件`),非缺口(坑146) |
+| P2 | `"root": str(root)` → `root.name`(只记根 basename) | n1/n2 **单红 `root_covers_all_inputs`**;旧夹具红 `cwd_independent`;单输入夹具被**第二轮新校验**ValueError 拒绝 | **KILLED**,证明新校验在**生产者侧也有牙** |
+| P3 反向 | 5 个合法场景(裸 basename 根 / 尾斜杠 override / Path 对象 override / 含 `..` 且已自证 / 旧全绝对无 root) | **误红 0** | 新校验不过度 |
+
+**必修4 —— 部分闭合(唯一实质残留)**:措辞改正 ✓(5 个手写项目声明逐条列名,与我上轮清单一致);
+JSON 桶 29→28 已改正 ✓(承认我的 28)。**但总数仍不可复现**:它钉 54,我同口径实测 **57**
+(28 pilot JSON + 1 file_deps.txt + **9** 文档/脚本 + 2 测试 + **13** demos + 4 根文档),
+且命中文件集与第一轮**逐条零差异**(无语料漂移)。差 3 = 文档/脚本 9vs7、demos 13vs12。
+**未声明排除了哪 3 个文件、未钉语料哈希** ⇒ 坑 126 的「钉快照 + 声明口径」只做了一半。
+(可复现口径:57 = 45 tracked + 11 gitignored + 1 untracked 非忽略。)
+
+**局限自述改正 —— PASS**:异父链深目录 341/341 我独立重放确认;真局限只是三仓库独立搬迁(183/341)。
+
+**残留(均非机制缺陷)**:
+1. 必修4 计数口径:54 vs 57,排除范围与语料哈希未声明。
+2. 「拒绝相对产物 root」措辞未限定遮蔽情形(已实测非缺陷)。
+3. `_ROOT_COVERAGE_SCRIPT` 的 n5 夹具搭建代码在 `check()` 之外 → N1 跨模式跑 n5 时
+   **rc=1 但 reds=[]**(未指名崩溃)。不影响本轮声称(N5 在 n5 是干净单红),但跨模式重跑会拿到无名崩溃,
+   建议把夹具搭建也包进 `check()`。
+4. 第一轮残留不变:重生产物仍含 `/Users/june` 2 处(`inputs.root` 本身 + `untranscribed[].source.text` 转录原文);
+   根=home 目录绑定极宽;冻结产物未修(授权外,已升级);三仓库独立搬迁需 roots-map。
+
+### 坑 147:计数口径要钉哈希+声明排除集;根宽度是单根跨三仓库的症状,收窄需 roots-map(W24 三轮小清理)
+
+V22 二轮 PASS,四条非机制小清理:
+
+1. **计数口径终极值(坑126)**:我前两轮报 59→54 用了**扩展名过滤**(`.json/.py/.md/.sh/.yaml/.yml/.txt`),
+   漏了 3 个含 `/Users/june` 的文件:`pilot/frontend_mapper.mjs`、`pilot/numeric_probe.mjs`、
+   `demos/shop/backend/target/maven-status/.../inputFiles.lst`。**改用无扩展名过滤、仅排 `__pycache__` 构建缓存**的口径:
+   **57 = 45 tracked + 11 ignored + 1 untracked**(28 JSON + 1 txt + 9 文档/脚本 + 2 测试 + 13 demos + 4 根)。
+   钉值:除 `LESSONS.md`(append-only、承载本钉值,排除以避免自指循环)外 **56 文件**排序逐文件 sha256 再聚合
+   = `6e349d8ff499307a8ec75fe0a189c4204ff591a4f559c658da0345b40a225985`。
+   教训:报「含 X 的文件数」必须声明**扩展名/目录排除集**并钉语料哈希,否则过滤口径差几个文件就无法复现(坑126 同源)。
+2. **措辞限定**:「拒绝相对产物 root」加「**无绝对 override 时**」——有绝对 override 时相对产物 root 被遮蔽、
+   接受且 cwd 未参与(V22 实测,非缺陷)。引擎 docstring 与守卫已改准,守卫补「绝对 override 遮蔽相对 root」正例。
+3. **n5 夹具搭建包进 check()**:`_ROOT_COVERAGE_SCRIPT` 的 n5 分支原先把 copytree/unlink/symlink 放在 check 外,
+   N1 跨模式跑 n5 会无名崩溃(rc=1 reds=[])。包进 `check("no_basename_tearing", _n5)` 后,跨模式变异崩溃亦映射到指名红
+   (实测 N1×n5 → reds=['no_basename_tearing'])。教训:夹具搭建与断言需要同一层异常包装,否则跨模式复用产生无名红。
+4. **P1 是真等价,不杀**:pathlib 中和了 off-by-one(`rel="."` 而 `Path(文件)/"."==文件`),与 N4 同族,须存活。
+
+**根宽度方案建议(本轮不改,超小清理范围)**:commonpath 算到 `/Users/june`(home)是因为 inputs 横跨三仓库
+(jiuyan / tests/auto-api / 审计快照),**单根要覆盖全部输入,最小就是 home**——宽度是「单根跨三仓库」的症状,不是算法不最小。
+安全面:生产者发的相对路径不含 `..`,`resolve_inputs` 做 `base/rel`,宽根本身不引入穿越;主要风险是**宽根下 basename 碰撞**
+(严格算法 A 按 basename 匹配,home 下同名文件可能误配)。收窄方案 = **roots-map**:`inputs.roots={sut:<repo根>, regression:<repo根>, audit:<repo根>}`,
+各输入带 root 键,每个根收窄到**仓库根**;消费者按仓库重声明。这同时解决「根过宽」与「三仓库独立搬迁(183/341)」两个残留,
+是同一扩展的两面。代价:列表元素从 str 变 {root,path} 或加平行索引,消费者需同步——故须跨引擎协同,不在本引擎单改。
+
+**实测差值**:全量 pilot **1477→1477**(本轮纯清理,+0 守卫;守卫内补正例断言不增测试数),rc=0,纯净度 rc=0。
+冻结产物 sha 未动,jiuyan 未改,禁改文件未碰。

@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 from pathlib import Path
 from typing import Any
@@ -928,6 +929,64 @@ def _interface_asserts(cell: str) -> tuple[list[dict[str, Any]], list[str]]:
     return out, unmatched
 
 
+def _provenance_root(paths: list[Path]) -> Path | None:
+    """所有已解析输入路径的公共祖先目录 —— 唯一可重声明的根绑定。
+
+    产物把各输入记成相对此根的路径：消费者用「根 + 相对路径」重建，
+    既与采集时 cwd 无关（根是绝对的），又可跨机器移植（换机器只需重声明根）。
+    输入可能横跨多个仓库（被测系统 / 验收套件 / 审计快照），公共祖先是能覆盖
+    全部输入的单根；无输入时返回 None。
+    """
+    parents = [str(p.parent) for p in paths if p is not None]
+    if not parents:
+        return None
+    return Path(os.path.commonpath(parents))
+
+
+def resolve_inputs(report: dict[str, Any],
+                   root_override: str | Path | None = None) -> dict[str, Any]:
+    """消费者侧：从声明的根重建各输入的绝对路径。
+
+    可移植契约：产物里的路径相对 ``inputs.root``；另一台机器上的消费者传
+    ``root_override`` 重新指向本地根即可，**cwd 永不参与重建**——这条对产物字段
+    与函数参数两侧都成立：相对 ``root_override`` 一律显式拒绝；**无绝对 override 时**
+    相对产物 root 也显式拒绝（有绝对 override 时相对产物 root 被遮蔽、不参与重建，接受）。
+    绝不按调用时 cwd 解释（那会把坑 69 的 cwd 依赖从产物侧搬到参数侧）。
+    向后兼容（限定口径）：**全绝对路径**的旧产物（schema_version 1，无 root）原样返回；
+    裸相对且无 root 的旧产物（坑 69 原缺陷态，如 openapi="openapi.json"）仍显式抛错——
+    它的出处在采集时就已丢失，消费者侧猜 cwd 不是修复而是掩盖。
+    """
+    inputs = report.get("inputs") or {}
+    root = inputs.get("root")
+    if root_override is not None:
+        base = Path(root_override)
+        if not base.is_absolute():
+            raise ValueError(f"root_override 必须是绝对路径（cwd 永不参与重建）: {root_override}")
+    elif root:
+        base = Path(root)
+        if not base.is_absolute():
+            raise ValueError(f"产物声明的 root 必须是绝对路径（cwd 永不参与重建）: {root}")
+    else:
+        base = None
+
+    def one(p: Any) -> Path | None:
+        if p is None:
+            return None
+        pp = Path(p)
+        if pp.is_absolute():
+            return pp
+        if base is None:
+            raise ValueError(f"相对出处路径但产物未声明 root，无法重建: {p}")
+        return base / pp
+
+    return {
+        "migrations": [one(p) for p in inputs.get("migrations") or []],
+        "java_roots": [one(p) for p in inputs.get("java_roots") or []],
+        "docs": [one(p) for p in inputs.get("docs") or []],
+        "openapi": one(inputs.get("openapi")),
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--migrations", type=Path, nargs="*", default=[])
@@ -983,12 +1042,19 @@ def main() -> int:
     by_bucket: dict[str, int] = {}
     for u in untranscribed:
         by_bucket[u["bucket"]] = by_bucket.get(u["bucket"], 0) + 1
+    # 出处可移植：记一个公共祖先根 + 各输入的根相对路径（消费者用 resolve_inputs 重建）。
+    root = _provenance_root(ddl_files + java_files + doc_files + ([openapi] if openapi else []))
+
+    def rel(p: Path) -> str:
+        return str(p.relative_to(root)) if root is not None else str(p)
+
     report = {
-        "schema_version": 1, "engine": "oracle_harvest",
-        "inputs": {"migrations": [str(p) for p in ddl_files],
-                   "java_roots": [str(p) for p in java_files],
-                   "docs": [str(p) for p in doc_files],
-                   "openapi": str(openapi) if openapi else None},
+        "schema_version": 2, "engine": "oracle_harvest",
+        "inputs": {"root": str(root) if root is not None else None,
+                   "migrations": [rel(p) for p in ddl_files],
+                   "java_roots": [rel(p) for p in java_files],
+                   "docs": [rel(p) for p in doc_files],
+                   "openapi": rel(openapi) if openapi else None},
         "counts": {"total": len(oracles),
                    "oracles_count": len(oracles),
                    "explicitly_undefined_count": len(undefined),
