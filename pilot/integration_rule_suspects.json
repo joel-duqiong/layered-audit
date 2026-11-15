@@ -1,0 +1,115 @@
+{
+  "unconfirmed": [
+    {
+      "rule_id": "PRICE_CLIENT_CONTROLLED_XL",
+      "oracle": {
+        "source": "inferred",
+        "confirmation": "unconfirmed",
+        "reference": "无文档依据（现有文档只规定金额 >= 0）",
+        "note": "「成交价不得高于套餐价 / 多个价格必须相等」是推断的业务预期。业务校验对照.md:20 在「已确认一致的规则」表里记 resolveFinalPrice「一致」，API.md:337-338 与 AGENTS.md:425-427 规定 useFinalPrice=true 时保存请求中的 finalPriceCent，且 AGENTS.md:422-424 要求界面同时保留「方案合计」与「成交价」—— 两个价格并存且不等是设计，不是矛盾。价格篡改是真实的规范层风险，进待确认疑点清单等业务确认，不以 defect 进台账。",
+        "corroborated_by": [
+          {
+            "reference": "/Users/june/tests/auto-api/docs/业务校验对照.md:20",
+            "text": "| 使用成交价时保存成交价，否则保存方案合计 | AGENTS.md | `resolveFinalPrice` | 一致 |"
+          },
+          {
+            "reference": "/Users/june/jiuyan/docs/API.md:338",
+            "text": "`useFinalPrice=true` 时，后端保存请求中的 `finalPriceCent`。"
+          },
+          {
+            "reference": "/Users/june/jiuyan/AGENTS.md:422",
+            "text": "确认订单页保留“方案合计”。"
+          },
+          {
+            "reference": "/Users/june/tests/auto-api/tests/test_orders.py:14",
+            "text": "def test_create_order_use_final_price(api, make_order):",
+            "note": "confirmed 的可执行 oracle：成交价 5000 低于方案合计 8888 是正确行为"
+          }
+        ]
+      },
+      "finding": {
+        "id": "PRICE_CLIENT_CONTROLLED_XL",
+        "severity": "CRITICAL",
+        "endpoint": "POST /api/orders",
+        "title": "同一订单里并存两个互相矛盾的价格：成交价 0.01 元、套餐价 468.00 元",
+        "detail": "套餐标价 46800 分，客户端报成交价 1 分，后端原样落库并返回 200。更糟的是集成症状：OrderResponse 同时返回 finalPriceCent=1 与 packageSnapshot.priceCent=46800，而前端 mapOrder 正好一个用来渲染金额、一个用来渲染套餐价 —— Pad 端同一张订单会同时显示 0.01 元和 468.00 元。服务端没有任何按套餐计价的能力，定价权完全在客户端手上。",
+        "repro": "python3 integration_dynamic.py --scenario SC01_CLIENT_CONTROLLED_PRICE",
+        "evidence": {
+          "final_price_cent": 1,
+          "snapshot_price_cent": 46800,
+          "order_id": 2614,
+          "root_cause": "OrderService.resolveFinalPrice 直接采纳客户端 finalPriceCent",
+          "related_lower_layer": "服务层 test_price_is_not_client_controlled 已报根因，本条只补集成症状"
+        },
+        "owner": "集权层（集成症状；根因归服务层）"
+      }
+    },
+    {
+      "rule_id": "INT-THREE-PRICES-NO-DETAIL-TOTAL",
+      "oracle": {
+        "source": "inferred",
+        "confirmation": "unconfirmed",
+        "reference": "无文档依据（现有文档只规定金额 >= 0）",
+        "note": "「成交价不得高于套餐价 / 多个价格必须相等」是推断的业务预期。业务校验对照.md:20 在「已确认一致的规则」表里记 resolveFinalPrice「一致」，API.md:337-338 与 AGENTS.md:425-427 规定 useFinalPrice=true 时保存请求中的 finalPriceCent，且 AGENTS.md:422-424 要求界面同时保留「方案合计」与「成交价」—— 两个价格并存且不等是设计，不是矛盾。价格篡改是真实的规范层风险，进待确认疑点清单等业务确认，不以 defect 进台账。",
+        "corroborated_by": [
+          {
+            "reference": "/Users/june/tests/auto-api/docs/业务校验对照.md:20",
+            "text": "| 使用成交价时保存成交价，否则保存方案合计 | AGENTS.md | `resolveFinalPrice` | 一致 |"
+          },
+          {
+            "reference": "/Users/june/jiuyan/docs/API.md:338",
+            "text": "`useFinalPrice=true` 时，后端保存请求中的 `finalPriceCent`。"
+          },
+          {
+            "reference": "/Users/june/jiuyan/AGENTS.md:422",
+            "text": "确认订单页保留“方案合计”。"
+          },
+          {
+            "reference": "/Users/june/tests/auto-api/tests/test_orders.py:14",
+            "text": "def test_create_order_use_final_price(api, make_order):",
+            "note": "confirmed 的可执行 oracle：成交价 5000 低于方案合计 8888 是正确行为"
+          }
+        ]
+      },
+      "finding": {
+        "id": "INT-THREE-PRICES-NO-DETAIL-TOTAL",
+        "severity": "HIGH",
+        "endpoint": "CHAIN-D",
+        "title": "同一订单并存三个互不相等的价格，界面只展示其中两个，明细合计从不显示",
+        "detail": "客户端可把成交价改成 0.01 元，同时把明细数量改成 99；订单详情抽屉渲染了订单金额和套餐名，却没有渲染明细合计，业务侧没有任何一处能看出这两个数字对不上。",
+        "repro": "python3 integration_chain.py --chain CHAIN-D",
+        "evidence": {
+          "chain_steps": [
+            {
+              "n": 1,
+              "method": "PUT",
+              "path": "/api/orders/2621",
+              "status": 200,
+              "evidence": "匿名把明细数量改成 99，成交价保持 1 分"
+            },
+            {
+              "n": 2,
+              "method": "GET",
+              "path": "/api/orders/2621",
+              "status": 200,
+              "evidence": "订单金额 0.01 元 / 明细合计 4950.0 元 / 套餐标价 88.88 元 —— 三个数字互不相等"
+            },
+            {
+              "n": 3,
+              "method": "前端",
+              "path": "App.jsx 订单详情抽屉",
+              "status": null,
+              "evidence": "抽屉只渲染 已选套餐 / 加购商品 / 订单金额 / 定金，明细单价与明细合计一律不渲染，员工在界面上无法核对订单金额的构成"
+            }
+          ],
+          "evidence": "订单金额 0.01 元 vs 明细合计 4950.0 元 vs 套餐标价 88.88 元"
+        },
+        "owner": "集成层（链级后果；控价根因归函数层 FN-PRICE-CLIENT-CONTROLLED）"
+      }
+    }
+  ],
+  "unconfirmed_count": 2,
+  "refuted": [],
+  "refuted_count": 0,
+  "note": "集成症状为真，但「所以这是缺陷」需要业务预期。预期未经确认的进待确认疑点（规范层风险），被文档明确否定的只保留观测。两者都不进缺陷台账，链上每一步的证据原样留在这里。"
+}

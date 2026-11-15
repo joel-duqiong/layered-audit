@@ -1,0 +1,104 @@
+{
+  "unconfirmed": [
+    {
+      "rule_id": "SVC-POST-NOT-IDEMPOTENT",
+      "oracle": {
+        "source": "inferred",
+        "confirmation": "unconfirmed",
+        "reference": "无文档依据（全语料未声明下单幂等性要求；uk_orders_order_no 只保证订单号唯一，不保证业务去重）",
+        "note": "实测同一 POST 重发两次产生两张订单（2638/2639）为真，零鉴权下也可被灌单。这是真实的规范层风险，但是否要求幂等键/业务去重需业务方确认 —— 进待确认疑点，不以 defect 进台账，也不当成已排除。"
+      },
+      "finding": {
+        "id": "SVC-POST-NOT-IDEMPOTENT",
+        "severity": "MEDIUM",
+        "title": "下单接口没有幂等：同一个请求重发一次就产生两个订单",
+        "detail": "POST /api/orders 不接受也不返回幂等键，没有按业务键去重，也没有唯一约束能挡住重复。客户端在超时后重试（这是所有 HTTP 客户端的标准行为），就会多出一张订单。\n实测：{\"property\": \"同一个 POST 重发两次，只能有一个订单落库（POST 必须幂等或带幂等键）\", \"ok\": false, \"http_status\": [200, 200], \"first_order_id\": 2638, \"second_order_id\": 2639, \"orders_in_db\": 2, \"same_id\": false}\n在零鉴权的前提下，这个接口同时也是「随便重发就能灌订单」的放大器。",
+        "evidence": {
+          "evidence_refs": [
+            "concurrency_findings.json#SVC-POST-NOT-IDEMPOTENT"
+          ],
+          "location": {
+            "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
+            "line": 52,
+            "symbol": "POST /api/orders",
+            "endpoint": "POST /api/orders"
+          },
+          "source": {
+            "file": "concurrency_findings.json",
+            "index": 2
+          }
+        },
+        "repro": "python3 concurrency_props.py"
+      }
+    }
+  ],
+  "unconfirmed_count": 1,
+  "refuted": [
+    {
+      "rule_id": "SVC-PAGINATION-COUNT-DISCARDED",
+      "oracle": {
+        "source": "project_doc",
+        "confirmation": "refuted",
+        "reference": "/Users/june/jiuyan/AGENTS.md:139-140",
+        "text": "\"total\": 100, \"totalPages\": 5",
+        "note": "原结论「真正该修的不是加索引，而是别让后端算一个没人要的数」被明文契约否定：total 是契约要求返回的字段，前端不读不等于后端不该算。观测（count(*) 走 Seq Scan、50030 行时占端到端 36.1%/97.3%）为真且保留，但该成本的根因已由 index.idx_products_name_unusable 认领，不重复开单。缺陷断言撤销。"
+      },
+      "finding": {
+        "id": "SVC-PAGINATION-COUNT-DISCARDED",
+        "severity": "MEDIUM",
+        "title": "分页 total 是纯开销：后端每次列表请求都跑 count(*) 全表扫描，前端从不读这个数",
+        "detail": "每个列表接口都带分页参数，后端对每次请求额外跑一条 count(*) 全表扫描（Seq Scan，因为 idx_products_name 对 lower(name) LIKE '%…%' 不可用）。实测数据量阶梯：30 行 → 1.02ms；2030 行 → 3.97ms；10030 行 → 11.02ms；50030 行 → 29.97ms。\n在 50030 行时，count(*) 单条耗时 10.824ms，占带 keyword 列表接口端到端延迟的 36.1%，占不带 keyword 接口的 97.3%。\n而前端 banquetApi.js 的 listProducts / listPackages / listOrders 三个函数一律只取 data.items.map(...)，total 从未被读取 —— 这份开销 100% 浪费。\n本轮判定「端到端延迟随数据量塌陷」为 PARTIALLY_CONFIRMED：延迟确实随数据量线性增长，但 50030 行时端到端仅 29.97ms，按每行 0.000599ms 折算，要到约 1669336 行才触及 1 秒预算。\n结论：结构性 O(N) 成立，但当前规模下后果未兑现 —— 真正该修的不是「加索引」，而是别让后端算一个没人要的数。",
+        "evidence": {
+          "evidence_refs": [
+            "perf_findings.json#SVC-PAGINATION-COUNT-DISCARDED"
+          ],
+          "location": {
+            "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java",
+            "line": 35,
+            "symbol": "GET /api/products, GET /api/packages, GET /api/orders",
+            "endpoint": "GET /api/products, GET /api/packages, GET /api/orders"
+          },
+          "source": {
+            "file": "perf_findings.json",
+            "index": 0
+          }
+        },
+        "repro": "python3 perf_load.py --scales 0,2000,10000,50000"
+      }
+    },
+    {
+      "rule_id": "INT-LIST-COUNT-END-TO-END-WASTE",
+      "oracle": {
+        "source": "project_doc",
+        "confirmation": "refuted",
+        "reference": "/Users/june/jiuyan/AGENTS.md:139-140",
+        "text": "\"total\": 100, \"totalPages\": 5",
+        "note": "count(*) 占端到端 36.1%~97.3% 的观测为真并保留，但该成本的根因已由 index.idx_products_name_unusable 认领。「收益为零」被契约否定。detail 里另有一条独立观察「前端把 page 固定 1、pageSize 固定 100，超出部分不可见」——那是另一条预期（用户应能翻页），本轮未裁定，随观测留痕，不随本条一起当作已澄清。"
+      },
+      "finding": {
+        "id": "INT-LIST-COUNT-END-TO-END-WASTE",
+        "severity": "MEDIUM",
+        "title": "三个列表接口每次都为前端丢弃的 total 付一次全表扫描",
+        "detail": "三个列表接口（GET /api/products、/api/packages、/api/orders）在集权层实测中，每次请求的 count(*) 部分占端到端延迟的 36.1%~97.3%，而这个 total 前端从头到尾没读过。\n也就是说：用户每翻一次列表，后端就多付一次全表扫描的钱，收益为零。同时前端把 page 固定成 1、pageSize 固定成 100，超出部分永远不可见 —— 分页机制在这条链路上同时是「成本」和「不可用」。",
+        "evidence": {
+          "evidence_refs": [
+            "perf_findings.json#INT-LIST-COUNT-END-TO-END-WASTE"
+          ],
+          "location": {
+            "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java",
+            "line": 35,
+            "symbol": "GET /api/products, GET /api/packages, GET /api/orders",
+            "endpoint": "GET /api/products, GET /api/packages, GET /api/orders"
+          },
+          "source": {
+            "file": "perf_findings.json",
+            "index": 0
+          }
+        },
+        "repro": "python3 perf_load.py --scales 0,2000,10000,50000"
+      }
+    }
+  ],
+  "refuted_count": 2,
+  "note": "台账漏斗级闸门拦下的结论：生产者本身是探针（禁跑）装不了闸门，裁定由 warrant_registry.json 声明、在唯一入台账处执行。未经确认的进待确认疑点（规范层风险），被文档明确否定的只保留观测。"
+}

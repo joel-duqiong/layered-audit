@@ -1,0 +1,4547 @@
+{
+  "schema_version": 1,
+  "engine": "oracle_bridge",
+  "closed_primitives": [
+    "field_default_when_absent",
+    "field_eq_field",
+    "field_gt_const",
+    "field_gte_const",
+    "field_gte_field",
+    "field_in_set",
+    "field_lte_const",
+    "field_lte_field",
+    "field_not_blank",
+    "field_not_null",
+    "field_pattern",
+    "field_size",
+    "text_not_contains"
+  ],
+  "counts": {
+    "total": 312,
+    "oracles_count": 308,
+    "explicitly_undefined_count": 4,
+    "total_declarations": 312,
+    "denominators_disjoint": true,
+    "denominator_overlap_ids": [],
+    "eligible_confirmed": 253,
+    "excluded": 59,
+    "mapped_oracles": 203,
+    "mapped_rules": 203,
+    "unmappable": 50,
+    "three_bucket_sum": 312,
+    "bucket_caliber": "oracles",
+    "numerator": 203,
+    "denominator": 308,
+    "denominator_all_declarations": 312
+  },
+  "denominator_caliber": "两个不重叠集合：oracles 数组 308 条（confirmed/needs_confirmation）+ explicitly_undefined 独立桶 4 条（全 refuted）= 处理总数 312。counts.total == total_declarations（桥处理总数），counts.oracles_count == 308（采集器 counts.total 口径）。差值 4 来自 refuted 独立成桶，不是丢判据；refuted 永不进判定。三桶按**判据数**闭合（bucket_caliber=oracles）：可映射判据 203 + 不可映射 50 + 排除 59 = 312 == 处理总数。一条判据可映射成多条规则（复合 range 的双边界），故 mapped_rules=203 >= mapped_oracles=203；规则数另报，不参与三桶闭合。可映射率两种口径都报：203/308（oracles 数组）与 203/312（全部声明）。",
+  "mapped": [
+    {
+      "id": "anno:AddedItemRequest.productId.notnull",
+      "oracle_id": "anno:AddedItemRequest.productId.notnull",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "AddedItemRequest",
+      "claim": "@NotNull",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "AddedItemRequest.java:7",
+        "text": "@NotNull"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "productId"
+      }
+    },
+    {
+      "id": "anno:AddedItemRequest.quantity.min",
+      "oracle_id": "anno:AddedItemRequest.quantity.min",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gte_const",
+      "level": "L1_executable_constraint",
+      "scope": "AddedItemRequest",
+      "claim": "@Min(1)",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "AddedItemRequest.java:8",
+        "text": "@Min(1)"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "quantity",
+        "value": 1
+      }
+    },
+    {
+      "id": "anno:AddedItemRequest.quantity.notnull",
+      "oracle_id": "anno:AddedItemRequest.quantity.notnull",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "AddedItemRequest",
+      "claim": "@NotNull",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "AddedItemRequest.java:8",
+        "text": "@NotNull"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "quantity"
+      }
+    },
+    {
+      "id": "anno:CreateCategoryRequest.name.notblank",
+      "oracle_id": "anno:CreateCategoryRequest.name.notblank",
+      "primitive_from": "not_blank",
+      "primitive_to": "field_not_blank",
+      "level": "L1_executable_constraint",
+      "scope": "CreateCategoryRequest",
+      "claim": "@NotBlank",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "CreateCategoryRequest.java:7",
+        "text": "@NotBlank"
+      },
+      "assert": {
+        "type": "field_not_blank",
+        "left": "name"
+      }
+    },
+    {
+      "id": "anno:CreateOrderRequest.banquetName.notblank",
+      "oracle_id": "anno:CreateOrderRequest.banquetName.notblank",
+      "primitive_from": "not_blank",
+      "primitive_to": "field_not_blank",
+      "level": "L1_executable_constraint",
+      "scope": "CreateOrderRequest",
+      "claim": "@NotBlank",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "CreateOrderRequest.java:14",
+        "text": "@NotBlank"
+      },
+      "assert": {
+        "type": "field_not_blank",
+        "left": "banquetName"
+      }
+    },
+    {
+      "id": "anno:CreateOrderRequest.banquetType.notblank",
+      "oracle_id": "anno:CreateOrderRequest.banquetType.notblank",
+      "primitive_from": "not_blank",
+      "primitive_to": "field_not_blank",
+      "level": "L1_executable_constraint",
+      "scope": "CreateOrderRequest",
+      "claim": "@NotBlank",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "CreateOrderRequest.java:15",
+        "text": "@NotBlank"
+      },
+      "assert": {
+        "type": "field_not_blank",
+        "left": "banquetType"
+      }
+    },
+    {
+      "id": "anno:CreateOrderRequest.customerName.notblank",
+      "oracle_id": "anno:CreateOrderRequest.customerName.notblank",
+      "primitive_from": "not_blank",
+      "primitive_to": "field_not_blank",
+      "level": "L1_executable_constraint",
+      "scope": "CreateOrderRequest",
+      "claim": "@NotBlank",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "CreateOrderRequest.java:12",
+        "text": "@NotBlank"
+      },
+      "assert": {
+        "type": "field_not_blank",
+        "left": "customerName"
+      }
+    },
+    {
+      "id": "anno:CreateOrderRequest.customerPhone.notblank",
+      "oracle_id": "anno:CreateOrderRequest.customerPhone.notblank",
+      "primitive_from": "not_blank",
+      "primitive_to": "field_not_blank",
+      "level": "L1_executable_constraint",
+      "scope": "CreateOrderRequest",
+      "claim": "@NotBlank",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "CreateOrderRequest.java:13",
+        "text": "@NotBlank"
+      },
+      "assert": {
+        "type": "field_not_blank",
+        "left": "customerPhone"
+      }
+    },
+    {
+      "id": "anno:CreateOrderRequest.depositCent.min",
+      "oracle_id": "anno:CreateOrderRequest.depositCent.min",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gte_const",
+      "level": "L1_executable_constraint",
+      "scope": "CreateOrderRequest",
+      "claim": "@Min(0)",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "CreateOrderRequest.java:25",
+        "text": "@Min(0)"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "depositCent",
+        "value": 0
+      }
+    },
+    {
+      "id": "anno:CreateOrderRequest.depositCent.notnull",
+      "oracle_id": "anno:CreateOrderRequest.depositCent.notnull",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "CreateOrderRequest",
+      "claim": "@NotNull",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "CreateOrderRequest.java:25",
+        "text": "@NotNull"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "depositCent"
+      }
+    },
+    {
+      "id": "anno:CreateOrderRequest.finalPriceCent.min",
+      "oracle_id": "anno:CreateOrderRequest.finalPriceCent.min",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gte_const",
+      "level": "L1_executable_constraint",
+      "scope": "CreateOrderRequest",
+      "claim": "@Min(0)",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "CreateOrderRequest.java:24",
+        "text": "@Min(0)"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "finalPriceCent",
+        "value": 0
+      }
+    },
+    {
+      "id": "anno:CreateOrderRequest.planTotalCent.min",
+      "oracle_id": "anno:CreateOrderRequest.planTotalCent.min",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gte_const",
+      "level": "L1_executable_constraint",
+      "scope": "CreateOrderRequest",
+      "claim": "@Min(0)",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "CreateOrderRequest.java:22",
+        "text": "@Min(0)"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "planTotalCent",
+        "value": 0
+      }
+    },
+    {
+      "id": "anno:CreateOrderRequest.planTotalCent.notnull",
+      "oracle_id": "anno:CreateOrderRequest.planTotalCent.notnull",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "CreateOrderRequest",
+      "claim": "@NotNull",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "CreateOrderRequest.java:22",
+        "text": "@NotNull"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "planTotalCent"
+      }
+    },
+    {
+      "id": "anno:CreateOrderRequest.reservationTime.notnull",
+      "oracle_id": "anno:CreateOrderRequest.reservationTime.notnull",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "CreateOrderRequest",
+      "claim": "@NotNull",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "CreateOrderRequest.java:17",
+        "text": "@NotNull"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "reservationTime"
+      }
+    },
+    {
+      "id": "anno:CreateOrderRequest.status.notnull",
+      "oracle_id": "anno:CreateOrderRequest.status.notnull",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "CreateOrderRequest",
+      "claim": "@NotNull",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "CreateOrderRequest.java:26",
+        "text": "@NotNull"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "status"
+      }
+    },
+    {
+      "id": "anno:CreateOrderRequest.tableCount.min",
+      "oracle_id": "anno:CreateOrderRequest.tableCount.min",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gte_const",
+      "level": "L1_executable_constraint",
+      "scope": "CreateOrderRequest",
+      "claim": "@Min(1)",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "CreateOrderRequest.java:18",
+        "text": "@Min(1)"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "tableCount",
+        "value": 1
+      }
+    },
+    {
+      "id": "anno:CreateOrderRequest.tableCount.notnull",
+      "oracle_id": "anno:CreateOrderRequest.tableCount.notnull",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "CreateOrderRequest",
+      "claim": "@NotNull",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "CreateOrderRequest.java:18",
+        "text": "@NotNull"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "tableCount"
+      }
+    },
+    {
+      "id": "anno:CreateOrderRequest.useFinalPrice.notnull",
+      "oracle_id": "anno:CreateOrderRequest.useFinalPrice.notnull",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "CreateOrderRequest",
+      "claim": "@NotNull",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "CreateOrderRequest.java:23",
+        "text": "@NotNull"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "useFinalPrice"
+      }
+    },
+    {
+      "id": "anno:CreatePackageRequest.banquetType.notblank",
+      "oracle_id": "anno:CreatePackageRequest.banquetType.notblank",
+      "primitive_from": "not_blank",
+      "primitive_to": "field_not_blank",
+      "level": "L1_executable_constraint",
+      "scope": "CreatePackageRequest",
+      "claim": "@NotBlank",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "CreatePackageRequest.java:12",
+        "text": "@NotBlank"
+      },
+      "assert": {
+        "type": "field_not_blank",
+        "left": "banquetType"
+      }
+    },
+    {
+      "id": "anno:CreatePackageRequest.name.notblank",
+      "oracle_id": "anno:CreatePackageRequest.name.notblank",
+      "primitive_from": "not_blank",
+      "primitive_to": "field_not_blank",
+      "level": "L1_executable_constraint",
+      "scope": "CreatePackageRequest",
+      "claim": "@NotBlank",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "CreatePackageRequest.java:11",
+        "text": "@NotBlank"
+      },
+      "assert": {
+        "type": "field_not_blank",
+        "left": "name"
+      }
+    },
+    {
+      "id": "anno:CreatePackageRequest.priceCent.min",
+      "oracle_id": "anno:CreatePackageRequest.priceCent.min",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gte_const",
+      "level": "L1_executable_constraint",
+      "scope": "CreatePackageRequest",
+      "claim": "@Min(0)",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "CreatePackageRequest.java:13",
+        "text": "@Min(0)"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "priceCent",
+        "value": 0
+      }
+    },
+    {
+      "id": "anno:CreatePackageRequest.priceCent.notnull",
+      "oracle_id": "anno:CreatePackageRequest.priceCent.notnull",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "CreatePackageRequest",
+      "claim": "@NotNull",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "CreatePackageRequest.java:13",
+        "text": "@NotNull"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "priceCent"
+      }
+    },
+    {
+      "id": "anno:CreatePackageTypeRequest.name.notblank",
+      "oracle_id": "anno:CreatePackageTypeRequest.name.notblank",
+      "primitive_from": "not_blank",
+      "primitive_to": "field_not_blank",
+      "level": "L1_executable_constraint",
+      "scope": "CreatePackageTypeRequest",
+      "claim": "@NotBlank",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "CreatePackageTypeRequest.java:7",
+        "text": "@NotBlank"
+      },
+      "assert": {
+        "type": "field_not_blank",
+        "left": "name"
+      }
+    },
+    {
+      "id": "anno:CreateProductRequest.categoryId.notnull",
+      "oracle_id": "anno:CreateProductRequest.categoryId.notnull",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "CreateProductRequest",
+      "claim": "@NotNull",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "CreateProductRequest.java:9",
+        "text": "@NotNull"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "categoryId"
+      }
+    },
+    {
+      "id": "anno:CreateProductRequest.name.notblank",
+      "oracle_id": "anno:CreateProductRequest.name.notblank",
+      "primitive_from": "not_blank",
+      "primitive_to": "field_not_blank",
+      "level": "L1_executable_constraint",
+      "scope": "CreateProductRequest",
+      "claim": "@NotBlank",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "CreateProductRequest.java:8",
+        "text": "@NotBlank"
+      },
+      "assert": {
+        "type": "field_not_blank",
+        "left": "name"
+      }
+    },
+    {
+      "id": "anno:CreateProductRequest.priceCent.min",
+      "oracle_id": "anno:CreateProductRequest.priceCent.min",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gte_const",
+      "level": "L1_executable_constraint",
+      "scope": "CreateProductRequest",
+      "claim": "@Min(0)",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "CreateProductRequest.java:10",
+        "text": "@Min(0)"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "priceCent",
+        "value": 0
+      }
+    },
+    {
+      "id": "anno:CreateProductRequest.priceCent.notnull",
+      "oracle_id": "anno:CreateProductRequest.priceCent.notnull",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "CreateProductRequest",
+      "claim": "@NotNull",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "CreateProductRequest.java:10",
+        "text": "@NotNull"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "priceCent"
+      }
+    },
+    {
+      "id": "anno:CreateProductRequest.unit.notblank",
+      "oracle_id": "anno:CreateProductRequest.unit.notblank",
+      "primitive_from": "not_blank",
+      "primitive_to": "field_not_blank",
+      "level": "L1_executable_constraint",
+      "scope": "CreateProductRequest",
+      "claim": "@NotBlank",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "CreateProductRequest.java:11",
+        "text": "@NotBlank"
+      },
+      "assert": {
+        "type": "field_not_blank",
+        "left": "unit"
+      }
+    },
+    {
+      "id": "anno:OrderStatusRequest.status.notnull",
+      "oracle_id": "anno:OrderStatusRequest.status.notnull",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "OrderStatusRequest",
+      "claim": "@NotNull",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "OrderStatusRequest.java:7",
+        "text": "@NotNull"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "status"
+      }
+    },
+    {
+      "id": "anno:PackageItemRequest.productId.notnull",
+      "oracle_id": "anno:PackageItemRequest.productId.notnull",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "PackageItemRequest",
+      "claim": "@NotNull",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "PackageItemRequest.java:7",
+        "text": "@NotNull"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "productId"
+      }
+    },
+    {
+      "id": "anno:PackageItemRequest.quantity.min",
+      "oracle_id": "anno:PackageItemRequest.quantity.min",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gte_const",
+      "level": "L1_executable_constraint",
+      "scope": "PackageItemRequest",
+      "claim": "@Min(1)",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "PackageItemRequest.java:8",
+        "text": "@Min(1)"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "quantity",
+        "value": 1
+      }
+    },
+    {
+      "id": "anno:PackageItemRequest.quantity.notnull",
+      "oracle_id": "anno:PackageItemRequest.quantity.notnull",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "PackageItemRequest",
+      "claim": "@NotNull",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "PackageItemRequest.java:8",
+        "text": "@NotNull"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "quantity"
+      }
+    },
+    {
+      "id": "anno:StatusRequest.isActive.notnull",
+      "oracle_id": "anno:StatusRequest.isActive.notnull",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "StatusRequest",
+      "claim": "@NotNull",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "StatusRequest.java:6",
+        "text": "@NotNull"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "isActive"
+      }
+    },
+    {
+      "id": "anno:UpdateOrderRequest.banquetName.notblank",
+      "oracle_id": "anno:UpdateOrderRequest.banquetName.notblank",
+      "primitive_from": "not_blank",
+      "primitive_to": "field_not_blank",
+      "level": "L1_executable_constraint",
+      "scope": "UpdateOrderRequest",
+      "claim": "@NotBlank",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "UpdateOrderRequest.java:14",
+        "text": "@NotBlank"
+      },
+      "assert": {
+        "type": "field_not_blank",
+        "left": "banquetName"
+      }
+    },
+    {
+      "id": "anno:UpdateOrderRequest.banquetType.notblank",
+      "oracle_id": "anno:UpdateOrderRequest.banquetType.notblank",
+      "primitive_from": "not_blank",
+      "primitive_to": "field_not_blank",
+      "level": "L1_executable_constraint",
+      "scope": "UpdateOrderRequest",
+      "claim": "@NotBlank",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "UpdateOrderRequest.java:15",
+        "text": "@NotBlank"
+      },
+      "assert": {
+        "type": "field_not_blank",
+        "left": "banquetType"
+      }
+    },
+    {
+      "id": "anno:UpdateOrderRequest.customerName.notblank",
+      "oracle_id": "anno:UpdateOrderRequest.customerName.notblank",
+      "primitive_from": "not_blank",
+      "primitive_to": "field_not_blank",
+      "level": "L1_executable_constraint",
+      "scope": "UpdateOrderRequest",
+      "claim": "@NotBlank",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "UpdateOrderRequest.java:12",
+        "text": "@NotBlank"
+      },
+      "assert": {
+        "type": "field_not_blank",
+        "left": "customerName"
+      }
+    },
+    {
+      "id": "anno:UpdateOrderRequest.customerPhone.notblank",
+      "oracle_id": "anno:UpdateOrderRequest.customerPhone.notblank",
+      "primitive_from": "not_blank",
+      "primitive_to": "field_not_blank",
+      "level": "L1_executable_constraint",
+      "scope": "UpdateOrderRequest",
+      "claim": "@NotBlank",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "UpdateOrderRequest.java:13",
+        "text": "@NotBlank"
+      },
+      "assert": {
+        "type": "field_not_blank",
+        "left": "customerPhone"
+      }
+    },
+    {
+      "id": "anno:UpdateOrderRequest.depositCent.min",
+      "oracle_id": "anno:UpdateOrderRequest.depositCent.min",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gte_const",
+      "level": "L1_executable_constraint",
+      "scope": "UpdateOrderRequest",
+      "claim": "@Min(0)",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "UpdateOrderRequest.java:25",
+        "text": "@Min(0)"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "depositCent",
+        "value": 0
+      }
+    },
+    {
+      "id": "anno:UpdateOrderRequest.depositCent.notnull",
+      "oracle_id": "anno:UpdateOrderRequest.depositCent.notnull",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "UpdateOrderRequest",
+      "claim": "@NotNull",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "UpdateOrderRequest.java:25",
+        "text": "@NotNull"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "depositCent"
+      }
+    },
+    {
+      "id": "anno:UpdateOrderRequest.finalPriceCent.min",
+      "oracle_id": "anno:UpdateOrderRequest.finalPriceCent.min",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gte_const",
+      "level": "L1_executable_constraint",
+      "scope": "UpdateOrderRequest",
+      "claim": "@Min(0)",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "UpdateOrderRequest.java:24",
+        "text": "@Min(0)"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "finalPriceCent",
+        "value": 0
+      }
+    },
+    {
+      "id": "anno:UpdateOrderRequest.planTotalCent.min",
+      "oracle_id": "anno:UpdateOrderRequest.planTotalCent.min",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gte_const",
+      "level": "L1_executable_constraint",
+      "scope": "UpdateOrderRequest",
+      "claim": "@Min(0)",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "UpdateOrderRequest.java:22",
+        "text": "@Min(0)"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "planTotalCent",
+        "value": 0
+      }
+    },
+    {
+      "id": "anno:UpdateOrderRequest.planTotalCent.notnull",
+      "oracle_id": "anno:UpdateOrderRequest.planTotalCent.notnull",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "UpdateOrderRequest",
+      "claim": "@NotNull",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "UpdateOrderRequest.java:22",
+        "text": "@NotNull"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "planTotalCent"
+      }
+    },
+    {
+      "id": "anno:UpdateOrderRequest.reservationTime.notnull",
+      "oracle_id": "anno:UpdateOrderRequest.reservationTime.notnull",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "UpdateOrderRequest",
+      "claim": "@NotNull",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "UpdateOrderRequest.java:17",
+        "text": "@NotNull"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "reservationTime"
+      }
+    },
+    {
+      "id": "anno:UpdateOrderRequest.status.notnull",
+      "oracle_id": "anno:UpdateOrderRequest.status.notnull",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "UpdateOrderRequest",
+      "claim": "@NotNull",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "UpdateOrderRequest.java:26",
+        "text": "@NotNull"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "status"
+      }
+    },
+    {
+      "id": "anno:UpdateOrderRequest.tableCount.min",
+      "oracle_id": "anno:UpdateOrderRequest.tableCount.min",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gte_const",
+      "level": "L1_executable_constraint",
+      "scope": "UpdateOrderRequest",
+      "claim": "@Min(1)",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "UpdateOrderRequest.java:18",
+        "text": "@Min(1)"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "tableCount",
+        "value": 1
+      }
+    },
+    {
+      "id": "anno:UpdateOrderRequest.tableCount.notnull",
+      "oracle_id": "anno:UpdateOrderRequest.tableCount.notnull",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "UpdateOrderRequest",
+      "claim": "@NotNull",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "UpdateOrderRequest.java:18",
+        "text": "@NotNull"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "tableCount"
+      }
+    },
+    {
+      "id": "anno:UpdateOrderRequest.useFinalPrice.notnull",
+      "oracle_id": "anno:UpdateOrderRequest.useFinalPrice.notnull",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "UpdateOrderRequest",
+      "claim": "@NotNull",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "UpdateOrderRequest.java:23",
+        "text": "@NotNull"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "useFinalPrice"
+      }
+    },
+    {
+      "id": "anno:UpdatePackageRequest.banquetType.notblank",
+      "oracle_id": "anno:UpdatePackageRequest.banquetType.notblank",
+      "primitive_from": "not_blank",
+      "primitive_to": "field_not_blank",
+      "level": "L1_executable_constraint",
+      "scope": "UpdatePackageRequest",
+      "claim": "@NotBlank",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "UpdatePackageRequest.java:12",
+        "text": "@NotBlank"
+      },
+      "assert": {
+        "type": "field_not_blank",
+        "left": "banquetType"
+      }
+    },
+    {
+      "id": "anno:UpdatePackageRequest.name.notblank",
+      "oracle_id": "anno:UpdatePackageRequest.name.notblank",
+      "primitive_from": "not_blank",
+      "primitive_to": "field_not_blank",
+      "level": "L1_executable_constraint",
+      "scope": "UpdatePackageRequest",
+      "claim": "@NotBlank",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "UpdatePackageRequest.java:11",
+        "text": "@NotBlank"
+      },
+      "assert": {
+        "type": "field_not_blank",
+        "left": "name"
+      }
+    },
+    {
+      "id": "anno:UpdatePackageRequest.priceCent.min",
+      "oracle_id": "anno:UpdatePackageRequest.priceCent.min",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gte_const",
+      "level": "L1_executable_constraint",
+      "scope": "UpdatePackageRequest",
+      "claim": "@Min(0)",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "UpdatePackageRequest.java:13",
+        "text": "@Min(0)"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "priceCent",
+        "value": 0
+      }
+    },
+    {
+      "id": "anno:UpdatePackageRequest.priceCent.notnull",
+      "oracle_id": "anno:UpdatePackageRequest.priceCent.notnull",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "UpdatePackageRequest",
+      "claim": "@NotNull",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "UpdatePackageRequest.java:13",
+        "text": "@NotNull"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "priceCent"
+      }
+    },
+    {
+      "id": "anno:UpdateProductRequest.categoryId.notnull",
+      "oracle_id": "anno:UpdateProductRequest.categoryId.notnull",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "UpdateProductRequest",
+      "claim": "@NotNull",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "UpdateProductRequest.java:9",
+        "text": "@NotNull"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "categoryId"
+      }
+    },
+    {
+      "id": "anno:UpdateProductRequest.name.notblank",
+      "oracle_id": "anno:UpdateProductRequest.name.notblank",
+      "primitive_from": "not_blank",
+      "primitive_to": "field_not_blank",
+      "level": "L1_executable_constraint",
+      "scope": "UpdateProductRequest",
+      "claim": "@NotBlank",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "UpdateProductRequest.java:8",
+        "text": "@NotBlank"
+      },
+      "assert": {
+        "type": "field_not_blank",
+        "left": "name"
+      }
+    },
+    {
+      "id": "anno:UpdateProductRequest.priceCent.min",
+      "oracle_id": "anno:UpdateProductRequest.priceCent.min",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gte_const",
+      "level": "L1_executable_constraint",
+      "scope": "UpdateProductRequest",
+      "claim": "@Min(0)",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "UpdateProductRequest.java:10",
+        "text": "@Min(0)"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "priceCent",
+        "value": 0
+      }
+    },
+    {
+      "id": "anno:UpdateProductRequest.priceCent.notnull",
+      "oracle_id": "anno:UpdateProductRequest.priceCent.notnull",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "UpdateProductRequest",
+      "claim": "@NotNull",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "UpdateProductRequest.java:10",
+        "text": "@NotNull"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "priceCent"
+      }
+    },
+    {
+      "id": "anno:UpdateProductRequest.unit.notblank",
+      "oracle_id": "anno:UpdateProductRequest.unit.notblank",
+      "primitive_from": "not_blank",
+      "primitive_to": "field_not_blank",
+      "level": "L1_executable_constraint",
+      "scope": "UpdateProductRequest",
+      "claim": "@NotBlank",
+      "note": "DTO/实体上声明的校验注解，作者已确认",
+      "source": {
+        "kind": "annotation",
+        "reference": "UpdateProductRequest.java:11",
+        "text": "@NotBlank"
+      },
+      "assert": {
+        "type": "field_not_blank",
+        "left": "unit"
+      }
+    },
+    {
+      "id": "api:AddedItemRequest.productId.required",
+      "oracle_id": "api:AddedItemRequest.productId.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "AddedItemRequest",
+      "claim": "required: productId",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/AddedItemRequest/properties/productId",
+        "text": "required: productId"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "productId"
+      }
+    },
+    {
+      "id": "api:AddedItemRequest.quantity.range",
+      "oracle_id": "api:AddedItemRequest.quantity.range",
+      "primitive_from": "range",
+      "primitive_to": "field_gte_const",
+      "level": "L2_interface_contract",
+      "scope": "AddedItemRequest",
+      "claim": "{\"minimum\": 1}",
+      "note": "接口契约声明的数值范围",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/AddedItemRequest/properties/quantity",
+        "text": "{\"minimum\": 1}"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "quantity",
+        "value": 1
+      }
+    },
+    {
+      "id": "api:AddedItemRequest.quantity.required",
+      "oracle_id": "api:AddedItemRequest.quantity.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "AddedItemRequest",
+      "claim": "required: quantity",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/AddedItemRequest/properties/quantity",
+        "text": "required: quantity"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "quantity"
+      }
+    },
+    {
+      "id": "api:CreateCategoryRequest.name.required",
+      "oracle_id": "api:CreateCategoryRequest.name.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "CreateCategoryRequest",
+      "claim": "required: name",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreateCategoryRequest/properties/name",
+        "text": "required: name"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "name"
+      }
+    },
+    {
+      "id": "api:CreateOrderRequest.banquetName.required",
+      "oracle_id": "api:CreateOrderRequest.banquetName.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "CreateOrderRequest",
+      "claim": "required: banquetName",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreateOrderRequest/properties/banquetName",
+        "text": "required: banquetName"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "banquetName"
+      }
+    },
+    {
+      "id": "api:CreateOrderRequest.banquetType.required",
+      "oracle_id": "api:CreateOrderRequest.banquetType.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "CreateOrderRequest",
+      "claim": "required: banquetType",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreateOrderRequest/properties/banquetType",
+        "text": "required: banquetType"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "banquetType"
+      }
+    },
+    {
+      "id": "api:CreateOrderRequest.customerName.required",
+      "oracle_id": "api:CreateOrderRequest.customerName.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "CreateOrderRequest",
+      "claim": "required: customerName",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreateOrderRequest/properties/customerName",
+        "text": "required: customerName"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "customerName"
+      }
+    },
+    {
+      "id": "api:CreateOrderRequest.customerPhone.required",
+      "oracle_id": "api:CreateOrderRequest.customerPhone.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "CreateOrderRequest",
+      "claim": "required: customerPhone",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreateOrderRequest/properties/customerPhone",
+        "text": "required: customerPhone"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "customerPhone"
+      }
+    },
+    {
+      "id": "api:CreateOrderRequest.depositCent.range",
+      "oracle_id": "api:CreateOrderRequest.depositCent.range",
+      "primitive_from": "range",
+      "primitive_to": "field_gte_const",
+      "level": "L2_interface_contract",
+      "scope": "CreateOrderRequest",
+      "claim": "{\"minimum\": 0}",
+      "note": "接口契约声明的数值范围",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreateOrderRequest/properties/depositCent",
+        "text": "{\"minimum\": 0}"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "depositCent",
+        "value": 0
+      }
+    },
+    {
+      "id": "api:CreateOrderRequest.depositCent.required",
+      "oracle_id": "api:CreateOrderRequest.depositCent.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "CreateOrderRequest",
+      "claim": "required: depositCent",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreateOrderRequest/properties/depositCent",
+        "text": "required: depositCent"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "depositCent"
+      }
+    },
+    {
+      "id": "api:CreateOrderRequest.finalPriceCent.range",
+      "oracle_id": "api:CreateOrderRequest.finalPriceCent.range",
+      "primitive_from": "range",
+      "primitive_to": "field_gte_const",
+      "level": "L2_interface_contract",
+      "scope": "CreateOrderRequest",
+      "claim": "{\"minimum\": 0}",
+      "note": "接口契约声明的数值范围",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreateOrderRequest/properties/finalPriceCent",
+        "text": "{\"minimum\": 0}"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "finalPriceCent",
+        "value": 0
+      }
+    },
+    {
+      "id": "api:CreateOrderRequest.planTotalCent.range",
+      "oracle_id": "api:CreateOrderRequest.planTotalCent.range",
+      "primitive_from": "range",
+      "primitive_to": "field_gte_const",
+      "level": "L2_interface_contract",
+      "scope": "CreateOrderRequest",
+      "claim": "{\"minimum\": 0}",
+      "note": "接口契约声明的数值范围",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreateOrderRequest/properties/planTotalCent",
+        "text": "{\"minimum\": 0}"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "planTotalCent",
+        "value": 0
+      }
+    },
+    {
+      "id": "api:CreateOrderRequest.planTotalCent.required",
+      "oracle_id": "api:CreateOrderRequest.planTotalCent.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "CreateOrderRequest",
+      "claim": "required: planTotalCent",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreateOrderRequest/properties/planTotalCent",
+        "text": "required: planTotalCent"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "planTotalCent"
+      }
+    },
+    {
+      "id": "api:CreateOrderRequest.reservationTime.required",
+      "oracle_id": "api:CreateOrderRequest.reservationTime.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "CreateOrderRequest",
+      "claim": "required: reservationTime",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreateOrderRequest/properties/reservationTime",
+        "text": "required: reservationTime"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "reservationTime"
+      }
+    },
+    {
+      "id": "api:CreateOrderRequest.status.enum",
+      "oracle_id": "api:CreateOrderRequest.status.enum",
+      "primitive_from": "in",
+      "primitive_to": "field_in_set",
+      "level": "L2_interface_contract",
+      "scope": "CreateOrderRequest",
+      "claim": "enum: ['PENDING', 'DEPOSIT_PAID', 'COMPLETED']",
+      "note": "接口契约声明的取值域",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreateOrderRequest/properties/status",
+        "text": "enum: ['PENDING', 'DEPOSIT_PAID', 'COMPLETED']"
+      },
+      "assert": {
+        "type": "field_in_set",
+        "left": "status",
+        "value": [
+          "PENDING",
+          "DEPOSIT_PAID",
+          "COMPLETED"
+        ]
+      }
+    },
+    {
+      "id": "api:CreateOrderRequest.status.required",
+      "oracle_id": "api:CreateOrderRequest.status.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "CreateOrderRequest",
+      "claim": "required: status",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreateOrderRequest/properties/status",
+        "text": "required: status"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "status"
+      }
+    },
+    {
+      "id": "api:CreateOrderRequest.tableCount.range",
+      "oracle_id": "api:CreateOrderRequest.tableCount.range",
+      "primitive_from": "range",
+      "primitive_to": "field_gte_const",
+      "level": "L2_interface_contract",
+      "scope": "CreateOrderRequest",
+      "claim": "{\"minimum\": 1}",
+      "note": "接口契约声明的数值范围",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreateOrderRequest/properties/tableCount",
+        "text": "{\"minimum\": 1}"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "tableCount",
+        "value": 1
+      }
+    },
+    {
+      "id": "api:CreateOrderRequest.tableCount.required",
+      "oracle_id": "api:CreateOrderRequest.tableCount.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "CreateOrderRequest",
+      "claim": "required: tableCount",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreateOrderRequest/properties/tableCount",
+        "text": "required: tableCount"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "tableCount"
+      }
+    },
+    {
+      "id": "api:CreateOrderRequest.useFinalPrice.required",
+      "oracle_id": "api:CreateOrderRequest.useFinalPrice.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "CreateOrderRequest",
+      "claim": "required: useFinalPrice",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreateOrderRequest/properties/useFinalPrice",
+        "text": "required: useFinalPrice"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "useFinalPrice"
+      }
+    },
+    {
+      "id": "api:CreatePackageRequest.banquetType.required",
+      "oracle_id": "api:CreatePackageRequest.banquetType.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "CreatePackageRequest",
+      "claim": "required: banquetType",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreatePackageRequest/properties/banquetType",
+        "text": "required: banquetType"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "banquetType"
+      }
+    },
+    {
+      "id": "api:CreatePackageRequest.name.required",
+      "oracle_id": "api:CreatePackageRequest.name.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "CreatePackageRequest",
+      "claim": "required: name",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreatePackageRequest/properties/name",
+        "text": "required: name"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "name"
+      }
+    },
+    {
+      "id": "api:CreatePackageRequest.priceCent.range",
+      "oracle_id": "api:CreatePackageRequest.priceCent.range",
+      "primitive_from": "range",
+      "primitive_to": "field_gte_const",
+      "level": "L2_interface_contract",
+      "scope": "CreatePackageRequest",
+      "claim": "{\"minimum\": 0}",
+      "note": "接口契约声明的数值范围",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreatePackageRequest/properties/priceCent",
+        "text": "{\"minimum\": 0}"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "priceCent",
+        "value": 0
+      }
+    },
+    {
+      "id": "api:CreatePackageRequest.priceCent.required",
+      "oracle_id": "api:CreatePackageRequest.priceCent.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "CreatePackageRequest",
+      "claim": "required: priceCent",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreatePackageRequest/properties/priceCent",
+        "text": "required: priceCent"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "priceCent"
+      }
+    },
+    {
+      "id": "api:CreatePackageTypeRequest.name.required",
+      "oracle_id": "api:CreatePackageTypeRequest.name.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "CreatePackageTypeRequest",
+      "claim": "required: name",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreatePackageTypeRequest/properties/name",
+        "text": "required: name"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "name"
+      }
+    },
+    {
+      "id": "api:CreateProductRequest.categoryId.required",
+      "oracle_id": "api:CreateProductRequest.categoryId.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "CreateProductRequest",
+      "claim": "required: categoryId",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreateProductRequest/properties/categoryId",
+        "text": "required: categoryId"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "categoryId"
+      }
+    },
+    {
+      "id": "api:CreateProductRequest.name.required",
+      "oracle_id": "api:CreateProductRequest.name.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "CreateProductRequest",
+      "claim": "required: name",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreateProductRequest/properties/name",
+        "text": "required: name"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "name"
+      }
+    },
+    {
+      "id": "api:CreateProductRequest.priceCent.range",
+      "oracle_id": "api:CreateProductRequest.priceCent.range",
+      "primitive_from": "range",
+      "primitive_to": "field_gte_const",
+      "level": "L2_interface_contract",
+      "scope": "CreateProductRequest",
+      "claim": "{\"minimum\": 0}",
+      "note": "接口契约声明的数值范围",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreateProductRequest/properties/priceCent",
+        "text": "{\"minimum\": 0}"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "priceCent",
+        "value": 0
+      }
+    },
+    {
+      "id": "api:CreateProductRequest.priceCent.required",
+      "oracle_id": "api:CreateProductRequest.priceCent.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "CreateProductRequest",
+      "claim": "required: priceCent",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreateProductRequest/properties/priceCent",
+        "text": "required: priceCent"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "priceCent"
+      }
+    },
+    {
+      "id": "api:CreateProductRequest.unit.required",
+      "oracle_id": "api:CreateProductRequest.unit.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "CreateProductRequest",
+      "claim": "required: unit",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/CreateProductRequest/properties/unit",
+        "text": "required: unit"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "unit"
+      }
+    },
+    {
+      "id": "api:OrderResponse.status.enum",
+      "oracle_id": "api:OrderResponse.status.enum",
+      "primitive_from": "in",
+      "primitive_to": "field_in_set",
+      "level": "L2_interface_contract",
+      "scope": "OrderResponse",
+      "claim": "enum: ['PENDING', 'DEPOSIT_PAID', 'COMPLETED']",
+      "note": "接口契约声明的取值域",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/OrderResponse/properties/status",
+        "text": "enum: ['PENDING', 'DEPOSIT_PAID', 'COMPLETED']"
+      },
+      "assert": {
+        "type": "field_in_set",
+        "left": "status",
+        "value": [
+          "PENDING",
+          "DEPOSIT_PAID",
+          "COMPLETED"
+        ]
+      }
+    },
+    {
+      "id": "api:OrderStatusRequest.status.enum",
+      "oracle_id": "api:OrderStatusRequest.status.enum",
+      "primitive_from": "in",
+      "primitive_to": "field_in_set",
+      "level": "L2_interface_contract",
+      "scope": "OrderStatusRequest",
+      "claim": "enum: ['PENDING', 'DEPOSIT_PAID', 'COMPLETED']",
+      "note": "接口契约声明的取值域",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/OrderStatusRequest/properties/status",
+        "text": "enum: ['PENDING', 'DEPOSIT_PAID', 'COMPLETED']"
+      },
+      "assert": {
+        "type": "field_in_set",
+        "left": "status",
+        "value": [
+          "PENDING",
+          "DEPOSIT_PAID",
+          "COMPLETED"
+        ]
+      }
+    },
+    {
+      "id": "api:OrderStatusRequest.status.required",
+      "oracle_id": "api:OrderStatusRequest.status.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "OrderStatusRequest",
+      "claim": "required: status",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/OrderStatusRequest/properties/status",
+        "text": "required: status"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "status"
+      }
+    },
+    {
+      "id": "api:PackageItemRequest.productId.required",
+      "oracle_id": "api:PackageItemRequest.productId.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "PackageItemRequest",
+      "claim": "required: productId",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/PackageItemRequest/properties/productId",
+        "text": "required: productId"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "productId"
+      }
+    },
+    {
+      "id": "api:PackageItemRequest.quantity.range",
+      "oracle_id": "api:PackageItemRequest.quantity.range",
+      "primitive_from": "range",
+      "primitive_to": "field_gte_const",
+      "level": "L2_interface_contract",
+      "scope": "PackageItemRequest",
+      "claim": "{\"minimum\": 1}",
+      "note": "接口契约声明的数值范围",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/PackageItemRequest/properties/quantity",
+        "text": "{\"minimum\": 1}"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "quantity",
+        "value": 1
+      }
+    },
+    {
+      "id": "api:PackageItemRequest.quantity.required",
+      "oracle_id": "api:PackageItemRequest.quantity.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "PackageItemRequest",
+      "claim": "required: quantity",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/PackageItemRequest/properties/quantity",
+        "text": "required: quantity"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "quantity"
+      }
+    },
+    {
+      "id": "api:StatusRequest.isActive.required",
+      "oracle_id": "api:StatusRequest.isActive.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "StatusRequest",
+      "claim": "required: isActive",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/StatusRequest/properties/isActive",
+        "text": "required: isActive"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "isActive"
+      }
+    },
+    {
+      "id": "api:UpdateOrderRequest.banquetName.required",
+      "oracle_id": "api:UpdateOrderRequest.banquetName.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "UpdateOrderRequest",
+      "claim": "required: banquetName",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/UpdateOrderRequest/properties/banquetName",
+        "text": "required: banquetName"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "banquetName"
+      }
+    },
+    {
+      "id": "api:UpdateOrderRequest.banquetType.required",
+      "oracle_id": "api:UpdateOrderRequest.banquetType.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "UpdateOrderRequest",
+      "claim": "required: banquetType",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/UpdateOrderRequest/properties/banquetType",
+        "text": "required: banquetType"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "banquetType"
+      }
+    },
+    {
+      "id": "api:UpdateOrderRequest.customerName.required",
+      "oracle_id": "api:UpdateOrderRequest.customerName.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "UpdateOrderRequest",
+      "claim": "required: customerName",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/UpdateOrderRequest/properties/customerName",
+        "text": "required: customerName"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "customerName"
+      }
+    },
+    {
+      "id": "api:UpdateOrderRequest.customerPhone.required",
+      "oracle_id": "api:UpdateOrderRequest.customerPhone.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "UpdateOrderRequest",
+      "claim": "required: customerPhone",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/UpdateOrderRequest/properties/customerPhone",
+        "text": "required: customerPhone"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "customerPhone"
+      }
+    },
+    {
+      "id": "api:UpdateOrderRequest.depositCent.range",
+      "oracle_id": "api:UpdateOrderRequest.depositCent.range",
+      "primitive_from": "range",
+      "primitive_to": "field_gte_const",
+      "level": "L2_interface_contract",
+      "scope": "UpdateOrderRequest",
+      "claim": "{\"minimum\": 0}",
+      "note": "接口契约声明的数值范围",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/UpdateOrderRequest/properties/depositCent",
+        "text": "{\"minimum\": 0}"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "depositCent",
+        "value": 0
+      }
+    },
+    {
+      "id": "api:UpdateOrderRequest.depositCent.required",
+      "oracle_id": "api:UpdateOrderRequest.depositCent.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "UpdateOrderRequest",
+      "claim": "required: depositCent",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/UpdateOrderRequest/properties/depositCent",
+        "text": "required: depositCent"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "depositCent"
+      }
+    },
+    {
+      "id": "api:UpdateOrderRequest.finalPriceCent.range",
+      "oracle_id": "api:UpdateOrderRequest.finalPriceCent.range",
+      "primitive_from": "range",
+      "primitive_to": "field_gte_const",
+      "level": "L2_interface_contract",
+      "scope": "UpdateOrderRequest",
+      "claim": "{\"minimum\": 0}",
+      "note": "接口契约声明的数值范围",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/UpdateOrderRequest/properties/finalPriceCent",
+        "text": "{\"minimum\": 0}"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "finalPriceCent",
+        "value": 0
+      }
+    },
+    {
+      "id": "api:UpdateOrderRequest.planTotalCent.range",
+      "oracle_id": "api:UpdateOrderRequest.planTotalCent.range",
+      "primitive_from": "range",
+      "primitive_to": "field_gte_const",
+      "level": "L2_interface_contract",
+      "scope": "UpdateOrderRequest",
+      "claim": "{\"minimum\": 0}",
+      "note": "接口契约声明的数值范围",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/UpdateOrderRequest/properties/planTotalCent",
+        "text": "{\"minimum\": 0}"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "planTotalCent",
+        "value": 0
+      }
+    },
+    {
+      "id": "api:UpdateOrderRequest.planTotalCent.required",
+      "oracle_id": "api:UpdateOrderRequest.planTotalCent.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "UpdateOrderRequest",
+      "claim": "required: planTotalCent",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/UpdateOrderRequest/properties/planTotalCent",
+        "text": "required: planTotalCent"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "planTotalCent"
+      }
+    },
+    {
+      "id": "api:UpdateOrderRequest.reservationTime.required",
+      "oracle_id": "api:UpdateOrderRequest.reservationTime.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "UpdateOrderRequest",
+      "claim": "required: reservationTime",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/UpdateOrderRequest/properties/reservationTime",
+        "text": "required: reservationTime"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "reservationTime"
+      }
+    },
+    {
+      "id": "api:UpdateOrderRequest.status.enum",
+      "oracle_id": "api:UpdateOrderRequest.status.enum",
+      "primitive_from": "in",
+      "primitive_to": "field_in_set",
+      "level": "L2_interface_contract",
+      "scope": "UpdateOrderRequest",
+      "claim": "enum: ['PENDING', 'DEPOSIT_PAID', 'COMPLETED']",
+      "note": "接口契约声明的取值域",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/UpdateOrderRequest/properties/status",
+        "text": "enum: ['PENDING', 'DEPOSIT_PAID', 'COMPLETED']"
+      },
+      "assert": {
+        "type": "field_in_set",
+        "left": "status",
+        "value": [
+          "PENDING",
+          "DEPOSIT_PAID",
+          "COMPLETED"
+        ]
+      }
+    },
+    {
+      "id": "api:UpdateOrderRequest.status.required",
+      "oracle_id": "api:UpdateOrderRequest.status.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "UpdateOrderRequest",
+      "claim": "required: status",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/UpdateOrderRequest/properties/status",
+        "text": "required: status"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "status"
+      }
+    },
+    {
+      "id": "api:UpdateOrderRequest.tableCount.range",
+      "oracle_id": "api:UpdateOrderRequest.tableCount.range",
+      "primitive_from": "range",
+      "primitive_to": "field_gte_const",
+      "level": "L2_interface_contract",
+      "scope": "UpdateOrderRequest",
+      "claim": "{\"minimum\": 1}",
+      "note": "接口契约声明的数值范围",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/UpdateOrderRequest/properties/tableCount",
+        "text": "{\"minimum\": 1}"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "tableCount",
+        "value": 1
+      }
+    },
+    {
+      "id": "api:UpdateOrderRequest.tableCount.required",
+      "oracle_id": "api:UpdateOrderRequest.tableCount.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "UpdateOrderRequest",
+      "claim": "required: tableCount",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/UpdateOrderRequest/properties/tableCount",
+        "text": "required: tableCount"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "tableCount"
+      }
+    },
+    {
+      "id": "api:UpdateOrderRequest.useFinalPrice.required",
+      "oracle_id": "api:UpdateOrderRequest.useFinalPrice.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "UpdateOrderRequest",
+      "claim": "required: useFinalPrice",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/UpdateOrderRequest/properties/useFinalPrice",
+        "text": "required: useFinalPrice"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "useFinalPrice"
+      }
+    },
+    {
+      "id": "api:UpdatePackageRequest.banquetType.required",
+      "oracle_id": "api:UpdatePackageRequest.banquetType.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "UpdatePackageRequest",
+      "claim": "required: banquetType",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/UpdatePackageRequest/properties/banquetType",
+        "text": "required: banquetType"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "banquetType"
+      }
+    },
+    {
+      "id": "api:UpdatePackageRequest.name.required",
+      "oracle_id": "api:UpdatePackageRequest.name.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "UpdatePackageRequest",
+      "claim": "required: name",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/UpdatePackageRequest/properties/name",
+        "text": "required: name"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "name"
+      }
+    },
+    {
+      "id": "api:UpdatePackageRequest.priceCent.range",
+      "oracle_id": "api:UpdatePackageRequest.priceCent.range",
+      "primitive_from": "range",
+      "primitive_to": "field_gte_const",
+      "level": "L2_interface_contract",
+      "scope": "UpdatePackageRequest",
+      "claim": "{\"minimum\": 0}",
+      "note": "接口契约声明的数值范围",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/UpdatePackageRequest/properties/priceCent",
+        "text": "{\"minimum\": 0}"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "priceCent",
+        "value": 0
+      }
+    },
+    {
+      "id": "api:UpdatePackageRequest.priceCent.required",
+      "oracle_id": "api:UpdatePackageRequest.priceCent.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "UpdatePackageRequest",
+      "claim": "required: priceCent",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/UpdatePackageRequest/properties/priceCent",
+        "text": "required: priceCent"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "priceCent"
+      }
+    },
+    {
+      "id": "api:UpdateProductRequest.categoryId.required",
+      "oracle_id": "api:UpdateProductRequest.categoryId.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "UpdateProductRequest",
+      "claim": "required: categoryId",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/UpdateProductRequest/properties/categoryId",
+        "text": "required: categoryId"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "categoryId"
+      }
+    },
+    {
+      "id": "api:UpdateProductRequest.name.required",
+      "oracle_id": "api:UpdateProductRequest.name.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "UpdateProductRequest",
+      "claim": "required: name",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/UpdateProductRequest/properties/name",
+        "text": "required: name"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "name"
+      }
+    },
+    {
+      "id": "api:UpdateProductRequest.priceCent.range",
+      "oracle_id": "api:UpdateProductRequest.priceCent.range",
+      "primitive_from": "range",
+      "primitive_to": "field_gte_const",
+      "level": "L2_interface_contract",
+      "scope": "UpdateProductRequest",
+      "claim": "{\"minimum\": 0}",
+      "note": "接口契约声明的数值范围",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/UpdateProductRequest/properties/priceCent",
+        "text": "{\"minimum\": 0}"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "priceCent",
+        "value": 0
+      }
+    },
+    {
+      "id": "api:UpdateProductRequest.priceCent.required",
+      "oracle_id": "api:UpdateProductRequest.priceCent.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "UpdateProductRequest",
+      "claim": "required: priceCent",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/UpdateProductRequest/properties/priceCent",
+        "text": "required: priceCent"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "priceCent"
+      }
+    },
+    {
+      "id": "api:UpdateProductRequest.unit.required",
+      "oracle_id": "api:UpdateProductRequest.unit.required",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L2_interface_contract",
+      "scope": "UpdateProductRequest",
+      "claim": "required: unit",
+      "note": "接口契约声明必填 —— 与 DTO 注解、DDL 非空三方对账",
+      "source": {
+        "kind": "openapi",
+        "reference": "openapi.json:#/components/schemas/UpdateProductRequest/properties/unit",
+        "text": "required: unit"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "unit"
+      }
+    },
+    {
+      "id": "ddl:categories.created_at.not_null",
+      "oracle_id": "ddl:categories.created_at.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "categories",
+      "claim": "created_at TIMESTAMPTZ NOT NULL DEFAULT now()",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:5",
+        "text": "created_at TIMESTAMPTZ NOT NULL DEFAULT now()"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "created_at"
+      }
+    },
+    {
+      "id": "ddl:categories.is_deleted.not_null",
+      "oracle_id": "ddl:categories.is_deleted.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "categories",
+      "claim": "BOOLEAN NOT NULL DEFAULT FALSE",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V5__add_soft_delete_flags.sql:2",
+        "text": "BOOLEAN NOT NULL DEFAULT FALSE"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "is_deleted"
+      }
+    },
+    {
+      "id": "ddl:categories.name.not_null",
+      "oracle_id": "ddl:categories.name.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "categories",
+      "claim": "name VARCHAR(64) NOT NULL UNIQUE",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:3",
+        "text": "name VARCHAR(64) NOT NULL UNIQUE"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "name"
+      }
+    },
+    {
+      "id": "ddl:categories.sort_order.not_null",
+      "oracle_id": "ddl:categories.sort_order.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "categories",
+      "claim": "sort_order INTEGER NOT NULL DEFAULT 0",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:4",
+        "text": "sort_order INTEGER NOT NULL DEFAULT 0"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "sort_order"
+      }
+    },
+    {
+      "id": "ddl:categories.updated_at.not_null",
+      "oracle_id": "ddl:categories.updated_at.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "categories",
+      "claim": "updated_at TIMESTAMPTZ NOT NULL DEFAULT now()",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:6",
+        "text": "updated_at TIMESTAMPTZ NOT NULL DEFAULT now()"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "updated_at"
+      }
+    },
+    {
+      "id": "ddl:orders.added_items_snapshot.not_null",
+      "oracle_id": "ddl:orders.added_items_snapshot.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "orders",
+      "claim": "added_items_snapshot JSONB NOT NULL DEFAULT '[]'::jsonb",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:62",
+        "text": "added_items_snapshot JSONB NOT NULL DEFAULT '[]'::jsonb"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "added_items_snapshot"
+      }
+    },
+    {
+      "id": "ddl:orders.address.not_null",
+      "oracle_id": "ddl:orders.address.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "orders",
+      "claim": "address VARCHAR(255) NOT NULL",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:57",
+        "text": "address VARCHAR(255) NOT NULL"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "address"
+      }
+    },
+    {
+      "id": "ddl:orders.banquet_name.not_null",
+      "oracle_id": "ddl:orders.banquet_name.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "orders",
+      "claim": "banquet_name VARCHAR(128) NOT NULL",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:55",
+        "text": "banquet_name VARCHAR(128) NOT NULL"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "banquet_name"
+      }
+    },
+    {
+      "id": "ddl:orders.banquet_type.not_null",
+      "oracle_id": "ddl:orders.banquet_type.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "orders",
+      "claim": "banquet_type VARCHAR(64) NOT NULL",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:56",
+        "text": "banquet_type VARCHAR(64) NOT NULL"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "banquet_type"
+      }
+    },
+    {
+      "id": "ddl:orders.chk_orders_deposit_cent",
+      "oracle_id": "ddl:orders.chk_orders_deposit_cent",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gte_const",
+      "level": "L1_executable_constraint",
+      "scope": "orders",
+      "claim": "CONSTRAINT chk_orders_deposit_cent CHECK (deposit_cent >= 0),",
+      "note": "迁移里写明的 CHECK 约束，作者已确认",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:76",
+        "text": "CONSTRAINT chk_orders_deposit_cent CHECK (deposit_cent >= 0),"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "deposit_cent",
+        "value": 0
+      }
+    },
+    {
+      "id": "ddl:orders.chk_orders_final_price_cent",
+      "oracle_id": "ddl:orders.chk_orders_final_price_cent",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gte_const",
+      "level": "L1_executable_constraint",
+      "scope": "orders",
+      "claim": "CONSTRAINT chk_orders_final_price_cent CHECK (final_price_cent >= 0),",
+      "note": "迁移里写明的 CHECK 约束，作者已确认",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:75",
+        "text": "CONSTRAINT chk_orders_final_price_cent CHECK (final_price_cent >= 0),"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "final_price_cent",
+        "value": 0
+      }
+    },
+    {
+      "id": "ddl:orders.chk_orders_plan_total_cent",
+      "oracle_id": "ddl:orders.chk_orders_plan_total_cent",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gte_const",
+      "level": "L1_executable_constraint",
+      "scope": "orders",
+      "claim": "CONSTRAINT chk_orders_plan_total_cent CHECK (plan_total_cent >= 0),",
+      "note": "迁移里写明的 CHECK 约束，作者已确认",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:74",
+        "text": "CONSTRAINT chk_orders_plan_total_cent CHECK (plan_total_cent >= 0),"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "plan_total_cent",
+        "value": 0
+      }
+    },
+    {
+      "id": "ddl:orders.chk_orders_status",
+      "oracle_id": "ddl:orders.chk_orders_status",
+      "primitive_from": "in",
+      "primitive_to": "field_in_set",
+      "level": "L1_executable_constraint",
+      "scope": "orders",
+      "claim": "CONSTRAINT chk_orders_status CHECK (status IN ('PENDING', 'DEPOSIT_PAID', 'COMPLETED'))",
+      "note": "迁移里写明的 CHECK 约束，作者已确认",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:77",
+        "text": "CONSTRAINT chk_orders_status CHECK (status IN ('PENDING', 'DEPOSIT_PAID', 'COMPLETED'))"
+      },
+      "assert": {
+        "type": "field_in_set",
+        "left": "status",
+        "value": [
+          "PENDING",
+          "DEPOSIT_PAID",
+          "COMPLETED"
+        ]
+      }
+    },
+    {
+      "id": "ddl:orders.chk_orders_table_count",
+      "oracle_id": "ddl:orders.chk_orders_table_count",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gt_const",
+      "level": "L1_executable_constraint",
+      "scope": "orders",
+      "claim": "CONSTRAINT chk_orders_table_count CHECK (table_count > 0),",
+      "note": "迁移里写明的 CHECK 约束，作者已确认",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:73",
+        "text": "CONSTRAINT chk_orders_table_count CHECK (table_count > 0),"
+      },
+      "assert": {
+        "type": "field_gt_const",
+        "left": "table_count",
+        "value": 0
+      }
+    },
+    {
+      "id": "ddl:orders.created_at.not_null",
+      "oracle_id": "ddl:orders.created_at.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "orders",
+      "claim": "created_at TIMESTAMPTZ NOT NULL DEFAULT now()",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:69",
+        "text": "created_at TIMESTAMPTZ NOT NULL DEFAULT now()"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "created_at"
+      }
+    },
+    {
+      "id": "ddl:orders.customer_name.not_null",
+      "oracle_id": "ddl:orders.customer_name.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "orders",
+      "claim": "customer_name VARCHAR(64) NOT NULL",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:53",
+        "text": "customer_name VARCHAR(64) NOT NULL"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "customer_name"
+      }
+    },
+    {
+      "id": "ddl:orders.customer_phone.not_null",
+      "oracle_id": "ddl:orders.customer_phone.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "orders",
+      "claim": "customer_phone VARCHAR(32) NOT NULL",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:54",
+        "text": "customer_phone VARCHAR(32) NOT NULL"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "customer_phone"
+      }
+    },
+    {
+      "id": "ddl:orders.deposit_cent.not_null",
+      "oracle_id": "ddl:orders.deposit_cent.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "orders",
+      "claim": "deposit_cent BIGINT NOT NULL DEFAULT 0",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:66",
+        "text": "deposit_cent BIGINT NOT NULL DEFAULT 0"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "deposit_cent"
+      }
+    },
+    {
+      "id": "ddl:orders.final_price_cent.not_null",
+      "oracle_id": "ddl:orders.final_price_cent.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "orders",
+      "claim": "final_price_cent BIGINT NOT NULL",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:65",
+        "text": "final_price_cent BIGINT NOT NULL"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "final_price_cent"
+      }
+    },
+    {
+      "id": "ddl:orders.order_no.not_null",
+      "oracle_id": "ddl:orders.order_no.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "orders",
+      "claim": "order_no VARCHAR(32) NOT NULL",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:52",
+        "text": "order_no VARCHAR(32) NOT NULL"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "order_no"
+      }
+    },
+    {
+      "id": "ddl:orders.package_snapshot.not_null",
+      "oracle_id": "ddl:orders.package_snapshot.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "orders",
+      "claim": "package_snapshot JSONB NOT NULL DEFAULT '{}'::jsonb",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:61",
+        "text": "package_snapshot JSONB NOT NULL DEFAULT '{}'::jsonb"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "package_snapshot"
+      }
+    },
+    {
+      "id": "ddl:orders.plan_total_cent.not_null",
+      "oracle_id": "ddl:orders.plan_total_cent.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "orders",
+      "claim": "plan_total_cent BIGINT NOT NULL",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:63",
+        "text": "plan_total_cent BIGINT NOT NULL"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "plan_total_cent"
+      }
+    },
+    {
+      "id": "ddl:orders.reservation_time.not_null",
+      "oracle_id": "ddl:orders.reservation_time.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "orders",
+      "claim": "reservation_time TIMESTAMPTZ NOT NULL",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:58",
+        "text": "reservation_time TIMESTAMPTZ NOT NULL"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "reservation_time"
+      }
+    },
+    {
+      "id": "ddl:orders.status.not_null",
+      "oracle_id": "ddl:orders.status.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "orders",
+      "claim": "status VARCHAR(32) NOT NULL",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:67",
+        "text": "status VARCHAR(32) NOT NULL"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "status"
+      }
+    },
+    {
+      "id": "ddl:orders.table_count.not_null",
+      "oracle_id": "ddl:orders.table_count.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "orders",
+      "claim": "table_count INTEGER NOT NULL",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:59",
+        "text": "table_count INTEGER NOT NULL"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "table_count"
+      }
+    },
+    {
+      "id": "ddl:orders.updated_at.not_null",
+      "oracle_id": "ddl:orders.updated_at.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "orders",
+      "claim": "updated_at TIMESTAMPTZ NOT NULL DEFAULT now()",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:70",
+        "text": "updated_at TIMESTAMPTZ NOT NULL DEFAULT now()"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "updated_at"
+      }
+    },
+    {
+      "id": "ddl:orders.use_final_price.not_null",
+      "oracle_id": "ddl:orders.use_final_price.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "orders",
+      "claim": "use_final_price BOOLEAN NOT NULL DEFAULT FALSE",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:64",
+        "text": "use_final_price BOOLEAN NOT NULL DEFAULT FALSE"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "use_final_price"
+      }
+    },
+    {
+      "id": "ddl:package_items.chk_package_items_quantity",
+      "oracle_id": "ddl:package_items.chk_package_items_quantity",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gt_const",
+      "level": "L1_executable_constraint",
+      "scope": "package_items",
+      "claim": "CONSTRAINT chk_package_items_quantity CHECK (quantity > 0),",
+      "note": "迁移里写明的 CHECK 约束，作者已确认",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:46",
+        "text": "CONSTRAINT chk_package_items_quantity CHECK (quantity > 0),"
+      },
+      "assert": {
+        "type": "field_gt_const",
+        "left": "quantity",
+        "value": 0
+      }
+    },
+    {
+      "id": "ddl:package_items.created_at.not_null",
+      "oracle_id": "ddl:package_items.created_at.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "package_items",
+      "claim": "created_at TIMESTAMPTZ NOT NULL DEFAULT now()",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:42",
+        "text": "created_at TIMESTAMPTZ NOT NULL DEFAULT now()"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "created_at"
+      }
+    },
+    {
+      "id": "ddl:package_items.package_id.not_null",
+      "oracle_id": "ddl:package_items.package_id.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "package_items",
+      "claim": "package_id BIGINT NOT NULL",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:39",
+        "text": "package_id BIGINT NOT NULL"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "package_id"
+      }
+    },
+    {
+      "id": "ddl:package_items.product_id.not_null",
+      "oracle_id": "ddl:package_items.product_id.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "package_items",
+      "claim": "product_id BIGINT NOT NULL",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:40",
+        "text": "product_id BIGINT NOT NULL"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "product_id"
+      }
+    },
+    {
+      "id": "ddl:package_items.quantity.not_null",
+      "oracle_id": "ddl:package_items.quantity.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "package_items",
+      "claim": "quantity INTEGER NOT NULL",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:41",
+        "text": "quantity INTEGER NOT NULL"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "quantity"
+      }
+    },
+    {
+      "id": "ddl:package_items.updated_at.not_null",
+      "oracle_id": "ddl:package_items.updated_at.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "package_items",
+      "claim": "updated_at TIMESTAMPTZ NOT NULL DEFAULT now()",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:43",
+        "text": "updated_at TIMESTAMPTZ NOT NULL DEFAULT now()"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "updated_at"
+      }
+    },
+    {
+      "id": "ddl:package_types.created_at.not_null",
+      "oracle_id": "ddl:package_types.created_at.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "package_types",
+      "claim": "created_at TIMESTAMPTZ NOT NULL DEFAULT now()",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V7__add_package_types.sql:6",
+        "text": "created_at TIMESTAMPTZ NOT NULL DEFAULT now()"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "created_at"
+      }
+    },
+    {
+      "id": "ddl:package_types.is_deleted.not_null",
+      "oracle_id": "ddl:package_types.is_deleted.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "package_types",
+      "claim": "is_deleted BOOLEAN NOT NULL DEFAULT FALSE",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V7__add_package_types.sql:5",
+        "text": "is_deleted BOOLEAN NOT NULL DEFAULT FALSE"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "is_deleted"
+      }
+    },
+    {
+      "id": "ddl:package_types.name.not_null",
+      "oracle_id": "ddl:package_types.name.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "package_types",
+      "claim": "name VARCHAR(64) NOT NULL UNIQUE",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V7__add_package_types.sql:3",
+        "text": "name VARCHAR(64) NOT NULL UNIQUE"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "name"
+      }
+    },
+    {
+      "id": "ddl:package_types.sort_order.not_null",
+      "oracle_id": "ddl:package_types.sort_order.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "package_types",
+      "claim": "sort_order INTEGER NOT NULL DEFAULT 0",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V7__add_package_types.sql:4",
+        "text": "sort_order INTEGER NOT NULL DEFAULT 0"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "sort_order"
+      }
+    },
+    {
+      "id": "ddl:package_types.updated_at.not_null",
+      "oracle_id": "ddl:package_types.updated_at.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "package_types",
+      "claim": "updated_at TIMESTAMPTZ NOT NULL DEFAULT now()",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V7__add_package_types.sql:7",
+        "text": "updated_at TIMESTAMPTZ NOT NULL DEFAULT now()"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "updated_at"
+      }
+    },
+    {
+      "id": "ddl:packages.banquet_type.not_null",
+      "oracle_id": "ddl:packages.banquet_type.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "packages",
+      "claim": "banquet_type VARCHAR(64) NOT NULL",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:27",
+        "text": "banquet_type VARCHAR(64) NOT NULL"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "banquet_type"
+      }
+    },
+    {
+      "id": "ddl:packages.chk_packages_price_cent",
+      "oracle_id": "ddl:packages.chk_packages_price_cent",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gte_const",
+      "level": "L1_executable_constraint",
+      "scope": "packages",
+      "claim": "CONSTRAINT chk_packages_price_cent CHECK (price_cent >= 0)",
+      "note": "迁移里写明的 CHECK 约束，作者已确认",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:34",
+        "text": "CONSTRAINT chk_packages_price_cent CHECK (price_cent >= 0)"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "price_cent",
+        "value": 0
+      }
+    },
+    {
+      "id": "ddl:packages.created_at.not_null",
+      "oracle_id": "ddl:packages.created_at.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "packages",
+      "claim": "created_at TIMESTAMPTZ NOT NULL DEFAULT now()",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:32",
+        "text": "created_at TIMESTAMPTZ NOT NULL DEFAULT now()"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "created_at"
+      }
+    },
+    {
+      "id": "ddl:packages.is_active.not_null",
+      "oracle_id": "ddl:packages.is_active.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "packages",
+      "claim": "is_active BOOLEAN NOT NULL DEFAULT TRUE",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:31",
+        "text": "is_active BOOLEAN NOT NULL DEFAULT TRUE"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "is_active"
+      }
+    },
+    {
+      "id": "ddl:packages.is_deleted.not_null",
+      "oracle_id": "ddl:packages.is_deleted.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "packages",
+      "claim": "BOOLEAN NOT NULL DEFAULT FALSE",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V5__add_soft_delete_flags.sql:8",
+        "text": "BOOLEAN NOT NULL DEFAULT FALSE"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "is_deleted"
+      }
+    },
+    {
+      "id": "ddl:packages.name.not_null",
+      "oracle_id": "ddl:packages.name.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "packages",
+      "claim": "name VARCHAR(128) NOT NULL",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:26",
+        "text": "name VARCHAR(128) NOT NULL"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "name"
+      }
+    },
+    {
+      "id": "ddl:packages.price_cent.not_null",
+      "oracle_id": "ddl:packages.price_cent.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "packages",
+      "claim": "price_cent BIGINT NOT NULL",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:28",
+        "text": "price_cent BIGINT NOT NULL"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "price_cent"
+      }
+    },
+    {
+      "id": "ddl:packages.updated_at.not_null",
+      "oracle_id": "ddl:packages.updated_at.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "packages",
+      "claim": "updated_at TIMESTAMPTZ NOT NULL DEFAULT now()",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:33",
+        "text": "updated_at TIMESTAMPTZ NOT NULL DEFAULT now()"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "updated_at"
+      }
+    },
+    {
+      "id": "ddl:products.category_id.not_null",
+      "oracle_id": "ddl:products.category_id.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "products",
+      "claim": "category_id BIGINT NOT NULL",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:12",
+        "text": "category_id BIGINT NOT NULL"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "category_id"
+      }
+    },
+    {
+      "id": "ddl:products.chk_products_price_cent",
+      "oracle_id": "ddl:products.chk_products_price_cent",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gte_const",
+      "level": "L1_executable_constraint",
+      "scope": "products",
+      "claim": "CONSTRAINT chk_products_price_cent CHECK (price_cent >= 0)",
+      "note": "迁移里写明的 CHECK 约束，作者已确认",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:21",
+        "text": "CONSTRAINT chk_products_price_cent CHECK (price_cent >= 0)"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "price_cent",
+        "value": 0
+      }
+    },
+    {
+      "id": "ddl:products.created_at.not_null",
+      "oracle_id": "ddl:products.created_at.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "products",
+      "claim": "created_at TIMESTAMPTZ NOT NULL DEFAULT now()",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:18",
+        "text": "created_at TIMESTAMPTZ NOT NULL DEFAULT now()"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "created_at"
+      }
+    },
+    {
+      "id": "ddl:products.is_active.not_null",
+      "oracle_id": "ddl:products.is_active.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "products",
+      "claim": "is_active BOOLEAN NOT NULL DEFAULT TRUE",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:17",
+        "text": "is_active BOOLEAN NOT NULL DEFAULT TRUE"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "is_active"
+      }
+    },
+    {
+      "id": "ddl:products.is_deleted.not_null",
+      "oracle_id": "ddl:products.is_deleted.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "products",
+      "claim": "BOOLEAN NOT NULL DEFAULT FALSE",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V5__add_soft_delete_flags.sql:5",
+        "text": "BOOLEAN NOT NULL DEFAULT FALSE"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "is_deleted"
+      }
+    },
+    {
+      "id": "ddl:products.name.not_null",
+      "oracle_id": "ddl:products.name.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "products",
+      "claim": "name VARCHAR(128) NOT NULL",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:11",
+        "text": "name VARCHAR(128) NOT NULL"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "name"
+      }
+    },
+    {
+      "id": "ddl:products.price_cent.not_null",
+      "oracle_id": "ddl:products.price_cent.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "products",
+      "claim": "price_cent BIGINT NOT NULL",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:13",
+        "text": "price_cent BIGINT NOT NULL"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "price_cent"
+      }
+    },
+    {
+      "id": "ddl:products.unit.not_null",
+      "oracle_id": "ddl:products.unit.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "products",
+      "claim": "unit VARCHAR(32) NOT NULL",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:14",
+        "text": "unit VARCHAR(32) NOT NULL"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "unit"
+      }
+    },
+    {
+      "id": "ddl:products.updated_at.not_null",
+      "oracle_id": "ddl:products.updated_at.not_null",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L1_executable_constraint",
+      "scope": "products",
+      "claim": "updated_at TIMESTAMPTZ NOT NULL DEFAULT now()",
+      "note": "非空约束。注意：NOT NULL 挡不住空串，enforce 与否要差分",
+      "source": {
+        "kind": "ddl",
+        "reference": "V1__init_schema.sql:19",
+        "text": "updated_at TIMESTAMPTZ NOT NULL DEFAULT now()"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "updated_at"
+      }
+    },
+    {
+      "id": "doc:AGENTS:281.price_cent",
+      "oracle_id": "doc:AGENTS:281.price_cent",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gte_const",
+      "level": "L0_business_rule",
+      "scope": "AGENTS.md:281",
+      "claim": "price_cent >= 0",
+      "note": "PRD 章节「Check 约束」明写的约束",
+      "source": {
+        "kind": "document",
+        "reference": "AGENTS.md:281",
+        "text": "price_cent >= 0"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "price_cent",
+        "value": 0
+      }
+    },
+    {
+      "id": "doc:AGENTS:282.quantity",
+      "oracle_id": "doc:AGENTS:282.quantity",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gt_const",
+      "level": "L0_business_rule",
+      "scope": "AGENTS.md:282",
+      "claim": "quantity > 0",
+      "note": "PRD 章节「Check 约束」明写的约束",
+      "source": {
+        "kind": "document",
+        "reference": "AGENTS.md:282",
+        "text": "quantity > 0"
+      },
+      "assert": {
+        "type": "field_gt_const",
+        "left": "quantity",
+        "value": 0
+      }
+    },
+    {
+      "id": "doc:AGENTS:283.table_count",
+      "oracle_id": "doc:AGENTS:283.table_count",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gt_const",
+      "level": "L0_business_rule",
+      "scope": "AGENTS.md:283",
+      "claim": "table_count > 0",
+      "note": "PRD 章节「Check 约束」明写的约束",
+      "source": {
+        "kind": "document",
+        "reference": "AGENTS.md:283",
+        "text": "table_count > 0"
+      },
+      "assert": {
+        "type": "field_gt_const",
+        "left": "table_count",
+        "value": 0
+      }
+    },
+    {
+      "id": "doc:AGENTS:284.deposit_cent",
+      "oracle_id": "doc:AGENTS:284.deposit_cent",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gte_const",
+      "level": "L0_business_rule",
+      "scope": "AGENTS.md:284",
+      "claim": "deposit_cent >= 0",
+      "note": "PRD 章节「Check 约束」明写的约束",
+      "source": {
+        "kind": "document",
+        "reference": "AGENTS.md:284",
+        "text": "deposit_cent >= 0"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "deposit_cent",
+        "value": 0
+      }
+    },
+    {
+      "id": "doc:AGENTS:285.final_price_cent",
+      "oracle_id": "doc:AGENTS:285.final_price_cent",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gte_const",
+      "level": "L0_business_rule",
+      "scope": "AGENTS.md:285",
+      "claim": "final_price_cent >= 0",
+      "note": "PRD 章节「Check 约束」明写的约束",
+      "source": {
+        "kind": "document",
+        "reference": "AGENTS.md:285",
+        "text": "final_price_cent >= 0"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "final_price_cent",
+        "value": 0
+      }
+    },
+    {
+      "id": "doc:AGENTS:286.status",
+      "oracle_id": "doc:AGENTS:286.status",
+      "primitive_from": "in",
+      "primitive_to": "field_in_set",
+      "level": "L0_business_rule",
+      "scope": "AGENTS.md:286",
+      "claim": "订单 status 只能是 `PENDING`、`DEPOSIT_PAID`、`COMPLETED`",
+      "note": "PRD 章节「Check 约束」明写的取值域",
+      "source": {
+        "kind": "document",
+        "reference": "AGENTS.md:286",
+        "text": "订单 status 只能是 `PENDING`、`DEPOSIT_PAID`、`COMPLETED`"
+      },
+      "assert": {
+        "type": "field_in_set",
+        "left": "status",
+        "value": [
+          "PENDING",
+          "DEPOSIT_PAID",
+          "COMPLETED"
+        ]
+      }
+    },
+    {
+      "id": "doc:接口清单:25.iface.2",
+      "oracle_id": "doc:接口清单:25.iface.2",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:25",
+      "claim": "name 必填且不超过 64 字符；空白拒绝；同名幂等返回已有分类。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/categories`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:25",
+        "text": "name 必填且不超过 64 字符；空白拒绝；同名幂等返回已有分类。"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "name"
+      }
+    },
+    {
+      "id": "doc:接口清单:28.iface.2",
+      "oracle_id": "doc:接口清单:28.iface.2",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:28",
+      "claim": "name 必填且不超过 64 字符；空白拒绝；同名幂等返回已有分类。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/package-types`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:28",
+        "text": "name 必填且不超过 64 字符；空白拒绝；同名幂等返回已有分类。"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "name"
+      }
+    },
+    {
+      "id": "doc:接口清单:31.iface",
+      "oracle_id": "doc:接口清单:31.iface",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:31",
+      "claim": "name/categoryId/priceCent/unit 必填；priceCent>=0；categoryId 必须存在；isActive 默认 true。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/products`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:31",
+        "text": "name/categoryId/priceCent/unit 必填；priceCent>=0；categoryId 必须存在；isActive 默认 true。"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "name"
+      }
+    },
+    {
+      "id": "doc:接口清单:31.iface.2",
+      "oracle_id": "doc:接口清单:31.iface.2",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:31",
+      "claim": "name/categoryId/priceCent/unit 必填；priceCent>=0；categoryId 必须存在；isActive 默认 true。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/products`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:31",
+        "text": "name/categoryId/priceCent/unit 必填；priceCent>=0；categoryId 必须存在；isActive 默认 true。"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "categoryId"
+      }
+    },
+    {
+      "id": "doc:接口清单:31.iface.3",
+      "oracle_id": "doc:接口清单:31.iface.3",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:31",
+      "claim": "name/categoryId/priceCent/unit 必填；priceCent>=0；categoryId 必须存在；isActive 默认 true。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/products`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:31",
+        "text": "name/categoryId/priceCent/unit 必填；priceCent>=0；categoryId 必须存在；isActive 默认 true。"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "priceCent"
+      }
+    },
+    {
+      "id": "doc:接口清单:31.iface.4",
+      "oracle_id": "doc:接口清单:31.iface.4",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:31",
+      "claim": "name/categoryId/priceCent/unit 必填；priceCent>=0；categoryId 必须存在；isActive 默认 true。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/products`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:31",
+        "text": "name/categoryId/priceCent/unit 必填；priceCent>=0；categoryId 必须存在；isActive 默认 true。"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "unit"
+      }
+    },
+    {
+      "id": "doc:接口清单:31.iface.5",
+      "oracle_id": "doc:接口清单:31.iface.5",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gte_const",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:31",
+      "claim": "name/categoryId/priceCent/unit 必填；priceCent>=0；categoryId 必须存在；isActive 默认 true。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/products`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:31",
+        "text": "name/categoryId/priceCent/unit 必填；priceCent>=0；categoryId 必须存在；isActive 默认 true。"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "priceCent",
+        "value": 0
+      }
+    },
+    {
+      "id": "doc:接口清单:34.iface",
+      "oracle_id": "doc:接口清单:34.iface",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:34",
+      "claim": "isActive 必填 boolean。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/products/{id}/status`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:34",
+        "text": "isActive 必填 boolean。"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "isActive"
+      }
+    },
+    {
+      "id": "doc:接口清单:36.iface",
+      "oracle_id": "doc:接口清单:36.iface",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:36",
+      "claim": "name/banquetType/priceCent/items 必填；items>=1；productId 必须存在；重复 productId 返回 422；banquetType 必须是未删除套餐分类。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/packages`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:36",
+        "text": "name/banquetType/priceCent/items 必填；items>=1；productId 必须存在；重复 productId 返回 422；banquetType 必须是未删除套餐分类。"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "name"
+      }
+    },
+    {
+      "id": "doc:接口清单:36.iface.2",
+      "oracle_id": "doc:接口清单:36.iface.2",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:36",
+      "claim": "name/banquetType/priceCent/items 必填；items>=1；productId 必须存在；重复 productId 返回 422；banquetType 必须是未删除套餐分类。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/packages`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:36",
+        "text": "name/banquetType/priceCent/items 必填；items>=1；productId 必须存在；重复 productId 返回 422；banquetType 必须是未删除套餐分类。"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "banquetType"
+      }
+    },
+    {
+      "id": "doc:接口清单:36.iface.3",
+      "oracle_id": "doc:接口清单:36.iface.3",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:36",
+      "claim": "name/banquetType/priceCent/items 必填；items>=1；productId 必须存在；重复 productId 返回 422；banquetType 必须是未删除套餐分类。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/packages`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:36",
+        "text": "name/banquetType/priceCent/items 必填；items>=1；productId 必须存在；重复 productId 返回 422；banquetType 必须是未删除套餐分类。"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "priceCent"
+      }
+    },
+    {
+      "id": "doc:接口清单:36.iface.4",
+      "oracle_id": "doc:接口清单:36.iface.4",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:36",
+      "claim": "name/banquetType/priceCent/items 必填；items>=1；productId 必须存在；重复 productId 返回 422；banquetType 必须是未删除套餐分类。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/packages`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:36",
+        "text": "name/banquetType/priceCent/items 必填；items>=1；productId 必须存在；重复 productId 返回 422；banquetType 必须是未删除套餐分类。"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "items"
+      }
+    },
+    {
+      "id": "doc:接口清单:36.iface.5",
+      "oracle_id": "doc:接口清单:36.iface.5",
+      "primitive_from": "field_cmp",
+      "primitive_to": "field_gte_const",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:36",
+      "claim": "name/banquetType/priceCent/items 必填；items>=1；productId 必须存在；重复 productId 返回 422；banquetType 必须是未删除套餐分类。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/packages`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:36",
+        "text": "name/banquetType/priceCent/items 必填；items>=1；productId 必须存在；重复 productId 返回 422；banquetType 必须是未删除套餐分类。"
+      },
+      "assert": {
+        "type": "field_gte_const",
+        "left": "items",
+        "value": 1
+      }
+    },
+    {
+      "id": "doc:接口清单:40.iface",
+      "oracle_id": "doc:接口清单:40.iface",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:40",
+      "claim": "isActive 必填 boolean。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/packages/{id}/status`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:40",
+        "text": "isActive 必填 boolean。"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "isActive"
+      }
+    },
+    {
+      "id": "doc:接口清单:41.iface",
+      "oracle_id": "doc:接口清单:41.iface",
+      "primitive_from": "in",
+      "primitive_to": "field_in_set",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:41",
+      "claim": "keyword/status/dateScope 可选；status 必须是 PENDING/DEPOSIT_PAID/COMPLETED，否则 422；dateScope 必须是 TODAY/WEEK/MONTH，否则 400。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/orders`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:41",
+        "text": "keyword/status/dateScope 可选；status 必须是 PENDING/DEPOSIT_PAID/COMPLETED，否则 422；dateScope 必须是 TODAY/WEEK/MONTH，否则 400。"
+      },
+      "assert": {
+        "type": "field_in_set",
+        "left": "status",
+        "value": [
+          "PENDING",
+          "DEPOSIT_PAID",
+          "COMPLETED"
+        ]
+      }
+    },
+    {
+      "id": "doc:接口清单:42.iface",
+      "oracle_id": "doc:接口清单:42.iface",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:42",
+      "claim": "customerName/customerPhone/banquetName/banquetType/reservationTime/tableCount/planTotalCent/useFinalPrice/depositCent/status 必填；金额>=0；useFinalPrice=false 时 finalPriceCent=planTotalCent；packageId 必须存在；packageItems/addedItems 商品必须存在且不可重复；address 为空保存空字符串。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/orders`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:42",
+        "text": "customerName/customerPhone/banquetName/banquetType/reservationTime/tableCount/planTotalCent/useFinalPrice/depositCent/status 必填；金额>=0；useFinalPrice=false 时 finalPriceCent=planTotalCent；packageId 必须存在；packageItems/addedItems 商品必须存在且不可重复；address 为空保存空字符串。"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "customerName"
+      }
+    },
+    {
+      "id": "doc:接口清单:42.iface.10",
+      "oracle_id": "doc:接口清单:42.iface.10",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:42",
+      "claim": "customerName/customerPhone/banquetName/banquetType/reservationTime/tableCount/planTotalCent/useFinalPrice/depositCent/status 必填；金额>=0；useFinalPrice=false 时 finalPriceCent=planTotalCent；packageId 必须存在；packageItems/addedItems 商品必须存在且不可重复；address 为空保存空字符串。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/orders`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:42",
+        "text": "customerName/customerPhone/banquetName/banquetType/reservationTime/tableCount/planTotalCent/useFinalPrice/depositCent/status 必填；金额>=0；useFinalPrice=false 时 finalPriceCent=planTotalCent；packageId 必须存在；packageItems/addedItems 商品必须存在且不可重复；address 为空保存空字符串。"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "status"
+      }
+    },
+    {
+      "id": "doc:接口清单:42.iface.2",
+      "oracle_id": "doc:接口清单:42.iface.2",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:42",
+      "claim": "customerName/customerPhone/banquetName/banquetType/reservationTime/tableCount/planTotalCent/useFinalPrice/depositCent/status 必填；金额>=0；useFinalPrice=false 时 finalPriceCent=planTotalCent；packageId 必须存在；packageItems/addedItems 商品必须存在且不可重复；address 为空保存空字符串。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/orders`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:42",
+        "text": "customerName/customerPhone/banquetName/banquetType/reservationTime/tableCount/planTotalCent/useFinalPrice/depositCent/status 必填；金额>=0；useFinalPrice=false 时 finalPriceCent=planTotalCent；packageId 必须存在；packageItems/addedItems 商品必须存在且不可重复；address 为空保存空字符串。"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "customerPhone"
+      }
+    },
+    {
+      "id": "doc:接口清单:42.iface.3",
+      "oracle_id": "doc:接口清单:42.iface.3",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:42",
+      "claim": "customerName/customerPhone/banquetName/banquetType/reservationTime/tableCount/planTotalCent/useFinalPrice/depositCent/status 必填；金额>=0；useFinalPrice=false 时 finalPriceCent=planTotalCent；packageId 必须存在；packageItems/addedItems 商品必须存在且不可重复；address 为空保存空字符串。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/orders`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:42",
+        "text": "customerName/customerPhone/banquetName/banquetType/reservationTime/tableCount/planTotalCent/useFinalPrice/depositCent/status 必填；金额>=0；useFinalPrice=false 时 finalPriceCent=planTotalCent；packageId 必须存在；packageItems/addedItems 商品必须存在且不可重复；address 为空保存空字符串。"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "banquetName"
+      }
+    },
+    {
+      "id": "doc:接口清单:42.iface.4",
+      "oracle_id": "doc:接口清单:42.iface.4",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:42",
+      "claim": "customerName/customerPhone/banquetName/banquetType/reservationTime/tableCount/planTotalCent/useFinalPrice/depositCent/status 必填；金额>=0；useFinalPrice=false 时 finalPriceCent=planTotalCent；packageId 必须存在；packageItems/addedItems 商品必须存在且不可重复；address 为空保存空字符串。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/orders`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:42",
+        "text": "customerName/customerPhone/banquetName/banquetType/reservationTime/tableCount/planTotalCent/useFinalPrice/depositCent/status 必填；金额>=0；useFinalPrice=false 时 finalPriceCent=planTotalCent；packageId 必须存在；packageItems/addedItems 商品必须存在且不可重复；address 为空保存空字符串。"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "banquetType"
+      }
+    },
+    {
+      "id": "doc:接口清单:42.iface.5",
+      "oracle_id": "doc:接口清单:42.iface.5",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:42",
+      "claim": "customerName/customerPhone/banquetName/banquetType/reservationTime/tableCount/planTotalCent/useFinalPrice/depositCent/status 必填；金额>=0；useFinalPrice=false 时 finalPriceCent=planTotalCent；packageId 必须存在；packageItems/addedItems 商品必须存在且不可重复；address 为空保存空字符串。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/orders`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:42",
+        "text": "customerName/customerPhone/banquetName/banquetType/reservationTime/tableCount/planTotalCent/useFinalPrice/depositCent/status 必填；金额>=0；useFinalPrice=false 时 finalPriceCent=planTotalCent；packageId 必须存在；packageItems/addedItems 商品必须存在且不可重复；address 为空保存空字符串。"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "reservationTime"
+      }
+    },
+    {
+      "id": "doc:接口清单:42.iface.6",
+      "oracle_id": "doc:接口清单:42.iface.6",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:42",
+      "claim": "customerName/customerPhone/banquetName/banquetType/reservationTime/tableCount/planTotalCent/useFinalPrice/depositCent/status 必填；金额>=0；useFinalPrice=false 时 finalPriceCent=planTotalCent；packageId 必须存在；packageItems/addedItems 商品必须存在且不可重复；address 为空保存空字符串。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/orders`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:42",
+        "text": "customerName/customerPhone/banquetName/banquetType/reservationTime/tableCount/planTotalCent/useFinalPrice/depositCent/status 必填；金额>=0；useFinalPrice=false 时 finalPriceCent=planTotalCent；packageId 必须存在；packageItems/addedItems 商品必须存在且不可重复；address 为空保存空字符串。"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "tableCount"
+      }
+    },
+    {
+      "id": "doc:接口清单:42.iface.7",
+      "oracle_id": "doc:接口清单:42.iface.7",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:42",
+      "claim": "customerName/customerPhone/banquetName/banquetType/reservationTime/tableCount/planTotalCent/useFinalPrice/depositCent/status 必填；金额>=0；useFinalPrice=false 时 finalPriceCent=planTotalCent；packageId 必须存在；packageItems/addedItems 商品必须存在且不可重复；address 为空保存空字符串。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/orders`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:42",
+        "text": "customerName/customerPhone/banquetName/banquetType/reservationTime/tableCount/planTotalCent/useFinalPrice/depositCent/status 必填；金额>=0；useFinalPrice=false 时 finalPriceCent=planTotalCent；packageId 必须存在；packageItems/addedItems 商品必须存在且不可重复；address 为空保存空字符串。"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "planTotalCent"
+      }
+    },
+    {
+      "id": "doc:接口清单:42.iface.8",
+      "oracle_id": "doc:接口清单:42.iface.8",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:42",
+      "claim": "customerName/customerPhone/banquetName/banquetType/reservationTime/tableCount/planTotalCent/useFinalPrice/depositCent/status 必填；金额>=0；useFinalPrice=false 时 finalPriceCent=planTotalCent；packageId 必须存在；packageItems/addedItems 商品必须存在且不可重复；address 为空保存空字符串。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/orders`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:42",
+        "text": "customerName/customerPhone/banquetName/banquetType/reservationTime/tableCount/planTotalCent/useFinalPrice/depositCent/status 必填；金额>=0；useFinalPrice=false 时 finalPriceCent=planTotalCent；packageId 必须存在；packageItems/addedItems 商品必须存在且不可重复；address 为空保存空字符串。"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "useFinalPrice"
+      }
+    },
+    {
+      "id": "doc:接口清单:42.iface.9",
+      "oracle_id": "doc:接口清单:42.iface.9",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:42",
+      "claim": "customerName/customerPhone/banquetName/banquetType/reservationTime/tableCount/planTotalCent/useFinalPrice/depositCent/status 必填；金额>=0；useFinalPrice=false 时 finalPriceCent=planTotalCent；packageId 必须存在；packageItems/addedItems 商品必须存在且不可重复；address 为空保存空字符串。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/orders`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:42",
+        "text": "customerName/customerPhone/banquetName/banquetType/reservationTime/tableCount/planTotalCent/useFinalPrice/depositCent/status 必填；金额>=0；useFinalPrice=false 时 finalPriceCent=planTotalCent；packageId 必须存在；packageItems/addedItems 商品必须存在且不可重复；address 为空保存空字符串。"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "depositCent"
+      }
+    },
+    {
+      "id": "doc:接口清单:45.iface",
+      "oracle_id": "doc:接口清单:45.iface",
+      "primitive_from": "not_null",
+      "primitive_to": "field_not_null",
+      "level": "L0_business_rule",
+      "scope": "接口清单.md:45",
+      "claim": "status 必填，必须是合法枚举。",
+      "note": "接口清单「接口总览」校验要点（路径=`/api/orders/{id}/status`），字段名取自原文",
+      "source": {
+        "kind": "document",
+        "reference": "接口清单.md:45",
+        "text": "status 必填，必须是合法枚举。"
+      },
+      "assert": {
+        "type": "field_not_null",
+        "left": "status"
+      }
+    }
+  ],
+  "unmappable": [
+    {
+      "id": "anno:CreateCategoryRequest.name.size",
+      "primitive": "size",
+      "reason": "封闭集已有 field_size（字符串数字符/数组数元素），采集器侧 size→field_size 转录尚未接线"
+    },
+    {
+      "id": "anno:CreateOrderRequest.addedItems.valid",
+      "primitive": "validate_nested",
+      "reason": "嵌套校验需展开子判据，封闭集无对应原语"
+    },
+    {
+      "id": "anno:CreateOrderRequest.packageItems.valid",
+      "primitive": "validate_nested",
+      "reason": "嵌套校验需展开子判据，封闭集无对应原语"
+    },
+    {
+      "id": "anno:CreatePackageRequest.items.size",
+      "primitive": "size",
+      "reason": "封闭集已有 field_size（字符串数字符/数组数元素），采集器侧 size→field_size 转录尚未接线"
+    },
+    {
+      "id": "anno:CreatePackageRequest.items.valid",
+      "primitive": "validate_nested",
+      "reason": "嵌套校验需展开子判据，封闭集无对应原语"
+    },
+    {
+      "id": "anno:CreatePackageTypeRequest.name.size",
+      "primitive": "size",
+      "reason": "封闭集已有 field_size（字符串数字符/数组数元素），采集器侧 size→field_size 转录尚未接线"
+    },
+    {
+      "id": "anno:UpdateOrderRequest.addedItems.valid",
+      "primitive": "validate_nested",
+      "reason": "嵌套校验需展开子判据，封闭集无对应原语"
+    },
+    {
+      "id": "anno:UpdateOrderRequest.packageItems.valid",
+      "primitive": "validate_nested",
+      "reason": "嵌套校验需展开子判据，封闭集无对应原语"
+    },
+    {
+      "id": "anno:UpdatePackageRequest.items.size",
+      "primitive": "size",
+      "reason": "封闭集已有 field_size（字符串数字符/数组数元素），采集器侧 size→field_size 转录尚未接线"
+    },
+    {
+      "id": "anno:UpdatePackageRequest.items.valid",
+      "primitive": "validate_nested",
+      "reason": "嵌套校验需展开子判据，封闭集无对应原语"
+    },
+    {
+      "id": "ddl:categories.is_deleted.default",
+      "primitive": "default",
+      "reason": "封闭集已有 field_default_when_absent（字段存在→NOT_APPLICABLE，缺失→UNKNOWN），采集器侧 default 转录尚未接线"
+    },
+    {
+      "id": "ddl:categories.name.unique",
+      "primitive": "unique",
+      "reason": "唯一性跨行成立，两个求值器都逐行判定"
+    },
+    {
+      "id": "ddl:categories.sort_order.default",
+      "primitive": "default",
+      "reason": "封闭集已有 field_default_when_absent（字段存在→NOT_APPLICABLE，缺失→UNKNOWN），采集器侧 default 转录尚未接线"
+    },
+    {
+      "id": "ddl:orders.deposit_cent.default",
+      "primitive": "default",
+      "reason": "封闭集已有 field_default_when_absent（字段存在→NOT_APPLICABLE，缺失→UNKNOWN），采集器侧 default 转录尚未接线"
+    },
+    {
+      "id": "ddl:orders.fk_orders_package",
+      "primitive": "references",
+      "reason": "引用完整性跨表，两个求值器都单表逐行"
+    },
+    {
+      "id": "ddl:orders.uk_orders_order_no",
+      "primitive": "unique",
+      "reason": "唯一性跨行成立，两个求值器都逐行判定"
+    },
+    {
+      "id": "ddl:orders.use_final_price.default",
+      "primitive": "default",
+      "reason": "封闭集已有 field_default_when_absent（字段存在→NOT_APPLICABLE，缺失→UNKNOWN），采集器侧 default 转录尚未接线"
+    },
+    {
+      "id": "ddl:package_items.fk_package_items_package",
+      "primitive": "references",
+      "reason": "引用完整性跨表，两个求值器都单表逐行"
+    },
+    {
+      "id": "ddl:package_items.fk_package_items_product",
+      "primitive": "references",
+      "reason": "引用完整性跨表，两个求值器都单表逐行"
+    },
+    {
+      "id": "ddl:package_items.uk_package_items_package_product",
+      "primitive": "unique",
+      "reason": "唯一性跨行成立，两个求值器都逐行判定"
+    },
+    {
+      "id": "ddl:package_types.is_deleted.default",
+      "primitive": "default",
+      "reason": "封闭集已有 field_default_when_absent（字段存在→NOT_APPLICABLE，缺失→UNKNOWN），采集器侧 default 转录尚未接线"
+    },
+    {
+      "id": "ddl:package_types.name.unique",
+      "primitive": "unique",
+      "reason": "唯一性跨行成立，两个求值器都逐行判定"
+    },
+    {
+      "id": "ddl:package_types.sort_order.default",
+      "primitive": "default",
+      "reason": "封闭集已有 field_default_when_absent（字段存在→NOT_APPLICABLE，缺失→UNKNOWN），采集器侧 default 转录尚未接线"
+    },
+    {
+      "id": "ddl:packages.is_active.default",
+      "primitive": "default",
+      "reason": "封闭集已有 field_default_when_absent（字段存在→NOT_APPLICABLE，缺失→UNKNOWN），采集器侧 default 转录尚未接线"
+    },
+    {
+      "id": "ddl:packages.is_deleted.default",
+      "primitive": "default",
+      "reason": "封闭集已有 field_default_when_absent（字段存在→NOT_APPLICABLE，缺失→UNKNOWN），采集器侧 default 转录尚未接线"
+    },
+    {
+      "id": "ddl:products.fk_products_category",
+      "primitive": "references",
+      "reason": "引用完整性跨表，两个求值器都单表逐行"
+    },
+    {
+      "id": "ddl:products.is_active.default",
+      "primitive": "default",
+      "reason": "封闭集已有 field_default_when_absent（字段存在→NOT_APPLICABLE，缺失→UNKNOWN），采集器侧 default 转录尚未接线"
+    },
+    {
+      "id": "ddl:products.is_deleted.default",
+      "primitive": "default",
+      "reason": "封闭集已有 field_default_when_absent（字段存在→NOT_APPLICABLE，缺失→UNKNOWN），采集器侧 default 转录尚未接线"
+    },
+    {
+      "id": "doc:AGENTS:421.forbid",
+      "primitive": "forbidden_terms",
+      "reason": "封闭集已有 text_not_contains，但采集器侧 forbidden_terms 无 left（全局文本扫描），绑定被判定字段前不转录"
+    },
+    {
+      "id": "doc:AGENTS:497.acceptance",
+      "primitive": "acceptance_scenario",
+      "reason": "验收条款需物化成场景才能执行，不是字段断言"
+    },
+    {
+      "id": "doc:AGENTS:498.acceptance",
+      "primitive": "acceptance_scenario",
+      "reason": "验收条款需物化成场景才能执行，不是字段断言"
+    },
+    {
+      "id": "doc:AGENTS:499.acceptance",
+      "primitive": "acceptance_scenario",
+      "reason": "验收条款需物化成场景才能执行，不是字段断言"
+    },
+    {
+      "id": "doc:AGENTS:500.acceptance",
+      "primitive": "acceptance_scenario",
+      "reason": "验收条款需物化成场景才能执行，不是字段断言"
+    },
+    {
+      "id": "doc:AGENTS:501.acceptance",
+      "primitive": "acceptance_scenario",
+      "reason": "验收条款需物化成场景才能执行，不是字段断言"
+    },
+    {
+      "id": "doc:AGENTS:502.acceptance",
+      "primitive": "acceptance_scenario",
+      "reason": "验收条款需物化成场景才能执行，不是字段断言"
+    },
+    {
+      "id": "doc:AGENTS:503.acceptance",
+      "primitive": "acceptance_scenario",
+      "reason": "验收条款需物化成场景才能执行，不是字段断言"
+    },
+    {
+      "id": "doc:AGENTS:504.acceptance",
+      "primitive": "acceptance_scenario",
+      "reason": "验收条款需物化成场景才能执行，不是字段断言"
+    },
+    {
+      "id": "doc:AGENTS:505.acceptance",
+      "primitive": "acceptance_scenario",
+      "reason": "验收条款需物化成场景才能执行，不是字段断言"
+    },
+    {
+      "id": "doc:AGENTS:506.acceptance",
+      "primitive": "acceptance_scenario",
+      "reason": "验收条款需物化成场景才能执行，不是字段断言"
+    },
+    {
+      "id": "doc:AGENTS:507.acceptance",
+      "primitive": "acceptance_scenario",
+      "reason": "验收条款需物化成场景才能执行，不是字段断言"
+    },
+    {
+      "id": "doc:业务校验对照:14.table",
+      "primitive": "confirmed_rule",
+      "reason": "散文/结构规则，封闭集无对应原语，需物化层补原语或绑定"
+    },
+    {
+      "id": "doc:业务校验对照:20.table",
+      "primitive": "confirmed_rule",
+      "reason": "散文/结构规则，封闭集无对应原语，需物化层补原语或绑定"
+    },
+    {
+      "id": "doc:业务校验对照:22.table",
+      "primitive": "confirmed_rule",
+      "reason": "散文/结构规则，封闭集无对应原语，需物化层补原语或绑定"
+    },
+    {
+      "id": "doc:业务校验对照:31.pattern",
+      "primitive": "pattern",
+      "reason": "封闭集已有 field_pattern（两侧均 re.fullmatch），采集器侧 pattern→field_pattern 转录尚未接线"
+    },
+    {
+      "id": "doc:业务校验对照:52.confirmed_defect",
+      "primitive": "confirmed_rule",
+      "reason": "散文/结构规则，封闭集无对应原语，需物化层补原语或绑定"
+    },
+    {
+      "id": "doc:接口清单:25.iface",
+      "primitive": "size",
+      "reason": "封闭集已有 field_size（字符串数字符/数组数元素），采集器侧 size→field_size 转录尚未接线"
+    },
+    {
+      "id": "doc:接口清单:28.iface",
+      "primitive": "size",
+      "reason": "封闭集已有 field_size（字符串数字符/数组数元素），采集器侧 size→field_size 转录尚未接线"
+    },
+    {
+      "id": "doc:接口清单:31.iface.6",
+      "primitive": "references",
+      "reason": "引用完整性跨表，两个求值器都单表逐行"
+    },
+    {
+      "id": "doc:接口清单:31.iface.7",
+      "primitive": "default",
+      "reason": "封闭集已有 field_default_when_absent（字段存在→NOT_APPLICABLE，缺失→UNKNOWN），采集器侧 default 转录尚未接线"
+    },
+    {
+      "id": "doc:接口清单:36.iface.6",
+      "primitive": "references",
+      "reason": "引用完整性跨表，两个求值器都单表逐行"
+    }
+  ],
+  "excluded": [
+    {
+      "id": "ddl:categories.name.not_blank_candidate",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "ddl:orders.address.not_blank_candidate",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "ddl:orders.banquet_name.not_blank_candidate",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "ddl:orders.banquet_type.not_blank_candidate",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "ddl:orders.customer_name.not_blank_candidate",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "ddl:orders.customer_phone.not_blank_candidate",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "ddl:orders.order_no.not_blank_candidate",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "ddl:orders.status.not_blank_candidate",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "ddl:package_types.name.not_blank_candidate",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "ddl:packages.banquet_type.not_blank_candidate",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "ddl:packages.name.not_blank_candidate",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "ddl:products.name.not_blank_candidate",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "ddl:products.unit.not_blank_candidate",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:AGENTS:365.allow",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:AGENTS:366.maxmb",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:AGENTS:57.default",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:API:183.default",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:API:184.default",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:API:216.allow.1",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:API:216.maxmb.2",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:API:228.allow.1",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:API:228.maxmb.2",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:API:247.default",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:API:248.default",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:API:298.default",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:API:299.default",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:业务校验对照:12.table",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:业务校验对照:13.table",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:业务校验对照:15.table",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:业务校验对照:16.table",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:业务校验对照:17.table",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:业务校验对照:18.table",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:业务校验对照:19.table",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:业务校验对照:21.table",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:业务校验对照:23.table",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:业务校验对照:23.table.2",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:业务校验对照:24.table",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:业务校验对照:25.table",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:业务校验对照:25.table.2",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:业务校验对照:36.needs_confirmation",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:业务校验对照:42.needs_confirmation",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:接口清单:30.iface",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:接口清单:30.iface.2",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:接口清单:32.iface",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:接口清单:35.iface",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:接口清单:35.iface.2",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:接口清单:37.iface",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:接口清单:41.iface.2",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:接口清单:42.iface.11",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:接口清单:42.iface.12",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:接口清单:43.iface",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:接口清单:46.iface",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:接口清单:46.iface.2",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:接口清单:47.iface",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:接口清单:47.iface.2",
+      "confirmation": "needs_confirmation",
+      "reason": "confirmation='needs_confirmation'，不得当 confirmed 进判定"
+    },
+    {
+      "id": "doc:undefined:业务校验对照:62",
+      "confirmation": "refuted",
+      "reason": "文档明确「当前未定义」——只保留观测，永不进判定"
+    },
+    {
+      "id": "doc:undefined:业务校验对照:63",
+      "confirmation": "refuted",
+      "reason": "文档明确「当前未定义」——只保留观测，永不进判定"
+    },
+    {
+      "id": "doc:undefined:业务校验对照:64",
+      "confirmation": "refuted",
+      "reason": "文档明确「当前未定义」——只保留观测，永不进判定"
+    },
+    {
+      "id": "doc:undefined:业务校验对照:65",
+      "confirmation": "refuted",
+      "reason": "文档明确「当前未定义」——只保留观测，永不进判定"
+    }
+  ],
+  "limitations": [
+    "映射是结构转录，不是字段绑定：left 取自采集器原文（映射路径取 field，直通路径取 left），散文规则的字段名（中文主语等）不是数据库列名，求值器取不到列时返回 UNKNOWN",
+    "confirmed_by 转录声明来源（kind:reference），不是独立核实的人名",
+    "rule_assessment 只承认 kind 属于 user/document 的 confirmed 来源；ddl/annotation/openapi 即使观测判出 PASS/FAIL，status 仍被强制 UNKNOWN",
+    "scope 取自声明容器（table/entity/schema），无容器时退到 source.reference —— 溯源占位，绑定层必须替换成真实业务域",
+    "封闭集无 field_eq_const，也无严格 < 原语；带单位约束两条路径都不映射",
+    "直通路径逐字复制断言，不重写语义；封闭集扩张时必须同步本表与两个求值器（LESSONS 坑 11）",
+    "when/severity 逐字保留：when 是适用域，丢掉它会把 NOT_APPLICABLE 判成 FAIL（制造假缺陷）",
+    "三桶按判据数闭合；一条判据可出多条规则（复合 range），规则数另报不参与闭合",
+    "本模块不产出观测：无观测时求值器返回 UNKNOWN 是正确行为，不是失败"
+  ],
+  "caliber_crosscheck": {
+    "upstream_declared": {
+      "oracles_count": 308,
+      "explicitly_undefined_count": 4,
+      "total_declarations": 312,
+      "denominators_disjoint": true,
+      "total": 308
+    },
+    "upstream_undeclared": [],
+    "mismatches": {},
+    "agrees": true
+  },
+  "untranscribed_count": 211
+}

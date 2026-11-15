@@ -1,0 +1,31 @@
+{
+  "schema": "observation-pack/1",
+  "target": "jiuyan",
+  "scope": "products",
+  "observations": [
+    {
+      "id": "write_footprint:class_observation.json#write_footprint/0",
+      "target": "jiuyan",
+      "scope": "products",
+      "reached": true,
+      "row": {
+        "id": 5857503,
+        "name": "ai_probe_fp2",
+        "unit": "克",
+        "image_url": null,
+        "is_active": false,
+        "created_at": "2026-11-14T16:55:33.771199+00:00",
+        "is_deleted": true,
+        "price_cent": 9999,
+        "updated_at": "2026-11-14T16:55:34.119342+00:00",
+        "category_id": 2,
+        "description": "changed"
+      },
+      "evidence_refs": [
+        "class_observation.json#/write_footprint/0/final_row",
+        "class_scenarios.json#/probes/8/entities/0/table",
+        "class_probe.py:529-571 (final_row = 整行 DB 快照)"
+      ]
+    }
+  ]
+}

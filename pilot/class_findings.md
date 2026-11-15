@@ -1,6 +1,6 @@
 # 类层差分报告（jiuyan）
 
-JPA 实体 7 个 | DDL 表 6 张 | 索引 22 个 | finding 22 条
+JPA 实体 7 个 | DDL 表 6 张 | 索引 22 个 | finding 19 条
 
 | 级别 | 层 | 缺陷 |
 |---|---|---|
@@ -15,13 +15,10 @@ JPA 实体 7 个 | DDL 表 6 张 | 索引 22 个 | finding 22 条
 | MEDIUM | class | PackageItem 没有值相等：放进集合或当键，语义会变 |
 | MEDIUM | class | PackageType 没有值相等：放进集合或当键，语义会变 |
 | MEDIUM | class | Product 没有值相等：放进集合或当键，语义会变 |
-| MEDIUM | class | orders.address 声明 NOT NULL，实际用空串绕过 —— 非空约束只挡了 NULL |
 | MEDIUM | class | orders.finalPriceCent 必填性校验落在服务层，DTO 少一条 @NotNull |
-| MEDIUM | class | PUT 是全量覆盖：不传的 imageUrl 会被抹成 NULL |
 | LOW | class | products.is_active 的默认值被声明了三遍 |
 | LOW | class | packages.is_active 的默认值被声明了三遍 |
 | LOW | class | finalPriceCent=null 的报错文案说的是「小于 0」，真实原因是「不能为空」 |
-| LOW | class | 订单状态枚举大小写敏感，小写 pending 直接 400 |
 | INFO | class | OrderStatus 枚举与 DB CHECK 白名单完全一致（3/3） |
 | INFO | class | 可空性三方一致 27/31 列（同向设防 21 · DTO 更严 0 · 都可空 6） |
 | INFO | class | 8/8 条 DB CHECK 在 DTO 层都有同义约束，防线链条闭合 |
@@ -272,23 +269,6 @@ products/packages/categories 都有 is_deleted，orders 没有。订单是唯一
 }
 ```
 
-## [MEDIUM] orders.address 声明 NOT NULL，实际用空串绕过 —— 非空约束只挡了 NULL
-
-三方声明：DB 列 address 为 NOT NULL，实体 @Column(nullable=false)，但 DTO 的 address 没有任何约束。实测：客户端不传 address，接口返回 200，库里落的是空串 ''。NOT NULL 只证明列不是 NULL，空串照样入库 —— 约束拦不住业务上的空。后果：订单地址为空，宴会执行单拿不到地址，且没有任何一层会报错。
-
-```json
-{
-  "dto": "CreateOrderRequest",
-  "field": "address",
-  "column": "address",
-  "db_not_null": true,
-  "dto_constraints": [],
-  "entity_nullable": false,
-  "http": 200,
-  "db_value": ""
-}
-```
-
 ## [MEDIUM] orders.finalPriceCent 必填性校验落在服务层，DTO 少一条 @NotNull
 
 DB 与实体都声明 NOT NULL，DTO 只写了 @Min(0) 而没有 @NotNull —— 字段在传输层是可空的，靠服务层补一句判断拦住。实测：传 null 返回 422 / PRICE_INVALID，文案是「成交价不能小于 0」。后果一：责任错层，任何绕过服务层的写入方（脚本、数据修复）都会撞 DB 报错；后果二：报错文案说的是「小于 0」，真实原因是「不能为空」，客户端无法据此定位。
@@ -305,39 +285,6 @@ DB 与实体都声明 NOT NULL，DTO 只写了 @Min(0) 而没有 @NotNull ——
   "http": 422,
   "code": "PRICE_INVALID",
   "message": "成交价不能小于 0"
-}
-```
-
-## [MEDIUM] PUT 是全量覆盖：不传的 imageUrl 会被抹成 NULL
-
-UpdateProductRequest.imageUrl 没有任何约束（可缺省），但 PUT 的语义是全量替换。实测：创建时带图片路径，随后一次不带 imageUrl 的 PUT 之后，image_url 变成 NULL。后果不是校验问题而是数据丢失 —— 磁盘上的图片文件还在，但数据库里的引用没了，文件成为孤儿，前端永远拿不到图。
-
-```json
-{
-  "entity": "products",
-  "id": 5857503,
-  "changed_columns": [
-    "description",
-    "image_url",
-    "is_active",
-    "name",
-    "price_cent",
-    "unit",
-    "updated_at"
-  ],
-  "final_row": {
-    "id": 5857503,
-    "name": "ai_probe_fp2",
-    "unit": "克",
-    "image_url": null,
-    "is_active": false,
-    "created_at": "2026-11-14T16:55:33.771199+00:00",
-    "is_deleted": true,
-    "price_cent": 9999,
-    "updated_at": "2026-11-14T16:55:34.119342+00:00",
-    "category_id": 2,
-    "description": "changed"
-  }
 }
 ```
 
@@ -384,18 +331,6 @@ null 触发的是必填缺失，却复用了一个数值区间的错误文案。
 }
 ```
 
-## [LOW] 订单状态枚举大小写敏感，小写 pending 直接 400
-
-DTO 的 status 字段直接用 OrderStatus 枚举，Jackson 默认大小写敏感。实测传 'pending' 返回 400「订单状态不正确」。对外 API 的枚举值应当约定为大小写不敏感或明确写进 OpenAPI，否则每个新客户端都会踩一次。
-
-```json
-{
-  "http": 400,
-  "code": "ORDER_STATUS_INVALID",
-  "message": "订单状态不正确"
-}
-```
-
 ## [INFO] OrderStatus 枚举与 DB CHECK 白名单完全一致（3/3）
 
 这是一次「没有问题」的差分结论 —— 差分引擎既能报问题也能给出通过结论。
@@ -417,7 +352,7 @@ DTO 的 status 字段直接用 OrderStatus 枚举，Jackson 默认大小写敏�
 
 ## [INFO] 可空性三方一致 27/31 列（同向设防 21 · DTO 更严 0 · 都可空 6）
 
-这是差分引擎的通过结论：DTO 的非空声明要么与 DB 一致，要么比 DB 更严（DTO 先拦，留给 DB 兜底），方向正确。不成立的只有下面单列出来的那几列。
+这是差分引擎的通过结论：DTO 的非空声明要么与 DB 一致，要么比 DB 更严（DTO 先拦，留给 DB 兜底），方向正确。不成立的 4 列里，1 列的业务预期未确认或被文档否定，只保留观测、不开单（见旁路留痕），其余单列在下面。
 
 ```json
 {
@@ -425,7 +360,8 @@ DTO 的 status 字段直接用 OrderStatus 枚举，Jackson 默认大小写敏�
   "total_columns": 31,
   "same_direction": 21,
   "dto_stricter": 0,
-  "both_nullable": 6
+  "both_nullable": 6,
+  "expectation_held": 1
 }
 ```
 

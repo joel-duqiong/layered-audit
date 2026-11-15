@@ -3,7 +3,7 @@
   "seed": 20261107,
   "counts": {
     "nodes": 162,
-    "edges": 151,
+    "edges": 198,
     "by_type": {
       "HTTP_ENTRY": 25,
       "SVC_OP": 77,
@@ -13,10 +13,15 @@
     },
     "edges_by_type": {
       "EXPOSES": 24,
-      "CALLS": 63,
-      "READS": 13,
-      "WRITES": 26,
+      "CALLS": 110,
+      "READS": 24,
+      "WRITES": 15,
       "DERIVES": 25
+    },
+    "edges_by_access": {
+      "write": 15,
+      "read": 24,
+      "unknown": 0
     },
     "bindings": 19,
     "unbound": 6,
@@ -686,6 +691,8 @@
       "file": "",
       "modifiers": "public abstract",
       "declared": true,
+      "access": "read",
+      "access_evidence": "derived-query",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -706,6 +713,8 @@
       "file": "",
       "modifiers": "public abstract",
       "declared": true,
+      "access": "read",
+      "access_evidence": "derived-query",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -726,6 +735,8 @@
       "file": "",
       "modifiers": "public abstract",
       "declared": true,
+      "access": "read",
+      "access_evidence": "derived-query",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -746,6 +757,8 @@
       "file": "",
       "modifiers": "public abstract",
       "declared": true,
+      "access": "read",
+      "access_evidence": "derived-query",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -766,6 +779,8 @@
       "file": "",
       "modifiers": "public abstract",
       "declared": true,
+      "access": "read",
+      "access_evidence": "derived-query",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -786,6 +801,8 @@
       "file": "",
       "modifiers": "public abstract",
       "declared": true,
+      "access": "read",
+      "access_evidence": "derived-query",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -806,6 +823,8 @@
       "file": "",
       "modifiers": "public abstract",
       "declared": true,
+      "access": "read",
+      "access_evidence": "derived-query",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -826,6 +845,8 @@
       "file": "",
       "modifiers": "public abstract",
       "declared": true,
+      "access": "read",
+      "access_evidence": "derived-query",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -846,6 +867,8 @@
       "file": "",
       "modifiers": "public abstract",
       "declared": true,
+      "access": "read",
+      "access_evidence": "derived-query",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -866,6 +889,8 @@
       "file": "",
       "modifiers": "public abstract",
       "declared": true,
+      "access": "read",
+      "access_evidence": "derived-query",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -886,6 +911,8 @@
       "file": "",
       "modifiers": "public abstract",
       "declared": true,
+      "access": "write",
+      "access_evidence": "derived-delete",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -906,6 +933,8 @@
       "file": "",
       "modifiers": "public abstract",
       "declared": true,
+      "access": "read",
+      "access_evidence": "derived-query",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -926,6 +955,8 @@
       "file": "",
       "modifiers": "public abstract",
       "declared": true,
+      "access": "read",
+      "access_evidence": "derived-query",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -946,6 +977,8 @@
       "file": "",
       "modifiers": "public abstract",
       "declared": true,
+      "access": "read",
+      "access_evidence": "derived-query",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -966,6 +999,8 @@
       "file": "",
       "modifiers": "public abstract",
       "declared": true,
+      "access": "read",
+      "access_evidence": "derived-query",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -986,6 +1021,8 @@
       "file": "",
       "modifiers": "public abstract",
       "declared": true,
+      "access": "read",
+      "access_evidence": "derived-query",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -1006,6 +1043,8 @@
       "file": "",
       "modifiers": "public abstract",
       "declared": true,
+      "access": "read",
+      "access_evidence": "derived-query",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -1030,7 +1069,7 @@
         "source_fields": [],
         "sinks": [],
         "guard": false,
-        "persist": true,
+        "persist": false,
         "branches": 0,
         "side_effects": [
           "com.jiuyan.banquet.repository.CategoryRepository.findAllByIsDeletedFalseOrderBySortOrderAscIdAsc"
@@ -1320,7 +1359,7 @@
           "com.jiuyan.banquet.entity.BanquetOrder.setUseFinalPrice"
         ],
         "guard": false,
-        "persist": true,
+        "persist": false,
         "branches": 10,
         "side_effects": [
           "com.jiuyan.banquet.repository.BanquetPackageRepository.findByIdAndIsDeletedFalse"
@@ -1495,7 +1534,7 @@
         "source_fields": [],
         "sinks": [],
         "guard": false,
-        "persist": true,
+        "persist": false,
         "branches": 0,
         "side_effects": [
           "com.jiuyan.banquet.repository.ProductRepository.findByIdAndIsDeletedFalse"
@@ -1938,7 +1977,7 @@
         "source_fields": [],
         "sinks": [],
         "guard": false,
-        "persist": true,
+        "persist": false,
         "branches": 0,
         "side_effects": [
           "com.jiuyan.banquet.repository.BanquetPackageRepository.findByIdAndIsDeletedFalse"
@@ -1967,7 +2006,7 @@
           "com.jiuyan.banquet.entity.BanquetPackage.setPriceCent"
         ],
         "guard": false,
-        "persist": true,
+        "persist": false,
         "branches": 8,
         "side_effects": [
           "com.jiuyan.banquet.repository.PackageTypeRepository.findByNameAndIsDeletedFalse"
@@ -2036,7 +2075,7 @@
         "source_fields": [],
         "sinks": [],
         "guard": false,
-        "persist": true,
+        "persist": false,
         "branches": 0,
         "side_effects": [
           "com.jiuyan.banquet.repository.ProductRepository.findByIdAndIsDeletedFalse"
@@ -2258,7 +2297,7 @@
         "source_fields": [],
         "sinks": [],
         "guard": false,
-        "persist": true,
+        "persist": false,
         "branches": 0,
         "side_effects": [
           "com.jiuyan.banquet.repository.PackageTypeRepository.findAllByIsDeletedFalseOrderBySortOrderAscIdAsc"
@@ -2517,7 +2556,7 @@
         "source_fields": [],
         "sinks": [],
         "guard": false,
-        "persist": true,
+        "persist": false,
         "branches": 0,
         "side_effects": [
           "com.jiuyan.banquet.repository.ProductRepository.findByIdAndIsDeletedFalse"
@@ -3121,6 +3160,8 @@
       "simple": "CategoryRepository",
       "file": "",
       "declared": false,
+      "access": "write",
+      "access_evidence": "crud-contract",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -3140,6 +3181,8 @@
       "simple": "CategoryRepository",
       "file": "",
       "declared": false,
+      "access": "read",
+      "access_evidence": "derived-query",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -3159,6 +3202,8 @@
       "simple": "OrderRepository",
       "file": "",
       "declared": false,
+      "access": "read",
+      "access_evidence": "derived-query",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -3178,6 +3223,8 @@
       "simple": "OrderRepository",
       "file": "",
       "declared": false,
+      "access": "write",
+      "access_evidence": "crud-contract",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -3197,6 +3244,8 @@
       "simple": "OrderRepository",
       "file": "",
       "declared": false,
+      "access": "read",
+      "access_evidence": "derived-query",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -3216,6 +3265,8 @@
       "simple": "BanquetPackageRepository",
       "file": "",
       "declared": false,
+      "access": "read",
+      "access_evidence": "derived-query",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -3235,6 +3286,8 @@
       "simple": "BanquetPackageRepository",
       "file": "",
       "declared": false,
+      "access": "write",
+      "access_evidence": "crud-contract",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -3254,6 +3307,8 @@
       "simple": "PackageTypeRepository",
       "file": "",
       "declared": false,
+      "access": "write",
+      "access_evidence": "crud-contract",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -3273,6 +3328,8 @@
       "simple": "PackageTypeRepository",
       "file": "",
       "declared": false,
+      "access": "read",
+      "access_evidence": "derived-query",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -3292,6 +3349,8 @@
       "simple": "ProductRepository",
       "file": "",
       "declared": false,
+      "access": "read",
+      "access_evidence": "derived-query",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -3311,6 +3370,8 @@
       "simple": "ProductRepository",
       "file": "",
       "declared": false,
+      "access": "write",
+      "access_evidence": "crud-contract",
       "taint": {
         "source_fields": [],
         "sinks": [],
@@ -3572,8 +3633,10 @@
     {
       "from": "com.jiuyan.banquet.repository.CategoryRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc",
       "to": "table:categories",
-      "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.CategoryRepository.findAllByIsDeletedFalseOrderBySortOrderAscIdAsc"
+      "type": "READS",
+      "effect": "com.jiuyan.banquet.repository.CategoryRepository.findAllByIsDeletedFalseOrderBySortOrderAscIdAsc",
+      "access": "read",
+      "evidence": "derived-query"
     },
     {
       "from": "com.jiuyan.banquet.service.CategoryService#create",
@@ -3589,13 +3652,17 @@
       "from": "com.jiuyan.banquet.repository.CategoryRepository#findByName",
       "to": "table:categories",
       "type": "READS",
-      "effect": "com.jiuyan.banquet.repository.CategoryRepository.findByName"
+      "effect": "com.jiuyan.banquet.repository.CategoryRepository.findByName",
+      "access": "read",
+      "evidence": "derived-query"
     },
     {
       "from": "com.jiuyan.banquet.repository.CategoryRepository#save",
       "to": "table:categories",
       "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.CategoryRepository.save"
+      "effect": "com.jiuyan.banquet.repository.CategoryRepository.save",
+      "access": "write",
+      "evidence": "crud-contract"
     },
     {
       "from": "com.jiuyan.banquet.service.CategoryService#delete",
@@ -3616,19 +3683,25 @@
       "from": "com.jiuyan.banquet.repository.CategoryRepository#findById",
       "to": "table:categories",
       "type": "READS",
-      "effect": "com.jiuyan.banquet.repository.CategoryRepository.findById"
+      "effect": "com.jiuyan.banquet.repository.CategoryRepository.findById",
+      "access": "read",
+      "evidence": "derived-query"
     },
     {
       "from": "com.jiuyan.banquet.repository.CategoryRepository#save",
       "to": "table:categories",
       "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.CategoryRepository.save"
+      "effect": "com.jiuyan.banquet.repository.CategoryRepository.save",
+      "access": "write",
+      "evidence": "crud-contract"
     },
     {
       "from": "com.jiuyan.banquet.repository.ProductRepository#existsByCategoryIdAndIsDeletedFalse",
       "to": "table:products",
-      "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.ProductRepository.existsByCategoryIdAndIsDeletedFalse"
+      "type": "READS",
+      "effect": "com.jiuyan.banquet.repository.ProductRepository.existsByCategoryIdAndIsDeletedFalse",
+      "access": "read",
+      "evidence": "derived-query"
     },
     {
       "from": "com.jiuyan.banquet.service.CategoryService#lambda$create$0",
@@ -3645,7 +3718,9 @@
       "from": "com.jiuyan.banquet.repository.CategoryRepository#findMaxSortOrder",
       "to": "table:categories",
       "type": "READS",
-      "effect": "com.jiuyan.banquet.repository.CategoryRepository.findMaxSortOrder"
+      "effect": "com.jiuyan.banquet.repository.CategoryRepository.findMaxSortOrder",
+      "access": "read",
+      "evidence": "derived-query"
     },
     {
       "from": "com.jiuyan.banquet.service.OrderService#list",
@@ -3653,10 +3728,42 @@
       "type": "CALLS"
     },
     {
+      "from": "com.jiuyan.banquet.service.OrderService#list",
+      "to": "com.jiuyan.banquet.service.OrderService#normalizePage",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#list",
+      "to": "com.jiuyan.banquet.service.OrderService#normalizePageSize",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#list",
+      "to": "com.jiuyan.banquet.service.OrderService#orderSpec",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#list",
+      "to": "com.jiuyan.banquet.service.OrderService#parseDateScope",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#list",
+      "to": "com.jiuyan.banquet.service.OrderService#parseStatus",
+      "type": "CALLS"
+    },
+    {
       "from": "com.jiuyan.banquet.repository.OrderRepository#findAll",
       "to": "table:orders",
       "type": "READS",
-      "effect": "com.jiuyan.banquet.repository.OrderRepository.findAll"
+      "effect": "com.jiuyan.banquet.repository.OrderRepository.findAll",
+      "access": "read",
+      "evidence": "derived-query"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#get",
+      "to": "com.jiuyan.banquet.service.OrderService#findOrder",
+      "type": "CALLS"
     },
     {
       "from": "com.jiuyan.banquet.service.OrderService#create",
@@ -3670,10 +3777,22 @@
       "type": "CALLS"
     },
     {
+      "from": "com.jiuyan.banquet.service.OrderService#create",
+      "to": "com.jiuyan.banquet.service.OrderService#apply",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#create",
+      "to": "com.jiuyan.banquet.service.OrderService#generateOrderNo",
+      "type": "CALLS"
+    },
+    {
       "from": "com.jiuyan.banquet.repository.OrderRepository#save",
       "to": "table:orders",
       "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.OrderRepository.save"
+      "effect": "com.jiuyan.banquet.repository.OrderRepository.save",
+      "access": "write",
+      "evidence": "crud-contract"
     },
     {
       "from": "com.jiuyan.banquet.service.OrderService#update",
@@ -3681,10 +3800,22 @@
       "type": "CALLS"
     },
     {
+      "from": "com.jiuyan.banquet.service.OrderService#update",
+      "to": "com.jiuyan.banquet.service.OrderService#apply",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#update",
+      "to": "com.jiuyan.banquet.service.OrderService#findOrder",
+      "type": "CALLS"
+    },
+    {
       "from": "com.jiuyan.banquet.repository.OrderRepository#save",
       "to": "table:orders",
       "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.OrderRepository.save"
+      "effect": "com.jiuyan.banquet.repository.OrderRepository.save",
+      "access": "write",
+      "evidence": "crud-contract"
     },
     {
       "from": "com.jiuyan.banquet.service.OrderService#updateStatus",
@@ -3698,10 +3829,17 @@
       "type": "CALLS"
     },
     {
+      "from": "com.jiuyan.banquet.service.OrderService#updateStatus",
+      "to": "com.jiuyan.banquet.service.OrderService#findOrder",
+      "type": "CALLS"
+    },
+    {
       "from": "com.jiuyan.banquet.repository.OrderRepository#save",
       "to": "table:orders",
       "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.OrderRepository.save"
+      "effect": "com.jiuyan.banquet.repository.OrderRepository.save",
+      "access": "write",
+      "evidence": "crud-contract"
     },
     {
       "from": "com.jiuyan.banquet.service.OrderService#apply",
@@ -3781,10 +3919,62 @@
       "type": "CALLS"
     },
     {
+      "from": "com.jiuyan.banquet.service.OrderService#apply",
+      "to": "com.jiuyan.banquet.service.OrderService#buildAddedItemsSnapshot",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#apply",
+      "to": "com.jiuyan.banquet.service.OrderService#buildPackageSnapshot",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#apply",
+      "to": "com.jiuyan.banquet.service.OrderService#resolveFinalPrice",
+      "type": "CALLS"
+    },
+    {
       "from": "com.jiuyan.banquet.repository.BanquetPackageRepository#findByIdAndIsDeletedFalse",
       "to": "table:packages",
-      "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.BanquetPackageRepository.findByIdAndIsDeletedFalse"
+      "type": "READS",
+      "effect": "com.jiuyan.banquet.repository.BanquetPackageRepository.findByIdAndIsDeletedFalse",
+      "access": "read",
+      "evidence": "derived-query"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#buildPackageSnapshot",
+      "to": "com.jiuyan.banquet.service.OrderService#findProduct",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#buildPackageSnapshot",
+      "to": "com.jiuyan.banquet.service.OrderService#normalizePackageItems",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#buildPackageSnapshot",
+      "to": "com.jiuyan.banquet.service.OrderService#productSnapshot",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#buildAddedItemsSnapshot",
+      "to": "com.jiuyan.banquet.service.OrderService#findProduct",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#buildAddedItemsSnapshot",
+      "to": "com.jiuyan.banquet.service.OrderService#normalizeAddedItems",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#buildAddedItemsSnapshot",
+      "to": "com.jiuyan.banquet.service.OrderService#productSnapshot",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.OrderService#packageItemSnapshot",
+      "to": "com.jiuyan.banquet.service.OrderService#productSnapshot",
+      "type": "CALLS"
     },
     {
       "from": "com.jiuyan.banquet.service.OrderService#findProduct",
@@ -3794,8 +3984,10 @@
     {
       "from": "com.jiuyan.banquet.repository.ProductRepository#findByIdAndIsDeletedFalse",
       "to": "table:products",
-      "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.ProductRepository.findByIdAndIsDeletedFalse"
+      "type": "READS",
+      "effect": "com.jiuyan.banquet.repository.ProductRepository.findByIdAndIsDeletedFalse",
+      "access": "read",
+      "evidence": "derived-query"
     },
     {
       "from": "com.jiuyan.banquet.service.OrderService#findOrder",
@@ -3806,7 +3998,9 @@
       "from": "com.jiuyan.banquet.repository.OrderRepository#findById",
       "to": "table:orders",
       "type": "READS",
-      "effect": "com.jiuyan.banquet.repository.OrderRepository.findById"
+      "effect": "com.jiuyan.banquet.repository.OrderRepository.findById",
+      "access": "read",
+      "evidence": "derived-query"
     },
     {
       "from": "com.jiuyan.banquet.service.OrderService#generateOrderNo",
@@ -3817,7 +4011,9 @@
       "from": "com.jiuyan.banquet.repository.OrderRepository#existsByOrderNo",
       "to": "table:orders",
       "type": "READS",
-      "effect": "com.jiuyan.banquet.repository.OrderRepository.existsByOrderNo"
+      "effect": "com.jiuyan.banquet.repository.OrderRepository.existsByOrderNo",
+      "access": "read",
+      "evidence": "derived-query"
     },
     {
       "from": "com.jiuyan.banquet.service.PackageService#list",
@@ -3825,10 +4021,32 @@
       "type": "CALLS"
     },
     {
+      "from": "com.jiuyan.banquet.service.PackageService#list",
+      "to": "com.jiuyan.banquet.service.PackageService#normalizePage",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageService#list",
+      "to": "com.jiuyan.banquet.service.PackageService#normalizePageSize",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageService#list",
+      "to": "com.jiuyan.banquet.service.PackageService#packageSpec",
+      "type": "CALLS"
+    },
+    {
       "from": "com.jiuyan.banquet.repository.BanquetPackageRepository#findAll",
       "to": "table:packages",
       "type": "READS",
-      "effect": "com.jiuyan.banquet.repository.BanquetPackageRepository.findAll"
+      "effect": "com.jiuyan.banquet.repository.BanquetPackageRepository.findAll",
+      "access": "read",
+      "evidence": "derived-query"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageService#get",
+      "to": "com.jiuyan.banquet.service.PackageService#findPackage",
+      "type": "CALLS"
     },
     {
       "from": "com.jiuyan.banquet.service.PackageService#create",
@@ -3836,10 +4054,22 @@
       "type": "CALLS"
     },
     {
+      "from": "com.jiuyan.banquet.service.PackageService#create",
+      "to": "com.jiuyan.banquet.service.PackageService#applyBase",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageService#create",
+      "to": "com.jiuyan.banquet.service.PackageService#applyItems",
+      "type": "CALLS"
+    },
+    {
       "from": "com.jiuyan.banquet.repository.BanquetPackageRepository#save",
       "to": "table:packages",
       "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.BanquetPackageRepository.save"
+      "effect": "com.jiuyan.banquet.repository.BanquetPackageRepository.save",
+      "access": "write",
+      "evidence": "crud-contract"
     },
     {
       "from": "com.jiuyan.banquet.service.PackageService#update",
@@ -3847,10 +4077,27 @@
       "type": "CALLS"
     },
     {
+      "from": "com.jiuyan.banquet.service.PackageService#update",
+      "to": "com.jiuyan.banquet.service.PackageService#applyBase",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageService#update",
+      "to": "com.jiuyan.banquet.service.PackageService#applyItems",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageService#update",
+      "to": "com.jiuyan.banquet.service.PackageService#findPackage",
+      "type": "CALLS"
+    },
+    {
       "from": "com.jiuyan.banquet.repository.BanquetPackageRepository#save",
       "to": "table:packages",
       "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.BanquetPackageRepository.save"
+      "effect": "com.jiuyan.banquet.repository.BanquetPackageRepository.save",
+      "access": "write",
+      "evidence": "crud-contract"
     },
     {
       "from": "com.jiuyan.banquet.service.PackageService#updateStatus",
@@ -3858,10 +4105,17 @@
       "type": "CALLS"
     },
     {
+      "from": "com.jiuyan.banquet.service.PackageService#updateStatus",
+      "to": "com.jiuyan.banquet.service.PackageService#findPackage",
+      "type": "CALLS"
+    },
+    {
       "from": "com.jiuyan.banquet.repository.BanquetPackageRepository#save",
       "to": "table:packages",
       "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.BanquetPackageRepository.save"
+      "effect": "com.jiuyan.banquet.repository.BanquetPackageRepository.save",
+      "access": "write",
+      "evidence": "crud-contract"
     },
     {
       "from": "com.jiuyan.banquet.service.PackageService#delete",
@@ -3869,10 +4123,17 @@
       "type": "CALLS"
     },
     {
+      "from": "com.jiuyan.banquet.service.PackageService#delete",
+      "to": "com.jiuyan.banquet.service.PackageService#findPackage",
+      "type": "CALLS"
+    },
+    {
       "from": "com.jiuyan.banquet.repository.BanquetPackageRepository#save",
       "to": "table:packages",
       "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.BanquetPackageRepository.save"
+      "effect": "com.jiuyan.banquet.repository.BanquetPackageRepository.save",
+      "access": "write",
+      "evidence": "crud-contract"
     },
     {
       "from": "com.jiuyan.banquet.service.PackageService#findPackage",
@@ -3882,8 +4143,10 @@
     {
       "from": "com.jiuyan.banquet.repository.BanquetPackageRepository#findByIdAndIsDeletedFalse",
       "to": "table:packages",
-      "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.BanquetPackageRepository.findByIdAndIsDeletedFalse"
+      "type": "READS",
+      "effect": "com.jiuyan.banquet.repository.BanquetPackageRepository.findByIdAndIsDeletedFalse",
+      "access": "read",
+      "evidence": "derived-query"
     },
     {
       "from": "com.jiuyan.banquet.service.PackageService#applyBase",
@@ -3917,14 +4180,26 @@
     {
       "from": "com.jiuyan.banquet.repository.PackageTypeRepository#findByNameAndIsDeletedFalse",
       "to": "table:package_types",
-      "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.PackageTypeRepository.findByNameAndIsDeletedFalse"
+      "type": "READS",
+      "effect": "com.jiuyan.banquet.repository.PackageTypeRepository.findByNameAndIsDeletedFalse",
+      "access": "read",
+      "evidence": "derived-query"
     },
     {
       "from": "com.jiuyan.banquet.service.PackageService#applyItems",
       "to": "field:PackageItem.quantity",
       "type": "DERIVES",
       "callee": "com.jiuyan.banquet.entity.PackageItem.setQuantity"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageService#applyItems",
+      "to": "com.jiuyan.banquet.service.PackageService#findProduct",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.PackageService#applyItems",
+      "to": "com.jiuyan.banquet.service.PackageService#normalizeItems",
+      "type": "CALLS"
     },
     {
       "from": "com.jiuyan.banquet.service.PackageService#findProduct",
@@ -3934,8 +4209,10 @@
     {
       "from": "com.jiuyan.banquet.repository.ProductRepository#findByIdAndIsDeletedFalse",
       "to": "table:products",
-      "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.ProductRepository.findByIdAndIsDeletedFalse"
+      "type": "READS",
+      "effect": "com.jiuyan.banquet.repository.ProductRepository.findByIdAndIsDeletedFalse",
+      "access": "read",
+      "evidence": "derived-query"
     },
     {
       "from": "com.jiuyan.banquet.service.PackageTypeService#list",
@@ -3945,8 +4222,10 @@
     {
       "from": "com.jiuyan.banquet.repository.PackageTypeRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc",
       "to": "table:package_types",
-      "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.PackageTypeRepository.findAllByIsDeletedFalseOrderBySortOrderAscIdAsc"
+      "type": "READS",
+      "effect": "com.jiuyan.banquet.repository.PackageTypeRepository.findAllByIsDeletedFalseOrderBySortOrderAscIdAsc",
+      "access": "read",
+      "evidence": "derived-query"
     },
     {
       "from": "com.jiuyan.banquet.service.PackageTypeService#create",
@@ -3962,13 +4241,17 @@
       "from": "com.jiuyan.banquet.repository.PackageTypeRepository#findByName",
       "to": "table:package_types",
       "type": "READS",
-      "effect": "com.jiuyan.banquet.repository.PackageTypeRepository.findByName"
+      "effect": "com.jiuyan.banquet.repository.PackageTypeRepository.findByName",
+      "access": "read",
+      "evidence": "derived-query"
     },
     {
       "from": "com.jiuyan.banquet.repository.PackageTypeRepository#save",
       "to": "table:package_types",
       "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.PackageTypeRepository.save"
+      "effect": "com.jiuyan.banquet.repository.PackageTypeRepository.save",
+      "access": "write",
+      "evidence": "crud-contract"
     },
     {
       "from": "com.jiuyan.banquet.service.PackageTypeService#delete",
@@ -3988,20 +4271,26 @@
     {
       "from": "com.jiuyan.banquet.repository.BanquetPackageRepository#existsByBanquetTypeAndIsDeletedFalse",
       "to": "table:packages",
-      "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.BanquetPackageRepository.existsByBanquetTypeAndIsDeletedFalse"
+      "type": "READS",
+      "effect": "com.jiuyan.banquet.repository.BanquetPackageRepository.existsByBanquetTypeAndIsDeletedFalse",
+      "access": "read",
+      "evidence": "derived-query"
     },
     {
       "from": "com.jiuyan.banquet.repository.PackageTypeRepository#findById",
       "to": "table:package_types",
       "type": "READS",
-      "effect": "com.jiuyan.banquet.repository.PackageTypeRepository.findById"
+      "effect": "com.jiuyan.banquet.repository.PackageTypeRepository.findById",
+      "access": "read",
+      "evidence": "derived-query"
     },
     {
       "from": "com.jiuyan.banquet.repository.PackageTypeRepository#save",
       "to": "table:package_types",
       "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.PackageTypeRepository.save"
+      "effect": "com.jiuyan.banquet.repository.PackageTypeRepository.save",
+      "access": "write",
+      "evidence": "crud-contract"
     },
     {
       "from": "com.jiuyan.banquet.service.PackageTypeService#lambda$create$0",
@@ -4018,7 +4307,9 @@
       "from": "com.jiuyan.banquet.repository.PackageTypeRepository#findMaxSortOrder",
       "to": "table:package_types",
       "type": "READS",
-      "effect": "com.jiuyan.banquet.repository.PackageTypeRepository.findMaxSortOrder"
+      "effect": "com.jiuyan.banquet.repository.PackageTypeRepository.findMaxSortOrder",
+      "access": "read",
+      "evidence": "derived-query"
     },
     {
       "from": "com.jiuyan.banquet.service.ProductService#list",
@@ -4026,10 +4317,27 @@
       "type": "CALLS"
     },
     {
+      "from": "com.jiuyan.banquet.service.ProductService#list",
+      "to": "com.jiuyan.banquet.service.ProductService#normalizePage",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.ProductService#list",
+      "to": "com.jiuyan.banquet.service.ProductService#normalizePageSize",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.ProductService#list",
+      "to": "com.jiuyan.banquet.service.ProductService#productSpec",
+      "type": "CALLS"
+    },
+    {
       "from": "com.jiuyan.banquet.repository.ProductRepository#findAll",
       "to": "table:products",
       "type": "READS",
-      "effect": "com.jiuyan.banquet.repository.ProductRepository.findAll"
+      "effect": "com.jiuyan.banquet.repository.ProductRepository.findAll",
+      "access": "read",
+      "evidence": "derived-query"
     },
     {
       "from": "com.jiuyan.banquet.service.ProductService#create",
@@ -4037,10 +4345,22 @@
       "type": "CALLS"
     },
     {
+      "from": "com.jiuyan.banquet.service.ProductService#create",
+      "to": "com.jiuyan.banquet.service.ProductService#apply",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.ProductService#create",
+      "to": "com.jiuyan.banquet.service.ProductService#findCategory",
+      "type": "CALLS"
+    },
+    {
       "from": "com.jiuyan.banquet.repository.ProductRepository#save",
       "to": "table:products",
       "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.ProductRepository.save"
+      "effect": "com.jiuyan.banquet.repository.ProductRepository.save",
+      "access": "write",
+      "evidence": "crud-contract"
     },
     {
       "from": "com.jiuyan.banquet.service.ProductService#update",
@@ -4048,10 +4368,27 @@
       "type": "CALLS"
     },
     {
+      "from": "com.jiuyan.banquet.service.ProductService#update",
+      "to": "com.jiuyan.banquet.service.ProductService#apply",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.ProductService#update",
+      "to": "com.jiuyan.banquet.service.ProductService#findCategory",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.ProductService#update",
+      "to": "com.jiuyan.banquet.service.ProductService#findProduct",
+      "type": "CALLS"
+    },
+    {
       "from": "com.jiuyan.banquet.repository.ProductRepository#save",
       "to": "table:products",
       "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.ProductRepository.save"
+      "effect": "com.jiuyan.banquet.repository.ProductRepository.save",
+      "access": "write",
+      "evidence": "crud-contract"
     },
     {
       "from": "com.jiuyan.banquet.service.ProductService#updateStatus",
@@ -4064,16 +4401,25 @@
       "type": "CALLS"
     },
     {
+      "from": "com.jiuyan.banquet.service.ProductService#updateStatus",
+      "to": "com.jiuyan.banquet.service.ProductService#findProduct",
+      "type": "CALLS"
+    },
+    {
       "from": "com.jiuyan.banquet.repository.PackageItemRepository#existsByProductId",
       "to": "table:package_items",
       "type": "READS",
-      "effect": "com.jiuyan.banquet.repository.PackageItemRepository.existsByProductId"
+      "effect": "com.jiuyan.banquet.repository.PackageItemRepository.existsByProductId",
+      "access": "read",
+      "evidence": "derived-query"
     },
     {
       "from": "com.jiuyan.banquet.repository.ProductRepository#save",
       "to": "table:products",
       "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.ProductRepository.save"
+      "effect": "com.jiuyan.banquet.repository.ProductRepository.save",
+      "access": "write",
+      "evidence": "crud-contract"
     },
     {
       "from": "com.jiuyan.banquet.service.ProductService#delete",
@@ -4086,16 +4432,25 @@
       "type": "CALLS"
     },
     {
+      "from": "com.jiuyan.banquet.service.ProductService#delete",
+      "to": "com.jiuyan.banquet.service.ProductService#findProduct",
+      "type": "CALLS"
+    },
+    {
       "from": "com.jiuyan.banquet.repository.PackageItemRepository#existsNonDeletedPackageReferenceByProductId",
       "to": "table:package_items",
-      "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.PackageItemRepository.existsNonDeletedPackageReferenceByProductId"
+      "type": "READS",
+      "effect": "com.jiuyan.banquet.repository.PackageItemRepository.existsNonDeletedPackageReferenceByProductId",
+      "access": "read",
+      "evidence": "derived-query"
     },
     {
       "from": "com.jiuyan.banquet.repository.ProductRepository#save",
       "to": "table:products",
       "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.ProductRepository.save"
+      "effect": "com.jiuyan.banquet.repository.ProductRepository.save",
+      "access": "write",
+      "evidence": "crud-contract"
     },
     {
       "from": "com.jiuyan.banquet.service.ProductService#findProduct",
@@ -4105,8 +4460,10 @@
     {
       "from": "com.jiuyan.banquet.repository.ProductRepository#findByIdAndIsDeletedFalse",
       "to": "table:products",
-      "type": "WRITES",
-      "effect": "com.jiuyan.banquet.repository.ProductRepository.findByIdAndIsDeletedFalse"
+      "type": "READS",
+      "effect": "com.jiuyan.banquet.repository.ProductRepository.findByIdAndIsDeletedFalse",
+      "access": "read",
+      "evidence": "derived-query"
     },
     {
       "from": "com.jiuyan.banquet.service.ProductService#findCategory",
@@ -4117,7 +4474,9 @@
       "from": "com.jiuyan.banquet.repository.CategoryRepository#findById",
       "to": "table:categories",
       "type": "READS",
-      "effect": "com.jiuyan.banquet.repository.CategoryRepository.findById"
+      "effect": "com.jiuyan.banquet.repository.CategoryRepository.findById",
+      "access": "read",
+      "evidence": "derived-query"
     },
     {
       "from": "com.jiuyan.banquet.service.ProductService#apply",
@@ -4142,6 +4501,21 @@
       "to": "field:Product.unit",
       "type": "DERIVES",
       "callee": "com.jiuyan.banquet.entity.Product.setUnit"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.UploadService#uploadProductImage",
+      "to": "com.jiuyan.banquet.service.UploadService#uploadImage",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.UploadService#uploadPackageImage",
+      "to": "com.jiuyan.banquet.service.UploadService#uploadImage",
+      "type": "CALLS"
+    },
+    {
+      "from": "com.jiuyan.banquet.service.UploadService#uploadImage",
+      "to": "com.jiuyan.banquet.service.UploadService#extension",
+      "type": "CALLS"
     }
   ],
   "centrality": {
@@ -4153,27 +4527,27 @@
       "com.jiuyan.banquet.controller.CategoryController#delete": 2,
       "com.jiuyan.banquet.service.CategoryService#delete": 5,
       "com.jiuyan.banquet.controller.OrderController#list": 2,
-      "com.jiuyan.banquet.service.OrderService#list": 3,
+      "com.jiuyan.banquet.service.OrderService#list": 8,
       "com.jiuyan.banquet.controller.OrderController#get": 2,
-      "com.jiuyan.banquet.service.OrderService#get": 2,
+      "com.jiuyan.banquet.service.OrderService#get": 3,
       "com.jiuyan.banquet.controller.OrderController#create": 2,
-      "com.jiuyan.banquet.service.OrderService#create": 4,
+      "com.jiuyan.banquet.service.OrderService#create": 6,
       "com.jiuyan.banquet.controller.OrderController#update": 2,
-      "com.jiuyan.banquet.service.OrderService#update": 3,
+      "com.jiuyan.banquet.service.OrderService#update": 5,
       "com.jiuyan.banquet.controller.OrderController#updateStatus": 2,
-      "com.jiuyan.banquet.service.OrderService#updateStatus": 4,
+      "com.jiuyan.banquet.service.OrderService#updateStatus": 5,
       "com.jiuyan.banquet.controller.PackageController#list": 2,
-      "com.jiuyan.banquet.service.PackageService#list": 3,
+      "com.jiuyan.banquet.service.PackageService#list": 6,
       "com.jiuyan.banquet.controller.PackageController#get": 2,
-      "com.jiuyan.banquet.service.PackageService#get": 2,
+      "com.jiuyan.banquet.service.PackageService#get": 3,
       "com.jiuyan.banquet.controller.PackageController#create": 2,
-      "com.jiuyan.banquet.service.PackageService#create": 3,
+      "com.jiuyan.banquet.service.PackageService#create": 5,
       "com.jiuyan.banquet.controller.PackageController#update": 2,
-      "com.jiuyan.banquet.service.PackageService#update": 3,
+      "com.jiuyan.banquet.service.PackageService#update": 6,
       "com.jiuyan.banquet.controller.PackageController#updateStatus": 2,
-      "com.jiuyan.banquet.service.PackageService#updateStatus": 3,
+      "com.jiuyan.banquet.service.PackageService#updateStatus": 4,
       "com.jiuyan.banquet.controller.PackageController#delete": 2,
-      "com.jiuyan.banquet.service.PackageService#delete": 3,
+      "com.jiuyan.banquet.service.PackageService#delete": 4,
       "com.jiuyan.banquet.controller.PackageTypeController#list": 2,
       "com.jiuyan.banquet.service.PackageTypeService#list": 3,
       "com.jiuyan.banquet.controller.PackageTypeController#create": 2,
@@ -4181,19 +4555,19 @@
       "com.jiuyan.banquet.controller.PackageTypeController#delete": 2,
       "com.jiuyan.banquet.service.PackageTypeService#delete": 5,
       "com.jiuyan.banquet.controller.ProductController#list": 2,
-      "com.jiuyan.banquet.service.ProductService#list": 3,
+      "com.jiuyan.banquet.service.ProductService#list": 6,
       "com.jiuyan.banquet.controller.ProductController#create": 2,
-      "com.jiuyan.banquet.service.ProductService#create": 3,
+      "com.jiuyan.banquet.service.ProductService#create": 5,
       "com.jiuyan.banquet.controller.ProductController#update": 2,
-      "com.jiuyan.banquet.service.ProductService#update": 3,
+      "com.jiuyan.banquet.service.ProductService#update": 6,
       "com.jiuyan.banquet.controller.ProductController#updateStatus": 2,
-      "com.jiuyan.banquet.service.ProductService#updateStatus": 4,
+      "com.jiuyan.banquet.service.ProductService#updateStatus": 5,
       "com.jiuyan.banquet.controller.ProductController#delete": 2,
-      "com.jiuyan.banquet.service.ProductService#delete": 4,
+      "com.jiuyan.banquet.service.ProductService#delete": 5,
       "com.jiuyan.banquet.controller.UploadController#uploadProductImage": 2,
-      "com.jiuyan.banquet.service.UploadService#uploadProductImage": 2,
+      "com.jiuyan.banquet.service.UploadService#uploadProductImage": 3,
       "com.jiuyan.banquet.controller.UploadController#uploadPackageImage": 2,
-      "com.jiuyan.banquet.service.UploadService#uploadPackageImage": 2,
+      "com.jiuyan.banquet.service.UploadService#uploadPackageImage": 3,
       "com.jiuyan.banquet.repository.CategoryRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc": 2,
       "table:categories": 7,
       "com.jiuyan.banquet.repository.CategoryRepository#findByName": 2,
@@ -4205,11 +4579,18 @@
       "field:Category.name": 1,
       "com.jiuyan.banquet.repository.CategoryRepository#findMaxSortOrder": 2,
       "com.jiuyan.banquet.repository.OrderRepository#findAll": 2,
+      "com.jiuyan.banquet.service.OrderService#normalizePage": 1,
+      "com.jiuyan.banquet.service.OrderService#normalizePageSize": 1,
+      "com.jiuyan.banquet.service.OrderService#orderSpec": 1,
+      "com.jiuyan.banquet.service.OrderService#parseDateScope": 1,
+      "com.jiuyan.banquet.service.OrderService#parseStatus": 1,
       "table:orders": 6,
+      "com.jiuyan.banquet.service.OrderService#findOrder": 4,
       "field:BanquetOrder.orderNo": 1,
       "com.jiuyan.banquet.repository.OrderRepository#save": 6,
+      "com.jiuyan.banquet.service.OrderService#apply": 18,
+      "com.jiuyan.banquet.service.OrderService#generateOrderNo": 2,
       "field:BanquetOrder.status": 2,
-      "com.jiuyan.banquet.service.OrderService#apply": 13,
       "field:BanquetOrder.addedItemsSnapshot": 1,
       "field:BanquetOrder.address": 1,
       "field:BanquetOrder.banquetName": 1,
@@ -4222,26 +4603,35 @@
       "field:BanquetOrder.reservationTime": 1,
       "field:BanquetOrder.tableCount": 1,
       "com.jiuyan.banquet.repository.BanquetPackageRepository#findByIdAndIsDeletedFalse": 4,
+      "com.jiuyan.banquet.service.OrderService#buildAddedItemsSnapshot": 4,
+      "com.jiuyan.banquet.service.OrderService#buildPackageSnapshot": 4,
+      "com.jiuyan.banquet.service.OrderService#resolveFinalPrice": 1,
       "table:packages": 8,
-      "com.jiuyan.banquet.service.OrderService#findProduct": 1,
+      "com.jiuyan.banquet.service.OrderService#findProduct": 3,
+      "com.jiuyan.banquet.service.OrderService#normalizePackageItems": 1,
+      "com.jiuyan.banquet.service.OrderService#productSnapshot": 3,
+      "com.jiuyan.banquet.service.OrderService#normalizeAddedItems": 1,
+      "com.jiuyan.banquet.service.OrderService#packageItemSnapshot": 1,
       "com.jiuyan.banquet.repository.ProductRepository#findByIdAndIsDeletedFalse": 6,
-      "com.jiuyan.banquet.service.OrderService#findOrder": 1,
       "com.jiuyan.banquet.repository.OrderRepository#findById": 2,
-      "com.jiuyan.banquet.service.OrderService#generateOrderNo": 1,
       "com.jiuyan.banquet.repository.OrderRepository#existsByOrderNo": 2,
       "com.jiuyan.banquet.repository.BanquetPackageRepository#findAll": 2,
+      "com.jiuyan.banquet.service.PackageService#normalizePage": 1,
+      "com.jiuyan.banquet.service.PackageService#normalizePageSize": 1,
+      "com.jiuyan.banquet.service.PackageService#packageSpec": 1,
+      "com.jiuyan.banquet.service.PackageService#findPackage": 5,
       "com.jiuyan.banquet.repository.BanquetPackageRepository#save": 8,
-      "com.jiuyan.banquet.service.PackageService#findPackage": 1,
-      "com.jiuyan.banquet.service.PackageService#applyBase": 5,
+      "com.jiuyan.banquet.service.PackageService#applyBase": 7,
+      "com.jiuyan.banquet.service.PackageService#applyItems": 5,
       "field:BanquetPackage.banquetType": 1,
       "field:BanquetPackage.imageUrl": 1,
       "field:BanquetPackage.name": 1,
       "field:BanquetPackage.priceCent": 1,
       "com.jiuyan.banquet.repository.PackageTypeRepository#findByNameAndIsDeletedFalse": 2,
       "table:package_types": 7,
-      "com.jiuyan.banquet.service.PackageService#applyItems": 1,
       "field:PackageItem.quantity": 1,
-      "com.jiuyan.banquet.service.PackageService#findProduct": 1,
+      "com.jiuyan.banquet.service.PackageService#findProduct": 2,
+      "com.jiuyan.banquet.service.PackageService#normalizeItems": 1,
       "com.jiuyan.banquet.repository.PackageTypeRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc": 2,
       "com.jiuyan.banquet.repository.PackageTypeRepository#findByName": 2,
       "com.jiuyan.banquet.repository.PackageTypeRepository#save": 4,
@@ -4251,17 +4641,22 @@
       "field:PackageType.name": 1,
       "com.jiuyan.banquet.repository.PackageTypeRepository#findMaxSortOrder": 2,
       "com.jiuyan.banquet.repository.ProductRepository#findAll": 2,
+      "com.jiuyan.banquet.service.ProductService#normalizePage": 1,
+      "com.jiuyan.banquet.service.ProductService#normalizePageSize": 1,
+      "com.jiuyan.banquet.service.ProductService#productSpec": 1,
       "com.jiuyan.banquet.repository.ProductRepository#save": 8,
+      "com.jiuyan.banquet.service.ProductService#apply": 6,
+      "com.jiuyan.banquet.service.ProductService#findCategory": 3,
+      "com.jiuyan.banquet.service.ProductService#findProduct": 4,
       "com.jiuyan.banquet.repository.PackageItemRepository#existsByProductId": 2,
       "table:package_items": 2,
       "com.jiuyan.banquet.repository.PackageItemRepository#existsNonDeletedPackageReferenceByProductId": 2,
-      "com.jiuyan.banquet.service.ProductService#findProduct": 1,
-      "com.jiuyan.banquet.service.ProductService#findCategory": 1,
-      "com.jiuyan.banquet.service.ProductService#apply": 4,
       "field:Product.imageUrl": 1,
       "field:Product.name": 1,
       "field:Product.priceCent": 1,
-      "field:Product.unit": 1
+      "field:Product.unit": 1,
+      "com.jiuyan.banquet.service.UploadService#uploadImage": 3,
+      "com.jiuyan.banquet.service.UploadService#extension": 1
     },
     "reachable_tables": {
       "com.jiuyan.banquet.controller.CategoryController#list": 1,
@@ -4269,22 +4664,22 @@
       "com.jiuyan.banquet.controller.CategoryController#delete": 2,
       "com.jiuyan.banquet.controller.HealthController#health": 0,
       "com.jiuyan.banquet.controller.OrderController#list": 1,
-      "com.jiuyan.banquet.controller.OrderController#get": 0,
-      "com.jiuyan.banquet.controller.OrderController#create": 1,
-      "com.jiuyan.banquet.controller.OrderController#update": 1,
+      "com.jiuyan.banquet.controller.OrderController#get": 1,
+      "com.jiuyan.banquet.controller.OrderController#create": 3,
+      "com.jiuyan.banquet.controller.OrderController#update": 3,
       "com.jiuyan.banquet.controller.OrderController#updateStatus": 1,
       "com.jiuyan.banquet.controller.PackageController#list": 1,
-      "com.jiuyan.banquet.controller.PackageController#get": 0,
-      "com.jiuyan.banquet.controller.PackageController#create": 1,
-      "com.jiuyan.banquet.controller.PackageController#update": 1,
+      "com.jiuyan.banquet.controller.PackageController#get": 1,
+      "com.jiuyan.banquet.controller.PackageController#create": 3,
+      "com.jiuyan.banquet.controller.PackageController#update": 3,
       "com.jiuyan.banquet.controller.PackageController#updateStatus": 1,
       "com.jiuyan.banquet.controller.PackageController#delete": 1,
       "com.jiuyan.banquet.controller.PackageTypeController#list": 1,
       "com.jiuyan.banquet.controller.PackageTypeController#create": 1,
       "com.jiuyan.banquet.controller.PackageTypeController#delete": 2,
       "com.jiuyan.banquet.controller.ProductController#list": 1,
-      "com.jiuyan.banquet.controller.ProductController#create": 1,
-      "com.jiuyan.banquet.controller.ProductController#update": 1,
+      "com.jiuyan.banquet.controller.ProductController#create": 2,
+      "com.jiuyan.banquet.controller.ProductController#update": 2,
       "com.jiuyan.banquet.controller.ProductController#updateStatus": 2,
       "com.jiuyan.banquet.controller.ProductController#delete": 2,
       "com.jiuyan.banquet.controller.UploadController#uploadProductImage": 0,
@@ -4312,14 +4707,14 @@
       "com.jiuyan.banquet.service.CategoryService#lambda$delete$1": 0,
       "com.jiuyan.banquet.service.CategoryService#lambda$create$0": 1,
       "com.jiuyan.banquet.service.OrderService#list": 1,
-      "com.jiuyan.banquet.service.OrderService#get": 0,
-      "com.jiuyan.banquet.service.OrderService#create": 1,
-      "com.jiuyan.banquet.service.OrderService#update": 1,
+      "com.jiuyan.banquet.service.OrderService#get": 1,
+      "com.jiuyan.banquet.service.OrderService#create": 3,
+      "com.jiuyan.banquet.service.OrderService#update": 3,
       "com.jiuyan.banquet.service.OrderService#updateStatus": 1,
-      "com.jiuyan.banquet.service.OrderService#apply": 1,
+      "com.jiuyan.banquet.service.OrderService#apply": 2,
       "com.jiuyan.banquet.service.OrderService#resolveFinalPrice": 0,
-      "com.jiuyan.banquet.service.OrderService#buildPackageSnapshot": 0,
-      "com.jiuyan.banquet.service.OrderService#buildAddedItemsSnapshot": 0,
+      "com.jiuyan.banquet.service.OrderService#buildPackageSnapshot": 1,
+      "com.jiuyan.banquet.service.OrderService#buildAddedItemsSnapshot": 1,
       "com.jiuyan.banquet.service.OrderService#packageItemSnapshot": 0,
       "com.jiuyan.banquet.service.OrderService#productSnapshot": 0,
       "com.jiuyan.banquet.service.OrderService#normalizePackageItems": 0,
@@ -4339,14 +4734,14 @@
       "com.jiuyan.banquet.service.OrderService#lambda$buildPackageSnapshot$1": 0,
       "com.jiuyan.banquet.service.OrderService#lambda$apply$0": 0,
       "com.jiuyan.banquet.service.PackageService#list": 1,
-      "com.jiuyan.banquet.service.PackageService#get": 0,
-      "com.jiuyan.banquet.service.PackageService#create": 1,
-      "com.jiuyan.banquet.service.PackageService#update": 1,
+      "com.jiuyan.banquet.service.PackageService#get": 1,
+      "com.jiuyan.banquet.service.PackageService#create": 3,
+      "com.jiuyan.banquet.service.PackageService#update": 3,
       "com.jiuyan.banquet.service.PackageService#updateStatus": 1,
       "com.jiuyan.banquet.service.PackageService#delete": 1,
       "com.jiuyan.banquet.service.PackageService#findPackage": 1,
       "com.jiuyan.banquet.service.PackageService#applyBase": 1,
-      "com.jiuyan.banquet.service.PackageService#applyItems": 0,
+      "com.jiuyan.banquet.service.PackageService#applyItems": 1,
       "com.jiuyan.banquet.service.PackageService#normalizeItems": 0,
       "com.jiuyan.banquet.service.PackageService#findProduct": 1,
       "com.jiuyan.banquet.service.PackageService#packageSpec": 0,
@@ -4365,8 +4760,8 @@
       "com.jiuyan.banquet.service.PackageTypeService#lambda$delete$1": 0,
       "com.jiuyan.banquet.service.PackageTypeService#lambda$create$0": 1,
       "com.jiuyan.banquet.service.ProductService#list": 1,
-      "com.jiuyan.banquet.service.ProductService#create": 1,
-      "com.jiuyan.banquet.service.ProductService#update": 1,
+      "com.jiuyan.banquet.service.ProductService#create": 2,
+      "com.jiuyan.banquet.service.ProductService#update": 2,
       "com.jiuyan.banquet.service.ProductService#updateStatus": 2,
       "com.jiuyan.banquet.service.ProductService#delete": 2,
       "com.jiuyan.banquet.service.ProductService#findProduct": 1,
@@ -4453,22 +4848,22 @@
       "com.jiuyan.banquet.controller.ProductController#delete": 0,
       "com.jiuyan.banquet.controller.UploadController#uploadProductImage": 0,
       "com.jiuyan.banquet.controller.UploadController#uploadPackageImage": 0,
-      "com.jiuyan.banquet.repository.BanquetPackageRepository#findByIdAndIsDeletedFalse": 0,
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#findByIdAndIsDeletedFalse": 6,
       "com.jiuyan.banquet.repository.BanquetPackageRepository#existsByBanquetTypeAndIsDeletedFalse": 1,
       "com.jiuyan.banquet.repository.CategoryRepository#findByName": 1,
       "com.jiuyan.banquet.repository.CategoryRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc": 1,
       "com.jiuyan.banquet.repository.CategoryRepository#findMaxSortOrder": 0,
-      "com.jiuyan.banquet.repository.OrderRepository#existsByOrderNo": 0,
+      "com.jiuyan.banquet.repository.OrderRepository#existsByOrderNo": 1,
       "com.jiuyan.banquet.repository.OrderRepository#findByOrderNo": 0,
       "com.jiuyan.banquet.repository.PackageItemRepository#existsByProductId": 1,
       "com.jiuyan.banquet.repository.PackageItemRepository#existsNonDeletedPackageReferenceByProductId": 1,
       "com.jiuyan.banquet.repository.PackageItemRepository#findByBanquetPackageId": 0,
       "com.jiuyan.banquet.repository.PackageItemRepository#deleteByBanquetPackageId": 0,
       "com.jiuyan.banquet.repository.PackageTypeRepository#findByName": 1,
-      "com.jiuyan.banquet.repository.PackageTypeRepository#findByNameAndIsDeletedFalse": 0,
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findByNameAndIsDeletedFalse": 2,
       "com.jiuyan.banquet.repository.PackageTypeRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc": 1,
       "com.jiuyan.banquet.repository.PackageTypeRepository#findMaxSortOrder": 0,
-      "com.jiuyan.banquet.repository.ProductRepository#findByIdAndIsDeletedFalse": 0,
+      "com.jiuyan.banquet.repository.ProductRepository#findByIdAndIsDeletedFalse": 7,
       "com.jiuyan.banquet.repository.ProductRepository#existsByCategoryIdAndIsDeletedFalse": 1,
       "com.jiuyan.banquet.service.CategoryService#list": 1,
       "com.jiuyan.banquet.service.CategoryService#create": 1,
@@ -4480,22 +4875,22 @@
       "com.jiuyan.banquet.service.OrderService#create": 1,
       "com.jiuyan.banquet.service.OrderService#update": 1,
       "com.jiuyan.banquet.service.OrderService#updateStatus": 1,
-      "com.jiuyan.banquet.service.OrderService#apply": 0,
-      "com.jiuyan.banquet.service.OrderService#resolveFinalPrice": 0,
-      "com.jiuyan.banquet.service.OrderService#buildPackageSnapshot": 0,
-      "com.jiuyan.banquet.service.OrderService#buildAddedItemsSnapshot": 0,
+      "com.jiuyan.banquet.service.OrderService#apply": 2,
+      "com.jiuyan.banquet.service.OrderService#resolveFinalPrice": 2,
+      "com.jiuyan.banquet.service.OrderService#buildPackageSnapshot": 2,
+      "com.jiuyan.banquet.service.OrderService#buildAddedItemsSnapshot": 2,
       "com.jiuyan.banquet.service.OrderService#packageItemSnapshot": 0,
-      "com.jiuyan.banquet.service.OrderService#productSnapshot": 0,
-      "com.jiuyan.banquet.service.OrderService#normalizePackageItems": 0,
-      "com.jiuyan.banquet.service.OrderService#normalizeAddedItems": 0,
-      "com.jiuyan.banquet.service.OrderService#findProduct": 0,
-      "com.jiuyan.banquet.service.OrderService#findOrder": 0,
-      "com.jiuyan.banquet.service.OrderService#generateOrderNo": 0,
-      "com.jiuyan.banquet.service.OrderService#parseStatus": 0,
-      "com.jiuyan.banquet.service.OrderService#parseDateScope": 0,
-      "com.jiuyan.banquet.service.OrderService#orderSpec": 0,
-      "com.jiuyan.banquet.service.OrderService#normalizePage": 0,
-      "com.jiuyan.banquet.service.OrderService#normalizePageSize": 0,
+      "com.jiuyan.banquet.service.OrderService#productSnapshot": 2,
+      "com.jiuyan.banquet.service.OrderService#normalizePackageItems": 2,
+      "com.jiuyan.banquet.service.OrderService#normalizeAddedItems": 2,
+      "com.jiuyan.banquet.service.OrderService#findProduct": 2,
+      "com.jiuyan.banquet.service.OrderService#findOrder": 3,
+      "com.jiuyan.banquet.service.OrderService#generateOrderNo": 1,
+      "com.jiuyan.banquet.service.OrderService#parseStatus": 1,
+      "com.jiuyan.banquet.service.OrderService#parseDateScope": 1,
+      "com.jiuyan.banquet.service.OrderService#orderSpec": 1,
+      "com.jiuyan.banquet.service.OrderService#normalizePage": 1,
+      "com.jiuyan.banquet.service.OrderService#normalizePageSize": 1,
       "com.jiuyan.banquet.service.OrderService#$deserializeLambda$": 0,
       "com.jiuyan.banquet.service.OrderService#lambda$orderSpec$6158dec4$1": 0,
       "com.jiuyan.banquet.service.OrderService#lambda$findOrder$3": 0,
@@ -4508,14 +4903,14 @@
       "com.jiuyan.banquet.service.PackageService#update": 1,
       "com.jiuyan.banquet.service.PackageService#updateStatus": 1,
       "com.jiuyan.banquet.service.PackageService#delete": 1,
-      "com.jiuyan.banquet.service.PackageService#findPackage": 0,
-      "com.jiuyan.banquet.service.PackageService#applyBase": 0,
-      "com.jiuyan.banquet.service.PackageService#applyItems": 0,
-      "com.jiuyan.banquet.service.PackageService#normalizeItems": 0,
-      "com.jiuyan.banquet.service.PackageService#findProduct": 0,
-      "com.jiuyan.banquet.service.PackageService#packageSpec": 0,
-      "com.jiuyan.banquet.service.PackageService#normalizePage": 0,
-      "com.jiuyan.banquet.service.PackageService#normalizePageSize": 0,
+      "com.jiuyan.banquet.service.PackageService#findPackage": 4,
+      "com.jiuyan.banquet.service.PackageService#applyBase": 2,
+      "com.jiuyan.banquet.service.PackageService#applyItems": 2,
+      "com.jiuyan.banquet.service.PackageService#normalizeItems": 2,
+      "com.jiuyan.banquet.service.PackageService#findProduct": 2,
+      "com.jiuyan.banquet.service.PackageService#packageSpec": 1,
+      "com.jiuyan.banquet.service.PackageService#normalizePage": 1,
+      "com.jiuyan.banquet.service.PackageService#normalizePageSize": 1,
       "com.jiuyan.banquet.service.PackageService#$deserializeLambda$": 0,
       "com.jiuyan.banquet.service.PackageService#lambda$packageSpec$cdf9b199$1": 0,
       "com.jiuyan.banquet.service.PackageService#lambda$findProduct$4": 0,
@@ -4533,57 +4928,57 @@
       "com.jiuyan.banquet.service.ProductService#update": 1,
       "com.jiuyan.banquet.service.ProductService#updateStatus": 1,
       "com.jiuyan.banquet.service.ProductService#delete": 1,
-      "com.jiuyan.banquet.service.ProductService#findProduct": 0,
-      "com.jiuyan.banquet.service.ProductService#findCategory": 0,
-      "com.jiuyan.banquet.service.ProductService#apply": 0,
-      "com.jiuyan.banquet.service.ProductService#productSpec": 0,
-      "com.jiuyan.banquet.service.ProductService#normalizePage": 0,
-      "com.jiuyan.banquet.service.ProductService#normalizePageSize": 0,
+      "com.jiuyan.banquet.service.ProductService#findProduct": 3,
+      "com.jiuyan.banquet.service.ProductService#findCategory": 2,
+      "com.jiuyan.banquet.service.ProductService#apply": 2,
+      "com.jiuyan.banquet.service.ProductService#productSpec": 1,
+      "com.jiuyan.banquet.service.ProductService#normalizePage": 1,
+      "com.jiuyan.banquet.service.ProductService#normalizePageSize": 1,
       "com.jiuyan.banquet.service.ProductService#$deserializeLambda$": 0,
       "com.jiuyan.banquet.service.ProductService#lambda$productSpec$d619ff4b$1": 0,
       "com.jiuyan.banquet.service.ProductService#lambda$findCategory$1": 0,
       "com.jiuyan.banquet.service.ProductService#lambda$findProduct$0": 0,
       "com.jiuyan.banquet.service.UploadService#uploadProductImage": 1,
       "com.jiuyan.banquet.service.UploadService#uploadPackageImage": 1,
-      "com.jiuyan.banquet.service.UploadService#uploadImage": 0,
-      "com.jiuyan.banquet.service.UploadService#extension": 0,
-      "table:categories": 3,
-      "table:products": 6,
-      "table:packages": 6,
+      "com.jiuyan.banquet.service.UploadService#uploadImage": 2,
+      "com.jiuyan.banquet.service.UploadService#extension": 2,
+      "table:categories": 5,
+      "table:products": 10,
+      "table:packages": 9,
       "table:package_items": 2,
-      "table:orders": 4,
-      "table:package_types": 3,
+      "table:orders": 5,
+      "table:package_types": 5,
       "field:BanquetOrder.orderNo": 1,
-      "field:BanquetOrder.customerName": 0,
-      "field:BanquetOrder.customerPhone": 0,
-      "field:BanquetOrder.banquetName": 0,
-      "field:BanquetOrder.banquetType": 0,
-      "field:BanquetOrder.address": 0,
-      "field:BanquetOrder.reservationTime": 0,
-      "field:BanquetOrder.tableCount": 0,
-      "field:BanquetOrder.packageSnapshot": 0,
-      "field:BanquetOrder.addedItemsSnapshot": 0,
-      "field:BanquetOrder.planTotalCent": 0,
-      "field:BanquetOrder.finalPriceCent": 0,
-      "field:BanquetOrder.status": 1,
-      "field:BanquetPackage.name": 0,
-      "field:BanquetPackage.banquetType": 0,
-      "field:BanquetPackage.priceCent": 0,
-      "field:BanquetPackage.imageUrl": 0,
+      "field:BanquetOrder.customerName": 2,
+      "field:BanquetOrder.customerPhone": 2,
+      "field:BanquetOrder.banquetName": 2,
+      "field:BanquetOrder.banquetType": 2,
+      "field:BanquetOrder.address": 2,
+      "field:BanquetOrder.reservationTime": 2,
+      "field:BanquetOrder.tableCount": 2,
+      "field:BanquetOrder.packageSnapshot": 2,
+      "field:BanquetOrder.addedItemsSnapshot": 2,
+      "field:BanquetOrder.planTotalCent": 2,
+      "field:BanquetOrder.finalPriceCent": 2,
+      "field:BanquetOrder.status": 3,
+      "field:BanquetPackage.name": 2,
+      "field:BanquetPackage.banquetType": 2,
+      "field:BanquetPackage.priceCent": 2,
+      "field:BanquetPackage.imageUrl": 2,
       "field:BaseEntity.createdAt": 0,
       "field:BaseEntity.updatedAt": 0,
       "field:Category.name": 0,
-      "field:PackageItem.quantity": 0,
+      "field:PackageItem.quantity": 2,
       "field:PackageType.name": 0,
-      "field:Product.name": 0,
-      "field:Product.priceCent": 0,
-      "field:Product.unit": 0,
-      "field:Product.imageUrl": 0,
+      "field:Product.name": 2,
+      "field:Product.priceCent": 2,
+      "field:Product.unit": 2,
+      "field:Product.imageUrl": 2,
       "com.jiuyan.banquet.repository.CategoryRepository#save": 2,
-      "com.jiuyan.banquet.repository.CategoryRepository#findById": 1,
+      "com.jiuyan.banquet.repository.CategoryRepository#findById": 3,
       "com.jiuyan.banquet.repository.OrderRepository#findAll": 1,
       "com.jiuyan.banquet.repository.OrderRepository#save": 3,
-      "com.jiuyan.banquet.repository.OrderRepository#findById": 0,
+      "com.jiuyan.banquet.repository.OrderRepository#findById": 3,
       "com.jiuyan.banquet.repository.BanquetPackageRepository#findAll": 1,
       "com.jiuyan.banquet.repository.BanquetPackageRepository#save": 4,
       "com.jiuyan.banquet.repository.PackageTypeRepository#save": 2,
@@ -4591,5 +4986,30 @@
       "com.jiuyan.banquet.repository.ProductRepository#findAll": 1,
       "com.jiuyan.banquet.repository.ProductRepository#save": 4
     }
+  },
+  "generation": {
+    "fn_declaration": "sha256:357cbe2c29746184",
+    "class_declaration": "sha256:612f242f190344ae"
+  },
+  "modeling_domain": {
+    "cell_key_form": "FQCN#method",
+    "node_types": [
+      "HTTP_ENTRY",
+      "SVC_OP",
+      "REPO_OP",
+      "TABLE",
+      "ENTITY_FIELD"
+    ],
+    "method_node_types": [
+      "HTTP_ENTRY",
+      "SVC_OP",
+      "REPO_OP"
+    ],
+    "class_suffixes": [
+      "Controller",
+      "Service",
+      "Repository"
+    ],
+    "scope_note": "只建模可执行路径（入口→服务→仓储→表）上的方法细胞；键形态不同或类名不匹配上述后缀的单元不在本图域内，其足迹是 not_applicable（域外），不是 unknown（域内未测）"
   }
 }

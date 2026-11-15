@@ -102,6 +102,70 @@
       "key": "service"
     }
   ],
+  "warrant_registry": "warrant_registry.json",
+  "producer_gates_note": "每个台账生产者的闸门覆盖状态。warrant = A/B 判据来源二分闸门；oracle = 只有业务预期 oracle 闸门（未区分技术可自证）；none = 未接闸门。由 normalize_findings.py 与台账逐条对账，生成 warrant_coverage 清单并在报告里并排报，不得只报已接的那部分。",
+  "producer_gates": {
+    "fn_findings.json": {"script": "engine/fn_diff.py", "gate": "oracle"},
+    "file_findings.json": {"script": "engine/file_diff.py", "gate": "warrant"},
+    "findings.json": {"script": "contract_diff.py", "gate": "warrant"},
+    "class_findings.json": {"script": "class_diff.py", "gate": "oracle"},
+    "integration_findings.json": {"script": "integration_diff.py", "gate": "oracle"},
+    "business_findings.json": {"script": "engine/business_verdict.py", "gate": "oracle"},
+    "concurrency_findings.json": {"script": "concurrency_props.py", "gate": "none"},
+    "config_findings.json": {"script": "config_probe.py", "gate": "none"},
+    "orm_findings.json": {"script": "orm_query_probe.py", "gate": "none"},
+    "perf_findings.json": {"script": "perf_load.py", "gate": "none"},
+    "property_binding_findings.json": {"script": "property_binding_probe.py", "gate": "none"},
+    "transaction_findings.json": {"script": "transaction_probe.py", "gate": "none"},
+    "numeric_findings.json": {"script": "numeric_props.py", "gate": "none"},
+    "mutation_findings.json": {"script": "mutation_test.py", "gate": "none"},
+    "feature_findings.json": {"script": "java_feature_scan.py", "gate": "none"}
+  },
+  "suspect_sources_note": "各层 oracle 闸门压下来的结论（不进缺陷台账，但必须在报告里可见）。unconfirmed = 推断的业务预期，不知道是否成立，需业务方确认（规范层风险）；refuted = 文档明确否定该预期，只保留观测。两者都不是缺陷，也都不是「已排除」。引擎按此声明收集，缺文件报 INCOMPLETE 而不是 0。",
+  "suspect_sources": [
+    {
+      "layer": "function",
+      "file": "fn_rule_suspects.json",
+      "unconfirmed_key": "unconfirmed",
+      "refuted_key": "refuted"
+    },
+    {
+      "layer": "file",
+      "file": "file_rule_suspects.json",
+      "unconfirmed_key": "unconfirmed",
+      "refuted_key": "refuted"
+    },
+    {
+      "layer": "class",
+      "file": "class_rule_suspects.json",
+      "unconfirmed_key": "unconfirmed",
+      "refuted_key": "refuted"
+    },
+    {
+      "layer": "service",
+      "file": "service_rule_suspects.json",
+      "unconfirmed_key": "unconfirmed",
+      "refuted_key": "refuted"
+    },
+    {
+      "layer": "service",
+      "file": "business_findings.json",
+      "unconfirmed_key": "unconfirmed_suspects",
+      "refuted_key": "refuted_observations"
+    },
+    {
+      "layer": "integration",
+      "file": "integration_rule_suspects.json",
+      "unconfirmed_key": "unconfirmed",
+      "refuted_key": "refuted"
+    },
+    {
+      "layer": "ledger",
+      "file": "ledger_rule_suspects.json",
+      "unconfirmed_key": "unconfirmed",
+      "refuted_key": "refuted"
+    }
+  ],
   "carriers": {
     "function.jvm_reflection": {
       "layer": "function",

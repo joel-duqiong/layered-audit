@@ -115,8 +115,9 @@ def build_findings(res: dict[str, Any]) -> dict[str, Any]:
                     "9.22e18 分。前端用 JS Number 装分值，超过 2^53（约 9007 万亿元）后就装不下每一个整数。\n"
                     + "\n".join(json.dumps(s, ensure_ascii=False) for s in lost)
                     + "\n后端能存进去，前端显示的是另一个数 —— 库里和界面上的金额对不上。\n"
-                    "归属：根因是「金额没有上界」（与 price.final_price.upper_bound_unvalidated 同一根因），"
-                    "这里只量化后果，不重复开单。"),
+                    "这是平台级事实（IEEE754 双精度装不下每一个 int64），不依赖任何业务预期；"
+                    "「金额无上界」只是可达性前提。归属与根因由 finding_meta.py 单一声明，"
+                    "本文案不再复述，避免两处口径漂移。"),
                 "repro": "python3 numeric_props.py",
                 "location": {"file": (src.get("centToYuan") or {}).get("file", ""),
                              "line": (src.get("centToYuan") or {}).get("line", 0),

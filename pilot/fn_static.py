@@ -8,6 +8,7 @@
 from __future__ import annotations
 import project
 
+import argparse
 import json
 import re
 import shutil
@@ -26,15 +27,26 @@ JAR_COPY = WORK / "app.jar"
 PKG = project.java_package()
 
 METHOD_RE = re.compile(
-    r"^  (?P<ret>[\w.$\[\]<>, ?]+?)\s(?P<name>[A-Za-z_$][\w$]*)\((?P<params>.*)\);\s*$")
+    r"^  (?P<ret>[\w.$\[\]<>, ?]+?)\s(?P<name>[A-Za-z_$][\w$]*)\((?P<params>.*)\)"
+    r"(?:\s+throws\s+[\w.$, ]+)?;\s*$")
 CALL_RE = re.compile(
     r"invoke(?:virtual|static|interface|special|dynamic)\s+#\d+(?:,\s*\d+)?\s+//\s+"
-    r"(?:Method|InterfaceMethod)\s+(?P<owner>[\w/$]+)\.(?P<mname>[\w$<>]+)")
+    r"(?:Method|InterfaceMethod)\s+(?:(?P<owner>[\w/$]+)\.)?(?P<mname>[\w$<>]+)(?=[:(])")
 LDC_RE = re.compile(r"ldc(?:_w)?\s+#\d+\s+//\s+(?P<kind>\w+)\s+(?P<value>.*)$")
 INT_CONST_RE = re.compile(r"^\s*\d+:\s+(?:bipush|sipush)\s+(?P<v>-?\d+)\s*$")
 ICONST_RE = re.compile(r"^\s*\d+:\s+iconst_(?P<v>\d)\s*$")
 EXC_ROW_RE = re.compile(
     r"^\s+(?P<from>\d+)\s+(?P<to>\d+)\s+(?P<target>\d+)\s+(?P<type>Class|any)\s+(?P<exc>[\w/$]+)?")
+MH_RE = re.compile(
+    r"^\s*#(?P<idx>\d+) = MethodHandle\s+\d+:#\d+\s+//\s+"
+    r"(?P<kind>REF_\w+)\s+(?P<owner>[\w/$]+)\.(?P<mname>[\w$<>]+):")
+INDY_BOOT_RE = re.compile(r"//\s+InvokeDynamic\s+#(\d+):")
+BOOT_ENTRY_RE = re.compile(r"^\s{2}(\d+):\s+#\d+\s+REF_")
+BOOT_ARG_RE = re.compile(
+    r"^\s+#(?P<idx>\d+)\s+(?P<kind>REF_\w+)\s+(?P<owner>[\w/$]+)\.(?P<mname>[\w$<>]+):")
+ANNOT_TYPE_RE = re.compile(r"^\s+(?P<type>[\w$.]+)\($")
+ANNOT_MARKER_RE = re.compile(r"^\s+(?P<type>[\w$.]+)$")
+ATTR_HEADER_RE = re.compile(r"^\s*[A-Z][A-Za-z]+:")
 BRANCH_OPS = ("if_icmp", "if_acmp", "ifnull", "ifnonnull", "goto", "tableswitch",
               "lookupswitch", "ifeq", "ifne", "iflt", "ifgt", "ifle", "ifge")
 
@@ -80,18 +92,62 @@ def ensure_deployed_classes() -> bool:
 
 
 def javap(class_dir: Path, fqcn: str) -> str:
-    return run(["javap", "-p", "-c", "-cp", str(class_dir), fqcn]).stdout
+    return run(["javap", "-v", "-p", "-cp", str(class_dir), fqcn]).stdout
 
 
-def parse_methods(text: str) -> list[dict]:
+def parse_methods(text: str, fqcn: str = "") -> list[dict]:
     methods: list[dict] = []
     current: dict | None = None
     in_exception_table = False
+    in_code = False
+    in_annotations = False
+    annot_type = ""
+    annot_lines: list[str] = []
+    in_bootstrap = False
+    boot_idx = -1
+    handles: dict[str, dict] = {}
+    boot_args: dict[int, list[dict]] = {}
+    prev_op = ""
+
+    def _flush_annotation() -> None:
+        nonlocal annot_type, annot_lines
+        if current is not None and annot_type:
+            current["annotations"].append(
+                {"type": annot_type, "raw": "\n".join(annot_lines).strip()})
+        annot_type = ""
+        annot_lines = []
+
     for line in text.splitlines():
         if not line.strip():
             continue
+        mh = MH_RE.match(line)
+        if mh:
+            handles[mh.group("idx")] = {
+                "kind": mh.group("kind"),
+                "owner": mh.group("owner").replace("/", "."),
+                "method": mh.group("mname"),
+            }
+            continue
+        if line.startswith("BootstrapMethods:"):
+            in_bootstrap = True
+            continue
+        if in_bootstrap:
+            be = BOOT_ENTRY_RE.match(line)
+            if be:
+                boot_idx = int(be.group(1))
+                boot_args.setdefault(boot_idx, [])
+                continue
+            ba = BOOT_ARG_RE.match(line)
+            if ba and boot_idx >= 0:
+                boot_args[boot_idx].append({
+                    "cp": ba.group("idx"), "kind": ba.group("kind"),
+                    "owner": ba.group("owner").replace("/", "."),
+                    "method": ba.group("mname"),
+                })
+            continue
         m = METHOD_RE.match(line)
         if m:
+            _flush_annotation()
             current = {
                 "name": m.group("name"),
                 "returns": re.sub(r"^(?:public|private|protected|static|final|abstract)\s+",
@@ -101,6 +157,8 @@ def parse_methods(text: str) -> list[dict]:
                 "calls": [],
                 "constants": [],
                 "caught": [],
+                "annotations": [],
+                "indy_boot": [],
                 "branch_count": 0,
                 "return_count": 0,
                 "bytecode_size": 0,
@@ -112,12 +170,16 @@ def parse_methods(text: str) -> list[dict]:
             current["modifiers"] = " ".join(w for w in head if w in mods)
             methods.append(current)
             in_exception_table = False
+            in_code = False
+            in_annotations = False
+            prev_op = ""
             continue
         if current is None:
             continue
         stripped = line.strip()
         if stripped == "Exception table:":
             in_exception_table = True
+            in_code = False
             continue
         if in_exception_table:
             if stripped.startswith("from"):
@@ -132,27 +194,67 @@ def parse_methods(text: str) -> list[dict]:
                 })
                 continue
             in_exception_table = False
+        if stripped in ("RuntimeVisibleAnnotations:", "RuntimeInvisibleAnnotations:"):
+            in_annotations = True
+            in_code = False
+            continue
+        if in_annotations:
+            if re.match(r"^\s*\d+:\s+#", line):
+                continue
+            at = ANNOT_TYPE_RE.match(line)
+            if at:
+                _flush_annotation()
+                annot_type = at.group("type")
+                continue
+            if annot_type:
+                if stripped == ")":
+                    _flush_annotation()
+                else:
+                    annot_lines.append(stripped)
+                continue
+            am = ANNOT_MARKER_RE.match(line)
+            if am:
+                _flush_annotation()
+                annot_type = am.group("type")
+                _flush_annotation()
+                continue
+            in_annotations = False
+        if stripped == "Code:":
+            in_code = True
+            prev_op = ""
+            continue
+        if ATTR_HEADER_RE.match(line):
+            in_code = False
+            continue
+        if not in_code:
+            continue
 
+        if "invokedynamic" in line:
+            bm = INDY_BOOT_RE.search(line)
+            if bm:
+                current["indy_boot"].append(
+                    {"boot": int(bm.group(1)), "prev_op": prev_op})
         call = CALL_RE.search(line)
         if call:
-            owner = call.group("owner").replace("/", ".")
+            # javap 对同类 invoke 省略 owner —— 缺 owner 即本类调用，
+            # 归到当前类；丢掉它等于整张图没有自调用边。
+            owner = (call.group("owner") or fqcn.replace(".", "/")).replace("/", ".")
             current["calls"].append(f"{owner}.{call.group('mname')}")
-            continue
-        ldc = LDC_RE.search(line)
-        if ldc:
-            value = ldc.group("value").strip()
-            if ldc.group("kind") == "String":
-                value = value.strip('"')
-            current["constants"].append({"kind": ldc.group("kind"), "value": value})
-            continue
-        ic = INT_CONST_RE.match(line)
-        if ic:
-            current["constants"].append({"kind": "int", "value": ic.group("v")})
-            continue
-        ii = ICONST_RE.match(line)
-        if ii:
-            current["constants"].append({"kind": "int", "value": ii.group("v")})
-            continue
+        else:
+            ldc = LDC_RE.search(line)
+            if ldc:
+                value = ldc.group("value").strip()
+                if ldc.group("kind") == "String":
+                    value = value.strip('"')
+                current["constants"].append({"kind": ldc.group("kind"), "value": value})
+            else:
+                ic = INT_CONST_RE.match(line)
+                if ic:
+                    current["constants"].append({"kind": "int", "value": ic.group("v")})
+                else:
+                    ii = ICONST_RE.match(line)
+                    if ii:
+                        current["constants"].append({"kind": "int", "value": ii.group("v")})
         if re.match(r"^\s*\d+:\s", line):
             current["bytecode_size"] += 1
             op = stripped.split(":")[1].strip().split()[0]
@@ -162,6 +264,31 @@ def parse_methods(text: str) -> list[dict]:
                 current["null_guard_count"] += 1
             if op == "return":
                 current["return_count"] += 1
+            prev_op = stripped.split(":")[1].strip()
+    _flush_annotation()
+
+    # 方法引用归因：invokedynamic -> BootstrapMethods 序号 -> 常量池 MethodHandle。
+    # 接收者取 invokedynamic 前一条指令：aload_0=this，getfield=字段，其余=static/unknown。
+    for meth in methods:
+        refs = []
+        for ib in meth["indy_boot"]:
+            for h in boot_args.get(ib["boot"], []):
+                if not h["kind"].startswith("REF_invoke"):
+                    continue
+                prev = ib["prev_op"]
+                if prev == "aload_0":
+                    receiver = "this"
+                elif prev.startswith("getfield"):
+                    fm = re.search(r"//\s+Field\s+([\w/$]+)\.([\w$]+):", prev)
+                    receiver = f"field:{fm.group(2)}" if fm else "unknown"
+                elif prev.startswith("getstatic"):
+                    receiver = "unknown"
+                else:
+                    receiver = "static"
+                refs.append({"target": f"{h['owner']}.{h['method']}",
+                             "kind": h["kind"], "cp": f"#{h['cp']}",
+                             "receiver": receiver})
+        meth["method_reference_calls"] = refs
     return methods
 
 
@@ -170,8 +297,24 @@ def side_effects(method: dict) -> list[str]:
 
 
 def main() -> None:
-    ensure_compiled()
-    deployed_ok = ensure_deployed_classes()
+    global CLASSES
+    ap = argparse.ArgumentParser(description="函数层静态声明：javap 直读字节码（异常表/常量/调用图无解析歧义）")
+    ap.add_argument("--classes-dir", type=Path,
+                    help="复用已有字节码目录（隐含 --no-compile；绝不编译、绝不删该目录）")
+    ap.add_argument("--no-compile", action="store_true",
+                    help="不跑 javac/maven、不 docker cp 部署产物，只读已有字节码")
+    ap.add_argument("--out", type=Path, help="输出路径（默认 <产物目录>/fn_declaration.json）")
+    args = ap.parse_args()
+    if args.classes_dir:
+        CLASSES = args.classes_dir
+    if args.no_compile or args.classes_dir:
+        # ensure_compiled 会 rmtree(CLASSES) 再 javac —— 指向被测仓库的字节码时那是破坏性操作。
+        if not CLASSES.is_dir():
+            raise SystemExit(f"字节码目录不存在: {CLASSES}（复用模式不编译，缺产物就是缺输入，不产空声明）")
+        deployed_ok = False
+    else:
+        ensure_compiled()
+        deployed_ok = ensure_deployed_classes()
 
     classes = []
     for path in sorted(CLASSES.glob(f"{PKG.replace('.', '/')}/**/*.class")):
@@ -190,8 +333,10 @@ def main() -> None:
                 deployed_text = None
             if deployed_text is not None and deployed_text != text:
                 drift.append(fqcn)
-        for method in parse_methods(text):
-            if method["name"] in ("<init>", "<clinit>"):
+        for method in parse_methods(text, fqcn):
+            # $values 是枚举的编译器合成方法，源码里不存在 ——
+            # 放进声明会让图里长出无源码证据的假单元/假边。
+            if method["name"] in ("<init>", "<clinit>", "$values"):
                 continue
             params = [p.strip() for p in method["params_raw"].split(",") if p.strip()]
             effects = side_effects(method)
@@ -203,6 +348,8 @@ def main() -> None:
                 "params": params,
                 "arity": len(params),
                 "caught_exceptions": method["caught"],
+                "annotations": method["annotations"],
+                "method_reference_calls": method["method_reference_calls"],
                 "internal_calls": sorted({c for c in method["calls"] if c.startswith(PKG)}),
                 "external_calls": sorted({c for c in method["calls"] if not c.startswith(PKG)}),
                 "side_effects": effects,
@@ -226,12 +373,15 @@ def main() -> None:
         },
         "functions": functions,
     }
-    out = project.artifact_dir() / "fn_declaration.json"
+    out = args.out if args.out else project.artifact_dir() / "fn_declaration.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(payload, ensure_ascii=False, indent=2))
     pure = sum(1 for f in functions if f["is_pure"])
     print(f"函数层静态 -> {out}")
     print(f"  类 {len(classes)} 个 / 函数 {len(functions)} 个（纯函数 {pure} 个）")
-    if drift:
+    if not deployed_ok:
+        print("  部署产物未比对（复用字节码 / 取不到部署 jar）—— 漂移未知，不是无漂移")
+    elif drift:
         print(f"  !! 源码与部署产物漂移: {drift}")
     else:
         print("  源码与部署产物 javap 输出逐字节一致")

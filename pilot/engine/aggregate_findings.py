@@ -33,6 +33,11 @@ def _load() -> list[dict[str, Any]]:
     return data["findings"]
 
 
+def _load_warrant_coverage() -> dict[str, Any]:
+    data = json.loads((PROJECT_DIR / "all_findings.json").read_text(encoding="utf-8"))
+    return data.get("warrant_coverage") or {}
+
+
 def _worst(severities: list[str]) -> str:
     for s in SEVERITY_ORDER:
         if s in severities:
@@ -198,6 +203,146 @@ def coverage(records: list[dict[str, Any]], root_causes: list[dict[str, Any]],
     }
 
 
+# ------------------------------------------------- 疑点收集（不进台账，但必须可见）
+SUSPECT_BUCKETS = ("unconfirmed", "refuted")
+
+WHY_NOT_FILED = {
+    "unconfirmed": "推断的业务预期，没有文档/业务方依据 —— **不知道是否成立，需业务方确认**。"
+                   "既不是缺陷，也不是已排除：观测为真，但「所以这是缺陷」这一步缺来源。",
+    "refuted": "文档明确否定该预期 —— 只保留观测，不判缺陷，也不再等业务确认。",
+}
+
+
+def _normalize_suspect(rec: Any, layer: str, bucket: str,
+                       source_file: str) -> dict[str, Any] | None:
+    """把上游三种记录形态归一。认不出的返回 None，由调用方计数外露（不静默丢）。
+
+    A held 形：{rule_id, oracle, finding:{id,severity,title,detail,evidence}}
+    B 桶形：  {rule, table, api_http, api_note, oracle}
+    C 结论形：{id, severity, title, detail, evidence, oracle}
+    """
+    if not isinstance(rec, dict) or not isinstance(rec.get("oracle"), dict):
+        return None
+    finding = rec.get("finding")
+    if isinstance(finding, dict):
+        rid = rec.get("rule_id") or finding.get("id") or ""
+        expectation, severity = finding.get("title") or "", finding.get("severity") or ""
+        observation, detail = finding.get("evidence"), finding.get("detail") or ""
+        repro = finding.get("repro") or ""
+    elif isinstance(rec.get("rule"), str):
+        rid = rec.get("rule_id") or ""
+        expectation, severity = rec["rule"], ""
+        observation = {k: rec[k] for k in ("table", "api_http", "api_note") if k in rec}
+        detail, repro = "", ""
+    elif isinstance(rec.get("id"), str):
+        rid = rec["id"]
+        expectation, severity = rec.get("title") or "", rec.get("severity") or ""
+        observation, detail = rec.get("evidence"), rec.get("detail") or ""
+        repro = rec.get("repro") or ""
+    else:
+        return None
+    oracle = rec["oracle"]
+    return {
+        "layer": layer, "bucket": bucket, "source_file": source_file,
+        "rule_id": rid, "expectation": expectation,
+        "risk_severity": severity,
+        "oracle": oracle,
+        "oracle_state": str(oracle.get("confirmation") or ""),
+        "why_not_filed": WHY_NOT_FILED[bucket],
+        "oracle_note": oracle.get("note") or "",
+        "detail": detail, "observation": observation, "repro": repro,
+    }
+
+
+def collect_suspects(sources: list[dict[str, Any]],
+                     project_dir: Path) -> dict[str, Any]:
+    """收集各层 oracle 闸门压下来的结论。
+
+    **未测量 ≠ 测得 0**：没声明来源、文件缺失、桶键缺失，一律 INCOMPLETE + 告警，
+    不得静默输出 0 让读者以为「没有疑点」。认不出的记录形态与状态不符同样外露。
+    """
+    out: dict[str, Any] = {
+        "sources": [], "unconfirmed": [], "refuted": [],
+        "counts": {"unconfirmed": 0, "refuted": 0, "by_layer": {}},
+        "missing_sources": [], "missing_keys": [], "unrecognized_records": [],
+        "state_mismatches": [], "input_warnings": [], "channel_status": "OK",
+        "caliber_note": "待确认疑点与已证伪观测**都不在缺陷台账内**，三个口径不得混算。"
+                        "unconfirmed 是「不知道，需业务方确认」，不是缺陷也不是已排除。",
+    }
+    if not sources:
+        out["channel_status"] = "INCOMPLETE"
+        out["input_warnings"].append(
+            "项目绑定未声明 suspect_sources：疑点通道未测量，不得读成「没有疑点」")
+        return out
+
+    for src in sources:
+        layer, name = src.get("layer", ""), src.get("file", "")
+        path = project_dir / name
+        rec_out: dict[str, Any] = {"layer": layer, "file": name, "present": path.is_file()}
+        if not path.is_file():
+            out["missing_sources"].append(name)
+            out["channel_status"] = "INCOMPLETE"
+            out["input_warnings"].append(
+                f"疑点来源 {name}（{layer} 层）不存在：该层疑点未测量，不得读成 0")
+            out["sources"].append(rec_out)
+            continue
+        doc = json.loads(path.read_text(encoding="utf-8"))
+        for bucket in SUSPECT_BUCKETS:
+            key = src.get(f"{bucket}_key", bucket)
+            if key not in doc:
+                out["missing_keys"].append({"file": name, "bucket": bucket, "key": key})
+                out["channel_status"] = "INCOMPLETE"
+                out["input_warnings"].append(
+                    f"{name} 缺桶键 {key!r}（{bucket}）：形态漂移，不得读成 0")
+                rec_out[bucket] = None
+                continue
+            rows = doc[key]
+            kept = []
+            for i, rec in enumerate(rows if isinstance(rows, list) else []):
+                norm = _normalize_suspect(rec, layer, bucket, name)
+                if norm is None:
+                    out["unrecognized_records"].append(
+                        {"file": name, "bucket": bucket, "index": i})
+                    out["channel_status"] = "INCOMPLETE"
+                    continue
+                if norm["oracle_state"] != bucket:
+                    out["state_mismatches"].append(
+                        {"file": name, "bucket": bucket, "rule_id": norm["rule_id"],
+                         "oracle_state": norm["oracle_state"]})
+                    out["channel_status"] = "INCOMPLETE"
+                kept.append(norm)
+            out[bucket].extend(kept)
+            rec_out[bucket] = len(kept)
+            bl = out["counts"]["by_layer"].setdefault(layer, {})
+            bl[bucket] = bl.get(bucket, 0) + len(kept)
+        out["sources"].append(rec_out)
+
+    out["counts"]["unconfirmed"] = len(out["unconfirmed"])
+    out["counts"]["refuted"] = len(out["refuted"])
+    if out["unrecognized_records"]:
+        out["input_warnings"].append(
+            f"{len(out['unrecognized_records'])} 条疑点记录形态认不出，已计数外露，未静默丢弃")
+    if out["state_mismatches"]:
+        out["input_warnings"].append(
+            f"{len(out['state_mismatches'])} 条疑点的 oracle 状态与所在桶不符，需拥有者核对")
+    return out
+
+
+def calibers(records: list[dict[str, Any]],
+             suspects: dict[str, Any]) -> dict[str, Any]:
+    """三个口径分开算，**绝不混算**：台账按 kind 分解 + 疑点两桶。
+
+    疑点（unconfirmed / refuted）**不进缺陷分子** —— 它们不是缺陷；
+    也**不是已排除** —— unconfirmed 是「不知道，需业务方确认」。
+    """
+    by_kind = {k: sum(1 for r in records if r.get("kind") == k)
+               for k in ("defect", "positive", "observation")}
+    sc = suspects.get("counts") or {}
+    return {"by_kind": by_kind,
+            "unconfirmed": sc.get("unconfirmed", 0),
+            "refuted": sc.get("refuted", 0)}
+
+
 def main() -> None:
     import argparse
 
@@ -211,6 +356,9 @@ def main() -> None:
     records = _load()
     root_causes = aggregate(records, targets, out_of_scope)
     cov = coverage(records, root_causes, categories)
+    suspects = collect_suspects(
+        findings_schema.load_target().get("suspect_sources") or [], PROJECT_DIR)
+    by_kind = calibers(records, suspects)["by_kind"]
 
     payload = {
         "generated_from": "aggregate_findings.py",
@@ -219,9 +367,15 @@ def main() -> None:
             "root_causes": len(root_causes),
             "collapsed": len(records) - len(root_causes),
             "violations": sum(1 for r in root_causes if r["violations"]),
+            "by_kind": by_kind,
+            "unconfirmed_suspects": suspects["counts"]["unconfirmed"],
+            "refuted_observations": suspects["counts"]["refuted"],
+            "suspect_channel_status": suspects["channel_status"],
         },
         "root_causes": root_causes,
         "coverage": cov,
+        "suspects": suspects,
+        "warrant_coverage": _load_warrant_coverage(),
     }
     (PROJECT_DIR / "root_causes.json").write_text(
         json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -240,6 +394,17 @@ def _report(payload: dict[str, Any], categories: dict[str, tuple[str, ...]]) -> 
     print(f"根因聚合 -> {PROJECT_DIR / 'root_causes.json'}")
     print(f"  {payload['summary']['findings']} 条发现 -> {payload['summary']['root_causes']} 条根因"
           f"（归并 {payload['summary']['collapsed']} 条）")
+    bk = payload["summary"].get("by_kind") or {}
+    sus = payload.get("suspects") or {}
+    sc = sus.get("counts") or {"unconfirmed": 0, "refuted": 0}
+    print(f"  台账按 kind：确认缺陷 {bk.get('defect', 0)} / 正面结论 {bk.get('positive', 0)}"
+          f" / 观测 {bk.get('observation', 0)}")
+    print(f"  确认缺陷 {bk.get('defect', 0)} 条 / 待确认疑点 {sc['unconfirmed']} 条 /"
+          f" 已证伪只留观测 {sc['refuted']} 条（后两者不在台账内，三个口径不混算）")
+    if sus.get("channel_status") == "INCOMPLETE":
+        print("  疑点通道 INCOMPLETE（未测量 ≠ 没有疑点）：")
+        for w in sus.get("input_warnings") or []:
+            print(f"    - {w}")
 
     print("\n[按严重度]")
     by_sev: dict[str, int] = defaultdict(int)
@@ -340,6 +505,9 @@ def _report(payload: dict[str, Any], categories: dict[str, tuple[str, ...]]) -> 
 def _write_md(payload: dict[str, Any], categories: dict[str, tuple[str, ...]]) -> None:
     rcs = payload["root_causes"]
     cov = payload["coverage"]
+    sus = payload.get("suspects") or {}
+    sc = sus.get("counts") or {"unconfirmed": 0, "refuted": 0}
+    bk = payload["summary"].get("by_kind") or {}
     lines: list[str] = []
     a = lines.append
     a("# 分层审计 · 根因与覆盖度报告")
@@ -348,7 +516,21 @@ def _write_md(payload: dict[str, Any], categories: dict[str, tuple[str, ...]]) -
     a("")
     a(f"- 发现 {payload['summary']['findings']} 条 → 根因 {payload['summary']['root_causes']} 条"
       f"（归并 {payload['summary']['collapsed']} 条）")
+    a(f"- 台账按 kind：确认缺陷 {bk.get('defect', 0)} / 正面结论 {bk.get('positive', 0)}"
+      f" / 观测 {bk.get('observation', 0)}（三者不混算）")
+    a(f"- **确认缺陷 {bk.get('defect', 0)} 条 / 待确认疑点 {sc['unconfirmed']} 条 /"
+      f" 已证伪只留观测 {sc['refuted']} 条** —— 后两者**不在台账"
+      f" {payload['summary']['findings']} 条内**，见第八、九节")
+    if sus.get("channel_status") == "INCOMPLETE":
+        a(f"- 疑点通道 **INCOMPLETE**（未测量 ≠ 没有疑点）："
+          + "；".join(sus.get("input_warnings") or []))
     a(f"- 硬违规 {payload['summary']['violations']} 条；契约缺口（无法归类）{len(cov['unmapped_uids'])} 条")
+    wc = payload.get("warrant_coverage") or {}
+    if wc:
+        gm = wc.get("gate_modes") or {}
+        a(f"- 闸门覆盖（{wc.get('producer_count', 0)} 个生产者）：A/B 判据二分 {gm.get('warrant', 0)}"
+          f" / 仅 oracle {gm.get('oracle', 0)} / **未接 {gm.get('none', 0) + gm.get('unknown', 0)}**；"
+          f"未接名下**未裁定 defect {wc.get('unadjudicated_defects', 0)} 条**（见第十节）")
     a("")
 
     a("## 一、修复顺序（按根因）")
@@ -430,8 +612,112 @@ def _write_md(payload: dict[str, Any], categories: dict[str, tuple[str, ...]]) -
         a(f"| `{f}` | {len(keys)} | {', '.join(f'`{k}`' for k in keys)} |")
     a("")
 
+    _suspect_section(a, sus, "unconfirmed", "八、待确认疑点（规范层风险 · 需业务方确认）",
+                     "这些结论的**观测是真的**，但「所以这是缺陷」所依赖的业务预期"
+                     "**没有文档/业务方依据**。它们是「不知道是否成立，需业务方确认」——"
+                     "**既不是缺陷，也不是已排除**。不得计入缺陷分子，也不得当成已澄清而忽略。")
+    _suspect_section(a, sus, "refuted", "九、已证伪（文档明确否定 · 只保留观测）",
+                     "这些结论所依赖的业务预期被**文档明确否定**（例如文档写明该字段可为空、"
+                     "或该规则「当前未定义」）。观测保留以便复核，**不判缺陷、也不再等业务确认**。")
+    _warrant_coverage_section(a, payload.get("warrant_coverage") or {})
+
     (PROJECT_DIR / "audit_report.md").write_text("\n".join(lines), encoding="utf-8")
     print(f"  报告 -> {PROJECT_DIR / 'audit_report.md'}")
+
+
+def _warrant_coverage_section(a: Any, wc: dict[str, Any]) -> None:
+    """闸门覆盖清单：已接 / 未接 / 未裁定并排报，不得只报已接的那部分。"""
+    a("## 十、判据闸门覆盖清单（已接 / 未接 / 未裁定）")
+    a("")
+    if not wc:
+        a("**未测量**：台账里没有 warrant_coverage 块，本节不是「全部已接闸门」。")
+        a("")
+        return
+    a(wc.get("caliber_note", ""))
+    a("")
+    gm = wc.get("gate_modes") or {}
+    a(f"生产者 {wc.get('producer_count', 0)} 个：A/B 判据二分 **{gm.get('warrant', 0)}** / "
+      f"仅 oracle **{gm.get('oracle', 0)}** / 未接 **{gm.get('none', 0)}** / "
+      f"未声明 **{gm.get('unknown', 0)}**")
+    a("")
+    a(f"登记册条目 {wc.get('registry_size', 0)} 条；台账漏斗拦下 {wc.get('held_at_ledger', 0)} 条；"
+      f"**未接闸门名下未裁定 defect {wc.get('unadjudicated_defects', 0)} 条**")
+    a("")
+    for w in wc.get("input_warnings") or []:
+        a(f"- 告警：{w}")
+    a("")
+    a("| 生产者产物 | 生产脚本 | 闸门 | 生产条数 | defect | 登记册覆盖 | 漏斗拦下 | 未裁定 |")
+    a("|---|---|---|---|---|---|---|---|")
+    for e in wc.get("by_producer") or []:
+        a(f"| `{e['producer']}` | `{e.get('script') or '未声明'}` | {e['gate']} | "
+          f"{e['total']} | {e['defects']} | {e['registry_covered']} | {e['held']} | "
+          f"{e['unadjudicated']} |")
+    a("")
+    a("「生产条数」是该生产者产出的条数（含被漏斗拦下的）；进台账的 = 生产条数 − 漏斗拦下。"
+      "「未裁定」只统计**未接闸门**生产者名下、且不在登记册里的 defect —— "
+      "它们既没被裁定为技术可自证，也没被裁定为业务预期，**不得读成已澄清**。")
+    a("")
+
+
+def _suspect_section(a: Any, sus: dict[str, Any], bucket: str,
+                     title: str, preface: str) -> None:
+    """渲染一个疑点桶。空桶也要显式写「0 条」，并区分「测得 0」与「未测量」。"""
+    rows = sus.get(bucket) or []
+    a(f"## {title}")
+    a("")
+    a(preface)
+    a("")
+    if not sus:
+        a("**未测量**：项目绑定未声明 suspect_sources，本节不是「0 条疑点」。")
+        a("")
+        return
+    by_layer: dict[str, int] = defaultdict(int)
+    for r in rows:
+        by_layer[r["layer"]] += 1
+    a(f"合计 **{len(rows)} 条**（不在缺陷台账内）；按层："
+      + ("、".join(f"{k} {v}" for k, v in sorted(by_layer.items())) or "无"))
+    a("")
+    for src in sus.get("sources") or []:
+        if src.get(bucket) is None:
+            a(f"- 来源 `{src['file']}`（{src['layer']} 层）：桶键缺失或文件不存在，"
+              "**该层未测量**，不得读成 0")
+    if sus.get("unrecognized_records"):
+        a(f"- 另有 {len(sus['unrecognized_records'])} 条记录形态认不出，"
+          "已计数外露（见 root_causes.json 的 suspects.unrecognized_records）")
+    a("")
+    if not rows:
+        a("本桶 0 条。")
+        a("")
+        return
+    for r in rows:
+        # 上游桶形记录本来就没有 id：用预期原文当标识，不编造 id
+        rid = r["rule_id"] or f"（无 id）{r['expectation'][:60]}"
+        a(f"### [{r['layer']}] `{rid}`")
+        a("")
+        a(f"- **预期原文**：{r['expectation']}")
+        a(f"- **oracle 状态**：`{r['oracle_state']}`（source=`{r['oracle'].get('source', '')}`）")
+        a(f"- **reference**：{r['oracle'].get('reference') or '（未给出处）'}")
+        if r["oracle"].get("text"):
+            a(f"- **原文引用**：{r['oracle']['text']}")
+        a(f"- **为何不进台账**：{r['why_not_filed']}")
+        if r["oracle_note"]:
+            a(f"- **裁定说明**：{r['oracle_note']}")
+        if r["risk_severity"]:
+            label = ("**风险评级**" if bucket == "unconfirmed" else "**原结论严重度（已撤销）**")
+            tail = ("这是风险优先级，**不是缺陷严重度**，不参与缺陷计数"
+                    if bucket == "unconfirmed"
+                    else "预期已被文档否定，此严重度仅留档，**不是缺陷也不是风险**")
+            a(f"- {label}：{r['risk_severity']}（{tail}）")
+        if r["observation"] is not None:
+            a("- **观测证据**：")
+            a("")
+            a("```json")
+            a(json.dumps(r["observation"], ensure_ascii=False, indent=2))
+            a("```")
+        if r["repro"]:
+            a(f"- **复现**：`{r['repro']}`")
+        a(f"- **来源**：`{r['source_file']}`")
+        a("")
 
 
 if __name__ == "__main__":

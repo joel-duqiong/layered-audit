@@ -119,9 +119,10 @@ def main() -> None:
                    "unconfirmed_count": len(unconfirmed),
                    "refuted": refuted,
                    "refuted_count": len(refuted),
-                   "note": "这些规则在 DB/DTO/服务层三层都没有表达，是客观观测；"
-                           "但「所以这是缺陷」需要业务预期。预期未经确认或被文档"
-                           "明确否定，故不进缺陷台账。"}, fh,
+                   "note": "两扇开单门压下来的结论都在这里：① 规则在 DB/DTO/服务层"
+                           "三层都没有表达；② 列级可空性差分里项目声明的 field_note。"
+                           "客观观测保留，但「所以这是缺陷」需要业务预期。预期未经确认"
+                           "或被文档明确否定，故不进缺陷台账。"}, fh,
                   ensure_ascii=False, indent=2)
 
     sev_order = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3, "INFO": 4}

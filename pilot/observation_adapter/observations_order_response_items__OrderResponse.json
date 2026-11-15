@@ -1,0 +1,1172 @@
+{
+  "schema": "observation-pack/1",
+  "target": "jiuyan",
+  "scope": "OrderResponse",
+  "observations": [
+    {
+      "id": "order_response_items:observation.json#observations/10/0",
+      "target": "jiuyan",
+      "scope": "OrderResponse",
+      "reached": true,
+      "row": {
+        "id": 2596,
+        "orderNo": "DD20261115005450925",
+        "customerName": "ai_probe_probe",
+        "customerPhone": "13800000001",
+        "banquetName": "ai_probe_probe",
+        "banquetType": "婚宴",
+        "address": "",
+        "reservationTime": "2026-12-14T16:54:50.971343Z",
+        "tableCount": 1,
+        "packageId": 486,
+        "packageSnapshot": {
+          "items": [
+            {
+              "unit": "份",
+              "imageUrl": null,
+              "quantity": 1,
+              "priceCent": 1,
+              "productId": 5807498,
+              "productName": "ai_probe_prod_89345e",
+              "categoryName": "ai_probe_cat_52fc8d"
+            }
+          ],
+          "imageUrl": null,
+          "packageId": 486,
+          "priceCent": 1,
+          "banquetType": "婚宴",
+          "packageName": "ai_probe_pkg_d88c47"
+        },
+        "addedItemsSnapshot": [],
+        "planTotalCent": 1,
+        "useFinalPrice": true,
+        "finalPriceCent": 1,
+        "depositCent": 0,
+        "status": "PENDING",
+        "remark": null,
+        "createdAt": "2026-11-14T16:54:50.97303Z",
+        "updatedAt": "2026-11-14T16:54:50.976186Z"
+      },
+      "evidence_refs": [
+        "observation.json#/observations/10/json/data/items/0",
+        "openapi.json#/paths/~1api~1orders/get/responses/200/content/*~1*/schema/$ref",
+        "openapi.json#/components/schemas/PageResponseOrderResponse/properties/items/items/$ref"
+      ]
+    },
+    {
+      "id": "order_response_items:observation.json#observations/10/1",
+      "target": "jiuyan",
+      "scope": "OrderResponse",
+      "reached": true,
+      "row": {
+        "id": 2,
+        "orderNo": "DD202606057181",
+        "customerName": "王先生",
+        "customerPhone": "13800008888",
+        "banquetName": "王家生日宴",
+        "banquetType": "生日宴",
+        "address": "幸福村 12 号",
+        "reservationTime": "2026-06-18T10:00:00Z",
+        "tableCount": 10,
+        "packageId": 1,
+        "packageSnapshot": {
+          "items": [
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-01.jpg",
+              "quantity": 1,
+              "priceCent": 5800,
+              "productId": 1,
+              "productName": "五香卤牛肉",
+              "categoryName": "凉菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-05.jpg",
+              "quantity": 1,
+              "priceCent": 8800,
+              "productId": 5,
+              "productName": "红烧整条草鱼",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-06.jpg",
+              "quantity": 1,
+              "priceCent": 7800,
+              "productId": 6,
+              "productName": "梅菜扣肉",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-07.jpg",
+              "quantity": 1,
+              "priceCent": 9600,
+              "productId": 7,
+              "productName": "土鸡烧香菇",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-11.jpg",
+              "quantity": 1,
+              "priceCent": 2800,
+              "productId": 11,
+              "productName": "清炒时蔬",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-19.jpg",
+              "quantity": 1,
+              "priceCent": 3600,
+              "productId": 19,
+              "productName": "八宝糯米饭",
+              "categoryName": "主食"
+            },
+            {
+              "unit": "个",
+              "imageUrl": "/uploads/seed/products/product-20.jpg",
+              "quantity": 20,
+              "priceCent": 300,
+              "productId": 20,
+              "productName": "手工馒头",
+              "categoryName": "主食"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-22.jpg",
+              "quantity": 1,
+              "priceCent": 3200,
+              "productId": 22,
+              "productName": "长寿面",
+              "categoryName": "主食"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-23.jpg",
+              "quantity": 1,
+              "priceCent": 2600,
+              "productId": 23,
+              "productName": "土鸡蛋紫菜汤",
+              "categoryName": "汤品"
+            },
+            {
+              "unit": "场",
+              "imageUrl": "/uploads/seed/products/product-26.jpg",
+              "quantity": 1,
+              "priceCent": 30000,
+              "productId": 26,
+              "productName": "上门灶台服务",
+              "categoryName": "服务项"
+            }
+          ],
+          "imageUrl": "/uploads/seed/packages/package-01.jpg",
+          "packageId": 1,
+          "priceCent": 39800,
+          "banquetType": "生日宴",
+          "packageName": "生日宴家常席"
+        },
+        "addedItemsSnapshot": [],
+        "planTotalCent": 398000,
+        "useFinalPrice": false,
+        "finalPriceCent": 398000,
+        "depositCent": 50000,
+        "status": "COMPLETED",
+        "remark": "老客户",
+        "createdAt": "2026-08-13T15:12:13.635806Z",
+        "updatedAt": "2026-08-13T15:12:13.635806Z"
+      },
+      "evidence_refs": [
+        "observation.json#/observations/10/json/data/items/1",
+        "openapi.json#/paths/~1api~1orders/get/responses/200/content/*~1*/schema/$ref",
+        "openapi.json#/components/schemas/PageResponseOrderResponse/properties/items/items/$ref"
+      ]
+    },
+    {
+      "id": "order_response_items:observation.json#observations/10/2",
+      "target": "jiuyan",
+      "scope": "OrderResponse",
+      "reached": true,
+      "row": {
+        "id": 3,
+        "orderNo": "DD20260618001",
+        "customerName": "王先生",
+        "customerPhone": "13900001111",
+        "banquetName": "王家生日宴",
+        "banquetType": "生日宴",
+        "address": "福安村 8 号",
+        "reservationTime": "2026-06-18T10:00:00Z",
+        "tableCount": 10,
+        "packageId": 1,
+        "packageSnapshot": {
+          "items": [
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-01.jpg",
+              "quantity": 1,
+              "priceCent": 5800,
+              "productId": 1,
+              "productName": "五香卤牛肉",
+              "categoryName": "凉菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-05.jpg",
+              "quantity": 1,
+              "priceCent": 8800,
+              "productId": 5,
+              "productName": "红烧整条草鱼",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-06.jpg",
+              "quantity": 1,
+              "priceCent": 7800,
+              "productId": 6,
+              "productName": "梅菜扣肉",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-07.jpg",
+              "quantity": 1,
+              "priceCent": 9600,
+              "productId": 7,
+              "productName": "土鸡烧香菇",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-11.jpg",
+              "quantity": 1,
+              "priceCent": 2800,
+              "productId": 11,
+              "productName": "清炒时蔬",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-19.jpg",
+              "quantity": 1,
+              "priceCent": 3600,
+              "productId": 19,
+              "productName": "八宝糯米饭",
+              "categoryName": "主食"
+            },
+            {
+              "unit": "个",
+              "imageUrl": "/uploads/seed/products/product-20.jpg",
+              "quantity": 20,
+              "priceCent": 300,
+              "productId": 20,
+              "productName": "手工馒头",
+              "categoryName": "主食"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-22.jpg",
+              "quantity": 1,
+              "priceCent": 3200,
+              "productId": 22,
+              "productName": "长寿面",
+              "categoryName": "主食"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-23.jpg",
+              "quantity": 1,
+              "priceCent": 2600,
+              "productId": 23,
+              "productName": "土鸡蛋紫菜汤",
+              "categoryName": "汤品"
+            },
+            {
+              "unit": "场",
+              "imageUrl": "/uploads/seed/products/product-26.jpg",
+              "quantity": 1,
+              "priceCent": 30000,
+              "productId": 26,
+              "productName": "上门灶台服务",
+              "categoryName": "服务项"
+            }
+          ],
+          "imageUrl": "/uploads/seed/packages/package-01.jpg",
+          "packageId": 1,
+          "priceCent": 39800,
+          "banquetType": "生日宴",
+          "packageName": "生日宴家常席"
+        },
+        "addedItemsSnapshot": [],
+        "planTotalCent": 398000,
+        "useFinalPrice": true,
+        "finalPriceCent": 400000,
+        "depositCent": 100000,
+        "status": "PENDING",
+        "remark": "",
+        "createdAt": "2026-08-13T15:12:13.635806Z",
+        "updatedAt": "2026-08-13T15:12:13.635806Z"
+      },
+      "evidence_refs": [
+        "observation.json#/observations/10/json/data/items/2",
+        "openapi.json#/paths/~1api~1orders/get/responses/200/content/*~1*/schema/$ref",
+        "openapi.json#/components/schemas/PageResponseOrderResponse/properties/items/items/$ref"
+      ]
+    },
+    {
+      "id": "order_response_items:observation.json#observations/10/3",
+      "target": "jiuyan",
+      "scope": "OrderResponse",
+      "reached": true,
+      "row": {
+        "id": 4,
+        "orderNo": "DD20260619002",
+        "customerName": "李女士",
+        "customerPhone": "13700002222",
+        "banquetName": "搬迁宴",
+        "banquetType": "婚宴",
+        "address": "新桥村 5 号",
+        "reservationTime": "2026-06-19T04:00:00Z",
+        "tableCount": 16,
+        "packageId": 2,
+        "packageSnapshot": {
+          "items": [
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-01.jpg",
+              "quantity": 1,
+              "priceCent": 5800,
+              "productId": 1,
+              "productName": "五香卤牛肉",
+              "categoryName": "凉菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-08.jpg",
+              "quantity": 1,
+              "priceCent": 6800,
+              "productId": 8,
+              "productName": "四喜丸子",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-09.jpg",
+              "quantity": 1,
+              "priceCent": 9800,
+              "productId": 9,
+              "productName": "红烧肘子",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-10.jpg",
+              "quantity": 1,
+              "priceCent": 11800,
+              "productId": 10,
+              "productName": "蒜蓉粉丝虾",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-12.jpg",
+              "quantity": 1,
+              "priceCent": 8600,
+              "productId": 12,
+              "productName": "红烧排骨",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-14.jpg",
+              "quantity": 1,
+              "priceCent": 6200,
+              "productId": 14,
+              "productName": "糖醋里脊",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-19.jpg",
+              "quantity": 1,
+              "priceCent": 3600,
+              "productId": 19,
+              "productName": "八宝糯米饭",
+              "categoryName": "主食"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-21.jpg",
+              "quantity": 1,
+              "priceCent": 3800,
+              "productId": 21,
+              "productName": "扬州炒饭",
+              "categoryName": "主食"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-24.jpg",
+              "quantity": 1,
+              "priceCent": 6800,
+              "productId": 24,
+              "productName": "老鸭汤",
+              "categoryName": "汤品"
+            },
+            {
+              "unit": "场",
+              "imageUrl": "/uploads/seed/products/product-26.jpg",
+              "quantity": 1,
+              "priceCent": 30000,
+              "productId": 26,
+              "productName": "上门灶台服务",
+              "categoryName": "服务项"
+            },
+            {
+              "unit": "场",
+              "imageUrl": "/uploads/seed/products/product-28.jpg",
+              "quantity": 1,
+              "priceCent": 16000,
+              "productId": 28,
+              "productName": "桌椅摆放服务",
+              "categoryName": "服务项"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-30.jpg",
+              "quantity": 1,
+              "priceCent": 4200,
+              "productId": 30,
+              "productName": "喜糖果盘",
+              "categoryName": "凉菜"
+            }
+          ],
+          "imageUrl": "/uploads/seed/packages/package-02.jpg",
+          "packageId": 2,
+          "priceCent": 59800,
+          "banquetType": "婚宴",
+          "packageName": "婚宴喜庆席"
+        },
+        "addedItemsSnapshot": [
+          {
+            "unit": "件",
+            "imageUrl": "/uploads/seed/products/product-16.jpg",
+            "quantity": 2,
+            "priceCent": 9000,
+            "productId": 16,
+            "productName": "啤酒一件",
+            "categoryName": "酒水"
+          }
+        ],
+        "planTotalCent": 974800,
+        "useFinalPrice": false,
+        "finalPriceCent": 974800,
+        "depositCent": 200000,
+        "status": "DEPOSIT_PAID",
+        "remark": "中午开席",
+        "createdAt": "2026-08-13T15:12:13.635806Z",
+        "updatedAt": "2026-08-13T15:12:13.635806Z"
+      },
+      "evidence_refs": [
+        "observation.json#/observations/10/json/data/items/3",
+        "openapi.json#/paths/~1api~1orders/get/responses/200/content/*~1*/schema/$ref",
+        "openapi.json#/components/schemas/PageResponseOrderResponse/properties/items/items/$ref"
+      ]
+    },
+    {
+      "id": "order_response_items:observation.json#observations/10/4",
+      "target": "jiuyan",
+      "scope": "OrderResponse",
+      "reached": true,
+      "row": {
+        "id": 1,
+        "orderNo": "DD202606056200",
+        "customerName": "王先生",
+        "customerPhone": "13888888888",
+        "banquetName": "王家生日宴",
+        "banquetType": "生日宴",
+        "address": "幸福村 12 号",
+        "reservationTime": "2026-06-18T10:00:00Z",
+        "tableCount": 10,
+        "packageId": 1,
+        "packageSnapshot": {
+          "items": [
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-01.jpg",
+              "quantity": 1,
+              "priceCent": 5800,
+              "productId": 1,
+              "productName": "五香卤牛肉",
+              "categoryName": "凉菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-05.jpg",
+              "quantity": 1,
+              "priceCent": 8800,
+              "productId": 5,
+              "productName": "红烧整条草鱼",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-06.jpg",
+              "quantity": 1,
+              "priceCent": 7800,
+              "productId": 6,
+              "productName": "梅菜扣肉",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-07.jpg",
+              "quantity": 1,
+              "priceCent": 9600,
+              "productId": 7,
+              "productName": "土鸡烧香菇",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-11.jpg",
+              "quantity": 1,
+              "priceCent": 2800,
+              "productId": 11,
+              "productName": "清炒时蔬",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-19.jpg",
+              "quantity": 1,
+              "priceCent": 3600,
+              "productId": 19,
+              "productName": "八宝糯米饭",
+              "categoryName": "主食"
+            },
+            {
+              "unit": "个",
+              "imageUrl": "/uploads/seed/products/product-20.jpg",
+              "quantity": 20,
+              "priceCent": 300,
+              "productId": 20,
+              "productName": "手工馒头",
+              "categoryName": "主食"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-22.jpg",
+              "quantity": 1,
+              "priceCent": 3200,
+              "productId": 22,
+              "productName": "长寿面",
+              "categoryName": "主食"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-23.jpg",
+              "quantity": 1,
+              "priceCent": 2600,
+              "productId": 23,
+              "productName": "土鸡蛋紫菜汤",
+              "categoryName": "汤品"
+            },
+            {
+              "unit": "场",
+              "imageUrl": "/uploads/seed/products/product-26.jpg",
+              "quantity": 1,
+              "priceCent": 30000,
+              "productId": 26,
+              "productName": "上门灶台服务",
+              "categoryName": "服务项"
+            }
+          ],
+          "imageUrl": "/uploads/seed/packages/package-01.jpg",
+          "packageId": 1,
+          "priceCent": 39800,
+          "banquetType": "生日宴",
+          "packageName": "生日宴家常席"
+        },
+        "addedItemsSnapshot": [
+          {
+            "unit": "箱",
+            "imageUrl": "/uploads/seed/products/product-15.jpg",
+            "quantity": 1,
+            "priceCent": 18000,
+            "productId": 15,
+            "productName": "白酒一箱",
+            "categoryName": "酒水"
+          },
+          {
+            "unit": "箱",
+            "imageUrl": "/uploads/seed/products/product-17.jpg",
+            "quantity": 2,
+            "priceCent": 4500,
+            "productId": 17,
+            "productName": "饮料一箱",
+            "categoryName": "酒水"
+          }
+        ],
+        "planTotalCent": 425000,
+        "useFinalPrice": true,
+        "finalPriceCent": 400000,
+        "depositCent": 50000,
+        "status": "PENDING",
+        "remark": "需要提前一小时到场",
+        "createdAt": "2026-08-13T15:12:13.635806Z",
+        "updatedAt": "2026-08-13T15:12:13.635806Z"
+      },
+      "evidence_refs": [
+        "observation.json#/observations/10/json/data/items/4",
+        "openapi.json#/paths/~1api~1orders/get/responses/200/content/*~1*/schema/$ref",
+        "openapi.json#/components/schemas/PageResponseOrderResponse/properties/items/items/$ref"
+      ]
+    },
+    {
+      "id": "order_response_items:observation.json#observations/10/5",
+      "target": "jiuyan",
+      "scope": "OrderResponse",
+      "reached": true,
+      "row": {
+        "id": 6,
+        "orderNo": "DD20260622004",
+        "customerName": "周先生",
+        "customerPhone": "13500004444",
+        "banquetName": "周先生白事宴",
+        "banquetType": "白事宴",
+        "address": "北山村 6 号",
+        "reservationTime": "2026-06-22T03:00:00Z",
+        "tableCount": 12,
+        "packageId": 3,
+        "packageSnapshot": {
+          "items": [
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-02.jpg",
+              "quantity": 1,
+              "priceCent": 1800,
+              "productId": 2,
+              "productName": "凉拌三丝",
+              "categoryName": "凉菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-03.jpg",
+              "quantity": 1,
+              "priceCent": 1200,
+              "productId": 3,
+              "productName": "盐水花生",
+              "categoryName": "凉菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-05.jpg",
+              "quantity": 1,
+              "priceCent": 8800,
+              "productId": 5,
+              "productName": "红烧整条草鱼",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-06.jpg",
+              "quantity": 1,
+              "priceCent": 7800,
+              "productId": 6,
+              "productName": "梅菜扣肉",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-11.jpg",
+              "quantity": 1,
+              "priceCent": 2800,
+              "productId": 11,
+              "productName": "清炒时蔬",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "个",
+              "imageUrl": "/uploads/seed/products/product-20.jpg",
+              "quantity": 16,
+              "priceCent": 300,
+              "productId": 20,
+              "productName": "手工馒头",
+              "categoryName": "主食"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-23.jpg",
+              "quantity": 1,
+              "priceCent": 2600,
+              "productId": 23,
+              "productName": "土鸡蛋紫菜汤",
+              "categoryName": "汤品"
+            },
+            {
+              "unit": "场",
+              "imageUrl": "/uploads/seed/products/product-27.jpg",
+              "quantity": 1,
+              "priceCent": 12000,
+              "productId": 27,
+              "productName": "餐具清洗服务",
+              "categoryName": "服务项"
+            }
+          ],
+          "imageUrl": "/uploads/seed/packages/package-03.jpg",
+          "packageId": 3,
+          "priceCent": 28800,
+          "banquetType": "白事宴",
+          "packageName": "白事简办席"
+        },
+        "addedItemsSnapshot": [],
+        "planTotalCent": 345600,
+        "useFinalPrice": false,
+        "finalPriceCent": 345600,
+        "depositCent": 100000,
+        "status": "COMPLETED",
+        "remark": "简办",
+        "createdAt": "2026-08-13T15:12:13.635806Z",
+        "updatedAt": "2026-08-13T15:12:13.635806Z"
+      },
+      "evidence_refs": [
+        "observation.json#/observations/10/json/data/items/5",
+        "openapi.json#/paths/~1api~1orders/get/responses/200/content/*~1*/schema/$ref",
+        "openapi.json#/components/schemas/PageResponseOrderResponse/properties/items/items/$ref"
+      ]
+    },
+    {
+      "id": "order_response_items:observation.json#observations/10/6",
+      "target": "jiuyan",
+      "scope": "OrderResponse",
+      "reached": true,
+      "row": {
+        "id": 7,
+        "orderNo": "DD20260623005",
+        "customerName": "陈女士",
+        "customerPhone": "13400005555",
+        "banquetName": "陈家升学宴",
+        "banquetType": "升学宴",
+        "address": "东风村 2 号",
+        "reservationTime": "2026-06-23T10:00:00Z",
+        "tableCount": 18,
+        "packageId": 4,
+        "packageSnapshot": {
+          "items": [
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-01.jpg",
+              "quantity": 1,
+              "priceCent": 5800,
+              "productId": 1,
+              "productName": "五香卤牛肉",
+              "categoryName": "凉菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-04.jpg",
+              "quantity": 1,
+              "priceCent": 1500,
+              "productId": 4,
+              "productName": "拍黄瓜",
+              "categoryName": "凉菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-07.jpg",
+              "quantity": 1,
+              "priceCent": 9600,
+              "productId": 7,
+              "productName": "土鸡烧香菇",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-10.jpg",
+              "quantity": 1,
+              "priceCent": 11800,
+              "productId": 10,
+              "productName": "蒜蓉粉丝虾",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-11.jpg",
+              "quantity": 1,
+              "priceCent": 2800,
+              "productId": 11,
+              "productName": "清炒时蔬",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-13.jpg",
+              "quantity": 1,
+              "priceCent": 7600,
+              "productId": 13,
+              "productName": "毛血旺",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-19.jpg",
+              "quantity": 1,
+              "priceCent": 3600,
+              "productId": 19,
+              "productName": "八宝糯米饭",
+              "categoryName": "主食"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-21.jpg",
+              "quantity": 1,
+              "priceCent": 3800,
+              "productId": 21,
+              "productName": "扬州炒饭",
+              "categoryName": "主食"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-25.jpg",
+              "quantity": 1,
+              "priceCent": 2400,
+              "productId": 25,
+              "productName": "酸辣汤",
+              "categoryName": "汤品"
+            },
+            {
+              "unit": "场",
+              "imageUrl": "/uploads/seed/products/product-26.jpg",
+              "quantity": 1,
+              "priceCent": 30000,
+              "productId": 26,
+              "productName": "上门灶台服务",
+              "categoryName": "服务项"
+            }
+          ],
+          "imageUrl": "/uploads/seed/packages/package-04.jpg",
+          "packageId": 4,
+          "priceCent": 46800,
+          "banquetType": "升学宴",
+          "packageName": "升学答谢宴"
+        },
+        "addedItemsSnapshot": [
+          {
+            "unit": "箱",
+            "imageUrl": "/uploads/seed/products/product-17.jpg",
+            "quantity": 3,
+            "priceCent": 4500,
+            "productId": 17,
+            "productName": "饮料一箱",
+            "categoryName": "酒水"
+          }
+        ],
+        "planTotalCent": 855900,
+        "useFinalPrice": false,
+        "finalPriceCent": 855900,
+        "depositCent": 200000,
+        "status": "PENDING",
+        "remark": "孩子同学多",
+        "createdAt": "2026-08-13T15:12:13.635806Z",
+        "updatedAt": "2026-08-13T15:12:13.635806Z"
+      },
+      "evidence_refs": [
+        "observation.json#/observations/10/json/data/items/6",
+        "openapi.json#/paths/~1api~1orders/get/responses/200/content/*~1*/schema/$ref",
+        "openapi.json#/components/schemas/PageResponseOrderResponse/properties/items/items/$ref"
+      ]
+    },
+    {
+      "id": "order_response_items:observation.json#observations/10/7",
+      "target": "jiuyan",
+      "scope": "OrderResponse",
+      "reached": true,
+      "row": {
+        "id": 8,
+        "orderNo": "DD20260624006",
+        "customerName": "赵先生",
+        "customerPhone": "13300006666",
+        "banquetName": "赵家生日宴",
+        "banquetType": "生日宴",
+        "address": "南塘村 9 号",
+        "reservationTime": "2026-06-24T09:30:00Z",
+        "tableCount": 14,
+        "packageId": 1,
+        "packageSnapshot": {
+          "items": [
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-01.jpg",
+              "quantity": 1,
+              "priceCent": 5800,
+              "productId": 1,
+              "productName": "五香卤牛肉",
+              "categoryName": "凉菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-05.jpg",
+              "quantity": 1,
+              "priceCent": 8800,
+              "productId": 5,
+              "productName": "红烧整条草鱼",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-06.jpg",
+              "quantity": 1,
+              "priceCent": 7800,
+              "productId": 6,
+              "productName": "梅菜扣肉",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-07.jpg",
+              "quantity": 1,
+              "priceCent": 9600,
+              "productId": 7,
+              "productName": "土鸡烧香菇",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-11.jpg",
+              "quantity": 1,
+              "priceCent": 2800,
+              "productId": 11,
+              "productName": "清炒时蔬",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-19.jpg",
+              "quantity": 1,
+              "priceCent": 3600,
+              "productId": 19,
+              "productName": "八宝糯米饭",
+              "categoryName": "主食"
+            },
+            {
+              "unit": "个",
+              "imageUrl": "/uploads/seed/products/product-20.jpg",
+              "quantity": 20,
+              "priceCent": 300,
+              "productId": 20,
+              "productName": "手工馒头",
+              "categoryName": "主食"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-22.jpg",
+              "quantity": 1,
+              "priceCent": 3200,
+              "productId": 22,
+              "productName": "长寿面",
+              "categoryName": "主食"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-23.jpg",
+              "quantity": 1,
+              "priceCent": 2600,
+              "productId": 23,
+              "productName": "土鸡蛋紫菜汤",
+              "categoryName": "汤品"
+            },
+            {
+              "unit": "场",
+              "imageUrl": "/uploads/seed/products/product-26.jpg",
+              "quantity": 1,
+              "priceCent": 30000,
+              "productId": 26,
+              "productName": "上门灶台服务",
+              "categoryName": "服务项"
+            }
+          ],
+          "imageUrl": "/uploads/seed/packages/package-01.jpg",
+          "packageId": 1,
+          "priceCent": 39800,
+          "banquetType": "生日宴",
+          "packageName": "生日宴家常席"
+        },
+        "addedItemsSnapshot": [],
+        "planTotalCent": 557200,
+        "useFinalPrice": false,
+        "finalPriceCent": 557200,
+        "depositCent": 0,
+        "status": "PENDING",
+        "remark": "",
+        "createdAt": "2026-08-13T15:12:13.635806Z",
+        "updatedAt": "2026-08-13T15:12:13.635806Z"
+      },
+      "evidence_refs": [
+        "observation.json#/observations/10/json/data/items/7",
+        "openapi.json#/paths/~1api~1orders/get/responses/200/content/*~1*/schema/$ref",
+        "openapi.json#/components/schemas/PageResponseOrderResponse/properties/items/items/$ref"
+      ]
+    },
+    {
+      "id": "order_response_items:observation.json#observations/10/8",
+      "target": "jiuyan",
+      "scope": "OrderResponse",
+      "reached": true,
+      "row": {
+        "id": 5,
+        "orderNo": "DD20260621003",
+        "customerName": "张家",
+        "customerPhone": "13600003333",
+        "banquetName": "张家婚宴",
+        "banquetType": "婚宴",
+        "address": "沿河村 3 组",
+        "reservationTime": "2026-06-21T10:00:00Z",
+        "tableCount": 28,
+        "packageId": 2,
+        "packageSnapshot": {
+          "items": [
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-01.jpg",
+              "quantity": 1,
+              "priceCent": 5800,
+              "productId": 1,
+              "productName": "五香卤牛肉",
+              "categoryName": "凉菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-08.jpg",
+              "quantity": 1,
+              "priceCent": 6800,
+              "productId": 8,
+              "productName": "四喜丸子",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-09.jpg",
+              "quantity": 1,
+              "priceCent": 9800,
+              "productId": 9,
+              "productName": "红烧肘子",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-10.jpg",
+              "quantity": 1,
+              "priceCent": 11800,
+              "productId": 10,
+              "productName": "蒜蓉粉丝虾",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-12.jpg",
+              "quantity": 1,
+              "priceCent": 8600,
+              "productId": 12,
+              "productName": "红烧排骨",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-14.jpg",
+              "quantity": 1,
+              "priceCent": 6200,
+              "productId": 14,
+              "productName": "糖醋里脊",
+              "categoryName": "热菜"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-19.jpg",
+              "quantity": 1,
+              "priceCent": 3600,
+              "productId": 19,
+              "productName": "八宝糯米饭",
+              "categoryName": "主食"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-21.jpg",
+              "quantity": 1,
+              "priceCent": 3800,
+              "productId": 21,
+              "productName": "扬州炒饭",
+              "categoryName": "主食"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-24.jpg",
+              "quantity": 1,
+              "priceCent": 6800,
+              "productId": 24,
+              "productName": "老鸭汤",
+              "categoryName": "汤品"
+            },
+            {
+              "unit": "场",
+              "imageUrl": "/uploads/seed/products/product-26.jpg",
+              "quantity": 1,
+              "priceCent": 30000,
+              "productId": 26,
+              "productName": "上门灶台服务",
+              "categoryName": "服务项"
+            },
+            {
+              "unit": "场",
+              "imageUrl": "/uploads/seed/products/product-28.jpg",
+              "quantity": 1,
+              "priceCent": 16000,
+              "productId": 28,
+              "productName": "桌椅摆放服务",
+              "categoryName": "服务项"
+            },
+            {
+              "unit": "份",
+              "imageUrl": "/uploads/seed/products/product-30.jpg",
+              "quantity": 1,
+              "priceCent": 4200,
+              "productId": 30,
+              "productName": "喜糖果盘",
+              "categoryName": "凉菜"
+            }
+          ],
+          "imageUrl": "/uploads/seed/packages/package-02.jpg",
+          "packageId": 2,
+          "priceCent": 59800,
+          "banquetType": "婚宴",
+          "packageName": "婚宴喜庆席"
+        },
+        "addedItemsSnapshot": [
+          {
+            "unit": "箱",
+            "imageUrl": "/uploads/seed/products/product-15.jpg",
+            "quantity": 3,
+            "priceCent": 18000,
+            "productId": 15,
+            "productName": "白酒一箱",
+            "categoryName": "酒水"
+          }
+        ],
+        "planTotalCent": 1728400,
+        "useFinalPrice": true,
+        "finalPriceCent": 1674400,
+        "depositCent": 500000,
+        "status": "DEPOSIT_PAID",
+        "remark": "桌椅提前摆好",
+        "createdAt": "2026-08-13T15:12:13.635806Z",
+        "updatedAt": "2026-08-13T15:12:13.635806Z"
+      },
+      "evidence_refs": [
+        "observation.json#/observations/10/json/data/items/8",
+        "openapi.json#/paths/~1api~1orders/get/responses/200/content/*~1*/schema/$ref",
+        "openapi.json#/components/schemas/PageResponseOrderResponse/properties/items/items/$ref"
+      ]
+    }
+  ]
+}

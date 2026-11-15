@@ -13,7 +13,14 @@
   field_eq_field       字段 A == 字段 B
   field_lte_const      字段 A <= 常量
   field_gte_const      字段 A >= 常量
+  field_gt_const       字段 A > 常量（严格大于；等于常量判违反，不得用 >= 冒充）
   field_in_set         字段 A 属于集合
+  field_not_null       字段存在且值非 null（缺字段 -> unknown；null -> fail）
+  field_not_blank      字段非 null 且非纯空白字符串（只认字符串，其余类型 -> unknown）
+  field_size           字符串字符数或集合元素数落在 [min, max]（两种计数不得混）
+  field_pattern        字符串全匹配正则（锚定语义，不得放宽成部分匹配）
+  text_not_contains    字符串不得含任一禁用词（字面子串，逐字按声明）
+  field_default_when_absent  条件契约「不传该字段时落默认值」：字段存在 -> not_applicable
   jsonb_sum_eq_field   JSONB 数组里 sum(单价*数量) == 某字段
   jsonb_subset_of      JSONB 数组的元素 id 集合 是 另一个 JSONB 数组 id 集合的子集
 
@@ -21,7 +28,9 @@
 
 ## 三值判定（硬规矩）
 
-`evaluate` 只返回三态：`pass` / `fail` / `unknown`。
+`evaluate` 只返回三态：`pass` / `fail` / `unknown`，外加条件契约专用的
+`not_applicable`（字段存在时「不传该字段时…」的契约不适用 —— 不适用不是成立，
+也不是判不出来，汇总时按跳过计，绝不许洗成 pass）。
 
 **任何「我不知道」的情况都返回 unknown，绝不返回 pass。** 曾经的实现有三处把
 「不知道」当成了「成立」：
@@ -37,6 +46,8 @@
 from __future__ import annotations
 
 import json
+import math
+import re
 from typing import Any
 
 JSONB_OPS = ("jsonb_sum_eq_field", "jsonb_subset_of")
@@ -44,6 +55,7 @@ JSONB_OPS = ("jsonb_sum_eq_field", "jsonb_subset_of")
 PASS = "pass"
 FAIL = "fail"
 UNKNOWN = "unknown"
+NOT_APPLICABLE = "not_applicable"
 
 
 class InvariantConfigError(ValueError):
@@ -120,8 +132,28 @@ def _missing(detail: dict[str, Any], *fields: str) -> tuple[bool, str]:
     return False, ""
 
 
+def _finite_number(value: Any) -> bool:
+    """数值比较原语只认有限数值；bool 不是数，NaN/inf 判不出来。"""
+    return (isinstance(value, (int, float)) and not isinstance(value, bool)
+            and math.isfinite(value))
+
+
+def _size_of(value: Any) -> tuple[str, int] | None:
+    """字符串数的是字符，集合数的是元素 —— 两种计数不得混。其余类型判不出来。"""
+    if isinstance(value, str):
+        return "chars", len(value)
+    if isinstance(value, list):
+        return "elements", len(value)
+    return None
+
+
+def _pattern_matches(text: str, pattern: str) -> bool:
+    """全匹配：原文的 ^...$ 锚定语义逐字保留，放宽成部分匹配就是放宽判据。"""
+    return re.fullmatch(pattern, text) is not None
+
+
 def evaluate(row: dict[str, Any], invariant: dict[str, Any]) -> tuple[str, dict[str, Any]]:
-    """对一行数据判定一条不变式。返回 (三态结论, 细节)。"""
+    """对一行数据判定一条不变式。返回 (结论, 细节)；结论为 pass/fail/unknown/not_applicable。"""
     a = invariant["assert"]
     kind = a["type"]
     detail: dict[str, Any] = {"type": kind}
@@ -158,6 +190,108 @@ def evaluate(row: dict[str, Any], invariant: dict[str, Any]) -> tuple[str, dict[
         detail.update(left=left, allowed=a["value"])
         gap, why = _missing(detail, "left")
         verdict = UNKNOWN if gap else (PASS if left in a["value"] else FAIL)
+    elif kind == "field_not_null":
+        # 缺字段与 null 必须分开：缺字段是「判不出来」（字段名可能拼错），
+        # null 是明确违反。缺字段若判 pass，拼错字段名就会得到一张通过的成绩单。
+        if a["left"] not in row:
+            detail.update(left=None)
+            verdict = UNKNOWN
+            why = f"字段缺失（{a['left']}）—— 无法判定"
+        else:
+            left = row[a["left"]]
+            detail.update(left=left)
+            verdict = FAIL if left is None else PASS
+    elif kind == "field_not_blank":
+        if a["left"] not in row:
+            detail.update(left=None)
+            verdict = UNKNOWN
+            why = f"字段缺失（{a['left']}）—— 无法判定"
+        else:
+            left = row[a["left"]]
+            detail.update(left=left)
+            if left is None:
+                verdict = FAIL
+            elif not isinstance(left, str):
+                verdict = UNKNOWN
+                why = f"类型不兼容（{type(left).__name__}）—— not_blank 只认字符串"
+            else:
+                verdict = PASS if left.strip() else FAIL
+    elif kind == "field_gt_const":
+        left = row.get(a["left"])
+        detail.update(left=left, limit=a["value"])
+        gap, why = _missing(detail, "left")
+        if gap:
+            verdict = UNKNOWN
+        elif not _finite_number(left) or not _finite_number(a["value"]):
+            verdict = UNKNOWN
+            why = "类型不兼容 —— field_gt_const 要求两侧都是有限数值（bool 不是数）"
+        else:
+            verdict = PASS if left > a["value"] else FAIL
+    elif kind == "field_size":
+        lo, hi = a.get("min"), a.get("max")
+        if lo is None and hi is None:
+            raise InvariantConfigError("field_size 声明缺 min/max —— 无界断言不构成判据")
+        for bound in (lo, hi):
+            if bound is not None and (isinstance(bound, bool) or not isinstance(bound, int) or bound < 0):
+                raise InvariantConfigError(f"field_size 边界 {bound!r} 必须是非负整数")
+        left = row.get(a["left"])
+        detail.update(left=left, min=lo, max=hi)
+        gap, why = _missing(detail, "left")
+        if gap:
+            verdict = UNKNOWN
+        else:
+            sized = _size_of(left)
+            if sized is None:
+                verdict = UNKNOWN
+                why = f"类型不兼容（{type(left).__name__}）—— size 只认字符串（字符数）或数组（元素数）"
+            else:
+                kind_of_size, n = sized
+                detail.update(size=n, size_kind=kind_of_size)
+                ok = (lo is None or n >= lo) and (hi is None or n <= hi)
+                verdict = PASS if ok else FAIL
+    elif kind == "field_pattern":
+        left = row.get(a["left"])
+        detail.update(left=left, pattern=a["value"])
+        gap, why = _missing(detail, "left")
+        if gap:
+            verdict = UNKNOWN
+        elif not isinstance(left, str):
+            verdict = UNKNOWN
+            why = f"类型不兼容（{type(left).__name__}）—— pattern 只认字符串"
+        else:
+            try:
+                matched = _pattern_matches(left, a["value"])
+            except re.error as exc:
+                raise InvariantConfigError(f"field_pattern 正则不合法: {exc}") from exc
+            verdict = PASS if matched else FAIL
+    elif kind == "text_not_contains":
+        terms = a["value"]
+        if not isinstance(terms, list) or not terms or not all(isinstance(t, str) for t in terms):
+            raise InvariantConfigError("text_not_contains 的 value 必须是非空字符串列表")
+        left = row.get(a["left"])
+        detail.update(left=left, terms=terms)
+        gap, why = _missing(detail, "left")
+        if gap:
+            verdict = UNKNOWN
+        elif not isinstance(left, str):
+            verdict = UNKNOWN
+            why = f"类型不兼容（{type(left).__name__}）—— text_not_contains 只认字符串"
+        else:
+            hits = [t for t in terms if t in left]
+            detail.update(hits=hits)
+            verdict = FAIL if hits else PASS
+    elif kind == "field_default_when_absent":
+        # 条件契约「不传该字段时落默认值」：字段存在 ⇒ 条件不成立 ⇒ 不适用，
+        # 不是 PASS（契约没被考验，谈不上成立）。字段缺失 ⇒ 契约被触发，但
+        # 「落没落默认值」要看结果态观测，单行输入观测核验不了 → UNKNOWN，不猜。
+        detail.update(default=a["value"])
+        if a["left"] in row:
+            detail.update(left=row[a["left"]])
+            verdict = NOT_APPLICABLE
+            why = f"字段 {a['left']!r} 存在 —— 「不传该字段时」的条件不成立，判据不适用"
+        else:
+            verdict = UNKNOWN
+            why = f"字段 {a['left']!r} 缺失，契约被触发；默认值是否落地需结果态观测，当前判不出来"
     elif kind == "jsonb_sum_eq_field":
         items = _jsonb_path(row, a["items_path"])
         right = row.get(a["equals"])
@@ -209,11 +343,13 @@ def evaluate(row: dict[str, Any], invariant: dict[str, Any]) -> tuple[str, dict[
         raise InvariantConfigError(f"未知的断言原语: {kind}")
 
     detail["verdict"] = verdict
-    # ok 保留为兼容字段，但只在有明确结论时才有布尔值 —— unknown 时是 None，
-    # 任何 `if detail["ok"]` 的旧读法都不会把未知当成成立。
+    # ok 保留为兼容字段，但只在有明确结论时才有布尔值 —— unknown/not_applicable 时是 None，
+    # 任何 `if detail["ok"]` 的旧读法都不会把未知或不适用当成成立。
     detail["ok"] = True if verdict == PASS else False if verdict == FAIL else None
     if verdict == UNKNOWN and why:
         detail["why_unknown"] = why
+    if verdict == NOT_APPLICABLE and why:
+        detail["why_not_applicable"] = why
     return verdict, detail
 
 
@@ -246,6 +382,19 @@ def deviation(detail: dict[str, Any]) -> float:
         return max(0.0, num(detail.get("value")) - num(detail.get("left")))
     if kind == "field_in_set":
         return 0.0 if detail.get("verdict") == PASS else 1.0
+    if kind in ("field_not_null", "field_not_blank", "field_pattern", "text_not_contains"):
+        return 0.0 if detail.get("verdict") == PASS else 1.0
+    if kind == "field_gt_const":
+        return max(0.0, num(detail.get("limit")) - num(detail.get("left")))
+    if kind == "field_size":
+        if detail.get("verdict") != FAIL:
+            return 0.0
+        n, lo, hi = num(detail.get("size")), detail.get("min"), detail.get("max")
+        if lo is not None and n < lo:
+            return float(lo - n)
+        if hi is not None and n > hi:
+            return float(n - hi)
+        return 0.0
     return 0.0
 
 
@@ -258,6 +407,9 @@ def evaluate_all(rows: list[dict[str, Any]],
       pass    = 至少一行被判定为成立，且没有一行违反
       unknown = 没有一行被判定成 pass/fail（全部缺失、全部不适用、或无法判定）
 
+    行级 not_applicable（条件契约的字段存在）按跳过计：不算违反也不算成立，
+    全部不适用时汇总是 unknown —— 「没考验到」不是「通过了」。
+
     **`ok` 字段：pass -> True，fail -> False，unknown -> None。**
     unknown 时 ok 是 None 而不是 True —— 这是「没查到」与「查了没问题」的物理隔离。
     """
@@ -268,6 +420,7 @@ def evaluate_all(rows: list[dict[str, Any]],
         checked = 0
         skipped = 0
         undecidable = 0
+        not_applicable = 0
         for row in rows:
             applicability = applies(row, inv)
             if applicability is None:
@@ -282,8 +435,10 @@ def evaluate_all(rows: list[dict[str, Any]],
                 failures.append({"row_id": row.get("id"), **detail})
             elif verdict == UNKNOWN:
                 unknown_rows.append({"row_id": row.get("id"), **detail})
+            elif verdict == NOT_APPLICABLE:
+                not_applicable += 1
 
-        decided = checked - len(unknown_rows)
+        decided = checked - len(unknown_rows) - not_applicable
         if failures:
             status = FAIL
         elif decided > 0:
@@ -302,11 +457,12 @@ def evaluate_all(rows: list[dict[str, Any]],
             "skipped": skipped,
             "undecidable_rows": undecidable,
             "unknown_rows": len(unknown_rows),
+            "not_applicable_rows": not_applicable,
             "violations": len(failures),
             "failure_samples": failures[:3],
             "unknown_samples": unknown_rows[:3],
             "status": status,
             "ok": True if status == PASS else False if status == FAIL else None,
-            "applicable": checked > 0,
+            "applicable": checked - not_applicable > 0,
         })
     return out

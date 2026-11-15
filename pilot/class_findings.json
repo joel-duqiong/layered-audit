@@ -245,23 +245,6 @@
     }
   },
   {
-    "id": "CLASS-NOTNULL-BYPASSED-BY-EMPTY-STRING",
-    "severity": "MEDIUM",
-    "layer": "class",
-    "title": "orders.address 声明 NOT NULL，实际用空串绕过 —— 非空约束只挡了 NULL",
-    "detail": "三方声明：DB 列 address 为 NOT NULL，实体 @Column(nullable=false)，但 DTO 的 address 没有任何约束。实测：客户端不传 address，接口返回 200，库里落的是空串 ''。NOT NULL 只证明列不是 NULL，空串照样入库 —— 约束拦不住业务上的空。后果：订单地址为空，宴会执行单拿不到地址，且没有任何一层会报错。",
-    "evidence": {
-      "dto": "CreateOrderRequest",
-      "field": "address",
-      "column": "address",
-      "db_not_null": true,
-      "dto_constraints": [],
-      "entity_nullable": false,
-      "http": 200,
-      "db_value": ""
-    }
-  },
-  {
     "id": "CLASS-REQUIRED-CHECKED-IN-SERVICE-LAYER",
     "severity": "MEDIUM",
     "layer": "class",
@@ -278,39 +261,6 @@
       "http": 422,
       "code": "PRICE_INVALID",
       "message": "成交价不能小于 0"
-    }
-  },
-  {
-    "id": "CLASS-PUT-WIPES-UNSET-FIELD",
-    "severity": "MEDIUM",
-    "layer": "class",
-    "title": "PUT 是全量覆盖：不传的 imageUrl 会被抹成 NULL",
-    "detail": "UpdateProductRequest.imageUrl 没有任何约束（可缺省），但 PUT 的语义是全量替换。实测：创建时带图片路径，随后一次不带 imageUrl 的 PUT 之后，image_url 变成 NULL。后果不是校验问题而是数据丢失 —— 磁盘上的图片文件还在，但数据库里的引用没了，文件成为孤儿，前端永远拿不到图。",
-    "evidence": {
-      "entity": "products",
-      "id": 5857503,
-      "changed_columns": [
-        "description",
-        "image_url",
-        "is_active",
-        "name",
-        "price_cent",
-        "unit",
-        "updated_at"
-      ],
-      "final_row": {
-        "id": 5857503,
-        "name": "ai_probe_fp2",
-        "unit": "克",
-        "image_url": null,
-        "is_active": false,
-        "created_at": "2026-11-14T16:55:33.771199+00:00",
-        "is_deleted": true,
-        "price_cent": 9999,
-        "updated_at": "2026-11-14T16:55:34.119342+00:00",
-        "category_id": 2,
-        "description": "changed"
-      }
     }
   },
   {
@@ -357,18 +307,6 @@
     }
   },
   {
-    "id": "CLASS-ENUM-CASE-SENSITIVE",
-    "severity": "LOW",
-    "layer": "class",
-    "title": "订单状态枚举大小写敏感，小写 pending 直接 400",
-    "detail": "DTO 的 status 字段直接用 OrderStatus 枚举，Jackson 默认大小写敏感。实测传 'pending' 返回 400「订单状态不正确」。对外 API 的枚举值应当约定为大小写不敏感或明确写进 OpenAPI，否则每个新客户端都会踩一次。",
-    "evidence": {
-      "http": 400,
-      "code": "ORDER_STATUS_INVALID",
-      "message": "订单状态不正确"
-    }
-  },
-  {
     "id": "ENUM_CHECK_ALIGNED",
     "severity": "INFO",
     "layer": "class",
@@ -392,13 +330,14 @@
     "severity": "INFO",
     "layer": "class",
     "title": "可空性三方一致 27/31 列（同向设防 21 · DTO 更严 0 · 都可空 6）",
-    "detail": "这是差分引擎的通过结论：DTO 的非空声明要么与 DB 一致，要么比 DB 更严（DTO 先拦，留给 DB 兜底），方向正确。不成立的只有下面单列出来的那几列。",
+    "detail": "这是差分引擎的通过结论：DTO 的非空声明要么与 DB 一致，要么比 DB 更严（DTO 先拦，留给 DB 兜底），方向正确。不成立的 4 列里，1 列的业务预期未确认或被文档否定，只保留观测、不开单（见旁路留痕），其余单列在下面。",
     "evidence": {
       "aligned_columns": 27,
       "total_columns": 31,
       "same_direction": 21,
       "dto_stricter": 0,
-      "both_nullable": 6
+      "both_nullable": 6,
+      "expectation_held": 1
     }
   },
   {

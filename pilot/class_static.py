@@ -2,6 +2,7 @@
 两份声明互为参照 —— 它们的差分本身就是一类缺陷。
 """
 import project
+import argparse
 import json, os, re, glob, datetime
 
 D = str(project.artifact_dir())
@@ -118,6 +119,20 @@ def parse_entities():
     return out
 
 def main():
+    global MIG, ENT, OUT
+    ap = argparse.ArgumentParser(description="类层静态声明：DDL 表级契约 + JPA 实体契约（纯正则，无需编译）")
+    ap.add_argument("--out", help="输出路径（默认 <产物目录>/class_declaration.json）")
+    ap.add_argument("--migration-dir", help="Flyway 迁移目录（覆盖项目绑定）")
+    ap.add_argument("--entity-dir", help="JPA 实体目录（覆盖项目绑定）")
+    args = ap.parse_args()
+    # parse_ddl / parse_entities 在调用时读模块级 MIG/ENT，改绑定点即可，不动解析逻辑。
+    if args.migration_dir:
+        MIG = args.migration_dir
+    if args.entity_dir:
+        ENT = args.entity_dir
+    if args.out:
+        OUT = args.out
+    os.makedirs(os.path.dirname(OUT) or ".", exist_ok=True)
     tables, indexes = parse_ddl()
     entities = parse_entities()
     decl = {"generated_at": datetime.datetime.now().isoformat(),

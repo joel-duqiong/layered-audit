@@ -1,0 +1,207 @@
+{
+  "schema": "arch-rules/1",
+  "notes": [
+    "角色模式按实测包布局声明：controller / service / repository / mapper / entity / dto / config / exception。",
+    "call_chain 只含 controller -> service -> repository：dto/entity/mapper 是被传递的数据类型与装配器，不是必须逐层穿过的调用层，把它们塞进 chain 会把 service->entity 的正常调用判成跳层。",
+    "规则来源分两档：language_spec 是可核实的语言/机制事实；convention 是分层惯例，未经项目书面确认，开单前需人工确认。",
+    "member_source / role_fact_source 声明如何从**已有项目产物**取事实，因此复现不需要任何手工中间文件：--members 指 pilot/fn_declaration.json，--role-facts 指 pilot/relation_net.json。",
+    "basis=resolved_target 判运行时目标，resolution 非 static 一律 unknown；basis=declared_type 判 invoke 指令的声明接收者类型（编译期客观事实，接口/代理导致的 UNRESOLVED 不影响它），产出进独立通道并带 runtime_resolution，两个通道不混算。",
+    "UNRESOLVED 引用有两种上游编码（fqcn.method 与 fqcn#method），两种都解析出声明侧类型。",
+    "契约已修订：class 层新增 architecture_contract（layers.yaml:61），agents.total_roles 23→24（:107）。ARCH-001/002/003/005/006/007/008 七条映射 class.architecture_contract，ARCH-004 保持 class.encapsulation_leak。contract_revision_proposal 全文保留供追溯，status=adopted。"
+  ],
+  "member_source": [
+    {"records": "functions", "class": "class", "method": "method", "modifiers": "modifiers"},
+    {"records": "nodes", "class": "cls", "method": "method", "modifiers": "modifiers"}
+  ],
+  "member_inputs": [
+    {
+      "label": "A_declaration",
+      "path": "fn_declaration.json",
+      "tracked": false,
+      "prerequisite": "该产物被 .gitignore(pilot/*_declaration.json) 忽略，fresh clone 里不存在（实测 rc=1 FileNotFoundError）。上游生成命令：cd pilot && python3 fn_static.py（run_pipeline.sh:50 的 function 层步骤），它用 javap 读被测后端的已编译字节码，因此还需被测项目先编译。覆盖率最高；活数字见产物 member_coverage，勿引用本段里的历史计数。"
+    },
+    {
+      "label": "B_relation_net",
+      "path": "relation_net.json",
+      "tracked": true,
+      "prerequisite": "无需上游编译，只用已跟踪产物。**前提：本引擎/测试/配置三文件已提交**——当前它们未提交，fresh clone of HEAD 里连引擎都没有。提交后 fresh clone 实测 rc=0（git archive HEAD + 拷入三文件验证过）。但只有部分节点带 modifiers，覆盖率低，大量边记 member_declaration_missing，unknown 显著高于口径 A。两个口径的数不可混比；活数字见产物 member_coverage 与 input_warnings。"
+    }
+  ],
+  "repro_prerequisites": [
+    "本引擎、测试与配置三个文件当前**未提交**（git ls-files 为空）。fresh clone of HEAD 里既没有引擎也没有配置，必须先提交这三个文件才谈得上复现。",
+    "所有命令的工作目录是 pilot/（见 repro_cwd）；repro_cmd 逐字可执行需在该目录下，repro_cmd_anywhere 自带 cd 前缀可从任意目录执行。",
+    "口径 A 依赖 gitignored 的 fn_declaration.json，前置步骤见 member_inputs[A_declaration].prerequisite；不得声称零前置。",
+    "口径 B 只依赖已跟踪产物，**在三文件已提交的前提下**fresh clone 可零上游前置复现（实测 rc=0）；未提交时不成立。不得把口径 B 的条件性零前置说成整体零前置。",
+    "源码根从 target.json 的 paths.backend 派生，指向被测项目仓库；该仓库不在本仓库内，行号定位与未投影 dispatch 检测需要它存在。缺失时这两项降级并告警，判定数字不受影响。"
+  ],
+  "role_fact_source": {"records": "nodes", "class": "cls", "mechanism": "type"},
+  "source_root_key": "paths.backend",
+  "role_mechanisms": {
+    "controller": ["HTTP_ENTRY"],
+    "service": ["SVC_OP"],
+    "repository": ["REPO_OP"]
+  },
+  "opaque_dispatch_patterns": [
+    "java.lang.invoke.SerializedLambda.*",
+    "java.lang.reflect.*",
+    "java.lang.invoke.MethodHandle*",
+    "java.lang.Class.forName",
+    "java.lang.reflect.Proxy.newProxyInstance"
+  ],
+  "unprojected_dispatch_patterns": [
+    {"id": "method_reference", "regex": "(\\w+)(?:\\[\\])?::(\\w+)"}
+  ],
+  "induction": {"min_support": 5, "basis": "declared_type"},
+  "unknown_markers": [{"field": "access", "values": ["unknown"]}],
+  "roles": [
+    {"id": "controller", "class_patterns": ["*.controller.*"]},
+    {"id": "service", "class_patterns": ["*.service.*"]},
+    {"id": "repository", "class_patterns": ["*.repository.*"]},
+    {"id": "mapper", "class_patterns": ["*.mapper.*"]},
+    {"id": "entity", "class_patterns": ["*.entity.*"]},
+    {"id": "dto", "class_patterns": ["*.dto.*"]},
+    {"id": "config", "class_patterns": ["*.config.*"]},
+    {"id": "exception", "class_patterns": ["*.exception.*"]}
+  ],
+  "rules": [
+    {
+      "id": "ARCH-001",
+      "type": "forbidden_call",
+      "from": "controller",
+      "to": "repository",
+      "severity": "high",
+      "claim": "controller 直接调用 repository，绕过 service 层的事务与业务校验边界",
+      "source": {"kind": "convention", "reference": "Spring Boot 分层惯例：controller -> service -> repository；包布局实测存在这三层", "confirmed_by": ""},
+      "layer": "class",
+      "category": "architecture_contract",
+      "contract_proposal": {"action": "add_category", "layer": "class", "category_id": "architecture_contract", "oracle": ["static_analysis", "contract_test"], "rationale": "证据是跨类静态边，class 是能表达「一个类依赖另一个类」的最低层；encapsulation_leak 已确立关系型缺陷归 class 的先例。"}
+    },
+    {
+      "id": "ARCH-002",
+      "type": "forbidden_call",
+      "from": "controller",
+      "to": "mapper",
+      "severity": "medium",
+      "claim": "controller 直接调用 mapper 装配响应，绕过 service 层，业务口径可能在两处分裂",
+      "source": {"kind": "convention", "reference": "实测 mapper 包只被 service 调用（entity -> DTO 装配器），属 service 层内部协作对象", "confirmed_by": ""},
+      "layer": "class",
+      "category": "architecture_contract",
+      "contract_proposal": {"action": "add_category", "layer": "class", "category_id": "architecture_contract", "oracle": ["static_analysis", "contract_test"], "rationale": "与 ARCH-001 同一类别；本条是绕过装配协作对象的具体形态。"}
+    },
+    {
+      "id": "ARCH-003",
+      "type": "layer_skip",
+      "chain": ["controller", "service", "repository"],
+      "severity": "high",
+      "claim": "调用跳过 chain 中的中间层，被跳过的层所声明的不变式与事务边界在这条路径上不生效",
+      "source": {"kind": "convention", "reference": "逐层调用约束，chain 由本配置声明；只对 chain 内角色的前向边生效", "confirmed_by": ""},
+      "layer": "class",
+      "category": "architecture_contract",
+      "contract_proposal": {"action": "add_category", "layer": "class", "category_id": "architecture_contract", "oracle": ["static_analysis", "contract_test"], "rationale": "跳层是禁止边的传递形态，与 ARCH-001 共用类别，避免同一根因开两类单。"}
+    },
+    {
+      "id": "ARCH-004",
+      "type": "visibility",
+      "levels": ["private", "package_private"],
+      "exempt_same_top_level_class": true,
+      "severity": "high",
+      "claim": "private/包私有成员被其他顶层类调用，封装边界在调用图上已被穿透",
+      "layer": "class",
+      "category": "encapsulation_leak",
+      "source": {"kind": "language_spec", "reference": "Java 语言规范：private/包私有成员不可被其他类访问；同顶层类的嵌套类除外（JEP 181 nestmates，Java 11+ 直接访问合法）", "confirmed_by": ""}
+    },
+    {
+      "id": "ARCH-005",
+      "type": "dependency_direction",
+      "from": "entity",
+      "to": "service",
+      "severity": "high",
+      "claim": "实体依赖服务层，依赖方向倒置：领域模型被编排逻辑反向绑定，无法独立复用与测试",
+      "source": {"kind": "convention", "reference": "依赖方向约束：entity 处于最内层，不得依赖外层 service；含 call 与 type_use 两类边", "confirmed_by": ""},
+      "layer": "class",
+      "category": "architecture_contract",
+      "contract_proposal": {"action": "add_category", "layer": "class", "category_id": "architecture_contract", "oracle": ["static_analysis", "contract_test"], "rationale": "依赖方向倒置含 type_use（编译期依赖，无调用），encapsulation_leak 的「可变状态外泄」语义装不下它。"}
+    },
+    {
+      "id": "ARCH-006",
+      "type": "dependency_direction",
+      "from": "repository",
+      "to": "service",
+      "severity": "high",
+      "claim": "持久层反向依赖服务层，形成环：数据访问与业务编排互相绑定，事务边界无法独立推理",
+      "source": {"kind": "convention", "reference": "依赖方向约束：repository 在 service 之下，不得向上依赖；含 call 与 type_use 两类边", "confirmed_by": ""},
+      "layer": "class",
+      "category": "architecture_contract",
+      "contract_proposal": {"action": "add_category", "layer": "class", "category_id": "architecture_contract", "oracle": ["static_analysis", "contract_test"], "rationale": "与 ARCH-005 同一类别；本条还构成环，可用同一静态证据判定。"}
+    },
+    {
+      "id": "ARCH-007",
+      "type": "forbidden_call",
+      "basis": "declared_type",
+      "from": "controller",
+      "to": "repository",
+      "severity": "high",
+      "claim": "声明侧依赖：controller 的调用指令其声明接收者类型落在 repository，即使运行时由接口/代理绑定，这条依赖在编译期已成立",
+      "source": {"kind": "language_spec", "reference": "JVM invokeinterface/invokevirtual 常量池记录声明接收者类型；接口无字节码体导致运行时目标 UNRESOLVED，但声明类型确定（实测 CategoryService.java:22 字段声明 + :49 调用，CategoryRepository.java:9 为 interface extends JpaRepository）", "confirmed_by": ""},
+      "layer": "class",
+      "category": "architecture_contract",
+      "contract_proposal": {"action": "add_category", "layer": "class", "category_id": "architecture_contract", "oracle": ["static_analysis", "contract_test"], "rationale": "与 ARCH-001 同一约束的声明侧口径，共用类别；类别 desc 需明确「声明侧依赖即可判定，不要求运行时可达」。"}
+    },
+    {
+      "id": "ARCH-008",
+      "type": "layer_skip",
+      "basis": "declared_type",
+      "chain": ["controller", "service", "repository"],
+      "severity": "high",
+      "claim": "声明侧跳层：调用指令的声明类型跨过 chain 中间层，被跳过层声明的不变式与事务边界在这条依赖上不生效",
+      "source": {"kind": "convention", "reference": "逐层调用约束的声明侧版本；覆盖接口 dispatch 导致 resolved_target 通道判不了的那部分边", "confirmed_by": ""},
+      "layer": "class",
+      "category": "architecture_contract",
+      "contract_proposal": {"action": "add_category", "layer": "class", "category_id": "architecture_contract", "oracle": ["static_analysis", "contract_test"], "rationale": "与 ARCH-003 同一约束的声明侧口径，共用类别。"}
+    }
+  ],
+  "contract_revision_proposal": {
+    "status": "adopted",
+    "adoption_evidence": {
+      "decided_by": "用户委派自主决策，编排者独立评估后采纳",
+      "date": "2026-11-15",
+      "layers_yaml_category_line": 61,
+      "layers_yaml_total_roles_line": 107,
+      "verified_by": "findings_schema.load_layer_categories(layers.yaml) 读出 class 层 5 个类别含 architecture_contract，全契约类别总数 24",
+      "committed": false,
+      "note": "以下 why_class_layer / why_existing_categories_do_not_fit / oracle_binding_argument / yaml_diff 均为**提案时（修订前）的论证**，保留供追溯，不描述当前契约状态。"
+    },
+    "action": "add_category",
+    "target_file": "layers.yaml",
+    "layer": "class",
+    "category_id": "architecture_contract",
+    "desc": "细胞间调用/依赖违反声明的分层、跳层或依赖方向约束（声明侧静态可判，零业务 oracle 需求）",
+    "oracle": ["static_analysis", "contract_test"],
+    "cwe": "待人工裁定，本提案不猜 CWE 编号",
+    "affected_rules": ["ARCH-001", "ARCH-002", "ARCH-003", "ARCH-005", "ARCH-006", "ARCH-007", "ARCH-008"],
+    "unaffected_rules": {"ARCH-004": "已精确映射 class.encapsulation_leak，无需修订"},
+    "why_class_layer": "证据是跨两个类的静态边。function 层粒度是单个函数体，file 层是单文件内多函数，都表达不了「A 类不得依赖 B 类」；class 层的 encapsulation_leak（内部表示被依赖）已确立关系型缺陷归 class 的先例。service 层粒度是可部署服务边界，本仓库只有一个服务，用它会与 integration 的跨服务语义混淆。",
+    "why_existing_categories_do_not_fit": [
+      {"category": "function.boundary / complexity / exception_path / numeric", "reason": "desc 全是单个函数体内的性质（边界/复杂度/异常路径/数值），禁止边是细胞间关系，不在其语义内。"},
+      {"category": "file.cohesion", "reason": "desc「文件承担多重职责/命名与实现不符」描述单文件内部职责混合。表面上 controller 兼做数据访问算多职责，但它无法表达「两个特定细胞之间不许有边」，会把合法的多职责文件一并判违规，丢失特异性。"},
+      {"category": "class.encapsulation_leak", "reason": "对 visibility 精确成立（已映射）。对分层/依赖方向，被依赖的「内部表示」是一个层而非某个类的状态；强行复用会让同一类别承载两种语义。"},
+      {"category": "class.contract_violation", "reason": "desc「方法契约与调用方假设不符/副作用未声明」是方法行为契约，不是「谁可以调用谁」的结构约束。"},
+      {"category": "service.data_consistency", "reason": "「事务边界错」只是绕过 service 的后果之一，且其 oracle 绑定为 [concurrency_test, property_based_test]，不含 static_analysis。用静态边开这张单等于伪造 oracle 绑定。"},
+      {"category": "integration.cross_layer_correlation", "reason": "desc 明写「归并不新增检测」，不能承载新检测。"}
+    ],
+    "oracle_binding_argument": "本引擎的证据种类是 static_analysis（字节码调用图 + 声明侧类型 + 修饰符）。layers.yaml 里含 static_analysis 的类别只有 function.boundary/complexity/exception_path、file.state_consistency/error_handling_pattern/cohesion、class.encapsulation_leak/inheritance_design、service.authz/resource_leak。逐条比对 desc 后，没有一个描述「细胞间禁止边」。这是客观的契约多样性缺口，不是映射失误。",
+    "yaml_diff": [
+      "在 layers.yaml 的 class 层 categories 块末尾（inheritance_design 之后）新增一行：",
+      "      - {id: architecture_contract, desc: \"细胞间调用/依赖违反声明的分层、跳层或依赖方向约束\", oracle: [static_analysis, contract_test]}",
+      "同步把 agents.total_roles 从 23 改为 24（该字段语义是 category 总数：function 4 + file 4 + class 4 + service 6 + integration 5 = 23）。",
+      "agents.by_layer 的 class count 是否从 2 调整，需人工裁定（新类别绑定 static_analysis，可复用现有查封装/不变式的 agent）。"
+    ],
+    "downstream_impact": [
+      "已生效：本引擎 7 条规则的 category_fit 从 unmapped 变 exact，contract_gaps 归零，findings 具备开单资格。",
+      "agents.total_roles 已改 24；它是调度器 diversity_source 的分母，scheduler 轮转影响需拥有者确认。",
+      "**待修（不属本引擎所有权）**：audit_entry.py:95-99 的默认规则 ARCH-D1..D5 只带 unmapped_reason、不带 layer/category，契约修订后仍会判 UNMAPPED。精确修法见交付报告，需该文件拥有者改。",
+      "normalize_findings.py:413 动态调 load_layer_categories()，会自动认新类别，无需改。"
+    ],
+    "reproducibility_note": "fn_declaration.json 被 .gitignore 忽略（pilot/*_declaration.json），是流水线产物。从 fresh clone 复现口径 A 需先跑上游声明扫描；仅用已跟踪产物时改喂 relation_net.json（口径 B），覆盖率更低、unknown 更高。两口径的活数字见产物 member_coverage 与 repro_variants，不得混比，也不得引用本段里的历史计数。"
+  }
+}

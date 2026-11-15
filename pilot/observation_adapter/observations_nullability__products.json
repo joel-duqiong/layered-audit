@@ -1,0 +1,24 @@
+{
+  "schema": "observation-pack/1",
+  "target": "jiuyan",
+  "scope": "products",
+  "observations": [
+    {
+      "id": "nullability:class_observation.json#nullability/0",
+      "target": "jiuyan",
+      "scope": "products",
+      "reached": true,
+      "row": {
+        "id": 5857502,
+        "name": "ai_probe_nn",
+        "is_active": true
+      },
+      "evidence_refs": [
+        "class_observation.json#/nullability/0/db_row",
+        "class_scenarios.json#/probes/7/cases/0/table",
+        "class_scenarios.json#/probes/7/cases/1/table",
+        "class_probe.py:518-519 (db_row = SELECT case.read_columns FROM case.table)"
+      ]
+    }
+  ]
+}

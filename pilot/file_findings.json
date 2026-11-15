@@ -5,6 +5,13 @@
     "kind": "defect",
     "layer": "file",
     "cwe": "CWE-942 (Permissive Cross-domain Policy)",
+    "warrant": {
+      "kind": "technical",
+      "authority": "CWE-942（过宽跨域策略）",
+      "domain_swap": "holds",
+      "basis": "内网任意主机任意端口都是允许源，实测 ACAO 原样回显；配合零鉴权即任意网页可读全部业务数据。通用安全不变式，换任何业务域都成立。",
+      "evidence": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/WebConfig.java:19,29"
+    },
     "title": "CORS 白名单等于「整个内网 + 所有本地端口」，且全是明文 http",
     "detail": "WebConfig 的 allowedOriginPatterns 来自配置，默认为：\n  http://localhost:[*], http://127.0.0.1:[*], http://192.168.*.*:[*], http://10.*.*.*:[*], http://172.*.*.*:[*]\n其中 [*] 是任意端口。实测真实容器：请求 Origin: http://192.168.66.66:1234，响应头原样回显 Access-Control-Allow-Origin: http://192.168.66.66:1234 —— 内网任意主机的任意端口都是允许源。http://localhost:65535 同样被回显。\n为什么是 HIGH：这个系统的鉴权是零（服务层 NO_AUTHZ）。allowCredentials(false) 在这里不构成任何补偿控制 —— 本来就不需要凭证，任意网页都能读全部业务数据。允许源里的 localhost:[*] 尤其危险：任何能在用户本机起一个 http://localhost:端口 的进程（恶意 npm postinstall、被劫持的开发服务器、用户自己装的软件）都能让浏览器把整套业务数据读走；内网三条规则则把「内网里任意一台被攻陷的设备」也变成攻击面。\n正向结论：白名单不是通配全放 —— evil.example.com、https://evil.example.com、localhost.evil.com、null、[::1] 全部被拒，正则是精确匹配。",
     "evidence": {
@@ -49,6 +56,13 @@
     "kind": "defect",
     "layer": "file",
     "cwe": "CWE-290 (Authentication Bypass by Spoofing) / CWE-350 (Reliance on Reverse DNS)",
+    "warrant": {
+      "kind": "technical",
+      "authority": "CWE-290 / CWE-350（伪造绕过 / 依赖不可信来源）",
+      "domain_swap": "holds",
+      "basis": "取 X-Forwarded-For 首段且无可信代理判定，实测 clientIp=9.9.9.9 而对端真实地址 127.0.0.1。审计来源可被任意伪造是通用安全缺陷。",
+      "evidence": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/TraceIdFilter.java:51-52"
+    },
     "title": "审计日志里的 clientIp 完全由客户端伪造：X-Forwarded-For 首段直接采信",
     "detail": "TraceIdFilter.clientIp 的实现是「有 X-Forwarded-For 就取第一段，没有才用 remoteAddr」，没有任何可信代理判定（不看 RemoteAddr 是否落在已知代理网段、不看是否有多跳链）。真实容器实测：请求带 X-Forwarded-For: 9.9.9.9 时，容器日志里写的是 clientIp=9.9.9.9，而对端真实地址是 127.0.0.1。\n影响：clientIp 是这套日志里唯一的来源标识，两条日志（start / end）都写它。任何人都能把审计日志里的来源 IP 改成任意值 —— 日志不再是「谁干的」的证据，排查、限流、风控都失去了输入。这条在函数层、服务层都没被覆盖：它既不是单个表达式的逻辑错，也不是 HTTP 契约问题，是这一个文件里「取哪个值」的编排决策。",
     "evidence": {
@@ -71,6 +85,13 @@
     "kind": "defect",
     "layer": "file",
     "cwe": "CWE-209 (Generation of Error Message Containing Sensitive Information)",
+    "warrant": {
+      "kind": "technical",
+      "authority": "CWE-209（错误消息含敏感信息）",
+      "domain_swap": "holds",
+      "basis": "实测 400 响应体原样回显请求体片段（含 password 字段）。错误响应回显请求体在任何应用里都是敏感信息泄漏。",
+      "evidence": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/exception/GlobalExceptionHandler.java:60"
+    },
     "title": "400 错误把原始请求体片段原样回显",
     "detail": "handleBadRequest 用 Map.of(\"message\", ex.getMessage()) 把 Jackson 的解析错误信息原样送出，而 Jackson 的解析错误里**带着请求体的原始片段**。\n实测：请求体 {\"password\":\"hunter2\"} 格式错误 → 400 响应体里原样出现 \"password\":\"hunter2\"。\n影响：客户端往任何接口发错一个 JSON，body 就被回显回来。响应体是最容易被中间层（网关、APM、前端埋点、错误上报 SDK）记录的地方 —— 密码、token、身份证号只要在出错的那次请求里，就会从「一个错误响应」变成「一条被长期留存的日志」。同一个 handleBadRequest 还把解析器内部细节（字符码、行列号）一起送出去了。",
     "evidence": {
@@ -91,6 +112,13 @@
     "kind": "defect",
     "layer": "file",
     "cwe": "CWE-209 (Generation of Error Message Containing Sensitive Information)",
+    "warrant": {
+      "kind": "technical",
+      "authority": "CWE-209",
+      "domain_swap": "holds",
+      "basis": "实测响应体出现 PostgreSQL 约束名 uk_orders_order_no 与 vendor 错误原文，等于给出 schema 地图。通用信息泄漏。",
+      "evidence": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/exception/GlobalExceptionHandler.java:85"
+    },
     "title": "DB 约束冲突的原始错误文本被原样回给客户端",
     "detail": "handleDataIntegrity 把 ex.getMostSpecificCause().getMessage() 原样放进响应 details。实测：返回体里直接出现 PostgreSQL 的约束名 uk_orders_order_no、「could not execute statement [ERROR: duplicate key value violates unique constraint ...]」。\n归属说明：服务层把这一现象记成了 24 条 INTERNAL_LEAK（每个接口一条）。按 owner = 能给出可复现证据的最低层，根因就在这一个文件的一行代码上，所以开单收敛到这里；服务层的 24 条是同一根因在 24 个端点上的投影，不是 24 个独立缺陷。\n暴露面：约束名 → 表结构 → 唯一键语义 → 可枚举的订单号空间，对攻击者来说这就是一张可用的 schema 地图。",
     "evidence": {
@@ -112,6 +140,13 @@
     "kind": "defect",
     "layer": "file",
     "cwe": "CWE-662 (Improper Synchronization)",
+    "warrant": {
+      "kind": "technical",
+      "authority": "CWE-662 + 通用正确性不变式「先校验后变更」",
+      "domain_swap": "holds",
+      "basis": "字节码硬证据：removeIf 出现在 findByIdAndIsDeletedFalse 之前；实测异常后实体 items 归零。当前被 @Transactional 回滚掩盖，属纵深防御缺口，但编排顺序本身违反通用不变式。",
+      "evidence": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java:137"
+    },
     "title": "PackageService.applyItems 先删后校验：明细被清空后才去查商品",
     "detail": "applyItems 的编排顺序是「先把没被提交的明细从实体上摘掉，再去 DB 查每个商品是否存在」。商品查不到时抛 404，但实体已经被改过一轮 —— 内存里的套餐此刻是一条空明细的套餐。实测：2 条明细的套餐，用一个不存在的商品提交更新，异常抛出后实体的 items 变成 0 条。\n字节码层面是硬证据：applyItems 的指令序列里 java.util.List.removeIf 出现在 ProductRepository.findByIdAndIsDeletedFalse 之前。\n为什么不是 HIGH：update 方法带 @Transactional，实测真实 HTTP 链路里 404 之后 DB 的 package_items 与 packages.name 都没变（事务完整回滚）。所以这是「纵深防御缺口」而不是现网数据损坏 —— 但编排顺序本身就是错的：只要有人给 update 去掉 @Transactional、或未来改成内部自调用绕过代理，这个顺序立刻变成真实的明细丢失。校验应该在变更之前，不是之后。",
     "evidence": {
@@ -168,6 +203,13 @@
     "kind": "defect",
     "layer": "file",
     "cwe": "CWE-706 (Use of Incorrectly-Resolved Name or Reference)",
+    "warrant": {
+      "kind": "technical",
+      "authority": "CWE-706 + Java 平台语义（Path.toUri 仅对已存在目录补尾斜杠）",
+      "domain_swap": "holds",
+      "basis": "实测存在目录 toUri 以 / 结尾、不存在目录不以 / 结尾，相对路径拼到上一级 → 全 404。平台语义缺陷，与业务无关；当前被 Dockerfile mkdir 掩盖。",
+      "evidence": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/WebConfig.java:38"
+    },
     "title": "静态资源根目录的规范化依赖「目录在启动前就存在」这个环境偶然",
     "detail": "WebConfig.addResourceHandlers 用 Path.of(uploadDir).toAbsolutePath().normalize().toUri().toString() 生成静态映射根。Path.toUri() 只有在目录**已存在**时才补尾部斜杠 —— 目录不存在时它给的是 file:///app/uploads（无斜杠）。Spring 拼相对路径时会直接字符串拼接，于是 /uploads/seed/x.jpg 变成 /app/uploadseed/x.jpg，全部 404。\n实测：存在的目录 toUri() 以 / 结尾、相对路径拼接正确；不存在的目录不以 / 结尾、相对路径拼到上一级目录去了（relative_without_slash_ok=false）。\n现状：Dockerfile 里有 mkdir -p /app/uploads，目录在镜像层就存在，所以容器部署现在是好的。但这是环境替代码兜了底 —— 换卷、换基础镜像、目录被清理、或本地不用容器启动，上传能成功（UploadService 自己 createDirectories），静态映射却指到别处，表现为「传得上去、看不到」，且没有任何报错。\n同时证伪了 manifest 的假设：WebConfig 的静态根与 UploadService 的上传根是同一个配置值，同源。",
     "evidence": {
@@ -188,6 +230,13 @@
     "kind": "defect",
     "layer": "file",
     "cwe": "CWE-117 (Improper Output Neutralization for Logs)",
+    "warrant": {
+      "kind": "technical",
+      "authority": "CWE-117（日志输出未中和）",
+      "domain_swap": "holds",
+      "basis": "实测 U+2028 不被拦、伪造内容原样进容器日志并切开日志行；无长度上限可致日志放大。CRLF 向量已被 Tomcat 挡住（假设被证伪，如实记录）。通用日志注入。",
+      "evidence": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/TraceIdFilter.java:35-45"
+    },
     "title": "X-Trace-Id 完全由客户端指定，无格式与长度白名单，原样进日志与响应头",
     "detail": "TraceIdFilter 对客户端传来的 X-Trace-Id 只做了一次 isBlank 判断，随后原样：\n  · 写入 MDC 与 ThreadLocal；\n  · 拼进两条日志的 traceId= 位置；\n  · 原样写回响应头 X-Trace-Id。\n实测边界行为：\n  · 含 CRLF 的 traceId（abc\\r\\nFORGED-LOG-LINE-9X）被 Tomcat 连接器拒绝，返回 400 —— 这个最经典的日志伪造向量在边界上已经被挡住了（假设被证伪，是好消息）；\n  · 但 U+2028（Unicode 行分隔符）不被拦：请求 200，伪造内容原样出现在容器日志里 —— 把日志行从中间切开。按行分隔解析日志的采集器（部分 filebeat/日志查看器）会把它当成新行，日志结构仍然可被污染；\n  · 没有长度上限，traceId 可以是任意长度 → 日志放大。\n与上一条同源：同一个文件里「客户端可控的值」被当成可信数据直接使用。",
     "evidence": {
@@ -215,6 +264,13 @@
     "kind": "defect",
     "layer": "file",
     "cwe": "CWE-1078 (Inappropriate Source Code Style or Formatting)",
+    "warrant": {
+      "kind": "technical",
+      "authority": "CWE-1078 + 单一事实来源（DRY）",
+      "domain_swap": "holds",
+      "basis": "5MB 生效于 application.yml，同一数字又复制到错误文案与接口文档；UploadService 内 0 处体积判断。判据是「同一常量不得多处复制」这条通用维护性不变式，不是「上限该是多少」这条业务规则（后者有文档依据且未被质疑）。",
+      "evidence": "resources/application.yml:25-26 + /Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/exception/GlobalExceptionHandler.java:71"
+    },
     "title": "上传体积上限 5MB 这个数字散落三处，改一处另两处就开始说谎",
     "detail": "UploadService.java 这个文件里没有任何体积判断 —— 上限完全由配置文件 application.yml 的 spring.servlet.multipart.max-file-size 承担。而同一个数字 5MB 又以两种形式被复制到代码里：\n  · GlobalExceptionHandler.handleMaxUploadSize 的错误文案「图片不能超过 5MB」；\n  · UploadController @Operation 的接口文档「最大 5MB」。\n真实容器实测：1MB 通过、4MB 通过、6MB 被拒、20MB 被拒 —— 5MB 确实生效，函数层那条「无体积上限、20MB 被完整写盘」在 HTTP 边界被配置文件挡住了。但挡住它的是配置，不是代码：任何一次环境覆盖（SPRING_APPLICATION_JSON / 环境变量 / 配置中心 / 默认值回落）都会静默放开上传，而错误文案与接口文档仍然写着 5MB —— 限制放宽了，提示没变，用户按提示做的判断是错的。",
     "evidence": {
@@ -231,37 +287,18 @@
     "root_cause_file": "service/UploadService.java + resources/application.yml + exception/GlobalExceptionHandler.java"
   },
   {
-    "id": "FILE-VALIDATION-STATUS-SPLIT",
-    "severity": "MEDIUM",
-    "kind": "defect",
-    "layer": "file",
-    "cwe": "CWE-436 (Interpretation Conflict)",
-    "title": "同一类「参数非法」返回两种状态码：DTO 校验给 400，服务自校验给 422",
-    "detail": "参数校验被拆在两个文件里，两边各自选了不同的状态码：\n  · DTO 文件声明的约束（数量 @Min(1)、价格 @Min(0)）走 Bean Validation → MethodArgumentNotValidException → handleValidation → 400；\n  · 服务文件自己做的校验（明细为空、明细重复）抛 BusinessException → 422。\n实测同一个接口 PUT /api/packages/4：数量=0 → 400；明细为空 → 422。两者在语义上都是「请求参数不合法」，前端却要写两个分支才能区分，监控按状态码分类时也会把一类错误拆成两堆。\n根因不是某一处写错，而是校验责任分散在 DTO 与 service 两个文件、且没有统一的错误语义约定。",
-    "evidence": {
-      "dto_validation_status": 400,
-      "dto_validation_body": "{\"success\":false,\"code\":\"VALIDATION_ERROR\",\"message\":\"参数错误\",\"details\":{\"items[0].quantity\":\"must be greater than or equal to 1\"},\"traceId\":\"f0adf04f-e73b-4c12-a1f9-5f474d24ad5c\",\"timestamp\":\"2026-11-15T00:54:50.337735131+08:00\"}",
-      "service_validation_status": 422,
-      "service_validation_code": "VALIDATION_ERROR",
-      "split_check": {
-        "check": "validation_status_split",
-        "expected": true,
-        "actual": true,
-        "pass": true,
-        "note": "同属「参数非法」：DTO 层校验返 400，服务文件自校验返 422 —— 状态码按校验责任分裂"
-      }
-    },
-    "root_cause_file": "dto/PackageItemRequest.java + service/PackageService.java",
-    "related": [
-      "UNHANDLED_HTTP_EXCEPTION（服务层）"
-    ]
-  },
-  {
     "id": "FILE-DUPLICATE-HELPERS-ACROSS-SERVICES",
     "severity": "LOW",
     "kind": "defect",
     "layer": "file",
     "cwe": "CWE-561 (Dead Code)",
+    "warrant": {
+      "kind": "technical",
+      "authority": "CWE-1078 / DRY（原 cwe 字段误标 CWE-561 死代码，复制代码不是死代码）",
+      "domain_swap": "holds",
+      "basis": "字节码 body_hash 逐字相同的 4 组方法复制在 3 个 service。实测三份 normalizePageSize 上限都是 100，当前无行为差异 —— 是维护性风险不是现网缺陷，如实降级为 LOW。判据是通用 DRY，不依赖业务规则。",
+      "evidence": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/OrderService.java:318 等三处"
+    },
     "title": "分页归一化等 4 组方法在 3 个 service 文件里逐字复制",
     "detail": "字节码 body_hash 完全相同的方法体：\n  · normalizePage ×3（OrderService / PackageService / ProductService）\n  · normalizePageSize ×3（同上）\n  · OrderService#normalizePackageItems ≈ PackageService#normalizeItems（改名复制）\n  · OrderService#findProduct = PackageService#findProduct（同名复制）\n服务层假设「四个 service 的分页上限行为不一致」在当前代码上被证伪：\nnormalizePageSize 的三份字节码逐字相同，上限都是 100。所以现在没有行为差异，这是维护性风险而不是现网缺陷 —— 上限要改 3 处，漏一处就产生分页契约漂移。",
     "evidence": {
@@ -319,6 +356,19 @@
     "kind": "defect",
     "layer": "file",
     "cwe": "CWE-436 (Interpretation Conflict)",
+    "warrant": {
+      "kind": "business",
+      "domain_swap": "fails",
+      "basis": "「所有接口必须返回统一 JSON 信封」是本项目明文 API 契约，不是通用规范；换个不要求信封的应用就不成立。该契约有文档依据，故 confirmed 可开单。",
+      "evidence": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/exception/GlobalExceptionHandler.java:78 handleClientAbort 返回 ResponseEntity<Void>（实测 499 body 为空）",
+      "oracle": {
+        "source": "project_doc",
+        "confirmation": "confirmed",
+        "reference": "/Users/june/jiuyan/AGENTS.md:100",
+        "text": "所有接口必须返回统一 JSON。",
+        "note": "业务校验对照.md:12 在「已确认一致的规则」表里记 envelope 一致，预期来源 AGENTS.md。499 空 body 违背该明文契约。适用性存疑处如实记录：客户端已断开时是否仍属「所有接口」范围，需业务方确认；当前按明文「所有」判定为违背。"
+      }
+    },
     "title": "同一个异常处理文件里三种响应形状：信封 / 空体 / 未知",
     "detail": "GlobalExceptionHandler 一个文件里，错误响应有三种形状：\n  · handleBusiness / handleValidation / handleBadRequest / handleDataIntegrity / handleUnknown → 标准信封 {success,code,message,details,...}；\n  · handleClientAbort → 499 + **空 body**（实测 body_is_null=true，没有任何信封字段）；\n  · handleMaxUploadSize → 信封，但 details=null 且文案写死。\n前端按信封统一解析，遇到 499 会拿到 null / 解析异常。实测 499 的 body 确实是空的。\n另有一条正向结论：handleUnknown 只回「系统异常，请稍后重试」，不泄露任何内部细节。",
     "evidence": {
@@ -339,32 +389,6 @@
       "max_upload_shape": "信封 + details=null + 硬编码文案"
     },
     "root_cause_file": "exception/GlobalExceptionHandler.java"
-  },
-  {
-    "id": "FILE-NULL-BODY-WRAPPED-AS-SUCCESS",
-    "severity": "LOW",
-    "kind": "defect",
-    "layer": "file",
-    "cwe": "CWE-754 (Improper Check for Unusual or Exceptional Conditions)",
-    "title": "null 响应体也被包成 success=true 的信封（data 字段缺失）",
-    "detail": "ApiResponseAdvice.beforeBodyWrite 对 body==null 也照样包一层，产出 {success:true, code:OK, message:成功, traceId, timestamp}，data 因为 NON_NULL 被省略。前端拿到 success=true 但没有 data 字段，只能靠「data 存不存在」判断有无结果，与其它接口「data 一定有值」的假设冲突。\n实际链路无害：499 那条走 ResponseEntity<Void>，协商不出 JSON content type，不会走到包装分支。所以这是 INFO 级的契约不一致，不是现网故障。\n顺带两条正向结论：supports() 对 ResponseEntity<ApiResponse<...>> 返回 false（声明类型是 ResponseEntity），但 beforeBodyWrite 的 instanceof ApiResponse 守卫仍然挡住了二次包装；已经包好的信封不会被改写（already_envelope_unchanged=true）。",
-    "evidence": {
-      "null_body_json": "{\"success\":true,\"code\":\"OK\",\"message\":\"成功\",\"traceId\":\"FILELAYER-CONTEXT-TRACE\",\"timestamp\":1794675282.600868000}",
-      "supports": {
-        "plain": true,
-        "enveloped": false,
-        "entity": true
-      },
-      "already_envelope_unchanged": true,
-      "mismatch": {
-        "check": "null_body_result_is_null",
-        "expected": true,
-        "actual": false,
-        "pass": false,
-        "note": "空 body 不应被包成 data:null 的成功信封（内容类型为空时不会发生）"
-      }
-    },
-    "root_cause_file": "config/ApiResponseAdvice.java"
   },
   {
     "id": "FILE-CORS-NEGATIVE-PRECISION",

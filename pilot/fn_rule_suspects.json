@@ -1,0 +1,157 @@
+{
+  "unconfirmed": [
+    {
+      "rule_id": "FN-PRICE-CLIENT-CONTROLLED",
+      "oracle": {
+        "source": "inferred",
+        "confirmation": "unconfirmed",
+        "reference": "无文档依据（现有文档只规定金额 >= 0）",
+        "note": "「成交价不得高于套餐标价 / 不得由客户端决定」是推断的业务预期，不是规范违背。项目对同一条预期的权威声明在 invariants.json 的 BI-FINAL-AMOUNT-LTE-PACKAGE-PRICE，同样 source=inferred / confirmation=unconfirmed，服务层已正确压进 business_findings.json 的 unconfirmed_suspects —— 函数层与集成层此前绕过该声明直接开 CRITICAL/HIGH defect。severity 保留 CRITICAL 作为**风险评级**（进待确认疑点清单），不是缺陷严重度；服务层对同一预期评 HIGH，跨层评级口径不一致待编排者裁定。价格篡改风险真实存在，不得吞掉：观测与证据原样留痕，等业务确认是否要求上界。",
+        "corroborated_by": [
+          {
+            "reference": "/Users/june/tests/auto-api/docs/业务校验对照.md:20",
+            "text": "| 使用成交价时保存成交价，否则保存方案合计 | AGENTS.md | `resolveFinalPrice` | 一致 |",
+            "note": "在「## 已确认一致的规则」表内 —— 权威对照文档明确判定本函数符合规范"
+          },
+          {
+            "reference": "/Users/june/jiuyan/docs/API.md:338",
+            "text": "`useFinalPrice=true` 时，后端保存请求中的 `finalPriceCent`。"
+          },
+          {
+            "reference": "/Users/june/jiuyan/AGENTS.md:426",
+            "text": "如果勾选成交价，`orders.final_price_cent` 使用成交价。"
+          },
+          {
+            "reference": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/OrderService.java:149",
+            "text": "private long resolveFinalPrice(boolean useFinalPrice, Long finalPriceCent, Long planTotalCent) {",
+            "note": ":150-152 未勾选返回 planTotalCent；:153-155 只挡 null/<0；:156 原样返回客户端值 —— 逐字实现 API.md:337-338"
+          },
+          {
+            "reference": "/Users/june/tests/auto-api/tests/test_orders.py:14",
+            "text": "def test_create_order_use_final_price(api, make_order):",
+            "note": "confirmed 的可执行 oracle：:15 make_order(useFinalPrice=True, finalPriceCent=5000, planTotalCent=8888)，:16 断言 finalPriceCent==5000 —— 成交价低于方案合计是**正确行为**，与本疑点的预期相反"
+          },
+          {
+            "reference": "/Users/june/tests/auto-api/docs/业务校验对照.md:15",
+            "text": "| 金额字段 >= 0（商品价、套餐价、预算、成交价、定金） | AGENTS.md + docs/API.md | DTO `@Min(0)` + Service + DB check | 一致 |",
+            "note": "金额的唯一已确认规则是 >= 0；:60-65「当前未定义」清单未列成交价与套餐价的大小关系，故本预期是 unconfirmed（未定义）而不是 refuted（被明确否定）"
+          }
+        ]
+      },
+      "finding": {
+        "id": "FN-PRICE-CLIENT-CONTROLLED",
+        "layer": "function",
+        "severity": "CRITICAL",
+        "title": "成交价由客户端决定且不与套餐价比对（文档化设计；价格篡改是规范层风险，待业务确认）",
+        "function": "OrderService.resolveFinalPrice",
+        "root_cause": "resolveFinalPrice(boolean, Long, Long) 只校验成交价 >= 0，既不要求成交价 <= 套餐总价，也不要求有折扣依据，于是客户端可以把任意非负数字直接变成订单最终价。这是 API.md:337-338 规定的行为，不是规范违背；风险在于规范本身没有要求上界。",
+        "api_reachable": true,
+        "boundary_protected": false,
+        "boundary_note": "CreateOrderRequest.finalPriceCent 只有 @Min(0)，上界没有任何约束",
+        "cwe": null,
+        "owner": "函数层（OrderService.resolveFinalPrice）",
+        "case_count": 4,
+        "evidence": [
+          {
+            "case_id": "APL-15",
+            "function": "com.jiuyan.banquet.service.OrderService#apply",
+            "invariant": "落库的成交价不得高于套餐总价",
+            "actual": "期望 finalPriceCent <= 46800，实际 999999",
+            "exception": null
+          },
+          {
+            "case_id": "RFP-05",
+            "function": "com.jiuyan.banquet.service.OrderService#resolveFinalPrice",
+            "invariant": "成交价不得低于套餐总价（客户端不能自降定价权）",
+            "actual": "期望 >= 46800，实际 1",
+            "exception": null
+          },
+          {
+            "case_id": "RFP-06",
+            "function": "com.jiuyan.banquet.service.OrderService#resolveFinalPrice",
+            "invariant": "成交价不得高于套餐总价",
+            "actual": "期望 <= 46800，实际 999999",
+            "exception": null
+          },
+          {
+            "case_id": "RFP-07",
+            "function": "com.jiuyan.banquet.service.OrderService#resolveFinalPrice",
+            "invariant": "成交价不得为 0（0 元成交无任何业务依据）",
+            "actual": "期望 >= 1，实际 0",
+            "exception": null
+          }
+        ],
+        "related_findings": [
+          {
+            "layer": "integration",
+            "id": "PRICE_CLIENT_CONTROLLED_XL",
+            "relation": "集成症状：同一预期的集成层观测，同样按 unconfirmed 留痕",
+            "already_filed_in_that_layer": false
+          },
+          {
+            "layer": "service",
+            "id": "test_create_order_use_final_price",
+            "relation": "既有验收用例断言「useFinalPrice=true 时保留成交价」（5000 vs 方案合计 8888）—— 这是 confirmed 的可执行 oracle，断言的是与本疑点相反的预期，是反证而不是佐证；原表述把它当成缺陷的证据，属极性翻转，已撤"
+          }
+        ]
+      }
+    },
+    {
+      "rule_id": "OB-RESOLVE-PRICE-UPPER-BOUND",
+      "oracle": {
+        "source": "inferred",
+        "confirmation": "unconfirmed",
+        "reference": "无文档依据（现有文档只规定金额 >= 0）",
+        "note": "source=declared 只表示这条职责是人写下来的，不表示业务方确认过。本条断言的「成交价不得高于套餐标价」与 invariants.json 的 BI-FINAL-AMOUNT-LTE-PACKAGE-PRICE 是同一条预期，后者的 oracle 明确是 inferred/unconfirmed/「无文档依据」，服务层已压进 unconfirmed_suspects。规范违背不成立：业务校验对照.md:20 在「已确认一致的规则」表里记 resolveFinalPrice「一致」，API.md:338 规定 useFinalPrice=true 时保存请求中的 finalPriceCent。断言继续执行以产出观测，但结论进待确认疑点清单，不以 defect 进台账。",
+        "corroborated_by": [
+          {
+            "reference": "/Users/june/tests/auto-api/docs/业务校验对照.md:20",
+            "text": "| 使用成交价时保存成交价，否则保存方案合计 | AGENTS.md | `resolveFinalPrice` | 一致 |"
+          },
+          {
+            "reference": "/Users/june/jiuyan/docs/API.md:338",
+            "text": "`useFinalPrice=true` 时，后端保存请求中的 `finalPriceCent`。"
+          },
+          {
+            "reference": "/Users/june/tests/auto-api/tests/test_orders.py:14",
+            "text": "def test_create_order_use_final_price(api, make_order):",
+            "note": "confirmed 的可执行 oracle，断言成交价 5000 低于方案合计 8888 是正确行为"
+          }
+        ]
+      },
+      "finding": {
+        "id": "FN-SEMANTIC-PRICE-UPPER-BOUND",
+        "layer": "function",
+        "severity": "HIGH",
+        "title": "职责断言（待确认）：成交价不得高于套餐标价 —— 无文档依据，属规范层风险",
+        "function": "com.jiuyan.banquet.service.OrderService#resolveFinalPrice",
+        "root_cause": "resolveFinalPrice 只校验了成交价非负，没有与套餐标价比对，客户端报 999999 分（套餐价 46800 分）被原样接受。这是 API.md:338 规定的行为；「必须比对」这条预期没有来源，待业务确认。",
+        "api_reachable": true,
+        "boundary_protected": false,
+        "boundary_note": "DTO 上只有 @Min(0)，没有上界",
+        "cwe": null,
+        "owner": "函数层（com.jiuyan.banquet.service.OrderService#resolveFinalPrice）",
+        "case_count": 1,
+        "evidence": [
+          {
+            "case_id": "OB-RESOLVE-PRICE-UPPER-BOUND",
+            "function": "com.jiuyan.banquet.service.OrderService#resolveFinalPrice",
+            "invariant": "计算订单最终成交价：客户端报的价格高于套餐标价时，必须被拒绝或限到套餐价以内",
+            "actual": "期望 <= 46800，实际 999999",
+            "exception": null
+          }
+        ],
+        "related_findings": [],
+        "semantic_obligation": {
+          "mission": "计算订单最终成交价：客户端报的价格高于套餐标价时，必须被拒绝或限到套餐价以内",
+          "template": "returns_le_arg",
+          "source": "declared"
+        }
+      }
+    }
+  ],
+  "unconfirmed_count": 2,
+  "refuted": [],
+  "refuted_count": 0,
+  "note": "用例 FAIL 只证明「实测与用例断言不符」。用例断言本身可能是没有来源的业务预期：未经确认的进待确认疑点（规范层风险），被文档明确否定的只保留观测。两者都不进缺陷台账，观测与证据原样留在这里。"
+}

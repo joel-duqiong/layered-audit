@@ -14,6 +14,22 @@
 **零项目字面量**：表名一律从 JPA 映射推，入口一律从 openapi 推，
 实体↔表、入口↔控制器全靠结构规则，换项目只改绑定，脚本一行不改。
 
+**表访问三态**：仓储方法的读写按证据分级判定（语句文本 > 框架契约 > 方法体写汇），
+拿不到证据 → unknown。每条表边带 access=write/read/unknown；unknown 编码为
+may-write（WRITES 边 + access=unknown），因为下游只认 WRITES/READS，
+丢弃未知足迹等于把未知当成「不相交/合规」—— 可靠过近似宁可多报不可漏报。
+
+**getter 读通道（opt-in，默认关闭）**：`--getter-reads <field_access.json>` 开启后，
+JPA 实体 get*/is* 调用的**字节码验证 getfield 目标**计入 taint.source_fields（读）。
+资源键用 setter 等价形（`owner.setField`）——下游倒排索引按原始资源串建桶，
+必须与 sinks 的 setter 串同键才能重叠；归一化身份由 frame_check.normalize_resource
+现有 setter 分支完成，**读/写通道由 provenance 区分（source_fields vs sinks），不靠键形**。
+只发射字节码验证的字段读：计算型 getter（无 getfield）、别名 getter（读他字段）
+按真实目标发射或不发射，**名字推导一律不用**（实测 isActive() 读 isActive 而非 active，
+ThreadLocal 访问器无字段访问 —— 名字推导会造假足迹）。不可验证 → 保分裂，不猜。
+缺输入文件 / 形状不合格 → 拒绝出数（rc=1），不静默降级。关闭时产物逐字节不变。
+field_access.json 由只读 javap 抽取器生产（getfield/putfield + 继承链），引擎不跑工具链。
+
 **为什么表名必须从 JPA 推而不是从类名 snake_case**：项目里的实体类名与表名
 没有稳定的命名关系（类名带前缀、表名带复数），猜错一次整条链的写汇就落到
 不存在的表上 —— 而候选链的价值恰恰在写汇。
@@ -21,10 +37,12 @@
 用法：
     python3 relation_net.py                       # 用项目绑定的默认路径
     python3 relation_net.py --out <path>          # 换输出位置
+    python3 relation_net.py --artifacts-dir <dir> --project-dir <dir>   # 脱离项目绑定
 """
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 from collections import defaultdict
@@ -39,9 +57,22 @@ SEED = 20261107
 NODE_TYPES = ("HTTP_ENTRY", "SVC_OP", "REPO_OP", "TABLE", "ENTITY_FIELD")
 EDGE_TYPES = ("EXPOSES", "CALLS", "READS", "WRITES", "DERIVES")
 
-# 仓储方法的读写语义：按方法名的稳定词根判断（find/save 这类动词前缀是约定俗成的）
+# 语句首词分类词表（用于解析输入里携带的 @Query 原文，不是内置的项目 SQL）
 READ_HINTS = ("find", "exists", "read", "get", "query", "list", "select", "load", "count")
 WRITE_HINTS = ("save", "delete", "write", "insert", "update", "persist", "remove", "merge")
+
+# Spring Data 派生查询语法：方法名本身就是查询定义（框架契约，不是命名猜测）。
+# 只认**首个 camelCase 动词**且带词边界 —— findByIdAndIsDeletedFalse 里的
+# Deleted 是属性路径的一部分，子串匹配会把它误判成 delete 写操作。
+_DERIVED_READ_VERBS = ("find", "read", "get", "query", "search", "stream", "count", "exists")
+_DERIVED_WRITE_VERBS = ("delete", "remove")
+_VERB_BOUNDARY = r"(?=[A-Z0-9_]|$)"
+# Spring Data / JPA 契约里语义确定的写方法（精确匹配，绝不子串）
+_CRUD_WRITE_METHODS = frozenset({
+    "save", "saveall", "saveandflush", "persist", "merge", "flush",
+    "delete", "deletebyid", "deleteall", "deleteallbyid",
+    "deleteinbatch", "deleteallinbatch", "remove",
+})
 
 # 请求/响应 DTO 的类型特征：客户端可控输入的载体
 DTO_SUFFIXES = ("Request", "Response", "Dto", "DTO", "Command", "Query", "Form",
@@ -180,14 +211,50 @@ def _is_http_client(f: dict[str, Any]) -> bool:
     return any(any(h in c for h in _OUTBOUND_HTTP_HINTS) for c in calls)
 
 
-def _is_write_effect(effect: str) -> bool:
-    method = effect.rpartition(".")[2].lower()
-    return any(h in method for h in WRITE_HINTS)
+def repo_access(method: str, decl: dict[str, Any] | None) -> tuple[str, str]:
+    """仓储方法 → (write|read|unknown, 证据)。证据分级，拿不到就 unknown，绝不猜。
+
+    1. 声明携带的语句文本（@Query 原文）：以语句首词为准，名字说了不算。
+    2. 框架契约：CRUD 写方法精确名；派生查询/派生删除的首动词。
+    3. 具体方法体里真的调了写汇（仓储/EntityManager 的写方法）。
+    """
+    decl = decl or {}
+    query = decl.get("query")
+    if isinstance(query, str) and query.strip():
+        head = re.match(r"[A-Za-z]+", query.strip())
+        verb = head.group(0).lower() if head else ""
+        if verb in WRITE_HINTS:
+            return "write", "query-statement"
+        if verb in READ_HINTS:
+            return "read", "query-statement"
+        return "unknown", "query-statement-unrecognized"
+    if method.lower() in _CRUD_WRITE_METHODS:
+        return "write", "crud-contract"
+    for verb in _DERIVED_WRITE_VERBS:
+        if re.match(verb + _VERB_BOUNDARY, method):
+            return "write", "derived-delete"
+    for verb in _DERIVED_READ_VERBS:
+        if re.match(verb + _VERB_BOUNDARY, method):
+            return "read", "derived-query"
+    if "abstract" not in str(decl.get("modifiers") or ""):
+        sinks: list[str] = []
+        for callee in list(decl.get("internal_calls") or []) + list(decl.get("side_effects") or []):
+            owner, _, sink = callee.rpartition(".")
+            simple = _simple(owner)
+            if simple.endswith("Repository") or simple == "EntityManager":
+                sinks.append(repo_access(sink, None)[0])
+        if "write" in sinks:
+            return "write", "body-write-sink"
+        if sinks and all(s == "read" for s in sinks):
+            return "read", "body-read-only"
+    return "unknown", "no-evidence"
 
 
-def _is_read_effect(effect: str) -> bool:
-    method = effect.rpartition(".")[2].lower()
-    return any(h in method for h in READ_HINTS) and not _is_write_effect(effect)
+def _effect_access(effect: str, by_cm: dict[tuple[str, str], dict[str, Any]]) -> str:
+    owner, _, method = effect.rpartition(".")
+    if not owner or not _simple(owner).endswith("Repository"):
+        return "unknown"
+    return repo_access(method, by_cm.get((owner, method)))[0]
 
 
 def _dispatch_of(calls: list[str], by_cm: dict[tuple[str, str], dict[str, Any]],
@@ -218,9 +285,32 @@ def _dispatch_of(calls: list[str], by_cm: dict[tuple[str, str], dict[str, Any]],
     return {}
 
 
+def _resolve_field_access(classes: dict[str, Any], fq: str, method: str) -> list[str] | None:
+    """字节码字段访问映射里解析方法的 getfield 目标（沿继承链）。
+
+    返回读到的字段名列表；方法不存在 / 无 getfield（计算型）/ 形状不合格 → None（保分裂）。
+    """
+    seen: set[str] = set()
+    while fq and fq not in seen:
+        seen.add(fq)
+        c = classes.get(fq)
+        if not isinstance(c, dict):
+            return None
+        methods = c.get("methods")
+        if isinstance(methods, dict) and method in methods:
+            reads = (methods[method] or {}).get("reads")
+            if not isinstance(reads, list):
+                return None
+            out = [r for r in reads if isinstance(r, str) and r]
+            return out or None
+        fq = c.get("super") or ""
+    return None
+
+
 def build(fn_decl: dict[str, Any], class_decl: dict[str, Any],
           openapi: dict[str, Any], invariants: list[dict[str, Any]],
-          surfaces: dict[str, dict[str, Any]] | None = None) -> dict[str, Any]:
+          surfaces: dict[str, dict[str, Any]] | None = None,
+          field_access: dict[str, Any] | None = None) -> dict[str, Any]:
     funcs = list(fn_decl.get("functions") or [])
     jpa = class_decl.get("jpa") or {}
     ddl = (class_decl.get("ddl") or {}).get("tables") or {}
@@ -278,7 +368,16 @@ def build(fn_decl: dict[str, Any], class_decl: dict[str, Any],
                 add_node(nid, "REPO_OP", cls=owner, method=cmethod, simple=_simple(owner),
                          file="", declared=False)
 
+    # ---- 仓储方法读写三态（按证据，不按子串）----
+    for node in nodes.values():
+        if node["type"] != "REPO_OP":
+            continue
+        access, evidence = repo_access(node["method"], by_cm.get((node["cls"], node["method"])))
+        node["access"] = access
+        node["access_evidence"] = evidence
+
     # ---- 污点 ----
+    getter_reads_emitted = 0
     for nid, node in nodes.items():
         if node["type"] not in ("HTTP_ENTRY", "SVC_OP", "REPO_OP"):
             continue
@@ -297,13 +396,29 @@ def build(fn_decl: dict[str, Any], class_decl: dict[str, Any],
                     sinks.append(callee)
             elif simple.endswith(DTO_SUFFIXES) or _package(owner).split(".")[-1] in DTO_PACKAGES:
                 sources.append(callee)
+        if field_access is not None:
+            # 验证读通道：只发射字节码 getfield 证实的字段读，名字推导一律不用。
+            # setter 等价键是为了与 sinks 同桶（倒排索引按原始串建桶）；通道是读，
+            # 下游 provenance 记 taint.source_fields，绝不进 sinks。
+            for callee in calls:
+                owner, _, method = callee.rpartition(".")
+                if not owner or not method.startswith(("get", "is")):
+                    continue
+                if _simple(owner) not in entity_classes:
+                    continue
+                reads = _resolve_field_access(field_access, owner, method)
+                if not reads:
+                    continue
+                for fld in reads:
+                    sources.append(f"{owner}.set{fld[:1].upper()}{fld[1:]}")
+                    getter_reads_emitted += 1
         guard = bool(int(f.get("branch_count") or 0) > 0
                      and any(("valueOf" in c or ".equals(" in c) for c in calls))
         taint = {
             "source_fields": sources,
             "sinks": sinks,
             "guard": guard,
-            "persist": any(_is_write_effect(e) for e in effects),
+            "persist": any(_effect_access(e, by_cm) == "write" for e in effects),
             "branches": int(f.get("branch_count") or 0),
             "side_effects": effects,
             "is_pure": bool(f.get("is_pure", False)),
@@ -339,16 +454,21 @@ def build(fn_decl: dict[str, Any], class_decl: dict[str, Any],
             if not owner or not _simple(owner).endswith("Repository"):
                 continue
             repo_node = f"{owner}#{emethod}"
-            if repo_node not in nodes:
+            rnode = nodes.get(repo_node)
+            if rnode is None:
                 continue
             table = resolve_table(repo_entity(_simple(owner)), ent_map)
             tnode = f"table:{table}"
             if tnode not in nodes:
                 continue
-            if _is_write_effect(eff):
-                add_edge(repo_node, tnode, "WRITES", effect=eff)
-            elif _is_read_effect(eff):
-                add_edge(repo_node, tnode, "READS", effect=eff)
+            access = rnode.get("access", "unknown")
+            evidence = rnode.get("access_evidence", "no-evidence")
+            if access == "read":
+                add_edge(repo_node, tnode, "READS", effect=eff, access="read", evidence=evidence)
+            else:
+                # unknown 编码为 may-write：下游只认 WRITES/READS 两种边类型，
+                # 丢弃或标 READS 都会把未知当成「不相交/合规」。写足迹是可靠过近似。
+                add_edge(repo_node, tnode, "WRITES", effect=eff, access=access, evidence=evidence)
 
     # ---- 跨仓库：把另一个仓库的入口并进图 ----
     # 跨仓库的合取链（入口在 A、条件在 B）要能自动生成，图上就得有这一跳。
@@ -406,7 +526,7 @@ def build(fn_decl: dict[str, Any], class_decl: dict[str, Any],
             "category": str(inv.get("category") or ""),
         }
 
-    return {
+    result = {
         "schema_version": 1,
         "seed": SEED,
         "counts": {
@@ -416,6 +536,8 @@ def build(fn_decl: dict[str, Any], class_decl: dict[str, Any],
                         for t in NODE_TYPES},
             "edges_by_type": {t: sum(1 for e in edges if e["type"] == t)
                               for t in EDGE_TYPES},
+            "edges_by_access": {a: sum(1 for e in edges if e.get("access") == a)
+                                for a in ("write", "read", "unknown")},
             "bindings": len(bindings),
             "unbound": len(unbound),
             "invariants": len(anchors),
@@ -427,6 +549,9 @@ def build(fn_decl: dict[str, Any], class_decl: dict[str, Any],
         "edges": edges,
         "centrality": _centrality(nodes, edges),
     }
+    if field_access is not None:
+        result["counts"]["getter_read_resources"] = getter_reads_emitted
+    return result
 
 
 def _covered_columns(ddl: dict[str, Any], tables: list[str]) -> set[str]:
@@ -550,22 +675,143 @@ def project_dir() -> Path:
     return findings_schema.target_path().parent
 
 
+def generation_stamp(fn_decl: Any, class_decl: Any) -> dict[str, str]:
+    """世代指纹 = 两个图构建器**共同**读的那两份声明的内容哈希。
+
+    用内容不用 mtime：mtime 会被 cp / 还原改，内容才是决定性的。
+    实测过的缺陷：relation_net.json 比 fn_declaration.json 旧 13 小时、少 47 条边，
+    与新一代 units.json 一起喂给消费者 → 照常 exit 0 出「看似合理的错覆盖率」。
+    **缺指纹 ≠ 同世代**，消费者必须判 UNKNOWN（三态）。
+    """
+    def h(obj: Any) -> str:
+        return "sha256:" + hashlib.sha256(
+            json.dumps(obj, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()[:16]
+    return {"fn_declaration": h(fn_decl), "class_declaration": h(class_decl)}
+
+
+def check_generation(net_path: Path, units_path: Path) -> int:
+    """比对两份产物的世代指纹：0 同世代 / 1 错配 / 2 未知（缺指纹或读不到）。"""
+    try:
+        net = json.loads(net_path.read_text(encoding="utf-8"))
+        units = json.loads(units_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        print(f"世代一致性 UNKNOWN：读不到产物（{exc}）")
+        return 2
+    a, b = net.get("generation"), units.get("generation")
+    if not a or not b:
+        print(f"世代一致性 UNKNOWN：缺指纹（net 有={bool(a)} / units 有={bool(b)}）"
+              f"—— 缺指纹不是同世代，不许当成一致")
+        return 2
+    if a != b:
+        diff = [k for k in sorted(set(a) | set(b)) if a.get(k) != b.get(k)]
+        print(f"世代错配：{diff} 指纹不同 —— 一起消费会产出伪影覆盖率，拒绝当成同世代")
+        print(f"  net   {a}")
+        print(f"  units {b}")
+        return 1
+    print(f"世代一致：{a}")
+    return 0
+
+
+def modeling_domain_declaration(getter_reads_active: bool = False) -> dict[str, Any]:
+    """建模域声明。开启验证读通道时必须显式声明通道（不得静默扩足迹语义）。"""
+    dom: dict[str, Any] = {
+        "cell_key_form": "FQCN#method",
+        "node_types": list(NODE_TYPES),
+        "method_node_types": ["HTTP_ENTRY", "SVC_OP", "REPO_OP"],
+        "class_suffixes": ["Controller", "Service", "Repository"],
+        "scope_note": "只建模可执行路径（入口→服务→仓储→表）上的方法细胞；"
+                      "键形态不同或类名不匹配上述后缀的单元不在本图域内，"
+                      "其足迹是 not_applicable（域外），不是 unknown（域内未测）",
+    }
+    if getter_reads_active:
+        dom["footprint_channels"] = {
+            "entity_getter_reads": {
+                "source": "field_access.json（字节码 getfield 验证，沿继承链解析）",
+                "scope": "JPA 实体 get*/is* 调用；不可验证（计算型/缺映射）保分裂不发射",
+                "resource_form": "taint.source_fields 中的 setter 等价键（读通道，"
+                                 "与 sinks 共享资源键以便同桶；读/写由 provenance 区分）",
+                "detection_power_note": "firing-capable = 域可不相交，不是已检出违规；"
+                                        "通道新增约束桶当前全是 consistent，obstructions 不变；"
+                                        "覆盖≠检测力（坑64/66），桶状态须并读 frame_check 的 status",
+            },
+        }
+    return dom
+
+
+def validate_field_access(data: Any) -> dict[str, Any]:
+    """校验 field_access 产物形状（边界输入，不合格即拒绝，不猜）。返回 classes 映射。"""
+    classes = data.get("classes") if isinstance(data, dict) else None
+    if not isinstance(classes, dict) or not classes:
+        raise ValueError("field_access.json 缺非空 classes 容器")
+    for fq, c in classes.items():
+        if not isinstance(c, dict) or not isinstance(c.get("methods"), dict):
+            raise ValueError(f"field_access 类记录不合格（缺 methods 容器）: {fq}")
+    return classes
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="可执行依赖图构建器（通用引擎）")
     ap.add_argument("--out", default="", help="输出路径（默认 <产物目录>/relation_net.json）")
+    ap.add_argument("--check-generation", nargs=2, type=Path, metavar=("NET", "UNITS"),
+                    help="只比对两份已有产物的世代指纹，不建图（0 一致 / 1 错配 / 2 未知）")
+    ap.add_argument("--artifacts-dir", type=Path,
+                    help="声明产物目录（fn/class_declaration、openapi）；给了就不读项目绑定")
+    ap.add_argument("--project-dir", type=Path,
+                    help="项目配置目录（invariants.json、surfaces/）；默认取绑定目录")
+    ap.add_argument("--getter-reads", type=Path, default=None, metavar="FIELD_ACCESS",
+                    help="opt-in：字节码验证的 getter 读通道（field_access.json）；"
+                         "缺省关闭，产物与关闭时逐字节不变；文件缺失/不合格拒绝出数")
     args = ap.parse_args()
+    if args.check_generation:
+        return check_generation(*args.check_generation)
 
-    base = artifacts_dir()
-    net = build(_load(base / "fn_declaration.json"),
-                _load(base / "class_declaration.json"),
+    fa_classes = None
+    fa_meta = None
+    if args.getter_reads is not None:
+        try:
+            raw = args.getter_reads.read_bytes()
+            fa_classes = validate_field_access(json.loads(raw.decode("utf-8")))
+            fa_meta = {"path": str(args.getter_reads),
+                       "sha256": "sha256:" + hashlib.sha256(raw).hexdigest()[:16],
+                       "classes": len(fa_classes)}
+        except (OSError, ValueError) as exc:
+            print(f"field_access 输入拒绝：{exc}（宁缺勿猜，不建读通道）")
+            return 1
+
+    # 显式覆盖必须绕开 artifacts_dir()：它会 load_target()，缺 target.json 直接抛。
+    base = args.artifacts_dir if args.artifacts_dir else artifacts_dir()
+    proj = args.project_dir if args.project_dir else project_dir()
+    fn_decl = _load(base / "fn_declaration.json")
+    class_decl = _load(base / "class_declaration.json")
+    net = build(fn_decl, class_decl,
                 _load(base / "openapi.json"),
-                load_invariants(project_dir() / "invariants.json"),
-                surfaces=load_surfaces(project_dir() / "surfaces"))
+                load_invariants(proj / "invariants.json"),
+                surfaces=load_surfaces(proj / "surfaces"),
+                field_access=fa_classes)
+    net["generation"] = generation_stamp(fn_decl, class_decl)
+    if fa_meta is not None:
+        net["field_access_input"] = fa_meta
+    # 显式声明本图的建模域：消费者据此把域外细胞标 not_applicable，而不是静默算成「未知足迹」。
+    # 实测教训：net 是方法层的，units 含类层/文件层细胞，混在一个分母里会产出误导性覆盖率。
+    net["modeling_domain"] = modeling_domain_declaration(getter_reads_active=fa_classes is not None)
     out = Path(args.out) if args.out else base / "relation_net.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    # 实测过陈旧产物：relation_net.json 比 fn_declaration.json 旧 → 少 47 条自调用边，
+    # 而消费者读旧产物不会报错。重新生成时把「旧产物落后于哪些输入」显式打出来。
+    if out.exists():
+        older_than = out.stat().st_mtime
+        newer = [p.name for p in (base / "fn_declaration.json", base / "class_declaration.json",
+                                  base / "openapi.json", proj / "invariants.json")
+                 if p.exists() and p.stat().st_mtime > older_than]
+        if newer:
+            print(f"  警告：现有产物落后于输入 {newer}（本次重新生成；读旧产物的消费者会少边）")
     out.write_text(json.dumps(net, ensure_ascii=False, indent=2), encoding="utf-8")
     c = net["counts"]
     print(f"可执行依赖图 -> {out}")
     print(f"  节点 {c['nodes']} / 边 {c['edges']}：{c['by_type']}")
+    if fa_classes is not None:
+        print(f"  getter 读通道: {c.get('getter_read_resources', 0)} 条验证读资源；"
+              f"firing-capable ≠ 已检出违规（新增桶当前全是 consistent，桶状态见 frame_check）")
     print(f"  边类型：{c['edges_by_type']}")
     print(f"  入口绑定 {c['bindings']} 条，未绑定 {c['unbound']} 条")
     for u in net["unbound"][:8]:

@@ -209,9 +209,13 @@ FUNCTION: dict[str, Meta] = {
         "function.numeric", "exact",
         "金额超过 2^53 分时，前端显示的金额是否与库里存的一致？",
         "function", 0.85, "defect", (),
-        "price.final_price.upper_bound_unvalidated",
-        relation="cited",
-        note="根因是「金额没有上界」（函数层已开单），这里只量化前端侧后果，不重复开单"),
+        "numeric.amount_exceeds_js_safe_integer",
+        note="技术可自证，不依赖业务预期：int64 分值超出 JS Number.MAX_SAFE_INTEGER，"
+             "前端用 Number 装载必然丢精度（IEEE754）。原挂 "
+             "price.final_price.upper_bound_unvalidated 且 relation=cited，但那个根因是"
+             "「成交价须 ≤ 套餐价」这条未经确认的业务预期，已撤出台账；本条的「金额无上界」"
+             "只是可达性前提（DTO @Min(0) + CHECK >= 0 + BIGINT，技术事实），"
+             "故改 own 独立开单，避免根因无 own 归属"),
     "FN-UPLOAD-NO-SIZE-LIMIT": _m(
         "function.boundary", "exact",
         "上传体积是否完全没有上限，单请求被完整写盘？",

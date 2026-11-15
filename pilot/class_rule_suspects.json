@@ -12,9 +12,72 @@
         "reference": "",
         "note": "文档未定义此规则；第 64 行反而把「订单状态流转限制：当前允许任意状态直接切换」列为未定义。属推断预期，待业务确认"
       }
+    },
+    {
+      "rule_id": "CLASS-PUT-WIPES-UNSET-FIELD",
+      "oracle": {
+        "source": "inferred",
+        "confirmation": "unconfirmed",
+        "reference": "无文档依据（API.md:202 定义 PUT 请求体同新增；未规定不传字段须保留原值）",
+        "note": "实测：创建时带图片路径，一次不带 imageUrl 的 PUT 之后 image_url 变 NULL，磁盘文件成为孤儿。观测为真且后果值得业务方知道，但「PUT 应保留未传字段」等价于要求 PATCH 语义，文档未规定 —— 进待确认疑点，由业务方决定是否改契约或改用 PATCH。不以 defect 进台账。"
+      },
+      "finding": {
+        "id": "CLASS-PUT-WIPES-UNSET-FIELD",
+        "severity": "MEDIUM",
+        "layer": "class",
+        "title": "PUT 是全量覆盖：不传的 imageUrl 会被抹成 NULL",
+        "detail": "UpdateProductRequest.imageUrl 没有任何约束（可缺省），但 PUT 的语义是全量替换。实测：创建时带图片路径，随后一次不带 imageUrl 的 PUT 之后，image_url 变成 NULL。后果不是校验问题而是数据丢失 —— 磁盘上的图片文件还在，但数据库里的引用没了，文件成为孤儿，前端永远拿不到图。",
+        "evidence": {
+          "entity": "products",
+          "id": 5857503,
+          "changed_columns": [
+            "description",
+            "image_url",
+            "is_active",
+            "name",
+            "price_cent",
+            "unit",
+            "updated_at"
+          ],
+          "final_row": {
+            "id": 5857503,
+            "name": "ai_probe_fp2",
+            "unit": "克",
+            "image_url": null,
+            "is_active": false,
+            "created_at": "2026-11-14T16:55:33.771199+00:00",
+            "is_deleted": true,
+            "price_cent": 9999,
+            "updated_at": "2026-11-14T16:55:34.119342+00:00",
+            "category_id": 2,
+            "description": "changed"
+          }
+        }
+      }
+    },
+    {
+      "rule_id": "CLASS-ENUM-CASE-SENSITIVE",
+      "oracle": {
+        "source": "inferred",
+        "confirmation": "unconfirmed",
+        "reference": "无文档依据（API.md 只定义大写枚举值，未规定大小写不敏感）",
+        "note": "实测传 'pending' 返回 400 ORDER_STATUS_INVALID。原 detail 自己写的是「应当约定为大小写不敏感或明确写进 OpenAPI」—— 这是建议而非既有规则。观测保留，是否放宽容错需业务方确认。"
+      },
+      "finding": {
+        "id": "CLASS-ENUM-CASE-SENSITIVE",
+        "severity": "LOW",
+        "layer": "class",
+        "title": "订单状态枚举大小写敏感，小写 pending 直接 400",
+        "detail": "DTO 的 status 字段直接用 OrderStatus 枚举，Jackson 默认大小写敏感。实测传 'pending' 返回 400「订单状态不正确」。对外 API 的枚举值应当约定为大小写不敏感或明确写进 OpenAPI，否则每个新客户端都会踩一次。",
+        "evidence": {
+          "http": 400,
+          "code": "ORDER_STATUS_INVALID",
+          "message": "订单状态不正确"
+        }
+      }
     }
   ],
-  "unconfirmed_count": 1,
+  "unconfirmed_count": 3,
   "refuted": [
     {
       "rule": "deposit_cent > final_price_cent（定金大于成交价）",
@@ -40,6 +103,62 @@
         "confirmation": "refuted",
         "reference": "/Users/june/tests/auto-api/docs/业务校验对照.md 第 62 行",
         "note": "文档「当前未定义」明列：预约时间是否允许过去时间，当前只要求可解析的 OffsetDateTime"
+      }
+    },
+    {
+      "rule_id": "CLASS-NOTNULL-BYPASSED-BY-EMPTY-STRING",
+      "oracle": {
+        "source": "project_doc",
+        "confirmation": "refuted",
+        "reference": "/Users/june/jiuyan/docs/API.md:307",
+        "text": "`address` 可为空；为空时后端保存为空字符串，避免前端非必填地址导致订单生成失败。",
+        "note": "带理由的有意设计，不是疏漏。技术约束（NOT NULL / nullable=false）被空串满足，不等于缺陷；业务意图（地址非空白）没有任何来源声明，反而被文档与可执行验收用例否定。原结论还编造了后果「宴会执行单拿不到地址」——「执行单」在被测仓库全文 0 命中，前端 App.jsx:2411 反而显式把空地址渲染成「无」。观测（缺省地址落空串）保留，缺陷断言撤销。",
+        "corroborated_by": [
+          {
+            "reference": "/Users/june/tests/auto-api/tests/test_orders.py:19",
+            "text": "def test_create_order_empty_address(api, make_order):",
+            "note": "可执行 oracle：:20 make_order(address=None)，:21 check_eq(api, \"address 为空时保存为空字符串\", order[\"address\"], \"\") —— 断言的是与原结论相反的预期"
+          },
+          {
+            "reference": "/Users/june/tests/auto-api/docs/接口清单.md:42",
+            "text": "address 为空保存空字符串"
+          },
+          {
+            "reference": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/OrderService.java:135",
+            "text": "order.setAddress(StringUtils.hasText(address) ? address.trim() : \"\");"
+          },
+          {
+            "reference": "/Users/june/jiuyan/backend/src/main/resources/db/migration/V1__init_schema.sql:57",
+            "text": "address VARCHAR(255) NOT NULL",
+            "note": "orders 的 CHECK 只有 table_count/plan_total_cent/final_price_cent/deposit_cent/status，没有 address"
+          },
+          {
+            "reference": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/BanquetOrder.java:42",
+            "text": "@Column(nullable = false)"
+          },
+          {
+            "reference": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/dto/CreateOrderRequest.java:16",
+            "text": "String address,",
+            "note": "UpdateOrderRequest.java:16 同形；openapi.json 两个请求体的 required 均不含 address，address  schema 只有 type:string"
+          }
+        ]
+      },
+      "finding": {
+        "id": "CLASS-NOTNULL-BYPASSED-BY-EMPTY-STRING",
+        "severity": "INFO",
+        "layer": "class",
+        "title": "orders.address 的 NOT NULL 只挡 NULL：缺省地址落空串（文档与验收用例声明的有意设计）",
+        "detail": "三方声明：DB 列 address 为 NOT NULL（V1__init_schema.sql:57），实体 @Column(nullable=false)（BanquetOrder.java:42），DTO 的 address 无任何约束（CreateOrderRequest.java:16，同级 customerName/customerPhone/banquetName/banquetType 都有 @NotBlank）。实测：客户端不传 address，接口返回 200，库里落的是空串 ''。空串既不是 NULL 也不违反 nullable=false —— 两条声明都被满足，约束没有被绕过；「address 必须非空白」这条更严的预期没有任何来源声明，且被 API.md:307 与验收用例 test_create_order_empty_address 明确否定。观测保留，不判缺陷。",
+        "evidence": {
+          "dto": "CreateOrderRequest",
+          "field": "address",
+          "column": "address",
+          "db_not_null": true,
+          "dto_constraints": [],
+          "entity_nullable": false,
+          "http": 200,
+          "db_value": ""
+        }
       }
     },
     {
@@ -78,6 +197,6 @@
       }
     }
   ],
-  "refuted_count": 3,
-  "note": "这些规则在 DB/DTO/服务层三层都没有表达，是客观观测；但「所以这是缺陷」需要业务预期。预期未经确认或被文档明确否定，故不进缺陷台账。"
+  "refuted_count": 4,
+  "note": "两扇开单门压下来的结论都在这里：① 规则在 DB/DTO/服务层三层都没有表达；② 列级可空性差分里项目声明的 field_note。客观观测保留，但「所以这是缺陷」需要业务预期。预期未经确认或被文档明确否定，故不进缺陷台账。"
 }

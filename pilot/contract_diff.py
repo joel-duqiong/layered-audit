@@ -2,8 +2,11 @@
 每条 finding 都带复现信息（哪个 endpoint、哪个场景、实测到什么）。
 """
 import project
-import json, os, statistics
+import json, os, statistics, sys
 from collections import defaultdict
+
+sys.path.insert(0, project.engine_path())
+import oracle_gate  # noqa: E402
 
 D = str(project.artifact_dir())
 decl = json.load(open(os.path.join(D, "declaration.json")))
@@ -15,10 +18,92 @@ TARGET_NAME = project.binding().get("target", "") or project.project_dir().name
 g = decl["global"]
 ops = {o["key"]: o for o in decl["operations"]}
 findings = []
+held = []
+
+# ---------------------------------------------------------------------------
+# 判据来源声明（warrant）—— 区分「技术可自证」与「业务预期」，逐条可复核。
+#
+# 分类判据（三问，按序）：
+#   Q1 域替换：把被测系统换成任意 CRUD 应用，这条断言是否仍是缺陷？
+#   Q2 权威出处：这条「应该」能否指向通用权威（CWE / 语言规范 / 平台语义 / HTTP 规范），
+#              而不必引用本项目的业务量？
+#   Q3 混合裁决：若两者都像，问「撤销该业务规则后断言是否仍成立」——
+#              仍成立归 technical，不成立归 business。
+#
+# technical → 直接开单（**绝不压**，压掉技术缺陷是漏报，比假阳性更危险）
+# business  → 必须有 confirmed oracle，否则进待确认疑点 / 已证伪留痕
+# 未声明    → 保守压住并标「未裁定」，不静默开单
+# ---------------------------------------------------------------------------
+WARRANTS = {
+    "UNHANDLED_HTTP_EXCEPTION": {
+        "kind": "technical", "authority": "CWE-755 + HTTP 语义（5xx 表示服务端故障）",
+        "domain_swap": "holds",
+        "basis": "畸形客户端请求触发 500 而非 4xx，在任何应用里都是错误分类缺陷；"
+                 "AGENTS.md:157 也明确 500=服务内部错误。判据不依赖本项目业务规则。",
+        "evidence": "exception/GlobalExceptionHandler.java:92 handleUnknown 兜底分支"},
+    "ACCEPTED_INVALID": {
+        "kind": "technical", "authority": "CWE-20（不当输入校验）",
+        "domain_swap": "holds",
+        "basis": "声明为必填的字段缺失仍返回 2xx，是服务端校验缺失的客观事实；"
+                 "「必填」来自 OpenAPI/DTO 声明本身，不是业务方偏好。",
+        "evidence": "declaration.json 的 declared_status 与 observation.json 实测 2xx 对账"},
+    "TYPE_COERCION": {
+        "kind": "technical", "authority": "CWE-704（不正确的类型转换）",
+        "domain_swap": "holds",
+        "basis": "OpenAPI 声明的类型与实测接受的类型不一致，是契约与实现的客观漂移，"
+                 "不涉及业务语义。",
+        "evidence": "declaration.json response/request schema vs observation.json wrong_type 场景"},
+    "INTERNAL_LEAK": {
+        "kind": "technical", "authority": "CWE-209（错误消息含敏感信息）",
+        "domain_swap": "holds",
+        "basis": "框架异常原文（内部类名/反序列化细节）透传给客户端，在任何应用里都是信息泄漏。",
+        "evidence": "exception/GlobalExceptionHandler.java:60 handleBadRequest / :85 handleDataIntegrity"},
+    "NO_AUTHZ": {
+        "kind": "technical", "authority": "CWE-306 / CWE-862（关键功能缺失认证/授权）",
+        "domain_swap": "holds",
+        "basis": "无凭证即可读写含 PII（客户姓名/电话/地址）的全部业务数据，"
+                 "是通用安全不变式，不依赖本项目业务规则。",
+        "evidence": "源码 security_annotations=[] 且 classpath 无 spring-security；实测伪造 Bearer 仍 200"},
+    "RESPONSE_DRIFT": {
+        "kind": "technical", "authority": "CWE-436（解释冲突）",
+        "domain_swap": "holds",
+        "basis": "实测返回字段集合与 OpenAPI 声明集合的差集是客观事实，"
+                 "按声明生成的客户端必然对不上，不涉及业务语义。",
+        "evidence": "declaration.json response_props vs observation.json data_keys"},
+    "ENVELOPE_BREAK": {
+        "kind": "business", "domain_swap": "fails",
+        "basis": "「所有接口必须返回统一 JSON 信封」是本项目明文 API 契约，不是通用规范；"
+                 "换个不要求信封的应用就不成立。该契约有文档依据且已被权威对照表确认。",
+        "evidence": "exception/GlobalExceptionHandler.java:78 handleClientAbort 返回 ResponseEntity<Void>",
+        "oracle": {"source": "project_doc", "confirmation": "confirmed",
+                   "reference": "/Users/june/jiuyan/AGENTS.md:100",
+                   "text": "所有接口必须返回统一 JSON。",
+                   "note": "业务校验对照.md:12 在「已确认一致的规则」表里记 envelope 一致，"
+                           "预期来源 AGENTS.md；非 200 响应缺 success/code/message 即违背该明文契约。"}},
+    "ERROR_CODE_UNKNOWN": {
+        "kind": "technical", "authority": "CWE-755（异常条件处理不当）",
+        "domain_swap": "holds",
+        "basis": "返回的错误码不在代码自己声明的 ErrorCode 枚举内，是代码内部自相矛盾，"
+                 "客观可判，不需业务方确认。",
+        "evidence": "declaration.json global.error_codes vs observation.json code"},
+    "LATENCY": {
+        "kind": "business", "domain_swap": "fails",
+        "basis": "200ms 这个阈值写死在 contract_diff.py:140，全语料无任何文档声明延迟预算；"
+                 "「多慢算慢」是业务/运维预算，不是通用不变式。",
+        "evidence": "contract_diff.py:140 `if mx > 200`",
+        "oracle": {"source": "inferred", "confirmation": "unconfirmed",
+                   "reference": "无文档依据（全语料未声明延迟预算）",
+                   "note": "阈值 200ms 无来源。延迟随数据量增长是客观观测，但「超过 200ms 即缺陷」"
+                           "需要业务/运维确认预算后才能开单。"}},
+}
+
 
 def add(fid, sev, key, title, detail, repro, evidence):
-    findings.append({"id": fid, "severity": sev, "endpoint": key, "title": title,
-                     "detail": detail, "repro": repro, "evidence": evidence})
+    filed = {"id": fid, "severity": sev, "endpoint": key, "title": title,
+             "detail": detail, "repro": repro, "evidence": evidence}
+    kept, gated = oracle_gate.warrant_split(WARRANTS.get(fid), [filed], rule_id=fid)
+    findings.extend(kept)
+    held.extend(gated)
 
 # F1 声明只覆盖 200，实际错误码全部未声明
 undeclared = defaultdict(set)
@@ -144,6 +229,16 @@ for mx, key in slow:
 sev_order = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
 findings.sort(key=lambda f: sev_order.get(f["severity"], 9))
 json.dump(findings, open(os.path.join(D, "findings.json"), "w"), ensure_ascii=False, indent=2)
+
+# 判据来源不足的业务预期：不进缺陷台账，但必须留痕（硬约束 5）。无条件写。
+_hb = oracle_gate.buckets(held)
+json.dump({"unconfirmed": _hb["unconfirmed"], "unconfirmed_count": len(_hb["unconfirmed"]),
+           "refuted": _hb["refuted"], "refuted_count": len(_hb["refuted"]),
+           "note": "服务层契约差分的判据来源分流：technical（通用安全/正确性/契约自洽）直接开单，"
+                   "business 必须有 confirmed oracle。未经确认的进待确认疑点（规范层风险），"
+                   "被文档明确否定的只保留观测；未声明 warrant 的按「未裁定」保守留痕。"},
+          open(os.path.join(D, "service_rule_suspects.json"), "w", encoding="utf-8"),
+          ensure_ascii=False, indent=2)
 
 # Markdown 报告
 lines = [f"# 服务层契约差分报告（{TARGET_NAME}）", "",

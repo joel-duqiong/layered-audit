@@ -1,0 +1,151 @@
+{
+  "schema": "observation-pack/1",
+  "target": "jiuyan",
+  "scope": "orders",
+  "observations": [
+    {
+      "id": "transition:class_observation.json#transition/PENDING->PENDING",
+      "target": "jiuyan",
+      "scope": "orders",
+      "reached": true,
+      "row": {
+        "status": "PENDING"
+      },
+      "evidence_refs": [
+        "class_observation.json#/transition/matrix/PENDING->PENDING",
+        "class_observation.json#/transition/matrix/PENDING->PENDING/db_status",
+        "class_scenarios.json#/probes/0/read/table",
+        "class_scenarios.json#/probes/0/read/column",
+        "class_probe.py:323-327 (db_status = SELECT read.column FROM read.table)"
+      ]
+    },
+    {
+      "id": "transition:class_observation.json#transition/PENDING->DEPOSIT_PAID",
+      "target": "jiuyan",
+      "scope": "orders",
+      "reached": true,
+      "row": {
+        "status": "DEPOSIT_PAID"
+      },
+      "evidence_refs": [
+        "class_observation.json#/transition/matrix/PENDING->DEPOSIT_PAID",
+        "class_observation.json#/transition/matrix/PENDING->DEPOSIT_PAID/db_status",
+        "class_scenarios.json#/probes/0/read/table",
+        "class_scenarios.json#/probes/0/read/column",
+        "class_probe.py:323-327 (db_status = SELECT read.column FROM read.table)"
+      ]
+    },
+    {
+      "id": "transition:class_observation.json#transition/PENDING->COMPLETED",
+      "target": "jiuyan",
+      "scope": "orders",
+      "reached": true,
+      "row": {
+        "status": "COMPLETED"
+      },
+      "evidence_refs": [
+        "class_observation.json#/transition/matrix/PENDING->COMPLETED",
+        "class_observation.json#/transition/matrix/PENDING->COMPLETED/db_status",
+        "class_scenarios.json#/probes/0/read/table",
+        "class_scenarios.json#/probes/0/read/column",
+        "class_probe.py:323-327 (db_status = SELECT read.column FROM read.table)"
+      ]
+    },
+    {
+      "id": "transition:class_observation.json#transition/DEPOSIT_PAID->PENDING",
+      "target": "jiuyan",
+      "scope": "orders",
+      "reached": true,
+      "row": {
+        "status": "PENDING"
+      },
+      "evidence_refs": [
+        "class_observation.json#/transition/matrix/DEPOSIT_PAID->PENDING",
+        "class_observation.json#/transition/matrix/DEPOSIT_PAID->PENDING/db_status",
+        "class_scenarios.json#/probes/0/read/table",
+        "class_scenarios.json#/probes/0/read/column",
+        "class_probe.py:323-327 (db_status = SELECT read.column FROM read.table)"
+      ]
+    },
+    {
+      "id": "transition:class_observation.json#transition/DEPOSIT_PAID->DEPOSIT_PAID",
+      "target": "jiuyan",
+      "scope": "orders",
+      "reached": true,
+      "row": {
+        "status": "DEPOSIT_PAID"
+      },
+      "evidence_refs": [
+        "class_observation.json#/transition/matrix/DEPOSIT_PAID->DEPOSIT_PAID",
+        "class_observation.json#/transition/matrix/DEPOSIT_PAID->DEPOSIT_PAID/db_status",
+        "class_scenarios.json#/probes/0/read/table",
+        "class_scenarios.json#/probes/0/read/column",
+        "class_probe.py:323-327 (db_status = SELECT read.column FROM read.table)"
+      ]
+    },
+    {
+      "id": "transition:class_observation.json#transition/DEPOSIT_PAID->COMPLETED",
+      "target": "jiuyan",
+      "scope": "orders",
+      "reached": true,
+      "row": {
+        "status": "COMPLETED"
+      },
+      "evidence_refs": [
+        "class_observation.json#/transition/matrix/DEPOSIT_PAID->COMPLETED",
+        "class_observation.json#/transition/matrix/DEPOSIT_PAID->COMPLETED/db_status",
+        "class_scenarios.json#/probes/0/read/table",
+        "class_scenarios.json#/probes/0/read/column",
+        "class_probe.py:323-327 (db_status = SELECT read.column FROM read.table)"
+      ]
+    },
+    {
+      "id": "transition:class_observation.json#transition/COMPLETED->PENDING",
+      "target": "jiuyan",
+      "scope": "orders",
+      "reached": true,
+      "row": {
+        "status": "PENDING"
+      },
+      "evidence_refs": [
+        "class_observation.json#/transition/matrix/COMPLETED->PENDING",
+        "class_observation.json#/transition/matrix/COMPLETED->PENDING/db_status",
+        "class_scenarios.json#/probes/0/read/table",
+        "class_scenarios.json#/probes/0/read/column",
+        "class_probe.py:323-327 (db_status = SELECT read.column FROM read.table)"
+      ]
+    },
+    {
+      "id": "transition:class_observation.json#transition/COMPLETED->DEPOSIT_PAID",
+      "target": "jiuyan",
+      "scope": "orders",
+      "reached": true,
+      "row": {
+        "status": "DEPOSIT_PAID"
+      },
+      "evidence_refs": [
+        "class_observation.json#/transition/matrix/COMPLETED->DEPOSIT_PAID",
+        "class_observation.json#/transition/matrix/COMPLETED->DEPOSIT_PAID/db_status",
+        "class_scenarios.json#/probes/0/read/table",
+        "class_scenarios.json#/probes/0/read/column",
+        "class_probe.py:323-327 (db_status = SELECT read.column FROM read.table)"
+      ]
+    },
+    {
+      "id": "transition:class_observation.json#transition/COMPLETED->COMPLETED",
+      "target": "jiuyan",
+      "scope": "orders",
+      "reached": true,
+      "row": {
+        "status": "COMPLETED"
+      },
+      "evidence_refs": [
+        "class_observation.json#/transition/matrix/COMPLETED->COMPLETED",
+        "class_observation.json#/transition/matrix/COMPLETED->COMPLETED/db_status",
+        "class_scenarios.json#/probes/0/read/table",
+        "class_scenarios.json#/probes/0/read/column",
+        "class_probe.py:323-327 (db_status = SELECT read.column FROM read.table)"
+      ]
+    }
+  ]
+}

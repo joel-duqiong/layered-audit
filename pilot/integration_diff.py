@@ -13,6 +13,10 @@ import json
 
 import os
 import re
+import sys
+
+sys.path.insert(0, project.engine_path())
+import oracle_gate  # noqa: E402
 
 D = str(project.artifact_dir())
 DECL = json.load(open(os.path.join(D, "integration_declaration.json"), encoding="utf-8"))
@@ -28,11 +32,64 @@ scenarios = {s["id"]: s for s in OBS["scenarios"]}
 
 findings: list[dict] = []
 passed: list[dict] = []
+held: list[dict] = []
+
+# 集成层结论的 oracle 来源声明（硬约束 5）。只列出断言**业务预期**的条目；
+# 技术可自证的结论（404、字段缺失、精度丢失）不需要业务预期，不在此列。
+# 同一条预期在 invariants.json 的 BI-FINAL-AMOUNT-LTE-PACKAGE-PRICE 已声明为
+# inferred/unconfirmed，服务层压进 unconfirmed_suspects —— 这里必须同一口径。
+_PRICE_EXPECTATION_ORACLE = {
+    "source": "inferred",
+    "confirmation": "unconfirmed",
+    "reference": "无文档依据（现有文档只规定金额 >= 0）",
+    "note": "「成交价不得高于套餐价 / 多个价格必须相等」是推断的业务预期。"
+            "业务校验对照.md:20 在「已确认一致的规则」表里记 resolveFinalPrice「一致」，"
+            "API.md:337-338 与 AGENTS.md:425-427 规定 useFinalPrice=true 时保存请求中的 "
+            "finalPriceCent，且 AGENTS.md:422-424 要求界面同时保留「方案合计」与「成交价」"
+            "—— 两个价格并存且不等是设计，不是矛盾。价格篡改是真实的规范层风险，"
+            "进待确认疑点清单等业务确认，不以 defect 进台账。",
+    "corroborated_by": [
+        {"reference": "/Users/june/tests/auto-api/docs/业务校验对照.md:20",
+         "text": "| 使用成交价时保存成交价，否则保存方案合计 | AGENTS.md | `resolveFinalPrice` | 一致 |"},
+        {"reference": "/Users/june/jiuyan/docs/API.md:338",
+         "text": "`useFinalPrice=true` 时，后端保存请求中的 `finalPriceCent`。"},
+        {"reference": "/Users/june/jiuyan/AGENTS.md:422",
+         "text": "确认订单页保留“方案合计”。"},
+        {"reference": "/Users/june/tests/auto-api/tests/test_orders.py:14",
+         "text": "def test_create_order_use_final_price(api, make_order):",
+         "note": "confirmed 的可执行 oracle：成交价 5000 低于方案合计 8888 是正确行为"},
+    ],
+}
+ORACLES: dict[str, dict] = {
+    "PRICE_CLIENT_CONTROLLED_XL": _PRICE_EXPECTATION_ORACLE,
+    "INT-THREE-PRICES-NO-DETAIL-TOTAL": _PRICE_EXPECTATION_ORACLE,
+}
+
+
+def fn_expectation_held() -> set:
+    """函数层因 oracle 未确认/被否定而没开单的结论 id。
+
+    流水线里函数层先跑（run_pipeline.sh:57 早于 :82），所以这里读到的是本轮产物。
+    读不到就返回空集 —— 佐证文案退回原口径，不猜。
+    """
+    path = os.path.join(D, "fn_rule_suspects.json")
+    if not os.path.exists(path):
+        return set()
+    doc = json.load(open(path, encoding="utf-8"))
+    return {h.get("finding", {}).get("id")
+            for bucket in ("unconfirmed", "refuted")
+            for h in doc.get(bucket, [])}
+
+
+FN_HELD = fn_expectation_held()
 
 
 def add(fid, sev, endpoint, title, detail, repro, evidence, owner="集权层"):
-    findings.append({"id": fid, "severity": sev, "endpoint": endpoint, "title": title,
-                     "detail": detail, "repro": repro, "evidence": evidence, "owner": owner})
+    filed = {"id": fid, "severity": sev, "endpoint": endpoint, "title": title,
+             "detail": detail, "repro": repro, "evidence": evidence, "owner": owner}
+    kept, gated = oracle_gate.split(ORACLES.get(fid), [filed], rule_id=fid)
+    findings.extend(kept)
+    held.extend(gated)
 
 
 def ok(check, desc, evidence=None):
@@ -416,10 +473,14 @@ if recon:
                 lower = "class" if "DB 直写" in usage else "function"
                 cited = "CLASS-RULE-MISSING-IN-ALL-LAYERS" if lower == "class" \
                     else "FN-PRICE-CLIENT-CONTROLLED"
+                status = (f"根因归{lower}层，但其业务预期未经确认，已进待确认疑点清单、"
+                          "不进缺陷台账" if cited in FN_HELD
+                          else f"根因已在{lower}层开单")
                 ok(f"RECON_CORROBORATES_{r['entity']}_{r['field']}",
                    f"{r['entity']}.{r['field']} 语义不闭合（{r.get('note')}）—— "
-                   f"根因已在{lower}层开单，本层只做跨源佐证，不重复计缺陷",
-                   {"cites": cited, "usage": usage})
+                   f"{status}，本层只做跨源佐证，不重复计缺陷",
+                   {"cites": cited, "usage": usage,
+                    "root_cause_filed": cited not in FN_HELD})
         elif r["verdict"] == "FRONTEND_MISSING":
             add("FRONTEND_MISSING_FIELD", "HIGH", f"{r['entity']}.{r['api_field']}",
                 f"前端要读 {r['api_field']}，但 API 响应里没有这一项",
@@ -450,9 +511,18 @@ if chains_doc:
                     f["repro"], {"chain_steps": ch["steps"], "evidence": f.get("evidence")},
                     f.get("owner", "集权层"))
         else:
-            ok(f"CHAIN_CORROBORATES_{ch['id']}",
-               f"{ch['id']} 证实了低层缺陷：{ch.get('note')}",
-               {"cites": ch.get("cites"), "steps": ch["steps"]})
+            cites = ch.get("cites") or []
+            if isinstance(cites, str):
+                cites = [cites]
+            unconfirmed = sorted(set(cites) & FN_HELD)
+            desc = (f"{ch['id']} 跨层观测：{ch.get('note')}" if unconfirmed
+                    else f"{ch['id']} 证实了低层缺陷：{ch.get('note')}")
+            if unconfirmed:
+                desc += (f"（引用的 {'、'.join(unconfirmed)} 业务预期未经确认，"
+                         "进待确认疑点清单，不作为已开单缺陷）")
+            ok(f"CHAIN_CORROBORATES_{ch['id']}", desc,
+               {"cites": ch.get("cites"), "steps": ch["steps"],
+                "cited_expectation_unconfirmed": unconfirmed})
 
 # --------------------------------------------------------------------------
 # 输出
@@ -465,8 +535,20 @@ for f in findings:
 
 json.dump({"generated_at": DECL["generated_at"], "findings": findings, "passed_checks": passed,
            "summary": {"total": len(findings), "by_severity": counts,
-                       "passed_checks": len(passed)}},
+                       "passed_checks": len(passed), "expectation_held": len(held)}},
           open(OUT_JSON, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+
+# 预期未确认 / 被文档否定的结论：不进缺陷台账，但必须留痕（硬约束 5）。无条件写。
+_held_buckets = oracle_gate.buckets(held)
+json.dump({"unconfirmed": _held_buckets["unconfirmed"],
+           "unconfirmed_count": len(_held_buckets["unconfirmed"]),
+           "refuted": _held_buckets["refuted"],
+           "refuted_count": len(_held_buckets["refuted"]),
+           "note": "集成症状为真，但「所以这是缺陷」需要业务预期。预期未经确认的进"
+                   "待确认疑点（规范层风险），被文档明确否定的只保留观测。两者都不进"
+                   "缺陷台账，链上每一步的证据原样留在这里。"},
+          open(os.path.join(D, "integration_rule_suspects.json"), "w", encoding="utf-8"),
+          ensure_ascii=False, indent=2)
 
 lines = [
     "# 集权层（集成层）缺陷清单",

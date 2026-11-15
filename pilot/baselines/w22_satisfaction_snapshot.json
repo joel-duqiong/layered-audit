@@ -1,0 +1,43 @@
+{
+ "purpose": "W22 满足级通道测量语料快照（坑126：钉文件哈希而非计数；坑123：入库可重跑）",
+ "measured_at": "2026-11-15T19:41:57",
+ "sha256": {
+  "relation_net.json": "b128afafe3e349f5937f7d8f0dd6fdf122309b56fd2d299ca6a5041ae2d1e3e0",
+  "units.json": "9a8b5176a73ee614079669065ccb1c255ba12419a60e613e9b58bc23a061a95e",
+  "all_findings.json": "12c3465ceb34f3566db3f28e5db2ea2179f0ef13a23942aa83e0c987da78ba1f",
+  "oracles_harvested.json": "82fa1e91293af45cd90980d3a5978ad494e918c169da4c36c708068fead367f7",
+  "class_declaration.json": "60b2750db4da29464bf200609a4c42d58645b8c834684b6b247348101dad4300",
+  "capability_map.json": "c78fe475e698469f7134c9909356099ba4f762f7d53744da194d4dfe19e45259",
+  "engine/frame_check.py": "49c5f6ff0d6605034cb4c9e8e3a5f6bd68a060c797de9713fff903e4de61bf37",
+  "tests/test_satisfaction_channel.py": "1fa564e3c89b3e5be8501a6ca5b04b963a816d68e68976d9ba387535e84e2f35",
+  "tests/test_section_value_polarity.py": "e31f79cf2f81d9e34abe1e3ea830620297697fe37149216a04a5dbc4a48fc2af",
+  "tests/test_satisfaction_premises.py": "d6ca7ab5775c41cc9764f2c565e49d780a2301f94bacaeadd132f5a9be86a6ae"
+ },
+ "decomposition_current_corpus": {
+  "findings_total": 83,
+  "verified": 80,
+  "defect": 64,
+  "positive": 15,
+  "observation": 1,
+  "positive_unattributed": 12,
+  "positive_attributed": 3,
+  "observation_attributed": 1,
+  "attributed_total": 26,
+  "guard_edges": 8,
+  "guard_idents": 4,
+  "guard_buckets_all_single_cell": true,
+  "verified_mentioning_guard_fields": 0,
+  "oracle_tied_findings_global": 0,
+  "cross_violation_guard_pairs": 0,
+  "candidates": 9,
+  "candidates_delta0": {
+   "consistent": 0,
+   "unknown": 9,
+   "inconsistent": 0
+  },
+  "cycle_obstructions": 0
+ },
+ "drift_note": "首版测量快照 86 findings/83 verified/67 defect/27 归因（/tmp/w22_delta0/out/baseline.json 记录）；W15 并发改 all_findings.json 后为上述当前值。0 对结论漂移不变。",
+ "suite_baseline_pilot_only": "1441 passed + 12 subtests, rc=0（收尾轮终态；1432 为 V20 第二轮基线，逐轮可溯）",
+ "round": "V20 第三轮收尾后（V3/V4 修复 + 四项清理）"
+}

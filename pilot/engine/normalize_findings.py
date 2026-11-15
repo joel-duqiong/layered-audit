@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Any
 
 import findings_schema
+import oracle_gate
 
 HERE = Path(__file__).resolve().parent
 PROJECT_DIR = findings_schema.target_path().parent
@@ -409,6 +410,103 @@ def load_layer(layer: str, path: str, key: str | None) -> list[dict[str, Any]]:
     return data
 
 
+def warrant_registry() -> tuple[dict[str, Any], list[str]]:
+    """台账级判据登记册：给**生产者装不了闸门**的发现声明 warrant。
+
+    那些生产者是探针（禁跑），无法在源头重生成；登记册在唯一入台账漏斗处生效，
+    使裁定真正被执行而不是只写在文档里。未登记的发现不受影响（不误压）。
+    """
+    name = _target().get("warrant_registry")
+    if not name:
+        return {}, ["项目绑定未声明 warrant_registry：台账级判据登记册未启用"]
+    path = PROJECT_DIR / name
+    if not path.is_file():
+        return {}, [f"warrant_registry 声明了 {name} 但文件不存在：登记册未测量，不得读成空"]
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    return doc.get("warrants") or {}, []
+
+
+def apply_warrant_registry(records: list[dict[str, Any]],
+                           registry: dict[str, Any]
+                           ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """漏斗级闸门：只对 defect 且**有 warrant**（记录自带或登记册）的条目生效。
+
+    technical 放行（A 类绝不压）；business 非 confirmed 拦下并留痕。
+    没有 warrant 的条目原样放行，但会进 warrant_coverage 的「未裁定」计数。
+    """
+    kept: list[dict[str, Any]] = []
+    held: list[dict[str, Any]] = []
+    for rec in records:
+        w = rec.get("warrant") or registry.get(rec["id"])
+        if rec.get("kind") != "defect" or not w:
+            kept.append(rec)
+            continue
+        k, g = oracle_gate.warrant_split(w, [rec], rule_id=rec["id"])
+        kept.extend(k)
+        for h in g:
+            f = h["finding"]
+            held.append({"rule_id": h["rule_id"], "oracle": h["oracle"], "finding": {
+                "id": f["id"], "severity": f["severity"], "title": f["title"],
+                "detail": f.get("detail", ""),
+                "evidence": {"evidence_refs": f.get("evidence_refs"),
+                             "location": f.get("location"),
+                             "source": f.get("source")},
+                "repro": f.get("repro_cmd", "")}})
+    return kept, held
+
+
+def warrant_coverage(records: list[dict[str, Any]], held: list[dict[str, Any]],
+                     registry: dict[str, Any], warnings: list[str]) -> dict[str, Any]:
+    """闸门覆盖清单：**已接 / 未接 / 未裁定**并排，不得只报已接的那部分。
+
+    按生产者（台账 source.file）聚合，闸门模式取自项目绑定 producer_gates。
+    未声明的生产者显式列为 unknown，不静默当成已接。
+    """
+    gates = _target().get("producer_gates") or {}
+    per: dict[str, dict[str, Any]] = {}
+    for rec in records:
+        src = (rec.get("source") or {}).get("file", "")
+        e = per.setdefault(src, {"producer": src, "total": 0, "defects": 0,
+                                 "registry_covered": 0, "held": 0})
+        e["total"] += 1
+        if rec.get("kind") == "defect":
+            e["defects"] += 1
+            if rec["id"] in registry:
+                e["registry_covered"] += 1
+    held_ids = {h["rule_id"] for h in held}
+    src_of = {r["id"]: (r.get("source") or {}).get("file", "") for r in records}
+    for src, e in per.items():
+        g = gates.get(src)
+        e["gate"] = (g or {}).get("gate", "unknown")
+        e["script"] = (g or {}).get("script", "")
+        if src not in gates:
+            warnings.append(f"生产者 {src} 未在 producer_gates 声明闸门状态：覆盖状态 unknown")
+        e["unadjudicated"] = (e["defects"] - e["registry_covered"]
+                              if e["gate"] in ("none", "unknown") else 0)
+    for rid in held_ids:
+        src = src_of.get(rid)
+        if src in per:
+            per[src]["held"] += 1
+    modes = {"warrant": 0, "oracle": 0, "none": 0, "unknown": 0}
+    for e in per.values():
+        modes[e["gate"]] = modes.get(e["gate"], 0) + 1
+    return {
+        "by_producer": sorted(per.values(), key=lambda x: x["producer"]),
+        "producer_count": len(per),
+        "gate_modes": modes,
+        "ungated_producers": sorted(e["producer"] for e in per.values()
+                                    if e["gate"] in ("none", "unknown")),
+        "unadjudicated_defects": sum(e["unadjudicated"] for e in per.values()),
+        "registry_size": len(registry),
+        "held_at_ledger": len(held),
+        "input_warnings": warnings,
+        "caliber_note": "gate=warrant 表示已接 A/B 判据来源二分闸门；oracle 表示只有业务预期 "
+                        "oracle 闸门（未区分技术可自证）；none/unknown 表示未接。"
+                        "unadjudicated 只统计未接闸门生产者名下、且不在登记册里的 defect。"
+                        "**三个口径不得混算，未接闸门的条数必须与已接的并排报。**",
+    }
+
+
 def main() -> None:
     categories = findings_schema.load_layer_categories()
     sources = evidence_sources()
@@ -433,6 +531,21 @@ def main() -> None:
     structural = [p for p in problems if "UNMAPPED" not in p]
     unmapped_problems = [p for p in problems if "UNMAPPED" in p]
 
+    # 台账级判据闸门：生产者装不了闸门的发现，裁定在这里真正被执行。
+    registry, reg_warnings = warrant_registry()
+    emitted = records
+    records, ledger_held = apply_warrant_registry(records, registry)
+    cov_warnings = list(reg_warnings)
+    coverage = warrant_coverage(emitted, ledger_held, registry, cov_warnings)
+    hb = oracle_gate.buckets(ledger_held)
+    (PROJECT_DIR / "ledger_rule_suspects.json").write_text(json.dumps({
+        "unconfirmed": hb["unconfirmed"], "unconfirmed_count": len(hb["unconfirmed"]),
+        "refuted": hb["refuted"], "refuted_count": len(hb["refuted"]),
+        "note": "台账漏斗级闸门拦下的结论：生产者本身是探针（禁跑）装不了闸门，"
+                "裁定由 warrant_registry.json 声明、在唯一入台账处执行。"
+                "未经确认的进待确认疑点（规范层风险），被文档明确否定的只保留观测。",
+    }, ensure_ascii=False, indent=2), encoding="utf-8")
+
     out = {
         "generated_from": "normalize_findings.py",
         "contract": str(findings_schema.contract_path()),
@@ -444,6 +557,7 @@ def main() -> None:
             "by_kind": {k: sum(1 for r in records if r["kind"] == k)
                         for k in ("defect", "positive", "observation")},
         },
+        "warrant_coverage": coverage,
         "findings": records,
     }
     (PROJECT_DIR / "all_findings.json").write_text(

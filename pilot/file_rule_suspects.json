@@ -1,0 +1,105 @@
+{
+  "unconfirmed": [
+    {
+      "rule_id": "FILE-NULL-BODY-WRAPPED-AS-SUCCESS",
+      "oracle": {
+        "source": "inferred",
+        "confirmation": "unconfirmed",
+        "reference": "无明文依据（AGENTS.md:100 只要求统一 JSON；:104-113 成功示例含 data，但未明文规定 data 必须存在）",
+        "note": "实测链路无害：499 走 ResponseEntity<Void>，协商不出 JSON content type，不会进包装分支。观测（success=true 但缺 data）保留，是否要求 data 恒存在需业务方确认。"
+      },
+      "finding": {
+        "id": "FILE-NULL-BODY-WRAPPED-AS-SUCCESS",
+        "severity": "LOW",
+        "kind": "defect",
+        "layer": "file",
+        "cwe": "CWE-754 (Improper Check for Unusual or Exceptional Conditions)",
+        "warrant": {
+          "kind": "business",
+          "domain_swap": "fails",
+          "basis": "「success 响应必须含 data 字段」是从 AGENTS.md 的成功示例推断的，文档明文只要求「统一 JSON」，而该响应确实是统一信封。示例里出现 data 不等于明文规定 data 必须存在 —— 属推断预期。",
+          "evidence": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/ApiResponseAdvice.java:25 beforeBodyWrite（body==null 也包装，NON_NULL 省略 data）",
+          "oracle": {
+            "source": "inferred",
+            "confirmation": "unconfirmed",
+            "reference": "无明文依据（AGENTS.md:100 只要求统一 JSON；:104-113 成功示例含 data，但未明文规定 data 必须存在）",
+            "note": "实测链路无害：499 走 ResponseEntity<Void>，协商不出 JSON content type，不会进包装分支。观测（success=true 但缺 data）保留，是否要求 data 恒存在需业务方确认。"
+          }
+        },
+        "title": "null 响应体也被包成 success=true 的信封（data 字段缺失）",
+        "detail": "ApiResponseAdvice.beforeBodyWrite 对 body==null 也照样包一层，产出 {success:true, code:OK, message:成功, traceId, timestamp}，data 因为 NON_NULL 被省略。前端拿到 success=true 但没有 data 字段，只能靠「data 存不存在」判断有无结果，与其它接口「data 一定有值」的假设冲突。\n实际链路无害：499 那条走 ResponseEntity<Void>，协商不出 JSON content type，不会走到包装分支。所以这是 INFO 级的契约不一致，不是现网故障。\n顺带两条正向结论：supports() 对 ResponseEntity<ApiResponse<...>> 返回 false（声明类型是 ResponseEntity），但 beforeBodyWrite 的 instanceof ApiResponse 守卫仍然挡住了二次包装；已经包好的信封不会被改写（already_envelope_unchanged=true）。",
+        "evidence": {
+          "null_body_json": "{\"success\":true,\"code\":\"OK\",\"message\":\"成功\",\"traceId\":\"FILELAYER-CONTEXT-TRACE\",\"timestamp\":1794675282.600868000}",
+          "supports": {
+            "plain": true,
+            "enveloped": false,
+            "entity": true
+          },
+          "already_envelope_unchanged": true,
+          "mismatch": {
+            "check": "null_body_result_is_null",
+            "expected": true,
+            "actual": false,
+            "pass": false,
+            "note": "空 body 不应被包成 data:null 的成功信封（内容类型为空时不会发生）"
+          }
+        },
+        "root_cause_file": "config/ApiResponseAdvice.java"
+      }
+    }
+  ],
+  "unconfirmed_count": 1,
+  "refuted": [
+    {
+      "rule_id": "FILE-VALIDATION-STATUS-SPLIT",
+      "oracle": {
+        "source": "project_doc",
+        "confirmation": "refuted",
+        "reference": "/Users/june/jiuyan/AGENTS.md:153-156",
+        "text": "- 400: 参数错误 / - 404: 资源不存在 / - 409: 业务冲突，例如订单号重复 / - 422: 业务校验失败",
+        "note": "权威对照表两处明确记「一致」：业务校验对照.md:14「HTTP 400 参数错误 / 404 资源不存在 / 422 业务校验失败 / 409 冲突 | GlobalExceptionHandler 实测 | 一致」；:24「套餐商品不可重复（同套餐同商品唯一）| DB unique + Service 422 | 一致」。原结论的前提「两者在语义上都是请求参数不合法」被文档明确否定 —— 422 那侧是业务校验失败，不是参数错误。观测（两个状态码并存）保留，缺陷断言撤销。"
+      },
+      "finding": {
+        "id": "FILE-VALIDATION-STATUS-SPLIT",
+        "severity": "MEDIUM",
+        "kind": "defect",
+        "layer": "file",
+        "cwe": "CWE-436 (Interpretation Conflict)",
+        "warrant": {
+          "kind": "business",
+          "domain_swap": "fails",
+          "basis": "「同一类参数非法必须同一状态码」这条预期与本项目明文约定相反：AGENTS.md 把 400 定义为参数错误、422 定义为业务校验失败，是两个不同类别。DTO Bean Validation（数量=0）属参数错误→400，服务层业务校验（明细为空/重复）属业务校验失败→422，两者各自符合约定。",
+          "evidence": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/exception/GlobalExceptionHandler.java:40（400）与 :32（422）",
+          "oracle": {
+            "source": "project_doc",
+            "confirmation": "refuted",
+            "reference": "/Users/june/jiuyan/AGENTS.md:153-156",
+            "text": "- 400: 参数错误 / - 404: 资源不存在 / - 409: 业务冲突，例如订单号重复 / - 422: 业务校验失败",
+            "note": "权威对照表两处明确记「一致」：业务校验对照.md:14「HTTP 400 参数错误 / 404 资源不存在 / 422 业务校验失败 / 409 冲突 | GlobalExceptionHandler 实测 | 一致」；:24「套餐商品不可重复（同套餐同商品唯一）| DB unique + Service 422 | 一致」。原结论的前提「两者在语义上都是请求参数不合法」被文档明确否定 —— 422 那侧是业务校验失败，不是参数错误。观测（两个状态码并存）保留，缺陷断言撤销。"
+          }
+        },
+        "title": "参数校验分散在 DTO 与 service 两个文件，分别返回 400 与 422（文档定义的两种不同类别，非缺陷）",
+        "detail": "【已证伪，只留观测】原结论断言「两者在语义上都是请求参数不合法」，与本项目明文约定相反：AGENTS.md:153-156 定义 400=参数错误、422=业务校验失败，是两个不同类别；业务校验对照.md:14 与 :24 均记「一致」（:24 明确「套餐商品不可重复 … Service 422 … 一致」）。\n观测保留：参数校验确实分散在两个文件 —— DTO 文件声明的约束（数量 @Min(1)、价格 @Min(0)）走 Bean Validation → MethodArgumentNotValidException → handleValidation → 400；服务文件自己做的业务校验（明细为空、明细重复）抛 BusinessException → 422。实测同一个接口 PUT /api/packages/4：数量=0 → 400；明细为空 → 422。这是文档规定的分类，不是状态码漂移；「校验责任分散」是维护性观察，不构成缺陷断言。",
+        "evidence": {
+          "dto_validation_status": 400,
+          "dto_validation_body": "{\"success\":false,\"code\":\"VALIDATION_ERROR\",\"message\":\"参数错误\",\"details\":{\"items[0].quantity\":\"must be greater than or equal to 1\"},\"traceId\":\"f0adf04f-e73b-4c12-a1f9-5f474d24ad5c\",\"timestamp\":\"2026-11-15T00:54:50.337735131+08:00\"}",
+          "service_validation_status": 422,
+          "service_validation_code": "VALIDATION_ERROR",
+          "split_check": {
+            "check": "validation_status_split",
+            "expected": true,
+            "actual": true,
+            "pass": true,
+            "note": "同属「参数非法」：DTO 层校验返 400，服务文件自校验返 422 —— 状态码按校验责任分裂"
+          }
+        },
+        "root_cause_file": "dto/PackageItemRequest.java + service/PackageService.java",
+        "related": [
+          "UNHANDLED_HTTP_EXCEPTION（服务层）"
+        ]
+      }
+    }
+  ],
+  "refuted_count": 1,
+  "note": "文件层开单门的判据来源分流：technical（通用安全/正确性不变式）直接开单，business 必须有 confirmed oracle。未经确认的进待确认疑点（规范层风险），被文档明确否定的只保留观测；未声明 warrant 的按「未裁定」保守留痕。positive / observation 不是开单，不受此闸门影响。"
+}

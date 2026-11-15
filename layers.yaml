@@ -54,6 +54,11 @@ layers:
       - {id: invariant,         desc: "类不变式在公开方法上未强制",           oracle: [property_based_test, mutation_test]}
       - {id: contract_violation,desc: "方法契约与调用方假设不符/副作用未声明",  oracle: [contract_test, mutation_test]}
       - {id: inheritance_design,desc: "继承层次行为漂移/违反里氏替换",          oracle: [static_analysis, property_based_test]}
+      # 细胞间调用/依赖违反声明的分层、跳层或依赖方向约束。证据是跨两个类的静态边,
+      # function/file 粒度表达不了「A 类不得依赖 B 类」;encapsulation_leak 已确立
+      # 关系型缺陷归 class 的先例。oracle 必须含 static_analysis —— 用静态边开
+      # service.data_consistency 的单会伪造 oracle(它的绑定不含 static_analysis)。
+      - {id: architecture_contract, desc: "细胞间调用/依赖违反声明的分层、跳层或依赖方向约束", oracle: [static_analysis, contract_test]}
     out_of_scope: [service_latency, end_to_end_business]
     escalation_to: [service]
 
@@ -99,7 +104,7 @@ agents:
   # 角色数 = 层契约里 category 的总数（每种 category 是一种判定角色的绑定）。
   # 最初写 9 是按层分的粗估，实测类别数 23 —— 数字本身不重要，
   # 重要的是「角色」指判定手段的绑定，不是代码单元。
-  total_roles: 23
+  total_roles: 24
   constraint:
     # 一轮最多 admit 多少个「判定作业」。**不是 Agent 实例总数** ——
     # 实例数随代码规模线性增长（533 单元 × 21 角色 = 2071），

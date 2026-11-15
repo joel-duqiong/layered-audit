@@ -1,0 +1,7 @@
+{
+  "unconfirmed": [],
+  "unconfirmed_count": 0,
+  "refuted": [],
+  "refuted_count": 0,
+  "note": "服务层契约差分的判据来源分流：technical（通用安全/正确性/契约自洽）直接开单，business 必须有 confirmed oracle。未经确认的进待确认疑点（规范层风险），被文档明确否定的只保留观测；未声明 warrant 的按「未裁定」保守留痕。"
+}

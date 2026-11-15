@@ -14,6 +14,7 @@
 from __future__ import annotations
 import project
 
+import argparse
 import hashlib
 import json
 import re
@@ -245,9 +246,31 @@ def analyse_file(fqcn: str) -> dict:
 
 
 def main() -> None:
-    ensure_compiled()
-    deps = ensure_test_deps()
-    (project.artifact_dir() / "file_deps.txt").write_text(deps)
+    global CLASSES
+    ap = argparse.ArgumentParser(description="文件层静态声明：javap 直读字节码（一个 .java 文件 = 一个类）")
+    ap.add_argument("--classes-dir", type=Path,
+                    help="复用已有字节码目录（隐含 --no-compile；绝不编译、绝不删该目录）")
+    ap.add_argument("--no-compile", action="store_true",
+                    help="不跑 javac/maven，只读已有字节码与已有 test classpath")
+    ap.add_argument("--out", type=Path, help="file_declaration.json 输出路径（默认产物目录）")
+    args = ap.parse_args()
+    if args.classes_dir:
+        CLASSES = args.classes_dir
+    if args.no_compile or args.classes_dir:
+        # ensure_compiled 会 rmtree(CLASSES) 再 javac、ensure_test_deps 会跑 mvn —— 复用模式一个都不碰。
+        if not CLASSES.is_dir():
+            raise SystemExit(f"字节码目录不存在: {CLASSES}（复用模式不编译，缺产物就是缺输入，不产空声明）")
+        deps = DEPS_TEST.read_text().strip() if DEPS_TEST.exists() else ""
+        if not deps:
+            print(f"  test classpath 未知（{DEPS_TEST} 不存在，复用模式不跑 mvn）—— 不是空 classpath")
+    else:
+        ensure_compiled()
+        deps = ensure_test_deps()
+    out = args.out if args.out else project.artifact_dir() / "file_declaration.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    # file_deps.txt 跟着声明产物走，换目录时两份产物不分散。
+    deps_out = out.parent / "file_deps.txt" if args.out else project.artifact_dir() / "file_deps.txt"
+    deps_out.write_text(deps)
 
     classes = []
     for path in sorted(CLASSES.glob(f"{PKG.replace('.', '/')}/**/*.class")):
@@ -310,7 +333,6 @@ def main() -> None:
     }
     # 产物跟着目标走：默认目标��� artifacts_dir 就是本目录，行为不变；
     # 换目标时落到目标自己的 artifacts 目录，不会覆盖别人的产物。
-    out = project.artifact_dir() / "file_declaration.json"
     out.write_text(json.dumps(payload, ensure_ascii=False, indent=2))
 
     print(f"文件层静态 -> {out}")

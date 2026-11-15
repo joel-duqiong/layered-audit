@@ -1,0 +1,897 @@
+{
+  "schema": "business-rule-assessment/1",
+  "target": "jiuyan",
+  "intake_status": "RULES_PRESENT",
+  "results": [
+    {
+      "id": "ddl:categories.name.not_blank_candidate",
+      "claim": "name VARCHAR(64) NOT NULL UNIQUE",
+      "source": {
+        "kind": "inferred",
+        "reference": "V1__init_schema.sql:3",
+        "confirmation": "needs_confirmation",
+        "confirmed_by": ""
+      },
+      "source_confirmation": "unconfirmed",
+      "confirmation_tier": null,
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "gate_eligible": false,
+      "observations": [
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/0",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/0/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/2",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/2/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/3",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/3/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/5",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/5/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/7",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/7/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ddl:orders.address.not_blank_candidate",
+      "claim": "address VARCHAR(255) NOT NULL",
+      "source": {
+        "kind": "inferred",
+        "reference": "V1__init_schema.sql:57",
+        "confirmation": "needs_confirmation",
+        "confirmed_by": ""
+      },
+      "source_confirmation": "unconfirmed",
+      "confirmation_tier": null,
+      "observed_status": "FAIL",
+      "status": "UNKNOWN",
+      "gate_eligible": false,
+      "observations": [
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/0",
+          "status": "FAIL",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/0/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/2",
+          "status": "FAIL",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/2/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/3",
+          "status": "FAIL",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/3/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/5",
+          "status": "FAIL",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/5/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/7",
+          "status": "FAIL",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/7/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ddl:orders.banquet_name.not_blank_candidate",
+      "claim": "banquet_name VARCHAR(128) NOT NULL",
+      "source": {
+        "kind": "inferred",
+        "reference": "V1__init_schema.sql:55",
+        "confirmation": "needs_confirmation",
+        "confirmed_by": ""
+      },
+      "source_confirmation": "unconfirmed",
+      "confirmation_tier": null,
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "gate_eligible": false,
+      "observations": [
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/0",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/0/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/2",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/2/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/3",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/3/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/5",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/5/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/7",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/7/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ddl:orders.banquet_type.not_blank_candidate",
+      "claim": "banquet_type VARCHAR(64) NOT NULL",
+      "source": {
+        "kind": "inferred",
+        "reference": "V1__init_schema.sql:56",
+        "confirmation": "needs_confirmation",
+        "confirmed_by": ""
+      },
+      "source_confirmation": "unconfirmed",
+      "confirmation_tier": null,
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "gate_eligible": false,
+      "observations": [
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/0",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/0/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/2",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/2/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/3",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/3/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/5",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/5/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/7",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/7/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ddl:orders.customer_name.not_blank_candidate",
+      "claim": "customer_name VARCHAR(64) NOT NULL",
+      "source": {
+        "kind": "inferred",
+        "reference": "V1__init_schema.sql:53",
+        "confirmation": "needs_confirmation",
+        "confirmed_by": ""
+      },
+      "source_confirmation": "unconfirmed",
+      "confirmation_tier": null,
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "gate_eligible": false,
+      "observations": [
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/0",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/0/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/2",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/2/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/3",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/3/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/5",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/5/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/7",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/7/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ddl:orders.customer_phone.not_blank_candidate",
+      "claim": "customer_phone VARCHAR(32) NOT NULL",
+      "source": {
+        "kind": "inferred",
+        "reference": "V1__init_schema.sql:54",
+        "confirmation": "needs_confirmation",
+        "confirmed_by": ""
+      },
+      "source_confirmation": "unconfirmed",
+      "confirmation_tier": null,
+      "observed_status": "PASS",
+      "status": "UNKNOWN",
+      "gate_eligible": false,
+      "observations": [
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/0",
+          "status": "PASS",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/0/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/2",
+          "status": "PASS",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/2/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/3",
+          "status": "PASS",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/3/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/5",
+          "status": "PASS",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/5/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/7",
+          "status": "PASS",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/7/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ddl:orders.order_no.not_blank_candidate",
+      "claim": "order_no VARCHAR(32) NOT NULL",
+      "source": {
+        "kind": "inferred",
+        "reference": "V1__init_schema.sql:52",
+        "confirmation": "needs_confirmation",
+        "confirmed_by": ""
+      },
+      "source_confirmation": "unconfirmed",
+      "confirmation_tier": null,
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "gate_eligible": false,
+      "observations": [
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/0",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/0/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/2",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/2/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/3",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/3/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/5",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/5/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/7",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/7/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ddl:orders.status.not_blank_candidate",
+      "claim": "status VARCHAR(32) NOT NULL",
+      "source": {
+        "kind": "inferred",
+        "reference": "V1__init_schema.sql:67",
+        "confirmation": "needs_confirmation",
+        "confirmed_by": ""
+      },
+      "source_confirmation": "unconfirmed",
+      "confirmation_tier": null,
+      "observed_status": "PASS",
+      "status": "UNKNOWN",
+      "gate_eligible": false,
+      "observations": [
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/0",
+          "status": "PASS",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/0/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/2",
+          "status": "PASS",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/2/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/3",
+          "status": "PASS",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/3/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/5",
+          "status": "PASS",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/5/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/7",
+          "status": "PASS",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/7/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ddl:package_types.name.not_blank_candidate",
+      "claim": "name VARCHAR(64) NOT NULL UNIQUE",
+      "source": {
+        "kind": "inferred",
+        "reference": "V7__add_package_types.sql:3",
+        "confirmation": "needs_confirmation",
+        "confirmed_by": ""
+      },
+      "source_confirmation": "unconfirmed",
+      "confirmation_tier": null,
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "gate_eligible": false,
+      "observations": [
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/0",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/0/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/2",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/2/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/3",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/3/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/5",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/5/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/7",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/7/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ddl:packages.banquet_type.not_blank_candidate",
+      "claim": "banquet_type VARCHAR(64) NOT NULL",
+      "source": {
+        "kind": "inferred",
+        "reference": "V1__init_schema.sql:27",
+        "confirmation": "needs_confirmation",
+        "confirmed_by": ""
+      },
+      "source_confirmation": "unconfirmed",
+      "confirmation_tier": null,
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "gate_eligible": false,
+      "observations": [
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/0",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/0/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/2",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/2/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/3",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/3/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/5",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/5/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/7",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/7/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ddl:packages.name.not_blank_candidate",
+      "claim": "name VARCHAR(128) NOT NULL",
+      "source": {
+        "kind": "inferred",
+        "reference": "V1__init_schema.sql:26",
+        "confirmation": "needs_confirmation",
+        "confirmed_by": ""
+      },
+      "source_confirmation": "unconfirmed",
+      "confirmation_tier": null,
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "gate_eligible": false,
+      "observations": [
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/0",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/0/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/2",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/2/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/3",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/3/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/5",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/5/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/7",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/7/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ddl:products.name.not_blank_candidate",
+      "claim": "name VARCHAR(128) NOT NULL",
+      "source": {
+        "kind": "inferred",
+        "reference": "V1__init_schema.sql:11",
+        "confirmation": "needs_confirmation",
+        "confirmed_by": ""
+      },
+      "source_confirmation": "unconfirmed",
+      "confirmation_tier": null,
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "gate_eligible": false,
+      "observations": [
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/0",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/0/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/2",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/2/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/3",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/3/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/5",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/5/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/7",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/7/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ddl:products.unit.not_blank_candidate",
+      "claim": "unit VARCHAR(32) NOT NULL",
+      "source": {
+        "kind": "inferred",
+        "reference": "V1__init_schema.sql:14",
+        "confirmation": "needs_confirmation",
+        "confirmed_by": ""
+      },
+      "source_confirmation": "unconfirmed",
+      "confirmation_tier": null,
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "gate_eligible": false,
+      "observations": [
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/0",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/0/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/2",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/2/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/3",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/3/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/5",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/5/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        },
+        {
+          "observation_id": "contract_boundary:class_observation.json#contract_boundary/7",
+          "status": "UNKNOWN",
+          "evidence_refs": [
+            "class_observation.json#/contract_boundary/7/db_row",
+            "class_scenarios.json#/probes/6/read/table",
+            "class_scenarios.json#/probes/6/entity",
+            "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+          ]
+        }
+      ]
+    }
+  ],
+  "confirmation_tiers": {
+    "business": {
+      "rules": 0,
+      "declared_confirmed": 0,
+      "status_counts": {}
+    },
+    "technical": {
+      "rules": 0,
+      "declared_confirmed": 0,
+      "status_counts": {}
+    },
+    "unrecognized_kind": 13
+  },
+  "limitations": [
+    "source confirmation and evidence references are supplied, not verified",
+    "only provided observations are assessed; no target was executed",
+    "advisory output is not eligible for a release gate",
+    "business tier (user/document) needs business-side confirmation; technical tier (ddl/annotation/openapi) is confirmed by authorship; a FAIL must be read together with confirmation_tier"
+  ]
+}

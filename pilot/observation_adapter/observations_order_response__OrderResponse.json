@@ -1,0 +1,107 @@
+{
+  "schema": "observation-pack/1",
+  "target": "jiuyan",
+  "scope": "OrderResponse",
+  "observations": [
+    {
+      "id": "order_response:observation.json#observations/11",
+      "target": "jiuyan",
+      "scope": "OrderResponse",
+      "reached": true,
+      "row": {
+        "id": 2596,
+        "orderNo": "DD20261115005450925",
+        "customerName": "ai_probe_probe",
+        "customerPhone": "13800000001",
+        "banquetName": "ai_probe_probe",
+        "banquetType": "婚宴",
+        "address": "",
+        "reservationTime": "2026-12-14T16:54:50.971343Z",
+        "tableCount": 1,
+        "packageId": 486,
+        "packageSnapshot": {
+          "items": [
+            {
+              "unit": "份",
+              "imageUrl": null,
+              "quantity": 1,
+              "priceCent": 1,
+              "productId": 5807498,
+              "productName": "ai_probe_prod_89345e",
+              "categoryName": "ai_probe_cat_52fc8d"
+            }
+          ],
+          "imageUrl": null,
+          "packageId": 486,
+          "priceCent": 1,
+          "banquetType": "婚宴",
+          "packageName": "ai_probe_pkg_d88c47"
+        },
+        "addedItemsSnapshot": [],
+        "planTotalCent": 1,
+        "useFinalPrice": true,
+        "finalPriceCent": 1,
+        "depositCent": 0,
+        "status": "PENDING",
+        "remark": null,
+        "createdAt": "2026-11-14T16:54:50.97303Z",
+        "updatedAt": "2026-11-14T16:54:50.976186Z"
+      },
+      "evidence_refs": [
+        "observation.json#/observations/11/json/data",
+        "openapi.json#/paths/~1api~1orders~1{id}/get/responses/200/content/*~1*/schema/$ref",
+        "openapi.json#/paths/~1api~1orders~1{id}~1status/patch/responses/200/content/*~1*/schema/$ref"
+      ]
+    },
+    {
+      "id": "order_response:observation.json#observations/18",
+      "target": "jiuyan",
+      "scope": "OrderResponse",
+      "reached": true,
+      "row": {
+        "id": 2596,
+        "orderNo": "DD20261115005450925",
+        "customerName": "ai_probe_probe",
+        "customerPhone": "13800000001",
+        "banquetName": "ai_probe_probe",
+        "banquetType": "婚宴",
+        "address": "",
+        "reservationTime": "2026-12-14T16:54:50.971343Z",
+        "tableCount": 1,
+        "packageId": 486,
+        "packageSnapshot": {
+          "items": [
+            {
+              "unit": "份",
+              "imageUrl": null,
+              "quantity": 1,
+              "priceCent": 1,
+              "productId": 5807498,
+              "productName": "ai_probe_prod_89345e",
+              "categoryName": "ai_probe_cat_52fc8d"
+            }
+          ],
+          "imageUrl": null,
+          "packageId": 486,
+          "priceCent": 1,
+          "banquetType": "婚宴",
+          "packageName": "ai_probe_pkg_d88c47"
+        },
+        "addedItemsSnapshot": [],
+        "planTotalCent": 1,
+        "useFinalPrice": true,
+        "finalPriceCent": 1,
+        "depositCent": 0,
+        "status": "PENDING",
+        "remark": null,
+        "createdAt": "2026-11-14T16:54:50.97303Z",
+        "updatedAt": "2026-11-14T16:54:50.976186Z"
+      },
+      "evidence_refs": [
+        "observation.json#/observations/18/json/data",
+        "openapi.json#/paths/~1api~1orders~1{id}/get/responses/200/content/*~1*/schema/$ref",
+        "openapi.json#/paths/~1api~1orders~1{id}~1status/patch/responses/200/content/*~1*/schema/$ref"
+      ]
+    }
+  ]
+}

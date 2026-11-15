@@ -1,0 +1,540 @@
+{
+  "schema": "observation-adaptation/1",
+  "target": "jiuyan",
+  "inputs": {
+    "artifacts": {
+      "class_observation.json": {
+        "path": "class_observation.json",
+        "sha256": "28c22552a09579676d612de7788b1b7a2cea4fe2c4933b477668ec84eabed8dc"
+      },
+      "observation.json": {
+        "path": "observation.json",
+        "sha256": "68e3aa8cab7affd8f85cad608ccf20d112e543b9fb6e0119f6879a08f52d7208"
+      }
+    },
+    "rules": {
+      "path": "observation_adapter/rules.json",
+      "sha256": "5bf20c28e33630ba7cd88c2af2c77ae25f974aca8a57f09d638ed94cfc87643d"
+    },
+    "bindings": {
+      "path": "observation_adapter/bindings.json",
+      "sha256": "c9e73ee49d3c72883cf1ba36b24cbcf10cde430a40a19cb683efeae98ee74dcf"
+    }
+  },
+  "batches": [
+    {
+      "batch": "contract_boundary",
+      "artifact": "class_observation.json",
+      "section": "contract_boundary",
+      "attempted": 8,
+      "filtered_out": 0,
+      "not_reached": [
+        {
+          "pointer": "class_observation.json#/contract_boundary/1",
+          "reason": "行值未记录（null）"
+        },
+        {
+          "pointer": "class_observation.json#/contract_boundary/4",
+          "reason": "行值未记录（null）"
+        },
+        {
+          "pointer": "class_observation.json#/contract_boundary/6",
+          "reason": "行值未记录（null）"
+        }
+      ],
+      "scope_evidence": [
+        "class_scenarios.json#/probes/6/read/table",
+        "class_scenarios.json#/probes/6/entity",
+        "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+      ],
+      "packs": [
+        {
+          "scope": "orders",
+          "emitted": 5,
+          "pack_file": "observations_contract_boundary__orders.json"
+        }
+      ],
+      "emitted": 5
+    },
+    {
+      "batch": "nullability",
+      "artifact": "class_observation.json",
+      "section": "nullability",
+      "attempted": 3,
+      "filtered_out": 0,
+      "not_reached": [
+        {
+          "pointer": "class_observation.json#/nullability/2",
+          "reason": "行值未记录（null）"
+        }
+      ],
+      "scope_evidence": [
+        "class_scenarios.json#/probes/7/cases/0/table",
+        "class_scenarios.json#/probes/7/cases/1/table",
+        "class_probe.py:518-519 (db_row = SELECT case.read_columns FROM case.table)"
+      ],
+      "packs": [
+        {
+          "scope": "products",
+          "emitted": 1,
+          "pack_file": "observations_nullability__products.json"
+        },
+        {
+          "scope": "packages",
+          "emitted": 1,
+          "pack_file": "observations_nullability__packages.json"
+        }
+      ],
+      "emitted": 2
+    },
+    {
+      "batch": "write_footprint",
+      "artifact": "class_observation.json",
+      "section": "write_footprint",
+      "attempted": 1,
+      "filtered_out": 0,
+      "not_reached": [],
+      "scope_evidence": [
+        "class_scenarios.json#/probes/8/entities/0/table",
+        "class_probe.py:529-571 (final_row = 整行 DB 快照)"
+      ],
+      "packs": [
+        {
+          "scope": "products",
+          "emitted": 1,
+          "pack_file": "observations_write_footprint__products.json"
+        }
+      ],
+      "emitted": 1
+    },
+    {
+      "batch": "transition",
+      "artifact": "class_observation.json",
+      "section": "transition",
+      "attempted": 9,
+      "filtered_out": 0,
+      "not_reached": [],
+      "scope_evidence": [
+        "class_scenarios.json#/probes/0/read/table",
+        "class_scenarios.json#/probes/0/read/column",
+        "class_probe.py:323-327 (db_status = SELECT read.column FROM read.table)"
+      ],
+      "packs": [
+        {
+          "scope": "orders",
+          "emitted": 9,
+          "pack_file": "observations_transition__orders.json"
+        }
+      ],
+      "emitted": 9
+    },
+    {
+      "batch": "order_response",
+      "artifact": "observation.json",
+      "section": "observations",
+      "attempted": 59,
+      "filtered_out": 46,
+      "not_reached": [
+        {
+          "pointer": "observation.json#/observations/12",
+          "reason": "行路径 'json.data' 未记录有效值"
+        },
+        {
+          "pointer": "observation.json#/observations/19",
+          "reason": "行路径 'json.data' 未记录有效值"
+        },
+        {
+          "pointer": "observation.json#/observations/20",
+          "reason": "行路径 'json.data' 未记录有效值"
+        },
+        {
+          "pointer": "observation.json#/observations/21",
+          "reason": "行路径 'json.data' 未记录有效值"
+        },
+        {
+          "pointer": "observation.json#/observations/32",
+          "reason": "行路径 'json.data' 未记录有效值"
+        },
+        {
+          "pointer": "observation.json#/observations/33",
+          "reason": "行路径 'json.data' 未记录有效值"
+        },
+        {
+          "pointer": "observation.json#/observations/34",
+          "reason": "行路径 'json.data' 未记录有效值"
+        },
+        {
+          "pointer": "observation.json#/observations/47",
+          "reason": "行路径 'json.data' 未记录有效值"
+        },
+        {
+          "pointer": "observation.json#/observations/48",
+          "reason": "行路径 'json.data' 未记录有效值"
+        },
+        {
+          "pointer": "observation.json#/observations/49",
+          "reason": "行路径 'json.data' 未记录有效值"
+        },
+        {
+          "pointer": "observation.json#/observations/50",
+          "reason": "行路径 'json.data' 未记录有效值"
+        }
+      ],
+      "scope_evidence": [
+        "openapi.json#/paths/~1api~1orders~1{id}/get/responses/200/content/*~1*/schema/$ref",
+        "openapi.json#/paths/~1api~1orders~1{id}~1status/patch/responses/200/content/*~1*/schema/$ref"
+      ],
+      "packs": [
+        {
+          "scope": "OrderResponse",
+          "emitted": 2,
+          "pack_file": "observations_order_response__OrderResponse.json"
+        }
+      ],
+      "emitted": 2
+    },
+    {
+      "batch": "order_response_items",
+      "artifact": "observation.json",
+      "section": "observations",
+      "attempted": 59,
+      "filtered_out": 58,
+      "not_reached": [],
+      "scope_evidence": [
+        "openapi.json#/paths/~1api~1orders/get/responses/200/content/*~1*/schema/$ref",
+        "openapi.json#/components/schemas/PageResponseOrderResponse/properties/items/items/$ref"
+      ],
+      "packs": [
+        {
+          "scope": "OrderResponse",
+          "emitted": 9,
+          "pack_file": "observations_order_response_items__OrderResponse.json"
+        }
+      ],
+      "emitted": 9
+    }
+  ],
+  "packs": [
+    "observations_contract_boundary__orders.json",
+    "observations_nullability__products.json",
+    "observations_nullability__packages.json",
+    "observations_write_footprint__products.json",
+    "observations_transition__orders.json",
+    "observations_order_response__OrderResponse.json",
+    "observations_order_response_items__OrderResponse.json"
+  ],
+  "gaps": [
+    {
+      "bucket": "section_not_bound",
+      "artifact": "class_observation.json",
+      "section": "index_usage",
+      "reason": "产物节未声明绑定 —— 未转录，可见缺口"
+    },
+    {
+      "bucket": "section_not_bound",
+      "artifact": "class_observation.json",
+      "section": "softdelete_unique",
+      "reason": "产物节未声明绑定 —— 未转录，可见缺口"
+    },
+    {
+      "bucket": "section_not_bound",
+      "artifact": "class_observation.json",
+      "section": "scale_experiment",
+      "reason": "产物节未声明绑定 —— 未转录，可见缺口"
+    },
+    {
+      "bucket": "section_not_bound",
+      "artifact": "class_observation.json",
+      "section": "db_invariants",
+      "reason": "产物节未声明绑定 —— 未转录，可见缺口"
+    },
+    {
+      "bucket": "section_not_bound",
+      "artifact": "class_observation.json",
+      "section": "defense_audit",
+      "reason": "产物节未声明绑定 —— 未转录，可见缺口"
+    },
+    {
+      "bucket": "section_not_bound",
+      "artifact": "class_observation.json",
+      "section": "class_shape",
+      "reason": "产物节未声明绑定 —— 未转录，可见缺口"
+    },
+    {
+      "bucket": "section_not_bound",
+      "artifact": "class_observation.json",
+      "section": "_cleanup",
+      "reason": "产物节未声明绑定 —— 未转录，可见缺口"
+    },
+    {
+      "bucket": "section_not_bound",
+      "artifact": "class_observation.json",
+      "section": "_errors",
+      "reason": "产物节未声明绑定 —— 未转录，可见缺口"
+    },
+    {
+      "bucket": "section_not_bound",
+      "artifact": "observation.json",
+      "section": "ctx",
+      "reason": "产物节未声明绑定 —— 未转录，可见缺口"
+    }
+  ],
+  "totals": {
+    "packs": 7,
+    "observations": 28,
+    "not_reached": 15,
+    "gaps": 9
+  },
+  "limitations": [
+    "只转录绑定配置声明的节；未绑定节逐条列入 gaps，不静默丢弃",
+    "reached 仅当源产物记录了行值；未到达行进 not_reached 台账，不进观测包",
+    "row 逐字深拷贝源值：不补字段、不填 null、不改写；缺字段由求值器判 UNKNOWN",
+    "scope 绑定是配置声明（附证据），不是本模块对业务域独立核实",
+    "evidence_refs 指向源产物位置，本模块不验证源产物自身的真实性"
+  ],
+  "rule_coverage": {
+    "rules_total": 203,
+    "scopes_with_observations": [
+      "OrderResponse",
+      "orders",
+      "packages",
+      "products"
+    ],
+    "scopes_without_observations": {
+      "AddedItemRequest": [
+        "anno:AddedItemRequest.productId.notnull",
+        "anno:AddedItemRequest.quantity.min",
+        "anno:AddedItemRequest.quantity.notnull",
+        "api:AddedItemRequest.productId.required",
+        "api:AddedItemRequest.quantity.range",
+        "api:AddedItemRequest.quantity.required"
+      ],
+      "CreateCategoryRequest": [
+        "anno:CreateCategoryRequest.name.notblank",
+        "api:CreateCategoryRequest.name.required"
+      ],
+      "CreateOrderRequest": [
+        "anno:CreateOrderRequest.banquetName.notblank",
+        "anno:CreateOrderRequest.banquetType.notblank",
+        "anno:CreateOrderRequest.customerName.notblank",
+        "anno:CreateOrderRequest.customerPhone.notblank",
+        "anno:CreateOrderRequest.depositCent.min",
+        "anno:CreateOrderRequest.depositCent.notnull",
+        "anno:CreateOrderRequest.finalPriceCent.min",
+        "anno:CreateOrderRequest.planTotalCent.min",
+        "anno:CreateOrderRequest.planTotalCent.notnull",
+        "anno:CreateOrderRequest.reservationTime.notnull",
+        "anno:CreateOrderRequest.status.notnull",
+        "anno:CreateOrderRequest.tableCount.min",
+        "anno:CreateOrderRequest.tableCount.notnull",
+        "anno:CreateOrderRequest.useFinalPrice.notnull",
+        "api:CreateOrderRequest.banquetName.required",
+        "api:CreateOrderRequest.banquetType.required",
+        "api:CreateOrderRequest.customerName.required",
+        "api:CreateOrderRequest.customerPhone.required",
+        "api:CreateOrderRequest.depositCent.range",
+        "api:CreateOrderRequest.depositCent.required",
+        "api:CreateOrderRequest.finalPriceCent.range",
+        "api:CreateOrderRequest.planTotalCent.range",
+        "api:CreateOrderRequest.planTotalCent.required",
+        "api:CreateOrderRequest.reservationTime.required",
+        "api:CreateOrderRequest.status.enum",
+        "api:CreateOrderRequest.status.required",
+        "api:CreateOrderRequest.tableCount.range",
+        "api:CreateOrderRequest.tableCount.required",
+        "api:CreateOrderRequest.useFinalPrice.required"
+      ],
+      "CreatePackageRequest": [
+        "anno:CreatePackageRequest.banquetType.notblank",
+        "anno:CreatePackageRequest.name.notblank",
+        "anno:CreatePackageRequest.priceCent.min",
+        "anno:CreatePackageRequest.priceCent.notnull",
+        "api:CreatePackageRequest.banquetType.required",
+        "api:CreatePackageRequest.name.required",
+        "api:CreatePackageRequest.priceCent.range",
+        "api:CreatePackageRequest.priceCent.required"
+      ],
+      "CreatePackageTypeRequest": [
+        "anno:CreatePackageTypeRequest.name.notblank",
+        "api:CreatePackageTypeRequest.name.required"
+      ],
+      "CreateProductRequest": [
+        "anno:CreateProductRequest.categoryId.notnull",
+        "anno:CreateProductRequest.name.notblank",
+        "anno:CreateProductRequest.priceCent.min",
+        "anno:CreateProductRequest.priceCent.notnull",
+        "anno:CreateProductRequest.unit.notblank",
+        "api:CreateProductRequest.categoryId.required",
+        "api:CreateProductRequest.name.required",
+        "api:CreateProductRequest.priceCent.range",
+        "api:CreateProductRequest.priceCent.required",
+        "api:CreateProductRequest.unit.required"
+      ],
+      "OrderStatusRequest": [
+        "anno:OrderStatusRequest.status.notnull",
+        "api:OrderStatusRequest.status.enum",
+        "api:OrderStatusRequest.status.required"
+      ],
+      "PackageItemRequest": [
+        "anno:PackageItemRequest.productId.notnull",
+        "anno:PackageItemRequest.quantity.min",
+        "anno:PackageItemRequest.quantity.notnull",
+        "api:PackageItemRequest.productId.required",
+        "api:PackageItemRequest.quantity.range",
+        "api:PackageItemRequest.quantity.required"
+      ],
+      "StatusRequest": [
+        "anno:StatusRequest.isActive.notnull",
+        "api:StatusRequest.isActive.required"
+      ],
+      "UpdateOrderRequest": [
+        "anno:UpdateOrderRequest.banquetName.notblank",
+        "anno:UpdateOrderRequest.banquetType.notblank",
+        "anno:UpdateOrderRequest.customerName.notblank",
+        "anno:UpdateOrderRequest.customerPhone.notblank",
+        "anno:UpdateOrderRequest.depositCent.min",
+        "anno:UpdateOrderRequest.depositCent.notnull",
+        "anno:UpdateOrderRequest.finalPriceCent.min",
+        "anno:UpdateOrderRequest.planTotalCent.min",
+        "anno:UpdateOrderRequest.planTotalCent.notnull",
+        "anno:UpdateOrderRequest.reservationTime.notnull",
+        "anno:UpdateOrderRequest.status.notnull",
+        "anno:UpdateOrderRequest.tableCount.min",
+        "anno:UpdateOrderRequest.tableCount.notnull",
+        "anno:UpdateOrderRequest.useFinalPrice.notnull",
+        "api:UpdateOrderRequest.banquetName.required",
+        "api:UpdateOrderRequest.banquetType.required",
+        "api:UpdateOrderRequest.customerName.required",
+        "api:UpdateOrderRequest.customerPhone.required",
+        "api:UpdateOrderRequest.depositCent.range",
+        "api:UpdateOrderRequest.depositCent.required",
+        "api:UpdateOrderRequest.finalPriceCent.range",
+        "api:UpdateOrderRequest.planTotalCent.range",
+        "api:UpdateOrderRequest.planTotalCent.required",
+        "api:UpdateOrderRequest.reservationTime.required",
+        "api:UpdateOrderRequest.status.enum",
+        "api:UpdateOrderRequest.status.required",
+        "api:UpdateOrderRequest.tableCount.range",
+        "api:UpdateOrderRequest.tableCount.required",
+        "api:UpdateOrderRequest.useFinalPrice.required"
+      ],
+      "UpdatePackageRequest": [
+        "anno:UpdatePackageRequest.banquetType.notblank",
+        "anno:UpdatePackageRequest.name.notblank",
+        "anno:UpdatePackageRequest.priceCent.min",
+        "anno:UpdatePackageRequest.priceCent.notnull",
+        "api:UpdatePackageRequest.banquetType.required",
+        "api:UpdatePackageRequest.name.required",
+        "api:UpdatePackageRequest.priceCent.range",
+        "api:UpdatePackageRequest.priceCent.required"
+      ],
+      "UpdateProductRequest": [
+        "anno:UpdateProductRequest.categoryId.notnull",
+        "anno:UpdateProductRequest.name.notblank",
+        "anno:UpdateProductRequest.priceCent.min",
+        "anno:UpdateProductRequest.priceCent.notnull",
+        "anno:UpdateProductRequest.unit.notblank",
+        "api:UpdateProductRequest.categoryId.required",
+        "api:UpdateProductRequest.name.required",
+        "api:UpdateProductRequest.priceCent.range",
+        "api:UpdateProductRequest.priceCent.required",
+        "api:UpdateProductRequest.unit.required"
+      ],
+      "categories": [
+        "ddl:categories.created_at.not_null",
+        "ddl:categories.is_deleted.not_null",
+        "ddl:categories.name.not_null",
+        "ddl:categories.sort_order.not_null",
+        "ddl:categories.updated_at.not_null"
+      ],
+      "package_items": [
+        "ddl:package_items.chk_package_items_quantity",
+        "ddl:package_items.created_at.not_null",
+        "ddl:package_items.package_id.not_null",
+        "ddl:package_items.product_id.not_null",
+        "ddl:package_items.quantity.not_null",
+        "ddl:package_items.updated_at.not_null"
+      ],
+      "package_types": [
+        "ddl:package_types.created_at.not_null",
+        "ddl:package_types.is_deleted.not_null",
+        "ddl:package_types.name.not_null",
+        "ddl:package_types.sort_order.not_null",
+        "ddl:package_types.updated_at.not_null"
+      ],
+      "AGENTS.md:281": [
+        "doc:AGENTS:281.price_cent"
+      ],
+      "AGENTS.md:282": [
+        "doc:AGENTS:282.quantity"
+      ],
+      "AGENTS.md:283": [
+        "doc:AGENTS:283.table_count"
+      ],
+      "AGENTS.md:284": [
+        "doc:AGENTS:284.deposit_cent"
+      ],
+      "AGENTS.md:285": [
+        "doc:AGENTS:285.final_price_cent"
+      ],
+      "AGENTS.md:286": [
+        "doc:AGENTS:286.status"
+      ],
+      "接口清单.md:25": [
+        "doc:接口清单:25.iface.2"
+      ],
+      "接口清单.md:28": [
+        "doc:接口清单:28.iface.2"
+      ],
+      "接口清单.md:31": [
+        "doc:接口清单:31.iface",
+        "doc:接口清单:31.iface.2",
+        "doc:接口清单:31.iface.3",
+        "doc:接口清单:31.iface.4",
+        "doc:接口清单:31.iface.5"
+      ],
+      "接口清单.md:34": [
+        "doc:接口清单:34.iface"
+      ],
+      "接口清单.md:36": [
+        "doc:接口清单:36.iface",
+        "doc:接口清单:36.iface.2",
+        "doc:接口清单:36.iface.3",
+        "doc:接口清单:36.iface.4",
+        "doc:接口清单:36.iface.5"
+      ],
+      "接口清单.md:40": [
+        "doc:接口清单:40.iface"
+      ],
+      "接口清单.md:41": [
+        "doc:接口清单:41.iface"
+      ],
+      "接口清单.md:42": [
+        "doc:接口清单:42.iface",
+        "doc:接口清单:42.iface.10",
+        "doc:接口清单:42.iface.2",
+        "doc:接口清单:42.iface.3",
+        "doc:接口清单:42.iface.4",
+        "doc:接口清单:42.iface.5",
+        "doc:接口清单:42.iface.6",
+        "doc:接口清单:42.iface.7",
+        "doc:接口清单:42.iface.8",
+        "doc:接口清单:42.iface.9"
+      ],
+      "接口清单.md:45": [
+        "doc:接口清单:45.iface"
+      ]
+    }
+  },
+  "repro_cmd": [
+    "engine/observation_adapter.py",
+    "--bindings",
+    "observation_adapter/bindings.json",
+    "--artifacts-dir",
+    ".",
+    "--out-dir",
+    "observation_adapter",
+    "--rules",
+    "observation_adapter/rules.json"
+  ]
+}

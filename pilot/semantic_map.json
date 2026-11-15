@@ -30,11 +30,32 @@
         "limit": 46800
       },
       "source": "declared",
+      "oracle": {
+        "source": "inferred",
+        "confirmation": "unconfirmed",
+        "reference": "无文档依据（现有文档只规定金额 >= 0）",
+        "note": "source=declared 只表示这条职责是人写下来的，不表示业务方确认过。本条断言的「成交价不得高于套餐标价」与 invariants.json 的 BI-FINAL-AMOUNT-LTE-PACKAGE-PRICE 是同一条预期，后者的 oracle 明确是 inferred/unconfirmed/「无文档依据」，服务层已压进 unconfirmed_suspects。规范违背不成立：业务校验对照.md:20 在「已确认一致的规则」表里记 resolveFinalPrice「一致」，API.md:338 规定 useFinalPrice=true 时保存请求中的 finalPriceCent。断言继续执行以产出观测，但结论进待确认疑点清单，不以 defect 进台账。",
+        "corroborated_by": [
+          {
+            "reference": "/Users/june/tests/auto-api/docs/业务校验对照.md:20",
+            "text": "| 使用成交价时保存成交价，否则保存方案合计 | AGENTS.md | `resolveFinalPrice` | 一致 |"
+          },
+          {
+            "reference": "/Users/june/jiuyan/docs/API.md:338",
+            "text": "`useFinalPrice=true` 时，后端保存请求中的 `finalPriceCent`。"
+          },
+          {
+            "reference": "/Users/june/tests/auto-api/tests/test_orders.py:14",
+            "text": "def test_create_order_use_final_price(api, make_order):",
+            "note": "confirmed 的可执行 oracle，断言成交价 5000 低于方案合计 8888 是正确行为"
+          }
+        ]
+      },
       "finding": {
         "id": "FN-SEMANTIC-PRICE-UPPER-BOUND",
         "severity": "HIGH",
-        "title": "职责断言：成交价不得高于套餐标价",
-        "root_cause": "resolveFinalPrice 只校验了成交价非负，没有与套餐标价比对，客户端报 999999 分（套餐价 46800 分）被原样接受",
+        "title": "职责断言（待确认）：成交价不得高于套餐标价 —— 无文档依据，属规范层风险",
+        "root_cause": "resolveFinalPrice 只校验了成交价非负，没有与套餐标价比对，客户端报 999999 分（套餐价 46800 分）被原样接受。这是 API.md:338 规定的行为；「必须比对」这条预期没有来源，待业务确认。",
         "cwe": null,
         "api_reachable": true,
         "boundary_protected": false,

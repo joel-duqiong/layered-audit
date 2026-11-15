@@ -2,77 +2,21 @@
   "meta": {
     "layer": "function",
     "carrier": "JVM 内反射直调（静态字节码 + 动态属性/边界用例）",
-    "functions_declared": 461,
+    "functions_declared": 464,
     "cases": 121,
     "failed_cases": 35,
     "passed_cases": 86,
-    "total": 10,
+    "total": 8,
     "by_severity": {
-      "CRITICAL": 2,
-      "HIGH": 3,
+      "CRITICAL": 1,
+      "HIGH": 2,
       "MEDIUM": 5,
       "LOW": 0
     },
-    "source_vs_deployed_drift": []
+    "source_vs_deployed_drift": [],
+    "expectation_held": 2
   },
   "findings": [
-    {
-      "id": "FN-PRICE-CLIENT-CONTROLLED",
-      "layer": "function",
-      "severity": "CRITICAL",
-      "title": "成交价由客户端说了算：resolveFinalPrice 只做下界检查，完全不与套餐价比对",
-      "function": "OrderService.resolveFinalPrice",
-      "root_cause": "resolveFinalPrice(boolean, Long, Long) 只校验成交价 >= 0，既不要求成交价 <= 套餐总价，也不要求有折扣依据，于是客户端可以把任意数字直接变成订单最终价。",
-      "api_reachable": true,
-      "boundary_protected": false,
-      "boundary_note": "CreateOrderRequest.finalPriceCent 只有 @Min(0)，上界没有任何约束",
-      "cwe": null,
-      "owner": "函数层（OrderService.resolveFinalPrice）",
-      "case_count": 4,
-      "evidence": [
-        {
-          "case_id": "APL-15",
-          "function": "com.jiuyan.banquet.service.OrderService#apply",
-          "invariant": "落库的成交价不得高于套餐总价",
-          "actual": "期望 finalPriceCent <= 46800，实际 999999",
-          "exception": null
-        },
-        {
-          "case_id": "RFP-05",
-          "function": "com.jiuyan.banquet.service.OrderService#resolveFinalPrice",
-          "invariant": "成交价不得低于套餐总价（客户端不能自降定价权）",
-          "actual": "期望 >= 46800，实际 1",
-          "exception": null
-        },
-        {
-          "case_id": "RFP-06",
-          "function": "com.jiuyan.banquet.service.OrderService#resolveFinalPrice",
-          "invariant": "成交价不得高于套餐总价",
-          "actual": "期望 <= 46800，实际 999999",
-          "exception": null
-        },
-        {
-          "case_id": "RFP-07",
-          "function": "com.jiuyan.banquet.service.OrderService#resolveFinalPrice",
-          "invariant": "成交价不得为 0（0 元成交无任何业务依据）",
-          "actual": "期望 >= 1，实际 0",
-          "exception": null
-        }
-      ],
-      "related_findings": [
-        {
-          "layer": "integration",
-          "id": "PRICE_CLIENT_CONTROLLED_XL",
-          "relation": "集成症状：本层是根因",
-          "already_filed_in_that_layer": true
-        },
-        {
-          "layer": "service",
-          "id": "test_create_order_use_final_price",
-          "relation": "既有测试把「保留客户端成交价」写成了断言——缺陷被固化成契约"
-        }
-      ]
-    },
     {
       "id": "FN-UPLOAD-NO-CONTENT-SNIFF",
       "layer": "function",
@@ -398,35 +342,6 @@
       "semantic_obligation": {
         "mission": "明细归一化：数量必须是正整数，0 或负数必须拒绝",
         "template": "throws_business_code",
-        "source": "declared"
-      }
-    },
-    {
-      "id": "FN-SEMANTIC-PRICE-UPPER-BOUND",
-      "layer": "function",
-      "severity": "HIGH",
-      "title": "职责断言：成交价不得高于套餐标价",
-      "function": "com.jiuyan.banquet.service.OrderService#resolveFinalPrice",
-      "root_cause": "resolveFinalPrice 只校验了成交价非负，没有与套餐标价比对，客户端报 999999 分（套餐价 46800 分）被原样接受",
-      "api_reachable": true,
-      "boundary_protected": false,
-      "boundary_note": "DTO 上只有 @Min(0)，没有上界",
-      "cwe": null,
-      "owner": "函数层（com.jiuyan.banquet.service.OrderService#resolveFinalPrice）",
-      "case_count": 1,
-      "evidence": [
-        {
-          "case_id": "OB-RESOLVE-PRICE-UPPER-BOUND",
-          "function": "com.jiuyan.banquet.service.OrderService#resolveFinalPrice",
-          "invariant": "计算订单最终成交价：客户端报的价格高于套餐标价时，必须被拒绝或限到套餐价以内",
-          "actual": "期望 <= 46800，实际 999999",
-          "exception": null
-        }
-      ],
-      "related_findings": [],
-      "semantic_obligation": {
-        "mission": "计算订单最终成交价：客户端报的价格高于套餐标价时，必须被拒绝或限到套餐价以内",
-        "template": "returns_le_arg",
         "source": "declared"
       }
     }

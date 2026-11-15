@@ -1,0 +1,118 @@
+{
+  "note": "台账级判据来源登记册（项目侧）。用途：给**生产者本身装不了闸门**的发现声明 warrant —— 那些生产者是探针（perf_load.py / concurrency_props.py / orm_probe.py / config_probe.py / property_binding_probe.py 等），禁跑，无法在源头重生成。登记册由 engine/normalize_findings.py 在**唯一入台账漏斗**处消费：business 且非 confirmed 一律拦下并落 ledger_rule_suspects.json，technical 放行。**没有登记的发现不受影响**（不会被误压），但会进 warrant_coverage 的「未裁定」计数，在报告里显式列出。键 = finding id。分类判据见 engine/oracle_gate.py 的 warrant_split 三问。",
+  "warrants": {
+    "INT-LIST-COUNT-END-TO-END-WASTE": {
+      "kind": "business",
+      "domain_swap": "fails",
+      "basis": "与 SVC-PAGINATION-COUNT-DISCARDED 是同一条预期（「前端不读 total，所以后端算它是零收益」），同样被明文分页契约否定：AGENTS.md 的分页响应要求返回 total/totalPages，算 total 是履约。",
+      "evidence": "/Users/june/jiuyan/AGENTS.md:128-140（分页 envelope 含 total/totalPages）",
+      "producer": "perf_load.py",
+      "oracle": {
+        "source": "project_doc",
+        "confirmation": "refuted",
+        "reference": "/Users/june/jiuyan/AGENTS.md:139-140",
+        "text": "\"total\": 100, \"totalPages\": 5",
+        "note": "count(*) 占端到端 36.1%~97.3% 的观测为真并保留，但该成本的根因已由 index.idx_products_name_unusable 认领。「收益为零」被契约否定。detail 里另有一条独立观察「前端把 page 固定 1、pageSize 固定 100，超出部分不可见」——那是另一条预期（用户应能翻页），本轮未裁定，随观测留痕，不随本条一起当作已澄清。"
+      }
+    },
+    "JAVA-ASPECT-SELF-INVOCATION-BYPASS": {
+      "kind": "technical",
+      "authority": "Spring AOP 代理语义（同类自调用不经代理）—— 语言/平台级客观事实",
+      "domain_swap": "holds",
+      "basis": "同类内部调用走 this 引用绕过代理，被调方法上的切面不生效。这是 Spring 平台语义的客观事实，CLAUDE.md 明确把「自调用绕过代理」列为不需业务预期的语言级事实，闸门不得误伤。",
+      "evidence": "PackageService.java:54 normalizePageSize 内部直接调用 findPackage()",
+      "producer": "java_feature_scan.py"
+    },
+    "FN-NUMERIC-BIGINT-PRECISION-LOSS": {
+      "kind": "technical",
+      "authority": "IEEE754 双精度 + JS Number.MAX_SAFE_INTEGER（平台级事实）",
+      "domain_swap": "holds",
+      "basis": "int64 分值超出 2^53 后 JS Number 装不下每一个整数，前端显示与库里不一致。纯平台事实，不依赖业务预期；「金额无上界」只是可达性前提（DTO @Min(0) + CHECK >= 0 + BIGINT，技术事实）。",
+      "evidence": "numeric_findings.json 的 FP4 样本 cent_exact=9007199254740993 → cent_after_display=9007199254740992",
+      "producer": "numeric_props.py"
+    },
+    "SVC-PAGINATION-COUNT-DISCARDED": {
+      "kind": "business",
+      "domain_swap": "fails",
+      "basis": "「count(*) 是纯开销、不该算」这条预期与本项目明文分页契约相反：AGENTS.md 的分页响应示例明文要求返回 total 与 totalPages，算 total 是履约不是浪费。换个不要求 total 的应用才成立，故属业务预期。",
+      "evidence": "/Users/june/jiuyan/AGENTS.md:128-140（分页 envelope 含 total/totalPages）",
+      "producer": "perf_load.py",
+      "oracle": {
+        "source": "project_doc",
+        "confirmation": "refuted",
+        "reference": "/Users/june/jiuyan/AGENTS.md:139-140",
+        "text": "\"total\": 100, \"totalPages\": 5",
+        "note": "原结论「真正该修的不是加索引，而是别让后端算一个没人要的数」被明文契约否定：total 是契约要求返回的字段，前端不读不等于后端不该算。观测（count(*) 走 Seq Scan、50030 行时占端到端 36.1%/97.3%）为真且保留，但该成本的根因已由 index.idx_products_name_unusable 认领，不重复开单。缺陷断言撤销。"
+      }
+    },
+    "SVC-POST-NOT-IDEMPOTENT": {
+      "kind": "business",
+      "domain_swap": "fails",
+      "basis": "HTTP 规范并不要求 POST 幂等；「同一请求重发只能有一张订单」是业务约定，不是通用不变式。原 property 自己写「POST 必须幂等或带幂等键」，这条规则全语料无来源。",
+      "evidence": "concurrency_findings.json 的 rs1 property 原文 + OrderController.java:52",
+      "producer": "concurrency_props.py",
+      "oracle": {
+        "source": "inferred",
+        "confirmation": "unconfirmed",
+        "reference": "无文档依据（全语料未声明下单幂等性要求；uk_orders_order_no 只保证订单号唯一，不保证业务去重）",
+        "note": "实测同一 POST 重发两次产生两张订单（2638/2639）为真，零鉴权下也可被灌单。这是真实的规范层风险，但是否要求幂等键/业务去重需业务方确认 —— 进待确认疑点，不以 defect 进台账，也不当成已排除。"
+      }
+    },
+    "SVC-CONCURRENT-WRITE-LOST-UPDATE": {
+      "kind": "technical",
+      "authority": "CWE-362（竞争条件）+ 数据库丢失更新异常",
+      "domain_swap": "holds",
+      "basis": "两个并发 PUT 各改一个字段，后提交者整行覆盖导致先提交者的修改静默消失。丢失更新在任何应用里都是正确性缺陷，判据不依赖本项目业务规则。",
+      "evidence": "OrderController.java:58 + concurrency_findings.json dc1 实测 phone_applied=false / lost_update=true",
+      "producer": "concurrency_props.py"
+    },
+    "SVC-ORM-N-PLUS-ONE-ORDER-ITEMS": {
+      "kind": "technical",
+      "authority": "ORM N+1 查询反模式（客观可复算的 SQL 条数斜率）",
+      "domain_swap": "holds",
+      "basis": "开 Hibernate 统计精确数出每加 1 个明细多 2.0 条 SQL，是可直接复算的资源效率事实，不需业务方确认阈值。",
+      "evidence": "OrderService.buildPackageSnapshot 每明细一次 findProduct + product.getCategory().getName() 触发懒加载",
+      "producer": "orm_query_probe.py"
+    },
+    "SVC-ORM-N-PLUS-ONE-PACKAGE-LIST": {
+      "kind": "technical",
+      "authority": "ORM N+1 查询反模式",
+      "domain_swap": "holds",
+      "basis": "每多返回 1 个套餐多 8.0 条 SQL，客观斜率，与业务规则无关。",
+      "evidence": "PackageController.java:35 列表逐个拉明细/商品/分类",
+      "producer": "orm_query_probe.py"
+    },
+    "CFG-CORS-EMPTY-ALLOWS-ANY-ORIGIN": {
+      "kind": "technical",
+      "authority": "CWE-942（过宽跨域策略）+ fail-open 安全反模式",
+      "domain_swap": "holds",
+      "basis": "把白名单清空反而放开任意来源（Spring applyPermitDefaultValues 默认星号未被空数组清掉），实测 ACAO 回显 evil.example.com。配置收紧反而放开在任何应用里都是安全缺陷。",
+      "evidence": "WebConfig.java:19 拆分裂表后传空数组给 allowedOriginPatterns",
+      "producer": "config_probe.py"
+    },
+    "CFG-CORS-STAR-ALLOWS-ANY-ORIGIN": {
+      "kind": "technical",
+      "authority": "CWE-942",
+      "domain_swap": "holds",
+      "basis": "配成 * 时任何网页都能读全部业务数据（系统零鉴权，allowCredentials(false) 不构成补偿控制）。通用安全不变式。",
+      "evidence": "WebConfig.java:19,29 + config_findings.json 实测 ACAO 回显",
+      "producer": "config_probe.py"
+    },
+    "CFG-UPLOAD-DIR-BAD-KILLS-APP": {
+      "kind": "technical",
+      "authority": "CWE-755 + 通用诊断不变式「错误必须指明原因」",
+      "domain_swap": "holds",
+      "basis": "原 detail 自认「fail-fast 方向本身是对的」，真断言是运维只看到「应用启动失败」而非「上传目录配错了」。错误未指明原因是通用可运维性缺陷，不是「该不该降级运行」这条业务选择。",
+      "evidence": "SeedAssetInitializer（ApplicationRunner）启动期抛底层 IO 异常",
+      "producer": "config_probe.py"
+    },
+    "CFG-BINDING-PRIORITY-SURPRISE": {
+      "kind": "technical",
+      "authority": "CWE-16（配置）+ Spring 宽松绑定平台语义",
+      "domain_swap": "holds",
+      "basis": "同一属性两种环境变量写法同时设上时 APP_ 前缀变体赢，yml 里占位符引用的那个名字根本不生效且无任何报错。平台语义导致的静默配置失效，与业务规则无关。",
+      "evidence": "application.yml 的 ${CORS_ALLOWED_ORIGINS:...} 占位符 + 实测生效值 http://probe.example.com-relaxed",
+      "producer": "property_binding_probe.py"
+    }
+  }
+}

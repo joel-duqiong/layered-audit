@@ -93,22 +93,6 @@
       "owner": "集成层（链级后果；内容不嗅探归函数层 FN-UPLOAD-NO-CONTENT-SNIFF）"
     },
     {
-      "id": "PRICE_CLIENT_CONTROLLED_XL",
-      "severity": "CRITICAL",
-      "endpoint": "POST /api/orders",
-      "title": "同一订单里并存两个互相矛盾的价格：成交价 0.01 元、套餐价 468.00 元",
-      "detail": "套餐标价 46800 分，客户端报成交价 1 分，后端原样落库并返回 200。更糟的是集成症状：OrderResponse 同时返回 finalPriceCent=1 与 packageSnapshot.priceCent=46800，而前端 mapOrder 正好一个用来渲染金额、一个用来渲染套餐价 —— Pad 端同一张订单会同时显示 0.01 元和 468.00 元。服务端没有任何按套餐计价的能力，定价权完全在客户端手上。",
-      "repro": "python3 integration_dynamic.py --scenario SC01_CLIENT_CONTROLLED_PRICE",
-      "evidence": {
-        "final_price_cent": 1,
-        "snapshot_price_cent": 46800,
-        "order_id": 2614,
-        "root_cause": "OrderService.resolveFinalPrice 直接采纳客户端 finalPriceCent",
-        "related_lower_layer": "服务层 test_price_is_not_client_controlled 已报根因，本条只补集成症状"
-      },
-      "owner": "集权层（集成症状；根因归服务层）"
-    },
-    {
       "id": "INT-PII-MASKED-ONLY-IN-FRONTEND",
       "severity": "HIGH",
       "endpoint": "CHAIN-A",
@@ -163,41 +147,6 @@
         "evidence": "接口返回 customerPhone=13800000999，前端渲染脱敏为 138****0999"
       },
       "owner": "集成层（链级后果；零鉴权归服务层 NO_AUTHZ）"
-    },
-    {
-      "id": "INT-THREE-PRICES-NO-DETAIL-TOTAL",
-      "severity": "HIGH",
-      "endpoint": "CHAIN-D",
-      "title": "同一订单并存三个互不相等的价格，界面只展示其中两个，明细合计从不显示",
-      "detail": "客户端可把成交价改成 0.01 元，同时把明细数量改成 99；订单详情抽屉渲染了订单金额和套餐名，却没有渲染明细合计，业务侧没有任何一处能看出这两个数字对不上。",
-      "repro": "python3 integration_chain.py --chain CHAIN-D",
-      "evidence": {
-        "chain_steps": [
-          {
-            "n": 1,
-            "method": "PUT",
-            "path": "/api/orders/2621",
-            "status": 200,
-            "evidence": "匿名把明细数量改成 99，成交价保持 1 分"
-          },
-          {
-            "n": 2,
-            "method": "GET",
-            "path": "/api/orders/2621",
-            "status": 200,
-            "evidence": "订单金额 0.01 元 / 明细合计 4950.0 元 / 套餐标价 88.88 元 —— 三个数字互不相等"
-          },
-          {
-            "n": 3,
-            "method": "前端",
-            "path": "App.jsx 订单详情抽屉",
-            "status": null,
-            "evidence": "抽屉只渲染 已选套餐 / 加购商品 / 订单金额 / 定金，明细单价与明细合计一律不渲染，员工在界面上无法核对订单金额的构成"
-          }
-        ],
-        "evidence": "订单金额 0.01 元 vs 明细合计 4950.0 元 vs 套餐标价 88.88 元"
-      },
-      "owner": "集成层（链级后果；控价根因归函数层 FN-PRICE-CLIENT-CONTROLLED）"
     },
     {
       "id": "LIST_TRUNCATED_AT_100",
@@ -777,10 +726,11 @@
     {
       "check": "RECON_CORROBORATES_orders_final_price_cent",
       "result": "PASS",
-      "desc": "orders.final_price_cent 语义不闭合（前端看到的明细合计 25000 分（250.0 元） vs 订单金额 13579 分（135.79 元），差额 11421 分；服务端对 finalPriceCent 不做任何核对）—— 根因已在function层开单，本层只做跨源佐证，不重复计缺陷",
+      "desc": "orders.final_price_cent 语义不闭合（前端看到的明细合计 25000 分（250.0 元） vs 订单金额 13579 分（135.79 元），差额 11421 分；服务端对 finalPriceCent 不做任何核对）—— 根因归function层，但其业务预期未经确认，已进待确认疑点清单、不进缺陷台账，本层只做跨源佐证，不重复计缺陷",
       "evidence": {
         "cites": "FN-PRICE-CLIENT-CONTROLLED",
-        "usage": "前端视图模型明细合计 vs 订单金额"
+        "usage": "前端视图模型明细合计 vs 订单金额",
+        "root_cause_filed": false
       }
     },
     {
@@ -797,7 +747,8 @@
       "desc": "packages.banquet_type 语义不闭合（服务层有 PACKAGE_TYPE_NOT_FOUND 校验，DB 直写畅通无阻）—— 根因已在class层开单，本层只做跨源佐证，不重复计缺陷",
       "evidence": {
         "cites": "CLASS-RULE-MISSING-IN-ALL-LAYERS",
-        "usage": "DB 直写绕过服务层校验"
+        "usage": "DB 直写绕过服务层校验",
+        "root_cause_filed": true
       }
     },
     {
@@ -806,7 +757,8 @@
       "desc": "orders.customer_phone 语义不闭合（服务层有 无 校验，DB 直写畅通无阻）—— 根因已在class层开单，本层只做跨源佐证，不重复计缺陷",
       "evidence": {
         "cites": "CLASS-RULE-MISSING-IN-ALL-LAYERS",
-        "usage": "DB 直写绕过服务层校验"
+        "usage": "DB 直写绕过服务层校验",
+        "root_cause_filed": true
       }
     },
     {
@@ -892,7 +844,7 @@
     {
       "check": "CHAIN_CORROBORATES_CHAIN-C",
       "result": "PASS",
-      "desc": "CHAIN-C 证实了低层缺陷：成交价 0.01 元被三方一致接受，而明细合计是 150.0 元，差 14999 分（150.0 元）；服务端没有任何一处核对",
+      "desc": "CHAIN-C 跨层观测：成交价 0.01 元被三方一致接受，而明细合计是 150.0 元，差 14999 分（150.0 元）；服务端没有任何一处核对（引用的 FN-PRICE-CLIENT-CONTROLLED 业务预期未经确认，进待确认疑点清单，不作为已开单缺陷）",
       "evidence": {
         "cites": [
           "FN-PRICE-CLIENT-CONTROLLED",
@@ -927,6 +879,9 @@
             "status": 200,
             "evidence": "前端渲染订单金额 = 0.01 元；它自己看到的明细合计 = 150.0 元"
           }
+        ],
+        "cited_expectation_unconfirmed": [
+          "FN-PRICE-CLIENT-CONTROLLED"
         ]
       }
     },
@@ -961,18 +916,20 @@
             "status": 200,
             "evidence": "库里的状态 = COMPLETED，定金 = 0 分"
           }
-        ]
+        ],
+        "cited_expectation_unconfirmed": []
       }
     }
   ],
   "summary": {
-    "total": 14,
+    "total": 12,
     "by_severity": {
-      "CRITICAL": 3,
-      "HIGH": 5,
+      "CRITICAL": 2,
+      "HIGH": 4,
       "MEDIUM": 5,
       "LOW": 1
     },
-    "passed_checks": 31
+    "passed_checks": 31,
+    "expectation_held": 2
   }
 }

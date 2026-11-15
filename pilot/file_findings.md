@@ -1,6 +1,6 @@
 # 文件层差分报告（jiuyan）
 
-文件 63 个 / 方法 466 个 | 动态用例 21 + 探针 12 | 缺陷 12 条 / 通过结论 6 条
+文件 63 个 / 方法 466 个 | 动态用例 21 + 探针 12 | 缺陷 10 条 / 通过结论 6 条
 
 | 级别 | 缺陷 | 根因文件 |
 |---|---|---|
@@ -12,10 +12,8 @@
 | MEDIUM | 静态资源根目录的规范化依赖「目录在启动前就存在」这个环境偶然 | `config/WebConfig.java` |
 | MEDIUM | X-Trace-Id 完全由客户端指定，无格式与长度白名单，原样进日志与响应头 | `config/TraceIdFilter.java` |
 | MEDIUM | 上传体积上限 5MB 这个数字散落三处，改一处另两处就开始说谎 | `service/UploadService.java + resources/application.yml + exception/GlobalExceptionHandler.java` |
-| MEDIUM | 同一类「参数非法」返回两种状态码：DTO 校验给 400，服务自校验给 422 | `dto/PackageItemRequest.java + service/PackageService.java` |
 | LOW | 分页归一化等 4 组方法在 3 个 service 文件里逐字复制 | `service/{OrderService,PackageService,ProductService}.java` |
 | LOW | 同一个异常处理文件里三种响应形状：信封 / 空体 / 未知 | `exception/GlobalExceptionHandler.java` |
-| LOW | null 响应体也被包成 success=true 的信封（data 字段缺失） | `config/ApiResponseAdvice.java` |
 
 ## 通过结论（差分也能给「查过没问题」）
 
@@ -289,36 +287,6 @@ UploadService.java 这个文件里没有任何体积判断 —— 上限完全�
 }
 ```
 
-## [MEDIUM] 同一类「参数非法」返回两种状态码：DTO 校验给 400，服务自校验给 422
-
-- id: `FILE-VALIDATION-STATUS-SPLIT`
-- kind: defect
-- 根因文件: `dto/PackageItemRequest.java + service/PackageService.java`
-- CWE: CWE-436 (Interpretation Conflict)
-- 相关: UNHANDLED_HTTP_EXCEPTION（服务层）
-
-参数校验被拆在两个文件里，两边各自选了不同的状态码：
-  · DTO 文件声明的约束（数量 @Min(1)、价格 @Min(0)）走 Bean Validation → MethodArgumentNotValidException → handleValidation → 400；
-  · 服务文件自己做的校验（明细为空、明细重复）抛 BusinessException → 422。
-实测同一个接口 PUT /api/packages/4：数量=0 → 400；明细为空 → 422。两者在语义上都是「请求参数不合法」，前端却要写两个分支才能区分，监控按状态码分类时也会把一类错误拆成两堆。
-根因不是某一处写错，而是校验责任分散在 DTO 与 service 两个文件、且没有统一的错误语义约定。
-
-```json
-{
-  "dto_validation_status": 400,
-  "dto_validation_body": "{\"success\":false,\"code\":\"VALIDATION_ERROR\",\"message\":\"参数错误\",\"details\":{\"items[0].quantity\":\"must be greater than or equal to 1\"},\"traceId\":\"f0adf04f-e73b-4c12-a1f9-5f474d24ad5c\",\"timestamp\":\"2026-11-15T00:54:50.337735131+08:00\"}",
-  "service_validation_status": 422,
-  "service_validation_code": "VALIDATION_ERROR",
-  "split_check": {
-    "check": "validation_status_split",
-    "expected": true,
-    "actual": true,
-    "pass": true,
-    "note": "同属「参数非法」：DTO 层校验返 400，服务文件自校验返 422 —— 状态码按校验责任分裂"
-  }
-}
-```
-
 ## [LOW] 分页归一化等 4 组方法在 3 个 service 文件里逐字复制
 
 - id: `FILE-DUPLICATE-HELPERS-ACROSS-SERVICES`
@@ -415,36 +383,6 @@ GlobalExceptionHandler 一个文件里，错误响应有三种形状：
     "repo_calls": []
   },
   "max_upload_shape": "信封 + details=null + 硬编码文案"
-}
-```
-
-## [LOW] null 响应体也被包成 success=true 的信封（data 字段缺失）
-
-- id: `FILE-NULL-BODY-WRAPPED-AS-SUCCESS`
-- kind: defect
-- 根因文件: `config/ApiResponseAdvice.java`
-- CWE: CWE-754 (Improper Check for Unusual or Exceptional Conditions)
-
-ApiResponseAdvice.beforeBodyWrite 对 body==null 也照样包一层，产出 {success:true, code:OK, message:成功, traceId, timestamp}，data 因为 NON_NULL 被省略。前端拿到 success=true 但没有 data 字段，只能靠「data 存不存在」判断有无结果，与其它接口「data 一定有值」的假设冲突。
-实际链路无害：499 那条走 ResponseEntity<Void>，协商不出 JSON content type，不会走到包装分支。所以这是 INFO 级的契约不一致，不是现网故障。
-顺带两条正向结论：supports() 对 ResponseEntity<ApiResponse<...>> 返回 false（声明类型是 ResponseEntity），但 beforeBodyWrite 的 instanceof ApiResponse 守卫仍然挡住了二次包装；已经包好的信封不会被改写（already_envelope_unchanged=true）。
-
-```json
-{
-  "null_body_json": "{\"success\":true,\"code\":\"OK\",\"message\":\"成功\",\"traceId\":\"FILELAYER-CONTEXT-TRACE\",\"timestamp\":1794675282.600868000}",
-  "supports": {
-    "plain": true,
-    "enveloped": false,
-    "entity": true
-  },
-  "already_envelope_unchanged": true,
-  "mismatch": {
-    "check": "null_body_result_is_null",
-    "expected": true,
-    "actual": false,
-    "pass": false,
-    "note": "空 body 不应被包成 data:null 的成功信封（内容类型为空时不会发生）"
-  }
 }
 ```
 

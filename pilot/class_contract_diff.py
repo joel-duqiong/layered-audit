@@ -16,9 +16,16 @@ from __future__ import annotations
 
 import json
 import re
+import sys
+from pathlib import Path
 from typing import Any
 
-from class_rules import render_json, render_text
+from class_rules import oracle_gate, render_json, render_text
+
+# 注意名字遮蔽：上面的 `oracle_gate` 是 class_rules 里的**函数**（派发层闸门，
+# 已有守卫按该名 monkeypatch），引擎模块必须另起别名，否则 warrant_split 取不到。
+sys.path.insert(0, str(Path(__file__).resolve().parent / "engine"))
+import oracle_gate as warrant_gate  # noqa: E402
 
 
 def _obs(obs: dict[str, Any], name: str, rule_id: str = "",
@@ -99,8 +106,15 @@ def _finding(fid: str, sev: str, layer: str, title: str, detail: str,
 
 
 # ---------------------------------------------------------------- 差分 A
-def diff_nullability(ctx: dict, cfg: dict) -> list[dict]:
-    """DB NOT NULL ↔ 实体 nullable ↔ DTO 约束：谁该为"非空"负责，声明和实际是否一致。"""
+def diff_nullability(ctx: dict, cfg: dict,
+                     held: list[dict] | None = None) -> list[dict]:
+    """DB NOT NULL ↔ 实体 nullable ↔ DTO 约束：谁该为"非空"负责，声明和实际是否一致。
+
+    `field_notes` 是项目侧给特定列写的结论文案，它断言的是**业务预期**
+    （「这一列不该是业务上的空」），所以必须过 oracle 闸门（硬约束 5）。
+    被压下来的结论进 `held`，由 run() 汇进旁路留痕，不悄悄消失。
+    闸门只对声明了 oracle 的 note 生效，与派发层 `oracle_gate` 同一口径。
+    """
     findings: list[dict] = []
     contract, decl, obs = ctx["contract"], ctx["decl"], ctx["obs"]
     dtos = _dto_index(contract)
@@ -169,11 +183,17 @@ def diff_nullability(ctx: dict, cfg: dict) -> list[dict]:
                            "message": probe.get("message"),
                            "details": probe.get("details"),
                            "db_value": raw, "db_value_repr": repr(raw)})
-            findings.append(_finding(
+            filed = _finding(
                 note["id"], note["severity"], note.get("layer", "class"),
                 render_text(note["title"], values),
                 render_text(note["detail"], values),
-                render_json(note["evidence"], values)))
+                render_json(note["evidence"], values))
+            kept, gated = oracle_gate(
+                {"id": note["id"], "params": {"oracle": note.get("oracle")}},
+                [filed])
+            findings.extend(kept)
+            if held is not None:
+                held.extend(gated)
         else:
             findings.append(_finding(
                 "CLASS-NULLABILITY-THREE-WAY-MISMATCH", "MEDIUM", "class",
@@ -184,16 +204,19 @@ def diff_nullability(ctx: dict, cfg: dict) -> list[dict]:
                 c))
 
     if aligned:
+        gated_n = len(held or [])
+        tail = ("不成立的只有下面单列出来的那几列。" if not gated_n else
+                f"不成立的 {len(cases)} 列里，{gated_n} 列的业务预期未确认或被文档否定，"
+                "只保留观测、不开单（见旁路留痕），其余单列在下面。")
         findings.append(_finding(
             "CLASS-NULLABILITY-ALIGNED", "INFO", "class",
             f"可空性三方一致 {aligned}/{len(per_col)} 列"
             f"（同向设防 {both} · DTO 更严 {stricter} · 都可空 {loose}）",
             "这是差分引擎的通过结论：DTO 的非空声明要么与 DB 一致，"
-            "要么比 DB 更严（DTO 先拦，留给 DB 兜底），方向正确。"
-            "不成立的只有下面单列出来的那几列。",
+            "要么比 DB 更严（DTO 先拦，留给 DB 兜底），方向正确。" + tail,
             {"aligned_columns": aligned, "total_columns": len(per_col),
              "same_direction": both, "dto_stricter": stricter,
-             "both_nullable": loose}))
+             "both_nullable": loose, "expectation_held": gated_n}))
     return findings
 
 
@@ -320,7 +343,25 @@ def diff_rules(ctx: dict, cfg: dict) -> list[dict]:
 
 
 # ---------------------------------------------------------------- 差分 C
-def diff_write_footprint(ctx: dict, cfg: dict) -> list[dict]:
+def _gate_cfg(findings: list[dict], held: list[dict] | None,
+              block: dict, filed: dict) -> None:
+    """差分 C/D 的开单闸门：按判据来源分流（warrant），只对 defect 生效。
+
+    positive / observation 不是开单，直接放行。technical 绝不压；
+    business 必须有 confirmed oracle；未声明 warrant 保守留痕。
+    """
+    if block.get("kind", "defect") != "defect":
+        findings.append(filed)
+        return
+    kept, gated = warrant_gate.warrant_split(block.get("warrant"), [filed],
+                                             rule_id=block.get("id", ""))
+    findings.extend(kept)
+    if held is not None:
+        held.extend(gated)
+
+
+def diff_write_footprint(ctx: dict, cfg: dict,
+                         held: list[dict] | None = None) -> list[dict]:
     """DTO 声明可写的字段 ↔ 实测真的被改的列。"""
     findings: list[dict] = []
     obs = ctx["obs"]
@@ -339,7 +380,7 @@ def diff_write_footprint(ctx: dict, cfg: dict) -> list[dict]:
                           "column": wipes_cfg["column"],
                           "changed_columns": put["changed"],
                           "final_row": w.get("final_row")}
-                findings.append(_finding(
+                _gate_cfg(findings, held, wipes_cfg, _finding(
                     wipes_cfg["id"], wipes_cfg["severity"],
                     wipes_cfg.get("layer", "class"),
                     render_text(wipes_cfg["title"], values),
@@ -350,7 +391,7 @@ def diff_write_footprint(ctx: dict, cfg: dict) -> list[dict]:
             if miss and miss.get("http") == guarded_cfg.get("http") and not miss["changed"]:
                 values = {"entity": w["entity"], "http": miss.get("http"),
                           "changed": miss["changed"]}
-                findings.append(_finding(
+                _gate_cfg(findings, held, guarded_cfg, _finding(
                     guarded_cfg["id"], guarded_cfg["severity"],
                     guarded_cfg.get("layer", "class"),
                     render_text(guarded_cfg["title"], values),
@@ -360,7 +401,8 @@ def diff_write_footprint(ctx: dict, cfg: dict) -> list[dict]:
 
 
 # ---------------------------------------------------------------- 差分 D
-def diff_error_contract(ctx: dict, cfg: dict) -> list[dict]:
+def diff_error_contract(ctx: dict, cfg: dict,
+                        held: list[dict] | None = None) -> list[dict]:
     """错误码 / 状态码 / 文案 与真实原因是否一致。"""
     findings: list[dict] = []
     obs = ctx["obs"]
@@ -374,7 +416,7 @@ def diff_error_contract(ctx: dict, cfg: dict) -> list[dict]:
                 continue
             values = {"http": c["http"], "code": c.get("code"),
                       "message": c.get("message"), "label": c["label"]}
-            findings.append(_finding(
+            _gate_cfg(findings, held, rule, _finding(
                 rule["id"], rule["severity"], rule.get("layer", "class"),
                 render_text(rule["title"], values),
                 render_text(rule["detail"], values),
@@ -387,17 +429,24 @@ def run(decl_path: str, contract_path: str, obs_path: str,
     """返回 findings + 两条旁路。
 
     旁路（rule_suspects / rule_refuted）是「有观测但预期未确认 / 被文档否定」
-    的规则。它们**不进缺陷台账**，但必须留痕 —— 对照 class_carrier_gap.json
+    的结论，来自四扇门：差分 A 的 field_notes、差分 B 的规则三层全缺、
+    差分 C 的写入足迹、差分 D 的错误契约。
+    它们**不进缺陷台账**，但必须留痕 —— 对照 class_carrier_gap.json
     的先例：没人认领的观测不能悄悄消失。
     """
     cfg = cfg or {}
     ctx = load(decl_path, contract_path, obs_path)
     out: list[dict] = []
-    out += diff_nullability(ctx, cfg)
+    gated: list[dict] = []
+    out += diff_nullability(ctx, cfg, gated)
     out += diff_rules(ctx, cfg)
-    out += diff_write_footprint(ctx, cfg)
-    out += diff_error_contract(ctx, cfg)
+    out += diff_write_footprint(ctx, cfg, gated)
+    out += diff_error_contract(ctx, cfg, gated)
     buckets = rule_oracle_buckets(ctx, cfg)
-    return {"findings": out,
-            "rule_suspects": buckets["unconfirmed"],
-            "rule_refuted": buckets["refuted"]}
+    return {
+        "findings": out,
+        "rule_suspects": buckets["unconfirmed"] + [
+            h for h in gated if h["oracle"]["confirmation"] == "unconfirmed"],
+        "rule_refuted": buckets["refuted"] + [
+            h for h in gated if h["oracle"]["confirmation"] == "refuted"],
+    }

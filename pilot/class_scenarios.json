@@ -738,10 +738,46 @@
         "probe_label": "address 缺省（DTO 无约束，DB NOT NULL）",
         "evidence_column": "address",
         "id": "CLASS-NOTNULL-BYPASSED-BY-EMPTY-STRING",
-        "severity": "MEDIUM",
+        "severity": "INFO",
         "layer": "class",
-        "title": "orders.address 声明 NOT NULL，实际用空串绕过 —— 非空约束只挡了 NULL",
-        "detail": "三方声明：DB 列 address 为 NOT NULL，实体 @Column(nullable=false)，但 DTO 的 address 没有任何约束。实测：客户端不传 address，接口返回 {{http}}，库里落的是空串 {{db_value_repr}}。NOT NULL 只证明列不是 NULL，空串照样入库 —— 约束拦不住业务上的空。后果：订单地址为空，宴会执行单拿不到地址，且没有任何一层会报错。",
+        "title": "orders.address 的 NOT NULL 只挡 NULL：缺省地址落空串（文档与验收用例声明的有意设计）",
+        "detail": "三方声明：DB 列 address 为 NOT NULL（V1__init_schema.sql:57），实体 @Column(nullable=false)（BanquetOrder.java:42），DTO 的 address 无任何约束（CreateOrderRequest.java:16，同级 customerName/customerPhone/banquetName/banquetType 都有 @NotBlank）。实测：客户端不传 address，接口返回 {{http}}，库里落的是空串 {{db_value_repr}}。空串既不是 NULL 也不违反 nullable=false —— 两条声明都被满足，约束没有被绕过；「address 必须非空白」这条更严的预期没有任何来源声明，且被 API.md:307 与验收用例 test_create_order_empty_address 明确否定。观测保留，不判缺陷。",
+        "oracle": {
+          "source": "project_doc",
+          "confirmation": "refuted",
+          "reference": "/Users/june/jiuyan/docs/API.md:307",
+          "text": "`address` 可为空；为空时后端保存为空字符串，避免前端非必填地址导致订单生成失败。",
+          "note": "带理由的有意设计，不是疏漏。技术约束（NOT NULL / nullable=false）被空串满足，不等于缺陷；业务意图（地址非空白）没有任何来源声明，反而被文档与可执行验收用例否定。原结论还编造了后果「宴会执行单拿不到地址」——「执行单」在被测仓库全文 0 命中，前端 App.jsx:2411 反而显式把空地址渲染成「无」。观测（缺省地址落空串）保留，缺陷断言撤销。",
+          "corroborated_by": [
+            {
+              "reference": "/Users/june/tests/auto-api/tests/test_orders.py:19",
+              "text": "def test_create_order_empty_address(api, make_order):",
+              "note": "可执行 oracle：:20 make_order(address=None)，:21 check_eq(api, \"address 为空时保存为空字符串\", order[\"address\"], \"\") —— 断言的是与原结论相反的预期"
+            },
+            {
+              "reference": "/Users/june/tests/auto-api/docs/接口清单.md:42",
+              "text": "address 为空保存空字符串"
+            },
+            {
+              "reference": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/OrderService.java:135",
+              "text": "order.setAddress(StringUtils.hasText(address) ? address.trim() : \"\");"
+            },
+            {
+              "reference": "/Users/june/jiuyan/backend/src/main/resources/db/migration/V1__init_schema.sql:57",
+              "text": "address VARCHAR(255) NOT NULL",
+              "note": "orders 的 CHECK 只有 table_count/plan_total_cent/final_price_cent/deposit_cent/status，没有 address"
+            },
+            {
+              "reference": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/BanquetOrder.java:42",
+              "text": "@Column(nullable = false)"
+            },
+            {
+              "reference": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/dto/CreateOrderRequest.java:16",
+              "text": "String address,",
+              "note": "UpdateOrderRequest.java:16 同形；openapi.json 两个请求体的 required 均不含 address，address  schema 只有 type:string"
+            }
+          ]
+        },
         "evidence": {
           "dto": "{{dto}}",
           "field": "{{field}}",
@@ -837,6 +873,18 @@
           "id": "{{id}}",
           "changed_columns": "{{changed_columns}}",
           "final_row": "{{final_row}}"
+        },
+        "warrant": {
+          "kind": "business",
+          "domain_swap": "fails",
+          "basis": "「PUT 不传的字段应保留原值」是业务预期，不是通用规范 —— HTTP PUT 语义本就是全量替换，且 API.md:202 明写「请求体同新增商品」。换个应用同样成立的是「PUT 全量替换」，所以断言「这是数据丢失缺陷」必须引用本项目业务规则，而该规则无来源。",
+          "evidence": "docs/API.md:202「请求体同新增商品。」+ UpdateProductRequest.imageUrl 无约束",
+          "oracle": {
+            "source": "inferred",
+            "confirmation": "unconfirmed",
+            "reference": "无文档依据（API.md:202 定义 PUT 请求体同新增；未规定不传字段须保留原值）",
+            "note": "实测：创建时带图片路径，一次不带 imageUrl 的 PUT 之后 image_url 变 NULL，磁盘文件成为孤儿。观测为真且后果值得业务方知道，但「PUT 应保留未传字段」等价于要求 PATCH 语义，文档未规定 —— 进待确认疑点，由业务方决定是否改契约或改用 PATCH。不以 defect 进台账。"
+          }
         }
       },
       "put_guarded": {
@@ -849,7 +897,8 @@
         "evidence": {
           "http": "{{http}}",
           "changed": "{{changed}}"
-        }
+        },
+        "kind": "positive"
       }
     },
     "error_contract": [
@@ -866,6 +915,13 @@
           "code": "{{code}}",
           "message": "{{message}}",
           "label": "{{label}}"
+        },
+        "warrant": {
+          "kind": "technical",
+          "authority": "CWE-755 + 通用诊断不变式「错误文案必须匹配真实原因」",
+          "domain_swap": "holds",
+          "basis": "null 触发必填缺失却复用数值区间文案「成交价不能小于 0」，客户端据此提示「价格太小」而用户根本没填价格。错误信息与真实原因不符在任何应用里都是缺陷，不依赖业务规则。",
+          "evidence": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/OrderService.java:153-155（null 与 <0 共用同一文案）"
         }
       },
       {
@@ -880,6 +936,18 @@
           "http": "{{http}}",
           "code": "{{code}}",
           "message": "{{message}}"
+        },
+        "warrant": {
+          "kind": "business",
+          "domain_swap": "fails",
+          "basis": "「对外枚举应大小写不敏感」是设计提议，不是通用规范 —— Jackson 默认大小写敏感，且 API.md:10/296 明文把枚举值定义为大写 PENDING/DEPOSIT_PAID/COMPLETED，拒绝小写符合已声明的取值域。断言它是缺陷需要一条「应接受小写」的业务约定，该约定无来源。",
+          "evidence": "docs/API.md:296「status: PENDING、DEPOSIT_PAID、COMPLETED」+ OrderStatus 枚举",
+          "oracle": {
+            "source": "inferred",
+            "confirmation": "unconfirmed",
+            "reference": "无文档依据（API.md 只定义大写枚举值，未规定大小写不敏感）",
+            "note": "实测传 'pending' 返回 400 ORDER_STATUS_INVALID。原 detail 自己写的是「应当约定为大小写不敏感或明确写进 OpenAPI」—— 这是建议而非既有规则。观测保留，是否放宽容错需业务方确认。"
+          }
         }
       }
     ],

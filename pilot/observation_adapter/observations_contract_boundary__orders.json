@@ -1,0 +1,117 @@
+{
+  "schema": "observation-pack/1",
+  "target": "jiuyan",
+  "scope": "orders",
+  "observations": [
+    {
+      "id": "contract_boundary:class_observation.json#contract_boundary/0",
+      "target": "jiuyan",
+      "scope": "orders",
+      "reached": true,
+      "row": {
+        "status": "PENDING",
+        "address": "",
+        "table_count": 1,
+        "deposit_cent": 0,
+        "customer_phone": "13800000001",
+        "plan_total_cent": 100,
+        "final_price_cent": 100,
+        "reservation_time": "2026-12-14T16:55:32.600797+00:00"
+      },
+      "evidence_refs": [
+        "class_observation.json#/contract_boundary/0/db_row",
+        "class_scenarios.json#/probes/6/read/table",
+        "class_scenarios.json#/probes/6/entity",
+        "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+      ]
+    },
+    {
+      "id": "contract_boundary:class_observation.json#contract_boundary/2",
+      "target": "jiuyan",
+      "scope": "orders",
+      "reached": true,
+      "row": {
+        "status": "PENDING",
+        "address": "",
+        "table_count": 1,
+        "deposit_cent": 0,
+        "customer_phone": "13800000001",
+        "plan_total_cent": 100,
+        "final_price_cent": 100,
+        "reservation_time": "2025-11-14T16:55:32.711175+00:00"
+      },
+      "evidence_refs": [
+        "class_observation.json#/contract_boundary/2/db_row",
+        "class_scenarios.json#/probes/6/read/table",
+        "class_scenarios.json#/probes/6/entity",
+        "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+      ]
+    },
+    {
+      "id": "contract_boundary:class_observation.json#contract_boundary/3",
+      "target": "jiuyan",
+      "scope": "orders",
+      "reached": true,
+      "row": {
+        "status": "PENDING",
+        "address": "",
+        "table_count": 1,
+        "deposit_cent": 0,
+        "customer_phone": "not-a-phone",
+        "plan_total_cent": 100,
+        "final_price_cent": 100,
+        "reservation_time": "2026-12-14T16:55:32.600797+00:00"
+      },
+      "evidence_refs": [
+        "class_observation.json#/contract_boundary/3/db_row",
+        "class_scenarios.json#/probes/6/read/table",
+        "class_scenarios.json#/probes/6/entity",
+        "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+      ]
+    },
+    {
+      "id": "contract_boundary:class_observation.json#contract_boundary/5",
+      "target": "jiuyan",
+      "scope": "orders",
+      "reached": true,
+      "row": {
+        "status": "PENDING",
+        "address": "",
+        "table_count": 1,
+        "deposit_cent": 999999,
+        "customer_phone": "13800000001",
+        "plan_total_cent": 100,
+        "final_price_cent": 1,
+        "reservation_time": "2026-12-14T16:55:32.600797+00:00"
+      },
+      "evidence_refs": [
+        "class_observation.json#/contract_boundary/5/db_row",
+        "class_scenarios.json#/probes/6/read/table",
+        "class_scenarios.json#/probes/6/entity",
+        "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+      ]
+    },
+    {
+      "id": "contract_boundary:class_observation.json#contract_boundary/7",
+      "target": "jiuyan",
+      "scope": "orders",
+      "reached": true,
+      "row": {
+        "status": "COMPLETED",
+        "address": "",
+        "table_count": 1,
+        "deposit_cent": 0,
+        "customer_phone": "13800000001",
+        "plan_total_cent": 100,
+        "final_price_cent": 100,
+        "reservation_time": "2026-12-14T16:55:32.600797+00:00"
+      },
+      "evidence_refs": [
+        "class_observation.json#/contract_boundary/7/db_row",
+        "class_scenarios.json#/probes/6/read/table",
+        "class_scenarios.json#/probes/6/entity",
+        "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+      ]
+    }
+  ]
+}

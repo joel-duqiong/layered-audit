@@ -2,7 +2,7 @@
 
 三方对账：前端 JS 声明 × 后端 Java 声明 × 录制流量画像 × 实测行为
 
-- 缺陷 14 条：CRITICAL 3、HIGH 5、LOW 1、MEDIUM 5（无则写 0）
+- 缺陷 12 条：CRITICAL 2、HIGH 4、LOW 1、MEDIUM 5（无则写 0）
 - 通过的对账项 31 条
 
 ## 缺陷
@@ -11,9 +11,7 @@
 |---|---|---|---|
 | CRITICAL | `INT-ANON-WRITE-REWRITES-SNAPSHOT` | CHAIN-A | 匿名写入会连带重写订单快照：订单历史快照失去证据效力 |
 | CRITICAL | `INT-UPLOAD-ANONYMOUS-READBACK` | CHAIN-B | 上传内容匿名可读回：落盘字节与上传字节逐字节一致 |
-| CRITICAL | `PRICE_CLIENT_CONTROLLED_XL` | POST /api/orders | 同一订单里并存两个互相矛盾的价格：成交价 0.01 元、套餐价 468.00 元 |
 | HIGH | `INT-PII-MASKED-ONLY-IN-FRONTEND` | CHAIN-A | 手机号脱敏只做在渲染层：接口与库里都是明文，匿名可批量拉取 |
-| HIGH | `INT-THREE-PRICES-NO-DETAIL-TOTAL` | CHAIN-D | 同一订单并存三个互不相等的价格，界面只展示其中两个，明细合计从不显示 |
 | HIGH | `LIST_TRUNCATED_AT_100` | GET /api/products, GET /api/packages, GET /api/orders | 前端列表固定只取前 100 条并丢弃 total，超出的数据永远不可见 |
 | HIGH | `PACKAGE_ITEM_NOT_VALIDATED` | POST /api/orders | 可以把不属于该套餐的商品写进套餐明细，后端照单全收 |
 | HIGH | `PACKAGE_QUANTITY_NOT_VALIDATED` | POST /api/orders | 明细数量可以改成 99，价格仍按套餐原价结算（加量不加价） |
@@ -45,16 +43,6 @@
 - 复现：python3 integration_chain.py --chain CHAIN-B
 - 证据：`{"chain_steps": [{"n": 1, "method": "POST", "path": "/api/uploads/product-image", "status": 200, "evidence": "上传非图片字节 55 字节，自报 image/png、文件名 probe.png → imageUrl=/uploads/products/70206bca-2453-43fd-a82e-0f7065ebe3ca.png"}, {"n": 2, "method": "GET", "path": "/uploads/products/70206bca-2453-43fd-a82e-0f7065ebe3ca.png", "status": 200, "evidence": "匿名连接（无凭证）下载 → 200，字节完全一致=True，Content-Type=image/png"}, {"n": 3, "method": "FS", "path": "/app/uploads/products/70206bca-2453-43fd-a82e-0f7065ebe3ca.png", "status": 200, "evidence": "-rw-r--r-- 1 root root 55 Nov 14 16:55 /app/uploads/products/70206bca-2453-43fd-a82e-0f7065ebe3ca.png"}], "evidence": "下载字节与上传字节一致=True，Content-Type 由服务端按扩展名给出"}`
 
-### CRITICAL · PRICE_CLIENT_CONTROLLED_XL
-
-**同一订单里并存两个互相矛盾的价格：成交价 0.01 元、套餐价 468.00 元**
-
-- 端点：POST /api/orders
-- 归属层：集权层（集成症状；根因归服务层）
-- 说明：套餐标价 46800 分，客户端报成交价 1 分，后端原样落库并返回 200。更糟的是集成症状：OrderResponse 同时返回 finalPriceCent=1 与 packageSnapshot.priceCent=46800，而前端 mapOrder 正好一个用来渲染金额、一个用来渲染套餐价 —— Pad 端同一张订单会同时显示 0.01 元和 468.00 元。服务端没有任何按套餐计价的能力，定价权完全在客户端手上。
-- 复现：python3 integration_dynamic.py --scenario SC01_CLIENT_CONTROLLED_PRICE
-- 证据：`{"final_price_cent": 1, "snapshot_price_cent": 46800, "order_id": 2614, "root_cause": "OrderService.resolveFinalPrice 直接采纳客户端 finalPriceCent", "related_lower_layer": "服务层 test_price_is_not_client_controlled 已报根因，本条只补集成症状"}`
-
 ### HIGH · INT-PII-MASKED-ONLY-IN-FRONTEND
 
 **手机号脱敏只做在渲染层：接口与库里都是明文，匿名可批量拉取**
@@ -64,16 +52,6 @@
 - 说明：订单详情抽屉把手机号显示成 138****9999，说明产品侧认定它是敏感字段；但 API 原样返回明文，库里也是明文。配合零鉴权，任何人可分页拉全量手机号。
 - 复现：python3 integration_chain.py --chain CHAIN-A
 - 证据：`{"chain_steps": [{"n": 1, "method": "POST", "path": "/api/orders", "status": 200, "evidence": "订单主人创建订单 id=2619（请求里没有任何凭证头）"}, {"n": 2, "method": "GET", "path": "/api/orders/2619", "status": 200, "evidence": "全新连接（无 Cookie / Token）读到 4 个 PII 字段：['customerName', 'customerPhone', 'address', 'remark']"}, {"n": 3, "method": "前端", "path": "App.jsx 订单详情抽屉", "status": null, "evidence": "接口返回手机号明文 13800000999，前端渲染时才脱敏成 138****0999 —— 脱敏只发生在展示层，接口与库里都是明文"}, {"n": 4, "method": "PATCH", "path": "/api/orders/2619/status", "status": 200, "evidence": "匿名改状态 → DEPOSIT_PAID"}, {"n": 5, "method": "PUT", "path": "/api/orders/2619", "status": 200, "evidence": "匿名全量覆盖订单：改电话 + 把明细数量改成 99"}, {"n": 6, "method": "DB", "path": "SELECT ... WHERE id=2619", "status": 200, "evidence": "库里的快照已被重写：明细数量=99，电话=13900000000，状态=PENDING"}], "evidence": "接口返回 customerPhone=13800000999，前端渲染脱敏为 138****0999"}`
-
-### HIGH · INT-THREE-PRICES-NO-DETAIL-TOTAL
-
-**同一订单并存三个互不相等的价格，界面只展示其中两个，明细合计从不显示**
-
-- 端点：CHAIN-D
-- 归属层：集成层（链级后果；控价根因归函数层 FN-PRICE-CLIENT-CONTROLLED）
-- 说明：客户端可把成交价改成 0.01 元，同时把明细数量改成 99；订单详情抽屉渲染了订单金额和套餐名，却没有渲染明细合计，业务侧没有任何一处能看出这两个数字对不上。
-- 复现：python3 integration_chain.py --chain CHAIN-D
-- 证据：`{"chain_steps": [{"n": 1, "method": "PUT", "path": "/api/orders/2621", "status": 200, "evidence": "匿名把明细数量改成 99，成交价保持 1 分"}, {"n": 2, "method": "GET", "path": "/api/orders/2621", "status": 200, "evidence": "订单金额 0.01 元 / 明细合计 4950.0 元 / 套餐标价 88.88 元 —— 三个数字互不相等"}, {"n": 3, "method": "前端", "path": "App.jsx 订单详情抽屉", "status": null, "evidence": "抽屉只渲染 已选套餐 / 加购商品 / 订单金额 / 定金，明细单价与明细合计一律不渲染，员工在界面上无法核对订单金额的构成"}], "evidence": "订单金额 0.01 元 vs 明细合计 4950.0 元 vs 套餐标价 88.88 元"}`
 
 ### HIGH · LIST_TRUNCATED_AT_100
 
@@ -284,14 +262,14 @@
 - ✅ **RECON_ALIGNED_orders_status** — orders.status 三方闭合：DB PENDING → API PENDING → 前端 待确认
 - ✅ **RECON_ALIGNED_orders_package_snapshot** — orders.package_snapshot 三方闭合：DB 快照键 ['banquetType', 'imageUrl', 'items', 'packageId', 'packageName', 'priceCent'] / API 快照键 ['banquetType', 'imageUrl', 'items', 'packageId', 'packageName', 'priceCent'] / 前端要读 ['banquetType', 'items', 'packageId', 'packageName']
 - ✅ **RECON_ALIGNED_orders_package_snapshot.items** — orders.package_snapshot.items 三方闭合：DB 明细键 ['categoryName', 'imageUrl', 'priceCent', 'productId', 'productName', 'quantity', 'unit'] / API 明细键 ['categoryName', 'imageUrl', 'priceCent', 'productId', 'productName', 'quantity', 'unit']
-- ✅ **RECON_CORROBORATES_orders_final_price_cent** — orders.final_price_cent 语义不闭合（前端看到的明细合计 25000 分（250.0 元） vs 订单金额 13579 分（135.79 元），差额 11421 分；服务端对 finalPriceCent 不做任何核对）—— 根因已在function层开单，本层只做跨源佐证，不重复计缺陷
+- ✅ **RECON_CORROBORATES_orders_final_price_cent** — orders.final_price_cent 语义不闭合（前端看到的明细合计 25000 分（250.0 元） vs 订单金额 13579 分（135.79 元），差额 11421 分；服务端对 finalPriceCent 不做任何核对）—— 根因归function层，但其业务预期未经确认，已进待确认疑点清单、不进缺陷台账，本层只做跨源佐证，不重复计缺陷
 - ✅ **RECON_ALIGNED_orders_added_items_snapshot** — orders.added_items_snapshot 三方闭合：前端要读 ['priceCent', 'productId', 'productName', 'quantity'] / API 加购明细键 ['categoryName', 'imageUrl', 'priceCent', 'productId', 'productName', 'quantity', 'unit']
 - ✅ **RECON_CORROBORATES_packages_banquet_type** — packages.banquet_type 语义不闭合（服务层有 PACKAGE_TYPE_NOT_FOUND 校验，DB 直写畅通无阻）—— 根因已在class层开单，本层只做跨源佐证，不重复计缺陷
 - ✅ **RECON_CORROBORATES_orders_customer_phone** — orders.customer_phone 语义不闭合（服务层有 无 校验，DB 直写畅通无阻）—— 根因已在class层开单，本层只做跨源佐证，不重复计缺陷
 - ✅ **RECON_DERIVED_FIELDS_CLOSED** — 38 个 API 字段在 DB 里没有对应列（join / 计算派生），前端消费口径与 API 一致
 - ✅ **RECON_FRONTEND_UNUSED_FIELDS_BY_DESIGN** — 10 个 API 字段前端不消费：审计时间戳，或前端按 productId 回查商品表
 - ✅ **RECON_TOTAL** — 三方对账共 111 项
-- ✅ **CHAIN_CORROBORATES_CHAIN-C** — CHAIN-C 证实了低层缺陷：成交价 0.01 元被三方一致接受，而明细合计是 150.0 元，差 14999 分（150.0 元）；服务端没有任何一处核对
+- ✅ **CHAIN_CORROBORATES_CHAIN-C** — CHAIN-C 跨层观测：成交价 0.01 元被三方一致接受，而明细合计是 150.0 元，差 14999 分（150.0 元）；服务端没有任何一处核对（引用的 FN-PRICE-CLIENT-CONTROLLED 业务预期未经确认，进待确认疑点清单，不作为已开单缺陷）
 - ✅ **CHAIN_CORROBORATES_CHAIN-E** — CHAIN-E 证实了低层缺陷：0 元定金、0.01 元金额的订单被推成「已完成」，业务侧看到的是一张已交付订单
 
 ---

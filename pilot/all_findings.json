@@ -3,86 +3,201 @@
   "contract": "/Users/june/.cc-weixin/workspace/layered-audit/layers.yaml",
   "target": "/Users/june/.cc-weixin/workspace/layered-audit/pilot/target.json",
   "counts": {
-    "total": 95,
+    "total": 83,
     "by_layer": {
-      "function": 15,
-      "file": 18,
-      "service": 23,
-      "class": 24,
-      "integration": 15
+      "function": 13,
+      "file": 16,
+      "service": 21,
+      "class": 21,
+      "integration": 12
     },
     "by_kind": {
-      "defect": 78,
+      "defect": 66,
       "positive": 15,
       "observation": 2
     }
   },
+  "warrant_coverage": {
+    "by_producer": [
+      {
+        "producer": "business_findings.json",
+        "total": 1,
+        "defects": 0,
+        "registry_covered": 0,
+        "held": 0,
+        "gate": "oracle",
+        "script": "engine/business_verdict.py",
+        "unadjudicated": 0
+      },
+      {
+        "producer": "class_findings.json",
+        "total": 19,
+        "defects": 15,
+        "registry_covered": 0,
+        "held": 0,
+        "gate": "oracle",
+        "script": "class_diff.py",
+        "unadjudicated": 0
+      },
+      {
+        "producer": "concurrency_findings.json",
+        "total": 3,
+        "defects": 2,
+        "registry_covered": 2,
+        "held": 1,
+        "gate": "none",
+        "script": "concurrency_props.py",
+        "unadjudicated": 0
+      },
+      {
+        "producer": "config_findings.json",
+        "total": 4,
+        "defects": 3,
+        "registry_covered": 3,
+        "held": 0,
+        "gate": "none",
+        "script": "config_probe.py",
+        "unadjudicated": 0
+      },
+      {
+        "producer": "feature_findings.json",
+        "total": 2,
+        "defects": 2,
+        "registry_covered": 1,
+        "held": 0,
+        "gate": "none",
+        "script": "java_feature_scan.py",
+        "unadjudicated": 1
+      },
+      {
+        "producer": "file_findings.json",
+        "total": 16,
+        "defects": 10,
+        "registry_covered": 0,
+        "held": 0,
+        "gate": "warrant",
+        "script": "engine/file_diff.py",
+        "unadjudicated": 0
+      },
+      {
+        "producer": "findings.json",
+        "total": 10,
+        "defects": 10,
+        "registry_covered": 0,
+        "held": 0,
+        "gate": "warrant",
+        "script": "contract_diff.py",
+        "unadjudicated": 0
+      },
+      {
+        "producer": "fn_findings.json",
+        "total": 8,
+        "defects": 8,
+        "registry_covered": 0,
+        "held": 0,
+        "gate": "oracle",
+        "script": "engine/fn_diff.py",
+        "unadjudicated": 0
+      },
+      {
+        "producer": "integration_findings.json",
+        "total": 12,
+        "defects": 11,
+        "registry_covered": 0,
+        "held": 0,
+        "gate": "oracle",
+        "script": "integration_diff.py",
+        "unadjudicated": 0
+      },
+      {
+        "producer": "mutation_findings.json",
+        "total": 2,
+        "defects": 1,
+        "registry_covered": 0,
+        "held": 0,
+        "gate": "none",
+        "script": "mutation_test.py",
+        "unadjudicated": 1
+      },
+      {
+        "producer": "numeric_findings.json",
+        "total": 3,
+        "defects": 2,
+        "registry_covered": 1,
+        "held": 0,
+        "gate": "none",
+        "script": "numeric_props.py",
+        "unadjudicated": 1
+      },
+      {
+        "producer": "orm_findings.json",
+        "total": 2,
+        "defects": 2,
+        "registry_covered": 2,
+        "held": 0,
+        "gate": "none",
+        "script": "orm_query_probe.py",
+        "unadjudicated": 0
+      },
+      {
+        "producer": "perf_findings.json",
+        "total": 2,
+        "defects": 2,
+        "registry_covered": 2,
+        "held": 2,
+        "gate": "none",
+        "script": "perf_load.py",
+        "unadjudicated": 0
+      },
+      {
+        "producer": "property_binding_findings.json",
+        "total": 1,
+        "defects": 1,
+        "registry_covered": 1,
+        "held": 0,
+        "gate": "none",
+        "script": "property_binding_probe.py",
+        "unadjudicated": 0
+      },
+      {
+        "producer": "transaction_findings.json",
+        "total": 1,
+        "defects": 0,
+        "registry_covered": 0,
+        "held": 0,
+        "gate": "none",
+        "script": "transaction_probe.py",
+        "unadjudicated": 0
+      }
+    ],
+    "producer_count": 15,
+    "gate_modes": {
+      "warrant": 2,
+      "oracle": 4,
+      "none": 9,
+      "unknown": 0
+    },
+    "ungated_producers": [
+      "concurrency_findings.json",
+      "config_findings.json",
+      "feature_findings.json",
+      "mutation_findings.json",
+      "numeric_findings.json",
+      "orm_findings.json",
+      "perf_findings.json",
+      "property_binding_findings.json",
+      "transaction_findings.json"
+    ],
+    "unadjudicated_defects": 3,
+    "registry_size": 12,
+    "held_at_ledger": 3,
+    "input_warnings": [],
+    "caliber_note": "gate=warrant 表示已接 A/B 判据来源二分闸门；oracle 表示只有业务预期 oracle 闸门（未区分技术可自证）；none/unknown 表示未接。unadjudicated 只统计未接闸门生产者名下、且不在登记册里的 defect。**三个口径不得混算，未接闸门的条数必须与已接的并排报。**"
+  },
   "findings": [
     {
-      "id": "FN-PRICE-CLIENT-CONTROLLED",
-      "uid": "function:FN-PRICE-CLIENT-CONTROLLED#0",
-      "layer": "function",
-      "category": "function.boundary",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/OrderService.java",
-        "line": 89,
-        "symbol": "OrderService.resolveFinalPrice",
-        "endpoint": ""
-      },
-      "claim": "成交价是否只有下界校验、完全没有上界约束？",
-      "evidence_refs": [
-        "fn_findings.json#FN-PRICE-CLIENT-CONTROLLED",
-        "APL-15"
-      ],
-      "repro_cmd": "python3 fn_dynamic.py --case APL-15",
-      "repro_granularity": "case",
-      "confidence": 0.97,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-840"
-      ],
-      "owner": {
-        "layer": "function",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "price.final_price.upper_bound_unvalidated",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "stubbed",
-      "severity": "CRITICAL",
-      "title": "成交价由客户端说了算：resolveFinalPrice 只做下界检查，完全不与套餐价比对",
-      "detail": "",
-      "related": [
-        {
-          "layer": "integration",
-          "id": "PRICE_CLIENT_CONTROLLED_XL",
-          "relation": "集成症状：本层是根因",
-          "already_filed_in_that_layer": true
-        },
-        {
-          "layer": "service",
-          "id": "test_create_order_use_final_price",
-          "relation": "既有测试把「保留客户端成交价」写成了断言——缺陷被固化成契约"
-        }
-      ],
-      "note": "属业务边界缺失而非纯入参边界，故归 boundary 而非 numeric",
-      "source": {
-        "file": "fn_findings.json",
-        "index": 0
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": false
-      }
-    },
-    {
       "id": "FN-UPLOAD-NO-CONTENT-SNIFF",
-      "uid": "function:FN-UPLOAD-NO-CONTENT-SNIFF#1",
+      "uid": "function:FN-UPLOAD-NO-CONTENT-SNIFF#0",
       "layer": "function",
       "category": "function.boundary",
       "category_fit": "exact",
@@ -121,7 +236,7 @@
       "note": "",
       "source": {
         "file": "fn_findings.json",
-        "index": 1
+        "index": 0
       },
       "meta": {
         "inferred_fields": [],
@@ -132,7 +247,7 @@
     },
     {
       "id": "FN-ORDER-NO-COLLISION",
-      "uid": "function:FN-ORDER-NO-COLLISION#2",
+      "uid": "function:FN-ORDER-NO-COLLISION#1",
       "layer": "function",
       "category": "function.boundary",
       "category_fit": "stretched",
@@ -172,7 +287,7 @@
       "note": "容量上界问题；并发写库后果在 service 层，但唯一决策点在函数",
       "source": {
         "file": "fn_findings.json",
-        "index": 2
+        "index": 1
       },
       "meta": {
         "inferred_fields": [],
@@ -183,7 +298,7 @@
     },
     {
       "id": "FN-SNAPSHOT-SEMANTICS",
-      "uid": "function:FN-SNAPSHOT-SEMANTICS#3",
+      "uid": "function:FN-SNAPSHOT-SEMANTICS#2",
       "layer": "function",
       "category": "function.boundary",
       "category_fit": "stretched",
@@ -243,7 +358,7 @@
       "note": "",
       "source": {
         "file": "fn_findings.json",
-        "index": 3
+        "index": 2
       },
       "meta": {
         "inferred_fields": [],
@@ -254,7 +369,7 @@
     },
     {
       "id": "FN-APPLY-AMOUNT-INVARIANTS",
-      "uid": "function:FN-APPLY-AMOUNT-INVARIANTS#4",
+      "uid": "function:FN-APPLY-AMOUNT-INVARIANTS#3",
       "layer": "function",
       "category": "function.boundary",
       "category_fit": "exact",
@@ -293,7 +408,7 @@
       "note": "",
       "source": {
         "file": "fn_findings.json",
-        "index": 4
+        "index": 3
       },
       "meta": {
         "inferred_fields": [],
@@ -304,7 +419,7 @@
     },
     {
       "id": "FN-APPLY-NULL-CONTRACT",
-      "uid": "function:FN-APPLY-NULL-CONTRACT#5",
+      "uid": "function:FN-APPLY-NULL-CONTRACT#4",
       "layer": "function",
       "category": "function.exception_path",
       "category_fit": "exact",
@@ -344,7 +459,7 @@
       "note": "",
       "source": {
         "file": "fn_findings.json",
-        "index": 5
+        "index": 4
       },
       "meta": {
         "inferred_fields": [],
@@ -355,7 +470,7 @@
     },
     {
       "id": "FN-ITEM-QUANTITY-NOVALIDATION",
-      "uid": "function:FN-ITEM-QUANTITY-NOVALIDATION#6",
+      "uid": "function:FN-ITEM-QUANTITY-NOVALIDATION#5",
       "layer": "function",
       "category": "function.boundary",
       "category_fit": "exact",
@@ -401,7 +516,7 @@
       "note": "",
       "source": {
         "file": "fn_findings.json",
-        "index": 6
+        "index": 5
       },
       "meta": {
         "inferred_fields": [],
@@ -412,7 +527,7 @@
     },
     {
       "id": "FN-UPLOAD-NO-SIZE-LIMIT",
-      "uid": "function:FN-UPLOAD-NO-SIZE-LIMIT#7",
+      "uid": "function:FN-UPLOAD-NO-SIZE-LIMIT#6",
       "layer": "function",
       "category": "function.boundary",
       "category_fit": "exact",
@@ -451,7 +566,7 @@
       "note": "服务层还有一条 FILE-UPLOAD-LIMIT-SPLIT 是「上限写在哪」的问题，根因不同",
       "source": {
         "file": "fn_findings.json",
-        "index": 7
+        "index": 6
       },
       "meta": {
         "inferred_fields": [],
@@ -462,7 +577,7 @@
     },
     {
       "id": "FN-SEMANTIC-ITEM-QUANTITY-NON-POSITIVE",
-      "uid": "function:FN-SEMANTIC-ITEM-QUANTITY-NON-POSITIVE#8",
+      "uid": "function:FN-SEMANTIC-ITEM-QUANTITY-NON-POSITIVE#7",
       "layer": "function",
       "category": "function.boundary",
       "category_fit": "exact",
@@ -499,55 +614,7 @@
       "note": "来自语义地图的职责断言（OB-NORMALIZE-ITEMS-QUANTITY）；与 FN-ITEM-QUANTITY-NOVALIDATION 同一根因，补上了「数量为 0」这个面",
       "source": {
         "file": "fn_findings.json",
-        "index": 8
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": false
-      }
-    },
-    {
-      "id": "FN-SEMANTIC-PRICE-UPPER-BOUND",
-      "uid": "function:FN-SEMANTIC-PRICE-UPPER-BOUND#9",
-      "layer": "function",
-      "category": "function.boundary",
-      "category_fit": "exact",
-      "suggested_category": "",
-      "location": {
-        "file": "",
-        "line": 0,
-        "symbol": "com.jiuyan.banquet.service.OrderService#resolveFinalPrice",
-        "endpoint": ""
-      },
-      "claim": "职责断言：成交价不得高于套餐标价",
-      "evidence_refs": [
-        "fn_findings.json#FN-SEMANTIC-PRICE-UPPER-BOUND",
-        "OB-RESOLVE-PRICE-UPPER-BOUND"
-      ],
-      "repro_cmd": "python3 fn_dynamic.py --case OB-RESOLVE-PRICE-UPPER-BOUND",
-      "repro_granularity": "case",
-      "confidence": 0.95,
-      "ground_truth": "verified",
-      "cwe": [],
-      "owner": {
-        "layer": "function",
-        "relation": "cited",
-        "basis": "根因归 function；本层拥有链级后果"
-      },
-      "root_cause_key": "price.final_price.upper_bound_unvalidated",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "stubbed",
-      "severity": "HIGH",
-      "title": "职责断言：成交价不得高于套餐标价",
-      "detail": "",
-      "related": [],
-      "note": "来自语义地图的职责断言（OB-RESOLVE-PRICE-UPPER-BOUND）；与 FN-PRICE-CLIENT-CONTROLLED 同一根因，从「使命未被满足」的角度再证一次",
-      "source": {
-        "file": "fn_findings.json",
-        "index": 9
+        "index": 7
       },
       "meta": {
         "inferred_fields": [],
@@ -980,61 +1047,8 @@
       }
     },
     {
-      "id": "FILE-VALIDATION-STATUS-SPLIT",
-      "uid": "file:FILE-VALIDATION-STATUS-SPLIT#8",
-      "layer": "file",
-      "category": "file.error_handling_pattern",
-      "category_fit": "exact",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/dto/PackageItemRequest.java",
-        "line": 0,
-        "symbol": "dto/PackageItemRequest.java",
-        "endpoint": "",
-        "files": [
-          "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/dto/PackageItemRequest.java",
-          "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/service/PackageService.java"
-        ]
-      },
-      "claim": "同一类「参数非法」是否返回两种状态码（400 / 422）？",
-      "evidence_refs": [
-        "file_findings.json#FILE-VALIDATION-STATUS-SPLIT"
-      ],
-      "repro_cmd": "python3 file_dynamic.py",
-      "repro_granularity": "layer",
-      "confidence": 0.94,
-      "ground_truth": "verified",
-      "cwe": [],
-      "owner": {
-        "layer": "file",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "validation.status_code_split",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "stubbed",
-      "severity": "MEDIUM",
-      "title": "同一类「参数非法」返回两种状态码：DTO 校验给 400，服务自校验给 422",
-      "detail": "参数校验被拆在两个文件里，两边各自选了不同的状态码：\n  · DTO 文件声明的约束（数量 @Min(1)、价格 @Min(0)）走 Bean Validation → MethodArgumentNotValidException → handleValidation → 400；\n  · 服务文件自己做的校验（明细为空、明细重复）抛 BusinessException → 422。\n实测同一个接口 PUT /api/packages/4：数量=0 → 400；明细为空 → 422。两者在语义上都是「请求参数不合法」，前端却要写两个分支才能区分，监控按状态码分类时也会把一类错误拆成两堆。\n根因不是某一处写错，而是校验责任分散在 DTO 与 service 两个文件、且没有统一的错误语义约定。",
-      "related": [
-        "UNHANDLED_HTTP_EXCEPTION（服务层）"
-      ],
-      "note": "",
-      "source": {
-        "file": "file_findings.json",
-        "index": 8
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": false
-      }
-    },
-    {
       "id": "FILE-DUPLICATE-HELPERS-ACROSS-SERVICES",
-      "uid": "file:FILE-DUPLICATE-HELPERS-ACROSS-SERVICES#9",
+      "uid": "file:FILE-DUPLICATE-HELPERS-ACROSS-SERVICES#8",
       "layer": "file",
       "category": "file.cohesion",
       "category_fit": "exact",
@@ -1075,7 +1089,7 @@
       "note": "",
       "source": {
         "file": "file_findings.json",
-        "index": 9
+        "index": 8
       },
       "meta": {
         "inferred_fields": [],
@@ -1086,7 +1100,7 @@
     },
     {
       "id": "FILE-ERROR-BODY-SHAPE-INCONSISTENT",
-      "uid": "file:FILE-ERROR-BODY-SHAPE-INCONSISTENT#10",
+      "uid": "file:FILE-ERROR-BODY-SHAPE-INCONSISTENT#9",
       "layer": "file",
       "category": "file.error_handling_pattern",
       "category_fit": "exact",
@@ -1125,57 +1139,7 @@
       "note": "",
       "source": {
         "file": "file_findings.json",
-        "index": 10
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": false
-      }
-    },
-    {
-      "id": "FILE-NULL-BODY-WRAPPED-AS-SUCCESS",
-      "uid": "file:FILE-NULL-BODY-WRAPPED-AS-SUCCESS#11",
-      "layer": "file",
-      "category": "file.error_handling_pattern",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/ApiResponseAdvice.java",
-        "line": 0,
-        "symbol": "config/ApiResponseAdvice.java",
-        "endpoint": "",
-        "files": [
-          "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/config/ApiResponseAdvice.java"
-        ]
-      },
-      "claim": "null 响应体是否也被包成 success=true 的信封？",
-      "evidence_refs": [
-        "file_findings.json#FILE-NULL-BODY-WRAPPED-AS-SUCCESS"
-      ],
-      "repro_cmd": "python3 file_dynamic.py",
-      "repro_granularity": "layer",
-      "confidence": 0.9,
-      "ground_truth": "verified",
-      "cwe": [],
-      "owner": {
-        "layer": "file",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "apiresponse.null_body_wrapped_as_success",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "stubbed",
-      "severity": "LOW",
-      "title": "null 响应体也被包成 success=true 的信封（data 字段缺失）",
-      "detail": "ApiResponseAdvice.beforeBodyWrite 对 body==null 也照样包一层，产出 {success:true, code:OK, message:成功, traceId, timestamp}，data 因为 NON_NULL 被省略。前端拿到 success=true 但没有 data 字段，只能靠「data 存不存在」判断有无结果，与其它接口「data 一定有值」的假设冲突。\n实际链路无害：499 那条走 ResponseEntity<Void>，协商不出 JSON content type，不会走到包装分支。所以这是 INFO 级的契约不一致，不是现网故障。\n顺带两条正向结论：supports() 对 ResponseEntity<ApiResponse<...>> 返回 false（声明类型是 ResponseEntity），但 beforeBodyWrite 的 instanceof ApiResponse 守卫仍然挡住了二次包装；已经包好的信封不会被改写（already_envelope_unchanged=true）。",
-      "related": [],
-      "note": "",
-      "source": {
-        "file": "file_findings.json",
-        "index": 11
+        "index": 9
       },
       "meta": {
         "inferred_fields": [],
@@ -1186,7 +1150,7 @@
     },
     {
       "id": "FILE-CORS-NEGATIVE-PRECISION",
-      "uid": "file:FILE-CORS-NEGATIVE-PRECISION#12",
+      "uid": "file:FILE-CORS-NEGATIVE-PRECISION#10",
       "layer": "file",
       "category": "UNMAPPED",
       "category_fit": "unmapped",
@@ -1223,7 +1187,7 @@
       "note": "",
       "source": {
         "file": "file_findings.json",
-        "index": 12
+        "index": 10
       },
       "meta": {
         "inferred_fields": [],
@@ -1234,7 +1198,7 @@
     },
     {
       "id": "FILE-NO-DEAD-PRIVATE-METHOD",
-      "uid": "file:FILE-NO-DEAD-PRIVATE-METHOD#13",
+      "uid": "file:FILE-NO-DEAD-PRIVATE-METHOD#11",
       "layer": "file",
       "category": "file.cohesion",
       "category_fit": "exact",
@@ -1271,7 +1235,7 @@
       "note": "",
       "source": {
         "file": "file_findings.json",
-        "index": 13
+        "index": 11
       },
       "meta": {
         "inferred_fields": [],
@@ -1282,7 +1246,7 @@
     },
     {
       "id": "FILE-ROLLBACK-PROVEN",
-      "uid": "file:FILE-ROLLBACK-PROVEN#14",
+      "uid": "file:FILE-ROLLBACK-PROVEN#12",
       "layer": "file",
       "category": "file.error_handling_pattern",
       "category_fit": "exact",
@@ -1319,7 +1283,7 @@
       "note": "",
       "source": {
         "file": "file_findings.json",
-        "index": 14
+        "index": 12
       },
       "meta": {
         "inferred_fields": [],
@@ -1330,7 +1294,7 @@
     },
     {
       "id": "FILE-STATIC-ORACLE-BLIND-SPOT",
-      "uid": "file:FILE-STATIC-ORACLE-BLIND-SPOT#15",
+      "uid": "file:FILE-STATIC-ORACLE-BLIND-SPOT#13",
       "layer": "file",
       "category": "UNMAPPED",
       "category_fit": "unmapped",
@@ -1367,7 +1331,7 @@
       "note": "这是对工具盲区的记录，不是被测系统的性质",
       "source": {
         "file": "file_findings.json",
-        "index": 15
+        "index": 13
       },
       "meta": {
         "inferred_fields": [],
@@ -1378,7 +1342,7 @@
     },
     {
       "id": "FILE-STATIC-SAME-ROOT",
-      "uid": "file:FILE-STATIC-SAME-ROOT#16",
+      "uid": "file:FILE-STATIC-SAME-ROOT#14",
       "layer": "file",
       "category": "UNMAPPED",
       "category_fit": "unmapped",
@@ -1415,7 +1379,7 @@
       "note": "",
       "source": {
         "file": "file_findings.json",
-        "index": 16
+        "index": 14
       },
       "meta": {
         "inferred_fields": [],
@@ -1426,7 +1390,7 @@
     },
     {
       "id": "FILE-TXN-BOUNDARY-COMPLETE",
-      "uid": "file:FILE-TXN-BOUNDARY-COMPLETE#17",
+      "uid": "file:FILE-TXN-BOUNDARY-COMPLETE#15",
       "layer": "file",
       "category": "file.error_handling_pattern",
       "category_fit": "exact",
@@ -1463,7 +1427,7 @@
       "note": "",
       "source": {
         "file": "file_findings.json",
-        "index": 17
+        "index": 15
       },
       "meta": {
         "inferred_fields": [],
@@ -2499,57 +2463,8 @@
       }
     },
     {
-      "id": "CLASS-NOTNULL-BYPASSED-BY-EMPTY-STRING",
-      "uid": "class:CLASS-NOTNULL-BYPASSED-BY-EMPTY-STRING#11",
-      "layer": "class",
-      "category": "class.invariant",
-      "category_fit": "exact",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/BanquetOrder.java",
-        "line": 0,
-        "symbol": "address",
-        "endpoint": ""
-      },
-      "claim": "NOT NULL 列是否可以用空串绕过？",
-      "evidence_refs": [
-        "class_findings.json#CLASS-NOTNULL-BYPASSED-BY-EMPTY-STRING"
-      ],
-      "repro_cmd": "python3 class_dynamic.py",
-      "repro_granularity": "layer",
-      "confidence": 0.92,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-20"
-      ],
-      "owner": {
-        "layer": "class",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "db.notnull_bypassed_by_empty_string",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "hybrid",
-      "severity": "MEDIUM",
-      "title": "orders.address 声明 NOT NULL，实际用空串绕过 —— 非空约束只挡了 NULL",
-      "detail": "三方声明：DB 列 address 为 NOT NULL，实体 @Column(nullable=false)，但 DTO 的 address 没有任何约束。实测：客户端不传 address，接口返回 200，库里落的是空串 ''。NOT NULL 只证明列不是 NULL，空串照样入库 —— 约束拦不住业务上的空。后果：订单地址为空，宴会执行单拿不到地址，且没有任何一层会报错。",
-      "related": [],
-      "note": "",
-      "source": {
-        "file": "class_findings.json",
-        "index": 11
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": false
-      }
-    },
-    {
       "id": "CLASS-REQUIRED-CHECKED-IN-SERVICE-LAYER",
-      "uid": "class:CLASS-REQUIRED-CHECKED-IN-SERVICE-LAYER#12",
+      "uid": "class:CLASS-REQUIRED-CHECKED-IN-SERVICE-LAYER#11",
       "layer": "class",
       "category": "class.contract_violation",
       "category_fit": "stretched",
@@ -2585,56 +2500,7 @@
       "note": "",
       "source": {
         "file": "class_findings.json",
-        "index": 12
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": false
-      }
-    },
-    {
-      "id": "CLASS-PUT-WIPES-UNSET-FIELD",
-      "uid": "class:CLASS-PUT-WIPES-UNSET-FIELD#13",
-      "layer": "class",
-      "category": "class.contract_violation",
-      "category_fit": "exact",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/Product.java",
-        "line": 0,
-        "symbol": "",
-        "endpoint": ""
-      },
-      "claim": "PUT 全量覆盖是否会把不传的字段抹成 NULL？",
-      "evidence_refs": [
-        "class_findings.json#CLASS-PUT-WIPES-UNSET-FIELD"
-      ],
-      "repro_cmd": "python3 class_dynamic.py",
-      "repro_granularity": "layer",
-      "confidence": 0.91,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-20"
-      ],
-      "owner": {
-        "layer": "class",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "api.put_full_overwrite",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "hybrid",
-      "severity": "MEDIUM",
-      "title": "PUT 是全量覆盖：不传的 imageUrl 会被抹成 NULL",
-      "detail": "UpdateProductRequest.imageUrl 没有任何约束（可缺省），但 PUT 的语义是全量替换。实测：创建时带图片路径，随后一次不带 imageUrl 的 PUT 之后，image_url 变成 NULL。后果不是校验问题而是数据丢失 —— 磁盘上的图片文件还在，但数据库里的引用没了，文件成为孤儿，前端永远拿不到图。",
-      "related": [],
-      "note": "",
-      "source": {
-        "file": "class_findings.json",
-        "index": 13
+        "index": 11
       },
       "meta": {
         "inferred_fields": [],
@@ -2645,7 +2511,7 @@
     },
     {
       "id": "CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES",
-      "uid": "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#14",
+      "uid": "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#12",
       "layer": "class",
       "category": "UNMAPPED",
       "category_fit": "unmapped",
@@ -2681,7 +2547,7 @@
       "note": "缺陷跨三个文件（cohesion 信号），但 class 层的 escalation_to 只有 service，不能把归属上提到 file；owner 留在 class，与 manifest 的 attribution 一致",
       "source": {
         "file": "class_findings.json",
-        "index": 14
+        "index": 12
       },
       "meta": {
         "inferred_fields": [],
@@ -2692,7 +2558,7 @@
     },
     {
       "id": "CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES",
-      "uid": "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#15",
+      "uid": "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#13",
       "layer": "class",
       "category": "UNMAPPED",
       "category_fit": "unmapped",
@@ -2728,7 +2594,7 @@
       "note": "缺陷跨三个文件（cohesion 信号），但 class 层的 escalation_to 只有 service，不能把归属上提到 file；owner 留在 class，与 manifest 的 attribution 一致",
       "source": {
         "file": "class_findings.json",
-        "index": 15
+        "index": 13
       },
       "meta": {
         "inferred_fields": [],
@@ -2739,7 +2605,7 @@
     },
     {
       "id": "CLASS-ERROR-MESSAGE-MISMATCH",
-      "uid": "class:CLASS-ERROR-MESSAGE-MISMATCH#16",
+      "uid": "class:CLASS-ERROR-MESSAGE-MISMATCH#14",
       "layer": "class",
       "category": "class.contract_violation",
       "category_fit": "stretched",
@@ -2775,54 +2641,7 @@
       "note": "",
       "source": {
         "file": "class_findings.json",
-        "index": 16
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": false
-      }
-    },
-    {
-      "id": "CLASS-ENUM-CASE-SENSITIVE",
-      "uid": "class:CLASS-ENUM-CASE-SENSITIVE#17",
-      "layer": "class",
-      "category": "class.contract_violation",
-      "category_fit": "stretched",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/entity/OrderStatus.java",
-        "line": 0,
-        "symbol": "",
-        "endpoint": ""
-      },
-      "claim": "状态枚举是否大小写敏感，小写 pending 直接 400？",
-      "evidence_refs": [
-        "class_findings.json#CLASS-ENUM-CASE-SENSITIVE"
-      ],
-      "repro_cmd": "python3 class_dynamic.py",
-      "repro_granularity": "layer",
-      "confidence": 0.82,
-      "ground_truth": "verified",
-      "cwe": [],
-      "owner": {
-        "layer": "class",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "enum.case_sensitive",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "hybrid",
-      "severity": "LOW",
-      "title": "订单状态枚举大小写敏感，小写 pending 直接 400",
-      "detail": "DTO 的 status 字段直接用 OrderStatus 枚举，Jackson 默认大小写敏感。实测传 'pending' 返回 400「订单状态不正确」。对外 API 的枚举值应当约定为大小写不敏感或明确写进 OpenAPI，否则每个新客户端都会踩一次。",
-      "related": [],
-      "note": "",
-      "source": {
-        "file": "class_findings.json",
-        "index": 17
+        "index": 14
       },
       "meta": {
         "inferred_fields": [],
@@ -2833,7 +2652,7 @@
     },
     {
       "id": "ENUM_CHECK_ALIGNED",
-      "uid": "class:ENUM_CHECK_ALIGNED#18",
+      "uid": "class:ENUM_CHECK_ALIGNED#15",
       "layer": "class",
       "category": "class.contract_violation",
       "category_fit": "exact",
@@ -2869,7 +2688,7 @@
       "note": "",
       "source": {
         "file": "class_findings.json",
-        "index": 18
+        "index": 15
       },
       "meta": {
         "inferred_fields": [],
@@ -2880,7 +2699,7 @@
     },
     {
       "id": "CLASS-NULLABILITY-ALIGNED",
-      "uid": "class:CLASS-NULLABILITY-ALIGNED#19",
+      "uid": "class:CLASS-NULLABILITY-ALIGNED#16",
       "layer": "class",
       "category": "class.invariant",
       "category_fit": "exact",
@@ -2911,12 +2730,12 @@
       "runtime_fidelity": "hybrid",
       "severity": "INFO",
       "title": "可空性三方一致 27/31 列（同向设防 21 · DTO 更严 0 · 都可空 6）",
-      "detail": "这是差分引擎的通过结论：DTO 的非空声明要么与 DB 一致，要么比 DB 更严（DTO 先拦，留给 DB 兜底），方向正确。不成立的只有下面单列出来的那几列。",
+      "detail": "这是差分引擎的通过结论：DTO 的非空声明要么与 DB 一致，要么比 DB 更严（DTO 先拦，留给 DB 兜底），方向正确。不成立的 4 列里，1 列的业务预期未确认或被文档否定，只保留观测、不开单（见旁路留痕），其余单列在下面。",
       "related": [],
       "note": "",
       "source": {
         "file": "class_findings.json",
-        "index": 19
+        "index": 16
       },
       "meta": {
         "inferred_fields": [],
@@ -2927,7 +2746,7 @@
     },
     {
       "id": "CLASS-CHECK-DTO-ALIGNED",
-      "uid": "class:CLASS-CHECK-DTO-ALIGNED#20",
+      "uid": "class:CLASS-CHECK-DTO-ALIGNED#17",
       "layer": "class",
       "category": "class.contract_violation",
       "category_fit": "exact",
@@ -2963,7 +2782,7 @@
       "note": "",
       "source": {
         "file": "class_findings.json",
-        "index": 20
+        "index": 17
       },
       "meta": {
         "inferred_fields": [],
@@ -2974,7 +2793,7 @@
     },
     {
       "id": "CLASS-PUT-REQUIRED-FK-GUARDED",
-      "uid": "class:CLASS-PUT-REQUIRED-FK-GUARDED#21",
+      "uid": "class:CLASS-PUT-REQUIRED-FK-GUARDED#18",
       "layer": "class",
       "category": "class.contract_violation",
       "category_fit": "exact",
@@ -3010,7 +2829,7 @@
       "note": "",
       "source": {
         "file": "class_findings.json",
-        "index": 21
+        "index": 18
       },
       "meta": {
         "inferred_fields": [],
@@ -3124,57 +2943,8 @@
       }
     },
     {
-      "id": "PRICE_CLIENT_CONTROLLED_XL",
-      "uid": "integration:PRICE_CLIENT_CONTROLLED_XL#2",
-      "layer": "integration",
-      "category": "integration.end_to_end_business",
-      "category_fit": "exact",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
-        "line": 52,
-        "symbol": "POST /api/orders",
-        "endpoint": "POST /api/orders"
-      },
-      "claim": "同一订单里是否并存两个互相矛盾的价格？",
-      "evidence_refs": [
-        "integration_findings.json#PRICE_CLIENT_CONTROLLED_XL"
-      ],
-      "repro_cmd": "python3 integration_dynamic.py --scenario SC01_CLIENT_CONTROLLED_PRICE",
-      "repro_granularity": "scenario",
-      "confidence": 0.95,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-840"
-      ],
-      "owner": {
-        "layer": "function",
-        "relation": "cited",
-        "basis": "根因归 function；本层拥有链级后果"
-      },
-      "root_cause_key": "price.final_price.upper_bound_unvalidated",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "container",
-      "severity": "CRITICAL",
-      "title": "同一订单里并存两个互相矛盾的价格：成交价 0.01 元、套餐价 468.00 元",
-      "detail": "套餐标价 46800 分，客户端报成交价 1 分，后端原样落库并返回 200。更糟的是集成症状：OrderResponse 同时返回 finalPriceCent=1 与 packageSnapshot.priceCent=46800，而前端 mapOrder 正好一个用来渲染金额、一个用来渲染套餐价 —— Pad 端同一张订单会同时显示 0.01 元和 468.00 元。服务端没有任何按套餐计价的能力，定价权完全在客户端手上。",
-      "related": [],
-      "note": "源数据把根因归 service 层；实测唯一决策点在 OrderService.resolveFinalPrice，函数层已给出可复现证据，故 owner 修正为 function",
-      "source": {
-        "file": "integration_findings.json",
-        "index": 2
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": false
-      }
-    },
-    {
       "id": "INT-PII-MASKED-ONLY-IN-FRONTEND",
-      "uid": "integration:INT-PII-MASKED-ONLY-IN-FRONTEND#3",
+      "uid": "integration:INT-PII-MASKED-ONLY-IN-FRONTEND#2",
       "layer": "integration",
       "category": "integration.end_to_end_business",
       "category_fit": "exact",
@@ -3213,59 +2983,7 @@
       "note": "",
       "source": {
         "file": "integration_findings.json",
-        "index": 3
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": false
-      }
-    },
-    {
-      "id": "INT-THREE-PRICES-NO-DETAIL-TOTAL",
-      "uid": "integration:INT-THREE-PRICES-NO-DETAIL-TOTAL#4",
-      "layer": "integration",
-      "category": "integration.end_to_end_business",
-      "category_fit": "exact",
-      "suggested_category": "",
-      "location": {
-        "file": "",
-        "line": 0,
-        "symbol": "CHAIN-D",
-        "endpoint": "CHAIN-D"
-      },
-      "claim": "同一订单是否并存三个互不相等的价格，界面只展示其中两个？",
-      "evidence_refs": [
-        "integration_findings.json#INT-THREE-PRICES-NO-DETAIL-TOTAL",
-        "integration_chains.json#chain_steps"
-      ],
-      "repro_cmd": "python3 integration_chain.py --chain CHAIN-D",
-      "repro_granularity": "scenario",
-      "confidence": 0.93,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-840"
-      ],
-      "owner": {
-        "layer": "function",
-        "relation": "cited",
-        "basis": "根因归 function；本层拥有链级后果"
-      },
-      "root_cause_key": "price.final_price.upper_bound_unvalidated",
-      "related_root_causes": [
-        "frontend.detail_total_not_surfaced"
-      ],
-      "kind": "defect",
-      "runtime_fidelity": "container",
-      "severity": "HIGH",
-      "title": "同一订单并存三个互不相等的价格，界面只展示其中两个，明细合计从不显示",
-      "detail": "客户端可把成交价改成 0.01 元，同时把明细数量改成 99；订单详情抽屉渲染了订单金额和套餐名，却没有渲染明细合计，业务侧没有任何一处能看出这两个数字对不上。",
-      "related": [],
-      "note": "",
-      "source": {
-        "file": "integration_findings.json",
-        "index": 4
+        "index": 2
       },
       "meta": {
         "inferred_fields": [],
@@ -3276,7 +2994,7 @@
     },
     {
       "id": "LIST_TRUNCATED_AT_100",
-      "uid": "integration:LIST_TRUNCATED_AT_100#5",
+      "uid": "integration:LIST_TRUNCATED_AT_100#3",
       "layer": "integration",
       "category": "integration.end_to_end_business",
       "category_fit": "exact",
@@ -3312,7 +3030,7 @@
       "note": "",
       "source": {
         "file": "integration_findings.json",
-        "index": 5
+        "index": 3
       },
       "meta": {
         "inferred_fields": [],
@@ -3323,7 +3041,7 @@
     },
     {
       "id": "PACKAGE_ITEM_NOT_VALIDATED",
-      "uid": "integration:PACKAGE_ITEM_NOT_VALIDATED#6",
+      "uid": "integration:PACKAGE_ITEM_NOT_VALIDATED#4",
       "layer": "integration",
       "category": "integration.end_to_end_business",
       "category_fit": "exact",
@@ -3361,7 +3079,7 @@
       "note": "",
       "source": {
         "file": "integration_findings.json",
-        "index": 6
+        "index": 4
       },
       "meta": {
         "inferred_fields": [],
@@ -3372,7 +3090,7 @@
     },
     {
       "id": "PACKAGE_QUANTITY_NOT_VALIDATED",
-      "uid": "integration:PACKAGE_QUANTITY_NOT_VALIDATED#7",
+      "uid": "integration:PACKAGE_QUANTITY_NOT_VALIDATED#5",
       "layer": "integration",
       "category": "integration.end_to_end_business",
       "category_fit": "exact",
@@ -3410,7 +3128,7 @@
       "note": "",
       "source": {
         "file": "integration_findings.json",
-        "index": 7
+        "index": 5
       },
       "meta": {
         "inferred_fields": [],
@@ -3421,7 +3139,7 @@
     },
     {
       "id": "INT-PACKAGE-COUNT-INCONSISTENT",
-      "uid": "integration:INT-PACKAGE-COUNT-INCONSISTENT#8",
+      "uid": "integration:INT-PACKAGE-COUNT-INCONSISTENT#6",
       "layer": "integration",
       "category": "integration.end_to_end_business",
       "category_fit": "exact",
@@ -3457,7 +3175,7 @@
       "note": "",
       "source": {
         "file": "integration_findings.json",
-        "index": 8
+        "index": 6
       },
       "meta": {
         "inferred_fields": [],
@@ -3468,7 +3186,7 @@
     },
     {
       "id": "INT-PRODUCT-IMAGE-DOMAIN-FALLBACK",
-      "uid": "integration:INT-PRODUCT-IMAGE-DOMAIN-FALLBACK#9",
+      "uid": "integration:INT-PRODUCT-IMAGE-DOMAIN-FALLBACK#7",
       "layer": "integration",
       "category": "integration.end_to_end_business",
       "category_fit": "exact",
@@ -3504,7 +3222,7 @@
       "note": "",
       "source": {
         "file": "integration_findings.json",
-        "index": 9
+        "index": 7
       },
       "meta": {
         "inferred_fields": [],
@@ -3515,7 +3233,7 @@
     },
     {
       "id": "RECORDING_COVERAGE_GAP",
-      "uid": "integration:RECORDING_COVERAGE_GAP#10",
+      "uid": "integration:RECORDING_COVERAGE_GAP#8",
       "layer": "integration",
       "category": "UNMAPPED",
       "category_fit": "unmapped",
@@ -3551,7 +3269,7 @@
       "note": "覆盖度缺口，不是被测系统的缺陷；契约的 integration 类别里没有这一类",
       "source": {
         "file": "integration_findings.json",
-        "index": 10
+        "index": 8
       },
       "meta": {
         "inferred_fields": [],
@@ -3562,7 +3280,7 @@
     },
     {
       "id": "SNAPSHOT_CONTRACT_UNDECLARED",
-      "uid": "integration:SNAPSHOT_CONTRACT_UNDECLARED#11",
+      "uid": "integration:SNAPSHOT_CONTRACT_UNDECLARED#9",
       "layer": "integration",
       "category": "integration.end_to_end_business",
       "category_fit": "stretched",
@@ -3598,7 +3316,7 @@
       "note": "",
       "source": {
         "file": "integration_findings.json",
-        "index": 11
+        "index": 9
       },
       "meta": {
         "inferred_fields": [],
@@ -3609,7 +3327,7 @@
     },
     {
       "id": "UNKNOWN_FIELD_SILENT_DROP",
-      "uid": "integration:UNKNOWN_FIELD_SILENT_DROP#12",
+      "uid": "integration:UNKNOWN_FIELD_SILENT_DROP#10",
       "layer": "integration",
       "category": "integration.end_to_end_business",
       "category_fit": "exact",
@@ -3647,7 +3365,7 @@
       "note": "",
       "source": {
         "file": "integration_findings.json",
-        "index": 12
+        "index": 10
       },
       "meta": {
         "inferred_fields": [],
@@ -3658,7 +3376,7 @@
     },
     {
       "id": "DEAD_BACKEND_ENDPOINT",
-      "uid": "integration:DEAD_BACKEND_ENDPOINT#13",
+      "uid": "integration:DEAD_BACKEND_ENDPOINT#11",
       "layer": "integration",
       "category": "integration.end_to_end_business",
       "category_fit": "stretched",
@@ -3694,103 +3412,7 @@
       "note": "",
       "source": {
         "file": "integration_findings.json",
-        "index": 13
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": false
-      }
-    },
-    {
-      "id": "SVC-PAGINATION-COUNT-DISCARDED",
-      "uid": "service:SVC-PAGINATION-COUNT-DISCARDED#0",
-      "layer": "service",
-      "category": "service.service_latency",
-      "category_fit": "exact",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java",
-        "line": 35,
-        "symbol": "GET /api/products, GET /api/packages, GET /api/orders",
-        "endpoint": "GET /api/products, GET /api/packages, GET /api/orders"
-      },
-      "claim": "分页 count(*) 是否每次列表请求都全表扫描，而前端根本不看 total？",
-      "evidence_refs": [
-        "perf_findings.json#SVC-PAGINATION-COUNT-DISCARDED"
-      ],
-      "repro_cmd": "python3 perf_load.py --scales 0,2000,10000,50000",
-      "repro_granularity": "layer",
-      "confidence": 0.93,
-      "ground_truth": "verified",
-      "cwe": [],
-      "owner": {
-        "layer": "service",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "pagination.count_total_computed_but_discarded",
-      "related_root_causes": [
-        "index.idx_products_name_unusable"
-      ],
-      "kind": "defect",
-      "runtime_fidelity": "container",
-      "severity": "MEDIUM",
-      "title": "分页 total 是纯开销：后端每次列表请求都跑 count(*) 全表扫描，前端从不读这个数",
-      "detail": "每个列表接口都带分页参数，后端对每次请求额外跑一条 count(*) 全表扫描（Seq Scan，因为 idx_products_name 对 lower(name) LIKE '%…%' 不可用）。实测数据量阶梯：30 行 → 1.02ms；2030 行 → 3.97ms；10030 行 → 11.02ms；50030 行 → 29.97ms。\n在 50030 行时，count(*) 单条耗时 10.824ms，占带 keyword 列表接口端到端延迟的 36.1%，占不带 keyword 接口的 97.3%。\n而前端 banquetApi.js 的 listProducts / listPackages / listOrders 三个函数一律只取 data.items.map(...)，total 从未被读取 —— 这份开销 100% 浪费。\n本轮判定「端到端延迟随数据量塌陷」为 PARTIALLY_CONFIRMED：延迟确实随数据量线性增长，但 50030 行时端到端仅 29.97ms，按每行 0.000599ms 折算，要到约 1669336 行才触及 1 秒预算。\n结论：结构性 O(N) 成立，但当前规模下后果未兑现 —— 真正该修的不是「加索引」，而是别让后端算一个没人要的数。",
-      "related": [],
-      "note": "实测 5 万行时 count(*) 占端到端 31%（带 keyword）/ 40%（不带 keyword）；前端 listProducts/listPackages/listOrders 三个函数都只取 items，total 从未被读",
-      "source": {
-        "file": "perf_findings.json",
-        "index": 0
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": false
-      }
-    },
-    {
-      "id": "INT-LIST-COUNT-END-TO-END-WASTE",
-      "uid": "integration:INT-LIST-COUNT-END-TO-END-WASTE#0",
-      "layer": "integration",
-      "category": "integration.cross_service_performance",
-      "category_fit": "exact",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/ProductController.java",
-        "line": 35,
-        "symbol": "GET /api/products, GET /api/packages, GET /api/orders",
-        "endpoint": "GET /api/products, GET /api/packages, GET /api/orders"
-      },
-      "claim": "三个列表接口是否每次都为前端丢弃的 total 付一次全表扫描？",
-      "evidence_refs": [
-        "perf_findings.json#INT-LIST-COUNT-END-TO-END-WASTE"
-      ],
-      "repro_cmd": "python3 perf_load.py --scales 0,2000,10000,50000",
-      "repro_granularity": "layer",
-      "confidence": 0.9,
-      "ground_truth": "verified",
-      "cwe": [],
-      "owner": {
-        "layer": "service",
-        "relation": "cited",
-        "basis": "根因归 service；本层拥有链级后果"
-      },
-      "root_cause_key": "pagination.count_total_computed_but_discarded",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "container",
-      "severity": "MEDIUM",
-      "title": "三个列表接口每次都为前端丢弃的 total 付一次全表扫描",
-      "detail": "三个列表接口（GET /api/products、/api/packages、/api/orders）在集权层实测中，每次请求的 count(*) 部分占端到端延迟的 36.1%~97.3%，而这个 total 前端从头到尾没读过。\n也就是说：用户每翻一次列表，后端就多付一次全表扫描的钱，收益为零。同时前端把 page 固定成 1、pageSize 固定成 100，超出部分永远不可见 —— 分页机制在这条链路上同时是「成本」和「不可用」。",
-      "related": [],
-      "note": "链级后果归集成层，根因（后端白算一次 count）归服务层",
-      "source": {
-        "file": "perf_findings.json",
-        "index": 0
+        "index": 11
       },
       "meta": {
         "inferred_fields": [],
@@ -3917,10 +3539,10 @@
       "cwe": [],
       "owner": {
         "layer": "function",
-        "relation": "cited",
-        "basis": "根因归 function；本层拥有链级后果"
+        "relation": "own",
+        "basis": "attribution.rule：能给出可复现证据的最低层"
       },
-      "root_cause_key": "price.final_price.upper_bound_unvalidated",
+      "root_cause_key": "numeric.amount_exceeds_js_safe_integer",
       "related_root_causes": [],
       "kind": "defect",
       "runtime_fidelity": "stubbed",
@@ -3928,7 +3550,7 @@
       "title": "金额超过 2^53 分时，前端显示的金额与库里存的不一致（后端金额无上界是前提）",
       "detail": "后端对金额只查下界（@Min(0) + CHECK >= 0），没有上界，BIGINT 能存到 9.22e18 分。前端用 JS Number 装分值，超过 2^53（约 9007 万亿元）后就装不下每一个整数。\n{\"cent_exact\": \"9007199254740993\", \"number_holds\": false, \"yuan_displayed\": 90071992547409.92, \"cent_after_display\": \"9007199254740992\", \"lost_cent\": \"1\"}\n{\"cent_exact\": \"9223372036854775807\", \"number_holds\": false, \"yuan_displayed\": 92233720368547760, \"cent_after_display\": \"9223372036854775808\", \"lost_cent\": \"-1\"}\n后端能存进去，前端显示的是另一个数 —— 库里和界面上的金额对不上。\n归属：根因是「金额没有上界」（与 price.final_price.upper_bound_unvalidated 同一根因），这里只量化后果，不重复开单。",
       "related": [],
-      "note": "根因是「金额没有上界」（函数层已开单），这里只量化前端侧后果，不重复开单",
+      "note": "技术可自证，不依赖业务预期：int64 分值超出 JS Number.MAX_SAFE_INTEGER，前端用 Number 装载必然丢精度（IEEE754）。原挂 price.final_price.upper_bound_unvalidated 且 relation=cited，但那个根因是「成交价须 ≤ 套餐价」这条未经确认的业务预期，已撤出台账；本条的「金额无上界」只是可达性前提（DTO @Min(0) + CHECK >= 0 + BIGINT，技术事实），故改 own 独立开单，避免根因无 own 归属",
       "source": {
         "file": "numeric_findings.json",
         "index": 2
@@ -4028,55 +3650,6 @@
       "source": {
         "file": "concurrency_findings.json",
         "index": 1
-      },
-      "meta": {
-        "inferred_fields": [],
-        "confidence_source": "manual",
-        "ground_truth_source": "manual",
-        "duplicate_id_in_layer": false
-      }
-    },
-    {
-      "id": "SVC-POST-NOT-IDEMPOTENT",
-      "uid": "service:SVC-POST-NOT-IDEMPOTENT#2",
-      "layer": "service",
-      "category": "service.resilience",
-      "category_fit": "exact",
-      "suggested_category": "",
-      "location": {
-        "file": "/Users/june/jiuyan/backend/src/main/java/com/jiuyan/banquet/controller/OrderController.java",
-        "line": 52,
-        "symbol": "POST /api/orders",
-        "endpoint": "POST /api/orders"
-      },
-      "claim": "下单接口在客户端重试时会不会产生重复订单？",
-      "evidence_refs": [
-        "concurrency_findings.json#SVC-POST-NOT-IDEMPOTENT"
-      ],
-      "repro_cmd": "python3 concurrency_props.py",
-      "repro_granularity": "layer",
-      "confidence": 0.92,
-      "ground_truth": "verified",
-      "cwe": [
-        "CWE-799"
-      ],
-      "owner": {
-        "layer": "service",
-        "relation": "own",
-        "basis": "attribution.rule：能给出可复现证据的最低层"
-      },
-      "root_cause_key": "order.create.not_idempotent",
-      "related_root_causes": [],
-      "kind": "defect",
-      "runtime_fidelity": "container",
-      "severity": "MEDIUM",
-      "title": "下单接口没有幂等：同一个请求重发一次就产生两个订单",
-      "detail": "POST /api/orders 不接受也不返回幂等键，没有按业务键去重，也没有唯一约束能挡住重复。客户端在超时后重试（这是所有 HTTP 客户端的标准行为），就会多出一张订单。\n实测：{\"property\": \"同一个 POST 重发两次，只能有一个订单落库（POST 必须幂等或带幂等键）\", \"ok\": false, \"http_status\": [200, 200], \"first_order_id\": 2638, \"second_order_id\": 2639, \"orders_in_db\": 2, \"same_id\": false}\n在零鉴权的前提下，这个接口同时也是「随便重发就能灌订单」的放大器。",
-      "related": [],
-      "note": "同一个 POST 发两次 → 两个订单 id、库里 2 行；没有幂等键，也没有业务键去重",
-      "source": {
-        "file": "concurrency_findings.json",
-        "index": 2
       },
       "meta": {
         "inferred_fields": [],

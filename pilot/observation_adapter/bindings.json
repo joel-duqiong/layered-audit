@@ -1,0 +1,82 @@
+{
+  "target": "jiuyan",
+  "bindings": [
+    {
+      "artifact": "class_observation.json",
+      "section": "contract_boundary",
+      "batch": "contract_boundary",
+      "scope": "orders",
+      "row_key": "db_row",
+      "label_key": "label",
+      "scope_evidence": [
+        "class_scenarios.json#/probes/6/read/table",
+        "class_scenarios.json#/probes/6/entity",
+        "class_probe.py:493-494 (db_row = SELECT read.columns FROM read.table WHERE id=created)"
+      ]
+    },
+    {
+      "artifact": "class_observation.json",
+      "section": "nullability",
+      "batch": "nullability",
+      "scope_label_prefix": true,
+      "label_key": "label",
+      "row_key": "db_row",
+      "scope_evidence": [
+        "class_scenarios.json#/probes/7/cases/0/table",
+        "class_scenarios.json#/probes/7/cases/1/table",
+        "class_probe.py:518-519 (db_row = SELECT case.read_columns FROM case.table)"
+      ]
+    },
+    {
+      "artifact": "class_observation.json",
+      "section": "write_footprint",
+      "batch": "write_footprint",
+      "scope_key": "entity",
+      "row_key": "final_row",
+      "scope_evidence": [
+        "class_scenarios.json#/probes/8/entities/0/table",
+        "class_probe.py:529-571 (final_row = 整行 DB 快照)"
+      ]
+    },
+    {
+      "artifact": "class_observation.json",
+      "section": "transition",
+      "batch": "transition",
+      "map_key": "matrix",
+      "scope": "orders",
+      "row_map": {"status": "db_status"},
+      "scope_evidence": [
+        "class_scenarios.json#/probes/0/read/table",
+        "class_scenarios.json#/probes/0/read/column",
+        "class_probe.py:323-327 (db_status = SELECT read.column FROM read.table)"
+      ]
+    },
+    {
+      "artifact": "observation.json",
+      "section": "observations",
+      "batch": "order_response",
+      "scope": "OrderResponse",
+      "row_path": "json.data",
+      "label_key": "key",
+      "filter": {"key": ["GET /api/orders/{id}", "PATCH /api/orders/{id}/status", "POST /api/orders", "PUT /api/orders/{id}"]},
+      "scope_evidence": [
+        "openapi.json#/paths/~1api~1orders~1{id}/get/responses/200/content/*~1*/schema/$ref",
+        "openapi.json#/paths/~1api~1orders~1{id}~1status/patch/responses/200/content/*~1*/schema/$ref"
+      ]
+    },
+    {
+      "artifact": "observation.json",
+      "section": "observations",
+      "batch": "order_response_items",
+      "scope": "OrderResponse",
+      "row_path": "json.data.items",
+      "iterate": true,
+      "label_key": "key",
+      "filter": {"key": ["GET /api/orders"]},
+      "scope_evidence": [
+        "openapi.json#/paths/~1api~1orders/get/responses/200/content/*~1*/schema/$ref",
+        "openapi.json#/components/schemas/PageResponseOrderResponse/properties/items/items/$ref"
+      ]
+    }
+  ]
+}

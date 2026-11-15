@@ -33,6 +33,7 @@ from pathlib import Path
 from typing import Any
 
 import findings_schema
+import oracle_gate
 
 
 def project_dir() -> Path:
@@ -59,8 +60,14 @@ def _load_findings(path: Path) -> list[dict]:
 
 
 def build_findings(cases: list[dict], groups: dict[str, dict],
-                    higher: dict[str, list[dict]]) -> list[dict[str, Any]]:
-    """分组 → 有 FAIL 用例就开一条单。判定口径是通用的；分组语义来自配置。"""
+                    higher: dict[str, list[dict]],
+                    held: list[dict] | None = None) -> list[dict[str, Any]]:
+    """分组 → 有 FAIL 用例就开一条单。判定口径是通用的；分组语义来自配置。
+
+    分组声明了 `oracle` 时必须过来源闸门（硬约束 5）：FAIL 用例只证明
+    「实测与用例断言不符」，而用例断言本身可能是没有来源的业务预期。
+    被压下来的结论进 `held`，由 main() 写进疑点清单，不悄悄消失。
+    """
     by_group: dict[str, list[dict]] = {}
     for c in cases:
         by_group.setdefault(c["group"], []).append(c)
@@ -93,7 +100,7 @@ def build_findings(cases: list[dict], groups: dict[str, dict],
             hit = any(f.get("id") == ident for f in higher.get(layer, []))
             related.append({"layer": layer, "id": ident, "relation": relation,
                             "already_filed_in_that_layer": hit})
-        findings.append({
+        filed = {
             "id": meta["id"], "layer": "function", "severity": meta["severity"],
             "title": meta["title"], "function": meta["function"],
             "root_cause": meta["root_cause"],
@@ -105,12 +112,22 @@ def build_findings(cases: list[dict], groups: dict[str, dict],
             "case_count": len(failed),
             "evidence": evidence,
             "related_findings": related,
-        })
+        }
+        kept, gated = oracle_gate.split(meta.get("oracle"), [filed],
+                                        rule_id=meta["id"])
+        findings.extend(kept)
+        if held is not None:
+            held.extend(gated)
     return findings
 
 
-def semantic_findings(cases: list[dict], sem_map: dict[str, Any]) -> list[dict[str, Any]]:
-    """语义地图的职责断言：失败即开单（开单元数据由项目的语义地图声明）。"""
+def semantic_findings(cases: list[dict], sem_map: dict[str, Any],
+                      held: list[dict] | None = None) -> list[dict[str, Any]]:
+    """语义地图的职责断言：失败即开单（开单元数据由项目的语义地图声明）。
+
+    职责断言声明的是「这个细胞应该做什么」，属业务预期 —— 声明了 `oracle`
+    就必须过来源闸门。`source=declared` 只说明它是人写的，不等于有文档依据。
+    """
     by_case = {m["id"]: m for m in sem_map.get("missions", [])}
     out: list[dict[str, Any]] = []
     for c in cases:
@@ -121,7 +138,7 @@ def semantic_findings(cases: list[dict], sem_map: dict[str, Any]) -> list[dict[s
         if not meta:
             continue
         obs = c.get("observation") or {}
-        out.append({
+        filed = {
             "id": meta["id"], "layer": "function", "severity": meta["severity"],
             "title": meta["title"], "function": c["target"],
             "root_cause": meta.get("root_cause", ""),
@@ -142,7 +159,12 @@ def semantic_findings(cases: list[dict], sem_map: dict[str, Any]) -> list[dict[s
                 "template": mission.get("template"),
                 "source": mission.get("source", "declared"),
             },
-        })
+        }
+        kept, gated = oracle_gate.split(mission.get("oracle"), [filed],
+                                        rule_id=mission.get("id", meta["id"]))
+        out.extend(kept)
+        if held is not None:
+            held.extend(gated)
     return out
 
 
@@ -162,7 +184,8 @@ def main() -> None:
         "integration": _load_findings(art / "integration_findings.json"),
     }
 
-    findings = build_findings(cases, groups, higher)
+    held: list[dict[str, Any]] = []
+    findings = build_findings(cases, groups, higher, held)
 
     severity_rank = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
     findings.sort(key=lambda f: (severity_rank.get(f["severity"], 9), f["id"]))
@@ -172,7 +195,7 @@ def main() -> None:
     # 这看着像个瑕疵（职责断言不参与严重度排序），但改它会动到既有产物的顺序 ——
     # 「通用化不改变任何结论」这条判据包括呈现顺序，所以照搬不改。
     sem_map = _load_json(proj / "semantic_map.json", {})
-    findings.extend(semantic_findings(cases, sem_map))
+    findings.extend(semantic_findings(cases, sem_map, held))
 
     passed = [c for c in cases if c["verdict"] == "PASS"]
     highlights = set(cfg.get("highlight_groups") or [])
@@ -196,6 +219,7 @@ def main() -> None:
                 for s in ("CRITICAL", "HIGH", "MEDIUM", "LOW")
             },
             "source_vs_deployed_drift": declaration.get("meta", {}).get("source_vs_deployed_drift"),
+            "expectation_held": len(held),
         },
         "findings": findings,
         "passed_checks": passed_highlights,
@@ -203,6 +227,19 @@ def main() -> None:
     }
     out_json = art / "fn_findings.json"
     out_json.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    # 预期未确认 / 被文档否定的结论：不进缺陷台账，但必须留痕（硬约束 5）。
+    # **无条件写**：一条都没压下来时也要落盘，否则「没有疑点」与「没查」不可区分。
+    held_buckets = oracle_gate.buckets(held)
+    (art / "fn_rule_suspects.json").write_text(json.dumps({
+        "unconfirmed": held_buckets["unconfirmed"],
+        "unconfirmed_count": len(held_buckets["unconfirmed"]),
+        "refuted": held_buckets["refuted"],
+        "refuted_count": len(held_buckets["refuted"]),
+        "note": "用例 FAIL 只证明「实测与用例断言不符」。用例断言本身可能是没有"
+                "来源的业务预期：未经确认的进待确认疑点（规范层风险），被文档明确"
+                "否定的只保留观测。两者都不进缺陷台账，观测与证据原样留在这里。",
+    }, ensure_ascii=False, indent=2), encoding="utf-8")
 
     md = ["# 函数层缺陷报告（JVM 直调 · 字节码声明 vs 实测行为）", "",
           f"函数总数 {payload['meta']['functions_declared']}，用例 {payload['meta']['cases']} 条，"
@@ -238,6 +275,8 @@ def main() -> None:
     print(f"  缺陷 {len(findings)} 条 " +
           " ".join(f"{k} {v}" for k, v in payload["meta"]["by_severity"].items() if v))
     print(f"  通过用例 {len(passed)} 条，断言亮点 {len(passed_highlights)} 条")
+    print(f"  预期未确认 {len(held_buckets['unconfirmed'])} 条 / 被文档否定 "
+          f"{len(held_buckets['refuted'])} 条（不进台账）-> {art / 'fn_rule_suspects.json'}")
     for f in findings:
         print(f"    {f['severity']:<8} {f['id']:<30} {f['function']}")
 

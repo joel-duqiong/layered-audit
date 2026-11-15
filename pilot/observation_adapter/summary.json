@@ -1,0 +1,2394 @@
+{
+  "schema": "observation-assessment-summary/1",
+  "target": "jiuyan",
+  "runs": [
+    {
+      "pack_file": "observations_contract_boundary__orders.json",
+      "scope": "orders",
+      "observations": 5,
+      "observed_status_counts": {
+        "UNKNOWN": 190,
+        "PASS": 13
+      },
+      "status_counts": {
+        "UNKNOWN": 190,
+        "PASS": 13
+      }
+    },
+    {
+      "pack_file": "observations_nullability__packages.json",
+      "scope": "packages",
+      "observations": 1,
+      "observed_status_counts": {
+        "UNKNOWN": 201,
+        "PASS": 2
+      },
+      "status_counts": {
+        "UNKNOWN": 201,
+        "PASS": 2
+      }
+    },
+    {
+      "pack_file": "observations_nullability__products.json",
+      "scope": "products",
+      "observations": 1,
+      "observed_status_counts": {
+        "UNKNOWN": 201,
+        "PASS": 2
+      },
+      "status_counts": {
+        "UNKNOWN": 201,
+        "PASS": 2
+      }
+    },
+    {
+      "pack_file": "observations_order_response__OrderResponse.json",
+      "scope": "OrderResponse",
+      "observations": 2,
+      "observed_status_counts": {
+        "UNKNOWN": 202,
+        "PASS": 1
+      },
+      "status_counts": {
+        "UNKNOWN": 202,
+        "PASS": 1
+      }
+    },
+    {
+      "pack_file": "observations_order_response_items__OrderResponse.json",
+      "scope": "OrderResponse",
+      "observations": 9,
+      "observed_status_counts": {
+        "UNKNOWN": 202,
+        "PASS": 1
+      },
+      "status_counts": {
+        "UNKNOWN": 202,
+        "PASS": 1
+      }
+    },
+    {
+      "pack_file": "observations_transition__orders.json",
+      "scope": "orders",
+      "observations": 9,
+      "observed_status_counts": {
+        "UNKNOWN": 201,
+        "PASS": 2
+      },
+      "status_counts": {
+        "UNKNOWN": 201,
+        "PASS": 2
+      }
+    },
+    {
+      "pack_file": "observations_write_footprint__products.json",
+      "scope": "products",
+      "observations": 1,
+      "observed_status_counts": {
+        "UNKNOWN": 194,
+        "PASS": 9
+      },
+      "status_counts": {
+        "UNKNOWN": 194,
+        "PASS": 9
+      }
+    }
+  ],
+  "merged": {
+    "rules_total": 203,
+    "observed_status_counts": {
+      "UNKNOWN": 196,
+      "PASS": 7
+    },
+    "status_counts": {
+      "UNKNOWN": 196,
+      "PASS": 7
+    },
+    "rules_without_observations": 163
+  },
+  "rules": [
+    {
+      "id": "anno:AddedItemRequest.productId.notnull",
+      "scope": "AddedItemRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:AddedItemRequest.quantity.min",
+      "scope": "AddedItemRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:AddedItemRequest.quantity.notnull",
+      "scope": "AddedItemRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:CreateCategoryRequest.name.notblank",
+      "scope": "CreateCategoryRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:CreateOrderRequest.banquetName.notblank",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:CreateOrderRequest.banquetType.notblank",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:CreateOrderRequest.customerName.notblank",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:CreateOrderRequest.customerPhone.notblank",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:CreateOrderRequest.depositCent.min",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:CreateOrderRequest.depositCent.notnull",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:CreateOrderRequest.finalPriceCent.min",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:CreateOrderRequest.planTotalCent.min",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:CreateOrderRequest.planTotalCent.notnull",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:CreateOrderRequest.reservationTime.notnull",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:CreateOrderRequest.status.notnull",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:CreateOrderRequest.tableCount.min",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:CreateOrderRequest.tableCount.notnull",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:CreateOrderRequest.useFinalPrice.notnull",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:CreatePackageRequest.banquetType.notblank",
+      "scope": "CreatePackageRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:CreatePackageRequest.name.notblank",
+      "scope": "CreatePackageRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:CreatePackageRequest.priceCent.min",
+      "scope": "CreatePackageRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:CreatePackageRequest.priceCent.notnull",
+      "scope": "CreatePackageRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:CreatePackageTypeRequest.name.notblank",
+      "scope": "CreatePackageTypeRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:CreateProductRequest.categoryId.notnull",
+      "scope": "CreateProductRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:CreateProductRequest.name.notblank",
+      "scope": "CreateProductRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:CreateProductRequest.priceCent.min",
+      "scope": "CreateProductRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:CreateProductRequest.priceCent.notnull",
+      "scope": "CreateProductRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:CreateProductRequest.unit.notblank",
+      "scope": "CreateProductRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:OrderStatusRequest.status.notnull",
+      "scope": "OrderStatusRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:PackageItemRequest.productId.notnull",
+      "scope": "PackageItemRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:PackageItemRequest.quantity.min",
+      "scope": "PackageItemRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:PackageItemRequest.quantity.notnull",
+      "scope": "PackageItemRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:StatusRequest.isActive.notnull",
+      "scope": "StatusRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:UpdateOrderRequest.banquetName.notblank",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:UpdateOrderRequest.banquetType.notblank",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:UpdateOrderRequest.customerName.notblank",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:UpdateOrderRequest.customerPhone.notblank",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:UpdateOrderRequest.depositCent.min",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:UpdateOrderRequest.depositCent.notnull",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:UpdateOrderRequest.finalPriceCent.min",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:UpdateOrderRequest.planTotalCent.min",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:UpdateOrderRequest.planTotalCent.notnull",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:UpdateOrderRequest.reservationTime.notnull",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:UpdateOrderRequest.status.notnull",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:UpdateOrderRequest.tableCount.min",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:UpdateOrderRequest.tableCount.notnull",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:UpdateOrderRequest.useFinalPrice.notnull",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:UpdatePackageRequest.banquetType.notblank",
+      "scope": "UpdatePackageRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:UpdatePackageRequest.name.notblank",
+      "scope": "UpdatePackageRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:UpdatePackageRequest.priceCent.min",
+      "scope": "UpdatePackageRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:UpdatePackageRequest.priceCent.notnull",
+      "scope": "UpdatePackageRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:UpdateProductRequest.categoryId.notnull",
+      "scope": "UpdateProductRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:UpdateProductRequest.name.notblank",
+      "scope": "UpdateProductRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:UpdateProductRequest.priceCent.min",
+      "scope": "UpdateProductRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:UpdateProductRequest.priceCent.notnull",
+      "scope": "UpdateProductRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "anno:UpdateProductRequest.unit.notblank",
+      "scope": "UpdateProductRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:AddedItemRequest.productId.required",
+      "scope": "AddedItemRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:AddedItemRequest.quantity.range",
+      "scope": "AddedItemRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:AddedItemRequest.quantity.required",
+      "scope": "AddedItemRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreateCategoryRequest.name.required",
+      "scope": "CreateCategoryRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreateOrderRequest.banquetName.required",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreateOrderRequest.banquetType.required",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreateOrderRequest.customerName.required",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreateOrderRequest.customerPhone.required",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreateOrderRequest.depositCent.range",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreateOrderRequest.depositCent.required",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreateOrderRequest.finalPriceCent.range",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreateOrderRequest.planTotalCent.range",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreateOrderRequest.planTotalCent.required",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreateOrderRequest.reservationTime.required",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreateOrderRequest.status.enum",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreateOrderRequest.status.required",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreateOrderRequest.tableCount.range",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreateOrderRequest.tableCount.required",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreateOrderRequest.useFinalPrice.required",
+      "scope": "CreateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreatePackageRequest.banquetType.required",
+      "scope": "CreatePackageRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreatePackageRequest.name.required",
+      "scope": "CreatePackageRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreatePackageRequest.priceCent.range",
+      "scope": "CreatePackageRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreatePackageRequest.priceCent.required",
+      "scope": "CreatePackageRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreatePackageTypeRequest.name.required",
+      "scope": "CreatePackageTypeRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreateProductRequest.categoryId.required",
+      "scope": "CreateProductRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreateProductRequest.name.required",
+      "scope": "CreateProductRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreateProductRequest.priceCent.range",
+      "scope": "CreateProductRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreateProductRequest.priceCent.required",
+      "scope": "CreateProductRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:CreateProductRequest.unit.required",
+      "scope": "CreateProductRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:OrderResponse.status.enum",
+      "scope": "OrderResponse",
+      "observed_status": "PASS",
+      "status": "PASS",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_order_response__OrderResponse.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        },
+        {
+          "pack_file": "observations_order_response_items__OrderResponse.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:OrderStatusRequest.status.enum",
+      "scope": "OrderStatusRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:OrderStatusRequest.status.required",
+      "scope": "OrderStatusRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:PackageItemRequest.productId.required",
+      "scope": "PackageItemRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:PackageItemRequest.quantity.range",
+      "scope": "PackageItemRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:PackageItemRequest.quantity.required",
+      "scope": "PackageItemRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:StatusRequest.isActive.required",
+      "scope": "StatusRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:UpdateOrderRequest.banquetName.required",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:UpdateOrderRequest.banquetType.required",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:UpdateOrderRequest.customerName.required",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:UpdateOrderRequest.customerPhone.required",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:UpdateOrderRequest.depositCent.range",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:UpdateOrderRequest.depositCent.required",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:UpdateOrderRequest.finalPriceCent.range",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:UpdateOrderRequest.planTotalCent.range",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:UpdateOrderRequest.planTotalCent.required",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:UpdateOrderRequest.reservationTime.required",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:UpdateOrderRequest.status.enum",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:UpdateOrderRequest.status.required",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:UpdateOrderRequest.tableCount.range",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:UpdateOrderRequest.tableCount.required",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:UpdateOrderRequest.useFinalPrice.required",
+      "scope": "UpdateOrderRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:UpdatePackageRequest.banquetType.required",
+      "scope": "UpdatePackageRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:UpdatePackageRequest.name.required",
+      "scope": "UpdatePackageRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:UpdatePackageRequest.priceCent.range",
+      "scope": "UpdatePackageRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:UpdatePackageRequest.priceCent.required",
+      "scope": "UpdatePackageRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:UpdateProductRequest.categoryId.required",
+      "scope": "UpdateProductRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:UpdateProductRequest.name.required",
+      "scope": "UpdateProductRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:UpdateProductRequest.priceCent.range",
+      "scope": "UpdateProductRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:UpdateProductRequest.priceCent.required",
+      "scope": "UpdateProductRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "api:UpdateProductRequest.unit.required",
+      "scope": "UpdateProductRequest",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:categories.created_at.not_null",
+      "scope": "categories",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:categories.is_deleted.not_null",
+      "scope": "categories",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:categories.name.not_null",
+      "scope": "categories",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:categories.sort_order.not_null",
+      "scope": "categories",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:categories.updated_at.not_null",
+      "scope": "categories",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:orders.added_items_snapshot.not_null",
+      "scope": "orders",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_contract_boundary__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        },
+        {
+          "pack_file": "observations_transition__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:orders.address.not_null",
+      "scope": "orders",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_contract_boundary__orders.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        },
+        {
+          "pack_file": "observations_transition__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:orders.banquet_name.not_null",
+      "scope": "orders",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_contract_boundary__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        },
+        {
+          "pack_file": "observations_transition__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:orders.banquet_type.not_null",
+      "scope": "orders",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_contract_boundary__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        },
+        {
+          "pack_file": "observations_transition__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:orders.chk_orders_deposit_cent",
+      "scope": "orders",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_contract_boundary__orders.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        },
+        {
+          "pack_file": "observations_transition__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:orders.chk_orders_final_price_cent",
+      "scope": "orders",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_contract_boundary__orders.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        },
+        {
+          "pack_file": "observations_transition__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:orders.chk_orders_plan_total_cent",
+      "scope": "orders",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_contract_boundary__orders.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        },
+        {
+          "pack_file": "observations_transition__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:orders.chk_orders_status",
+      "scope": "orders",
+      "observed_status": "PASS",
+      "status": "PASS",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_contract_boundary__orders.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        },
+        {
+          "pack_file": "observations_transition__orders.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:orders.chk_orders_table_count",
+      "scope": "orders",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_contract_boundary__orders.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        },
+        {
+          "pack_file": "observations_transition__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:orders.created_at.not_null",
+      "scope": "orders",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_contract_boundary__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        },
+        {
+          "pack_file": "observations_transition__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:orders.customer_name.not_null",
+      "scope": "orders",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_contract_boundary__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        },
+        {
+          "pack_file": "observations_transition__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:orders.customer_phone.not_null",
+      "scope": "orders",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_contract_boundary__orders.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        },
+        {
+          "pack_file": "observations_transition__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:orders.deposit_cent.not_null",
+      "scope": "orders",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_contract_boundary__orders.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        },
+        {
+          "pack_file": "observations_transition__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:orders.final_price_cent.not_null",
+      "scope": "orders",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_contract_boundary__orders.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        },
+        {
+          "pack_file": "observations_transition__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:orders.order_no.not_null",
+      "scope": "orders",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_contract_boundary__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        },
+        {
+          "pack_file": "observations_transition__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:orders.package_snapshot.not_null",
+      "scope": "orders",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_contract_boundary__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        },
+        {
+          "pack_file": "observations_transition__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:orders.plan_total_cent.not_null",
+      "scope": "orders",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_contract_boundary__orders.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        },
+        {
+          "pack_file": "observations_transition__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:orders.reservation_time.not_null",
+      "scope": "orders",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_contract_boundary__orders.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        },
+        {
+          "pack_file": "observations_transition__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:orders.status.not_null",
+      "scope": "orders",
+      "observed_status": "PASS",
+      "status": "PASS",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_contract_boundary__orders.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        },
+        {
+          "pack_file": "observations_transition__orders.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:orders.table_count.not_null",
+      "scope": "orders",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_contract_boundary__orders.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        },
+        {
+          "pack_file": "observations_transition__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:orders.updated_at.not_null",
+      "scope": "orders",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_contract_boundary__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        },
+        {
+          "pack_file": "observations_transition__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:orders.use_final_price.not_null",
+      "scope": "orders",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_contract_boundary__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        },
+        {
+          "pack_file": "observations_transition__orders.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:package_items.chk_package_items_quantity",
+      "scope": "package_items",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:package_items.created_at.not_null",
+      "scope": "package_items",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:package_items.package_id.not_null",
+      "scope": "package_items",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:package_items.product_id.not_null",
+      "scope": "package_items",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:package_items.quantity.not_null",
+      "scope": "package_items",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:package_items.updated_at.not_null",
+      "scope": "package_items",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:package_types.created_at.not_null",
+      "scope": "package_types",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:package_types.is_deleted.not_null",
+      "scope": "package_types",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:package_types.name.not_null",
+      "scope": "package_types",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:package_types.sort_order.not_null",
+      "scope": "package_types",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:package_types.updated_at.not_null",
+      "scope": "package_types",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:packages.banquet_type.not_null",
+      "scope": "packages",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_nullability__packages.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:packages.chk_packages_price_cent",
+      "scope": "packages",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_nullability__packages.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:packages.created_at.not_null",
+      "scope": "packages",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_nullability__packages.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:packages.is_active.not_null",
+      "scope": "packages",
+      "observed_status": "PASS",
+      "status": "PASS",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_nullability__packages.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:packages.is_deleted.not_null",
+      "scope": "packages",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_nullability__packages.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:packages.name.not_null",
+      "scope": "packages",
+      "observed_status": "PASS",
+      "status": "PASS",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_nullability__packages.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:packages.price_cent.not_null",
+      "scope": "packages",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_nullability__packages.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:packages.updated_at.not_null",
+      "scope": "packages",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_nullability__packages.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:products.category_id.not_null",
+      "scope": "products",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_nullability__products.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        },
+        {
+          "pack_file": "observations_write_footprint__products.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:products.chk_products_price_cent",
+      "scope": "products",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_nullability__products.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        },
+        {
+          "pack_file": "observations_write_footprint__products.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:products.created_at.not_null",
+      "scope": "products",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_nullability__products.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        },
+        {
+          "pack_file": "observations_write_footprint__products.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:products.is_active.not_null",
+      "scope": "products",
+      "observed_status": "PASS",
+      "status": "PASS",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_nullability__products.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        },
+        {
+          "pack_file": "observations_write_footprint__products.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:products.is_deleted.not_null",
+      "scope": "products",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_nullability__products.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        },
+        {
+          "pack_file": "observations_write_footprint__products.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:products.name.not_null",
+      "scope": "products",
+      "observed_status": "PASS",
+      "status": "PASS",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_nullability__products.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        },
+        {
+          "pack_file": "observations_write_footprint__products.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:products.price_cent.not_null",
+      "scope": "products",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_nullability__products.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        },
+        {
+          "pack_file": "observations_write_footprint__products.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:products.unit.not_null",
+      "scope": "products",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_nullability__products.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        },
+        {
+          "pack_file": "observations_write_footprint__products.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "ddl:products.updated_at.not_null",
+      "scope": "products",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": false,
+      "per_run": [
+        {
+          "pack_file": "observations_nullability__products.json",
+          "observed_status": "UNKNOWN",
+          "status": "UNKNOWN"
+        },
+        {
+          "pack_file": "observations_write_footprint__products.json",
+          "observed_status": "PASS",
+          "status": "PASS"
+        }
+      ],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:AGENTS:281.price_cent",
+      "scope": "AGENTS.md:281",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:AGENTS:282.quantity",
+      "scope": "AGENTS.md:282",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:AGENTS:283.table_count",
+      "scope": "AGENTS.md:283",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:AGENTS:284.deposit_cent",
+      "scope": "AGENTS.md:284",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:AGENTS:285.final_price_cent",
+      "scope": "AGENTS.md:285",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:AGENTS:286.status",
+      "scope": "AGENTS.md:286",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:25.iface.2",
+      "scope": "接口清单.md:25",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:28.iface.2",
+      "scope": "接口清单.md:28",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:31.iface",
+      "scope": "接口清单.md:31",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:31.iface.2",
+      "scope": "接口清单.md:31",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:31.iface.3",
+      "scope": "接口清单.md:31",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:31.iface.4",
+      "scope": "接口清单.md:31",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:31.iface.5",
+      "scope": "接口清单.md:31",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:34.iface",
+      "scope": "接口清单.md:34",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:36.iface",
+      "scope": "接口清单.md:36",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:36.iface.2",
+      "scope": "接口清单.md:36",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:36.iface.3",
+      "scope": "接口清单.md:36",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:36.iface.4",
+      "scope": "接口清单.md:36",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:36.iface.5",
+      "scope": "接口清单.md:36",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:40.iface",
+      "scope": "接口清单.md:40",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:41.iface",
+      "scope": "接口清单.md:41",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:42.iface",
+      "scope": "接口清单.md:42",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:42.iface.10",
+      "scope": "接口清单.md:42",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:42.iface.2",
+      "scope": "接口清单.md:42",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:42.iface.3",
+      "scope": "接口清单.md:42",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:42.iface.4",
+      "scope": "接口清单.md:42",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:42.iface.5",
+      "scope": "接口清单.md:42",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:42.iface.6",
+      "scope": "接口清单.md:42",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:42.iface.7",
+      "scope": "接口清单.md:42",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:42.iface.8",
+      "scope": "接口清单.md:42",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:42.iface.9",
+      "scope": "接口清单.md:42",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    },
+    {
+      "id": "doc:接口清单:45.iface",
+      "scope": "接口清单.md:45",
+      "observed_status": "UNKNOWN",
+      "status": "UNKNOWN",
+      "no_observations_for_scope": true,
+      "per_run": [],
+      "fail_evidence": []
+    }
+  ],
+  "limitations": [
+    "合并只消费 scope 一致的批；跨批 FAIL > UNKNOWN > PASS > NOT_APPLICABLE，unknown 不洗成 pass",
+    "status 仍受求值器来源确认闸门约束（kind 非 user/document 的 confirmed 强制 UNKNOWN）",
+    "observed_status 是对所给观测的判定，不是门禁；未观测 scope 的规则保持 UNKNOWN"
+  ],
+  "inputs": {
+    "rules": {
+      "path": "observation_adapter/rules.json",
+      "sha256": "5bf20c28e33630ba7cd88c2af2c77ae25f974aca8a57f09d638ed94cfc87643d"
+    },
+    "runs": [
+      {
+        "pack_file": "observations_contract_boundary__orders.json",
+        "pack_sha256": "4f6d7549db938d1090cbb610c1264008e7dc0e64dda227f5f4f2a44a5742943d",
+        "assessment_sha256": "28a2484704b87fd296f5f34ef334f0382e04e12e0bc604d2e335fc0ab2b8a08a"
+      },
+      {
+        "pack_file": "observations_nullability__packages.json",
+        "pack_sha256": "35114aaab399cc0819ed803a78d1ea7726eada88a080719480515712d947bccb",
+        "assessment_sha256": "1e32609191867726b17f10f0b45e8dead50acc885d4baf4a104a085458c4a56e"
+      },
+      {
+        "pack_file": "observations_nullability__products.json",
+        "pack_sha256": "a1be911a0e5af54b794138bb187b470f9917ab81c3b56ef3e4e69ff55502a0dd",
+        "assessment_sha256": "df5c192292b1cfc978afe950762cb382ec737e4e3ca286e5111d8f1fcd46ca47"
+      },
+      {
+        "pack_file": "observations_order_response__OrderResponse.json",
+        "pack_sha256": "4c589e8abdd82a03e5772fead55939f13c7c50f84fd8beae854c7b2c6ed48490",
+        "assessment_sha256": "1f3f0c8fe38e1d36d2bb66540adea0a23b703bbf3beae3404ad8db329832f308"
+      },
+      {
+        "pack_file": "observations_order_response_items__OrderResponse.json",
+        "pack_sha256": "b6c80f91db0f555c8d72c98dabe0803f1f7e2f27fd771f676e68c1f9c5cce010",
+        "assessment_sha256": "b44a8dad27698ef4bcea495ea2187397b45a000e4f5cec90ee320e5bcfe6dbe3"
+      },
+      {
+        "pack_file": "observations_transition__orders.json",
+        "pack_sha256": "9a38d68a75e12f7c827187a211b7165c1fe9f0ebfb5e7c859ffb1ca813d5e4e8",
+        "assessment_sha256": "f1321dd6e95ce4c89c2b11cd99c77ff9c51ad155fff6a3b223b32648f821ab31"
+      },
+      {
+        "pack_file": "observations_write_footprint__products.json",
+        "pack_sha256": "ce721739e7296d2be6c2f809574a8158ed14f34270d9f386fe6a38cf698e3e0c",
+        "assessment_sha256": "5435a5b33767046a80a8d816b7ce82f81306fedf2d08717819ff044242cdbd4e"
+      }
+    ]
+  },
+  "repro_cmd": [
+    "engine/observation_adapter.py",
+    "--summarize",
+    "--rules",
+    "observation_adapter/rules.json",
+    "--out-dir",
+    "observation_adapter"
+  ]
+}

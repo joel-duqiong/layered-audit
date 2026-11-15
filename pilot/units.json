@@ -1,6 +1,10 @@
 {
   "schema_version": 2,
   "repo_id": "jiuyan",
+  "generation": {
+    "fn_declaration": "sha256:357cbe2c29746184",
+    "class_declaration": "sha256:612f242f190344ae"
+  },
   "roles": [
     {
       "role_id": "function.boundary",
@@ -87,6 +91,13 @@
       "fidelity": "hybrid"
     },
     {
+      "role_id": "class.architecture_contract",
+      "layer": "class",
+      "category": "architecture_contract",
+      "carrier": "class.dto_db_contract",
+      "fidelity": "hybrid"
+    },
+    {
       "role_id": "service.interface_contract",
       "layer": "service",
       "category": "interface_contract",
@@ -165,22 +176,8 @@
     }
   ],
   "layer_roles": {
-    "integration": [
-      "integration.cross_layer_correlation",
-      "integration.cross_service_attack_chain",
-      "integration.cross_service_performance",
-      "integration.emergent_masking",
-      "integration.end_to_end_business"
-    ],
-    "service": [
-      "service.authz",
-      "service.data_consistency",
-      "service.interface_contract",
-      "service.resilience",
-      "service.resource_leak",
-      "service.service_latency"
-    ],
     "class": [
+      "class.architecture_contract",
       "class.contract_violation",
       "class.encapsulation_leak",
       "class.inheritance_design",
@@ -197,15 +194,36 @@
       "function.complexity",
       "function.exception_path",
       "function.numeric"
+    ],
+    "integration": [
+      "integration.cross_layer_correlation",
+      "integration.cross_service_attack_chain",
+      "integration.cross_service_performance",
+      "integration.emergent_masking",
+      "integration.end_to_end_business"
+    ],
+    "service": [
+      "service.authz",
+      "service.data_consistency",
+      "service.interface_contract",
+      "service.resilience",
+      "service.resource_leak",
+      "service.service_latency"
     ]
   },
   "counts": {
-    "units": 533,
-    "roles": 23,
-    "edges": 786,
+    "units": 536,
+    "roles": 24,
+    "edges": 886,
     "edges_unresolved": 39,
+    "edges_self_call": 61,
+    "self_call_proxy": {
+      "bypassed": 61,
+      "effective": 0,
+      "unknown": 0
+    },
     "units_with_observations": 29,
-    "units_with_findings": 21
+    "units_with_findings": 20
   },
   "units": [
     {
@@ -317,6 +335,114 @@
       "obligation_source_layer": "function"
     },
     {
+      "unit_key": "com.jiuyan.banquet.config.SeedAssetInitializer#run",
+      "kind": "method",
+      "layer": "function",
+      "class": "com.jiuyan.banquet.config.SeedAssetInitializer",
+      "symbol": "SeedAssetInitializer.run",
+      "file": "src/main/java/com/jiuyan/banquet/config/SeedAssetInitializer.java",
+      "role_count": 4,
+      "centrality": 0,
+      "logic": {
+        "branches": 0,
+        "side_effects": 1,
+        "null_guards": 0,
+        "is_pure": false,
+        "score": 8
+      },
+      "priority": 0,
+      "status": "UNKNOWN",
+      "observations": 0,
+      "satisfied_categories": [],
+      "violated_categories": [],
+      "case_ids": [],
+      "finding_ids": [],
+      "root_cause_keys": [],
+      "obligation_template": "",
+      "obligation_source_layer": "function"
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.config.SeedAssetInitializer#copySeedImages",
+      "kind": "method",
+      "layer": "function",
+      "class": "com.jiuyan.banquet.config.SeedAssetInitializer",
+      "symbol": "SeedAssetInitializer.copySeedImages",
+      "file": "src/main/java/com/jiuyan/banquet/config/SeedAssetInitializer.java",
+      "role_count": 4,
+      "centrality": 2,
+      "logic": {
+        "branches": 2,
+        "side_effects": 1,
+        "null_guards": 0,
+        "is_pure": false,
+        "score": 10
+      },
+      "priority": 22,
+      "status": "UNKNOWN",
+      "observations": 0,
+      "satisfied_categories": [],
+      "violated_categories": [],
+      "case_ids": [],
+      "finding_ids": [],
+      "root_cause_keys": [],
+      "obligation_template": "",
+      "obligation_source_layer": "function"
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.config.SeedAssetInitializer#copyResource",
+      "kind": "method",
+      "layer": "function",
+      "class": "com.jiuyan.banquet.config.SeedAssetInitializer",
+      "symbol": "SeedAssetInitializer.copyResource",
+      "file": "src/main/java/com/jiuyan/banquet/config/SeedAssetInitializer.java",
+      "role_count": 4,
+      "centrality": 2,
+      "logic": {
+        "branches": 4,
+        "side_effects": 3,
+        "null_guards": 2,
+        "is_pure": false,
+        "score": 20
+      },
+      "priority": 42,
+      "status": "UNKNOWN",
+      "observations": 0,
+      "satisfied_categories": [],
+      "violated_categories": [],
+      "case_ids": [],
+      "finding_ids": [],
+      "root_cause_keys": [],
+      "obligation_template": "",
+      "obligation_source_layer": "function"
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.config.SeedAssetInitializer#cleanDirectory",
+      "kind": "method",
+      "layer": "function",
+      "class": "com.jiuyan.banquet.config.SeedAssetInitializer",
+      "symbol": "SeedAssetInitializer.cleanDirectory",
+      "file": "src/main/java/com/jiuyan/banquet/config/SeedAssetInitializer.java",
+      "role_count": 4,
+      "centrality": 1,
+      "logic": {
+        "branches": 7,
+        "side_effects": 3,
+        "null_guards": 2,
+        "is_pure": false,
+        "score": 23
+      },
+      "priority": 24,
+      "status": "UNKNOWN",
+      "observations": 0,
+      "satisfied_categories": [],
+      "violated_categories": [],
+      "case_ids": [],
+      "finding_ids": [],
+      "root_cause_keys": [],
+      "obligation_template": "",
+      "obligation_source_layer": "function"
+    },
+    {
       "unit_key": "com.jiuyan.banquet.config.TraceContext#setTraceId",
       "kind": "method",
       "layer": "function",
@@ -324,7 +450,7 @@
       "symbol": "TraceContext.setTraceId",
       "file": "src/main/java/com/jiuyan/banquet/config/TraceContext.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 1,
       "logic": {
         "branches": 0,
         "side_effects": 0,
@@ -332,7 +458,7 @@
         "is_pure": true,
         "score": 0
       },
-      "priority": 0,
+      "priority": 1,
       "status": "UNKNOWN",
       "observations": 0,
       "satisfied_categories": [],
@@ -378,13 +504,40 @@
       "symbol": "TraceContext.clear",
       "file": "src/main/java/com/jiuyan/banquet/config/TraceContext.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 1,
       "logic": {
         "branches": 0,
         "side_effects": 0,
         "null_guards": 0,
         "is_pure": true,
         "score": 0
+      },
+      "priority": 1,
+      "status": "UNKNOWN",
+      "observations": 0,
+      "satisfied_categories": [],
+      "violated_categories": [],
+      "case_ids": [],
+      "finding_ids": [],
+      "root_cause_keys": [],
+      "obligation_template": "",
+      "obligation_source_layer": "function"
+    },
+    {
+      "unit_key": "com.jiuyan.banquet.config.TraceIdFilter#doFilterInternal",
+      "kind": "method",
+      "layer": "function",
+      "class": "com.jiuyan.banquet.config.TraceIdFilter",
+      "symbol": "TraceIdFilter.doFilterInternal",
+      "file": "src/main/java/com/jiuyan/banquet/config/TraceIdFilter.java",
+      "role_count": 4,
+      "centrality": 0,
+      "logic": {
+        "branches": 3,
+        "side_effects": 0,
+        "null_guards": 1,
+        "is_pure": true,
+        "score": 4
       },
       "priority": 0,
       "status": "UNKNOWN",
@@ -405,7 +558,7 @@
       "symbol": "TraceIdFilter.clientIp",
       "file": "src/main/java/com/jiuyan/banquet/config/TraceIdFilter.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 1,
       "logic": {
         "branches": 2,
         "side_effects": 0,
@@ -413,7 +566,7 @@
         "is_pure": true,
         "score": 3
       },
-      "priority": 0,
+      "priority": 4,
       "status": "UNKNOWN",
       "observations": 0,
       "satisfied_categories": [],
@@ -8579,33 +8732,6 @@
       "obligation_source_layer": "function"
     },
     {
-      "unit_key": "com.jiuyan.banquet.entity.OrderStatus#$values",
-      "kind": "method",
-      "layer": "function",
-      "class": "com.jiuyan.banquet.entity.OrderStatus",
-      "symbol": "OrderStatus.$values",
-      "file": "src/main/java/com/jiuyan/banquet/entity/OrderStatus.java",
-      "role_count": 4,
-      "centrality": 0,
-      "logic": {
-        "branches": 0,
-        "side_effects": 0,
-        "null_guards": 0,
-        "is_pure": true,
-        "score": 0
-      },
-      "priority": 0,
-      "status": "UNKNOWN",
-      "observations": 0,
-      "satisfied_categories": [],
-      "violated_categories": [],
-      "case_ids": [],
-      "finding_ids": [],
-      "root_cause_keys": [],
-      "obligation_template": "",
-      "obligation_source_layer": "function"
-    },
-    {
       "unit_key": "com.jiuyan.banquet.entity.PackageItem#getId",
       "kind": "method",
       "layer": "function",
@@ -9659,33 +9785,6 @@
       "obligation_source_layer": "function"
     },
     {
-      "unit_key": "com.jiuyan.banquet.exception.ErrorCode#$values",
-      "kind": "method",
-      "layer": "function",
-      "class": "com.jiuyan.banquet.exception.ErrorCode",
-      "symbol": "ErrorCode.$values",
-      "file": "src/main/java/com/jiuyan/banquet/exception/ErrorCode.java",
-      "role_count": 4,
-      "centrality": 0,
-      "logic": {
-        "branches": 0,
-        "side_effects": 0,
-        "null_guards": 0,
-        "is_pure": true,
-        "score": 0
-      },
-      "priority": 0,
-      "status": "UNKNOWN",
-      "observations": 0,
-      "satisfied_categories": [],
-      "violated_categories": [],
-      "case_ids": [],
-      "finding_ids": [],
-      "root_cause_keys": [],
-      "obligation_template": "",
-      "obligation_source_layer": "function"
-    },
-    {
       "unit_key": "com.jiuyan.banquet.exception.GlobalExceptionHandler#handleBusiness",
       "kind": "method",
       "layer": "function",
@@ -9909,7 +10008,7 @@
       "symbol": "GlobalExceptionHandler.error",
       "file": "src/main/java/com/jiuyan/banquet/exception/GlobalExceptionHandler.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 7,
       "logic": {
         "branches": 0,
         "side_effects": 0,
@@ -9917,7 +10016,7 @@
         "is_pure": true,
         "score": 0
       },
-      "priority": 0,
+      "priority": 7,
       "status": "UNKNOWN",
       "observations": 0,
       "satisfied_categories": [],
@@ -10044,7 +10143,7 @@
       "symbol": "PackageMapper.toItemResponse",
       "file": "src/main/java/com/jiuyan/banquet/mapper/PackageMapper.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 1,
       "logic": {
         "branches": 0,
         "side_effects": 0,
@@ -10052,7 +10151,7 @@
         "is_pure": true,
         "score": 0
       },
-      "priority": 0,
+      "priority": 1,
       "status": "UNKNOWN",
       "observations": 0,
       "satisfied_categories": [],
@@ -10802,7 +10901,7 @@
       ],
       "case_ids": [],
       "finding_ids": [
-        "function:FN-APPLY-NULL-CONTRACT#5"
+        "function:FN-APPLY-NULL-CONTRACT#4"
       ],
       "root_cause_keys": [
         "apply.null_input.npe_instead_of_422"
@@ -10882,7 +10981,7 @@
       "symbol": "OrderService.apply",
       "file": "src/main/java/com/jiuyan/banquet/service/OrderService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 2,
       "logic": {
         "branches": 10,
         "side_effects": 1,
@@ -10890,7 +10989,7 @@
         "is_pure": false,
         "score": 21
       },
-      "priority": 0,
+      "priority": 44,
       "status": "FAIL",
       "observations": 17,
       "satisfied_categories": [
@@ -10921,7 +11020,7 @@
         "APL-17"
       ],
       "finding_ids": [
-        "function:FN-APPLY-AMOUNT-INVARIANTS#4"
+        "function:FN-APPLY-AMOUNT-INVARIANTS#3"
       ],
       "root_cause_keys": [
         "order.apply.amount_invariants_weak"
@@ -10937,7 +11036,7 @@
       "symbol": "OrderService.resolveFinalPrice",
       "file": "src/main/java/com/jiuyan/banquet/service/OrderService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 1,
       "logic": {
         "branches": 3,
         "side_effects": 0,
@@ -10945,7 +11044,7 @@
         "is_pure": true,
         "score": 4
       },
-      "priority": 0,
+      "priority": 5,
       "status": "FAIL",
       "observations": 8,
       "satisfied_categories": [
@@ -10964,13 +11063,8 @@
         "RFP-06",
         "RFP-07"
       ],
-      "finding_ids": [
-        "function:FN-PRICE-CLIENT-CONTROLLED#0",
-        "function:FN-SEMANTIC-PRICE-UPPER-BOUND#9"
-      ],
-      "root_cause_keys": [
-        "price.final_price.upper_bound_unvalidated"
-      ],
+      "finding_ids": [],
+      "root_cause_keys": [],
       "obligation_template": "",
       "obligation_source_layer": "function"
     },
@@ -10982,7 +11076,7 @@
       "symbol": "OrderService.buildPackageSnapshot",
       "file": "src/main/java/com/jiuyan/banquet/service/OrderService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 1,
       "logic": {
         "branches": 6,
         "side_effects": 2,
@@ -10990,7 +11084,7 @@
         "is_pure": false,
         "score": 19
       },
-      "priority": 0,
+      "priority": 20,
       "status": "FAIL",
       "observations": 8,
       "satisfied_categories": [
@@ -11022,7 +11116,7 @@
       "symbol": "OrderService.buildAddedItemsSnapshot",
       "file": "src/main/java/com/jiuyan/banquet/service/OrderService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 1,
       "logic": {
         "branches": 4,
         "side_effects": 1,
@@ -11030,7 +11124,7 @@
         "is_pure": false,
         "score": 13
       },
-      "priority": 0,
+      "priority": 14,
       "status": "UNKNOWN",
       "observations": 0,
       "satisfied_categories": [],
@@ -11049,7 +11143,7 @@
       "symbol": "OrderService.packageItemSnapshot",
       "file": "src/main/java/com/jiuyan/banquet/service/OrderService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 1,
       "logic": {
         "branches": 0,
         "side_effects": 0,
@@ -11057,7 +11151,7 @@
         "is_pure": true,
         "score": 0
       },
-      "priority": 0,
+      "priority": 1,
       "status": "UNKNOWN",
       "observations": 0,
       "satisfied_categories": [],
@@ -11076,7 +11170,7 @@
       "symbol": "OrderService.productSnapshot",
       "file": "src/main/java/com/jiuyan/banquet/service/OrderService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 3,
       "logic": {
         "branches": 0,
         "side_effects": 1,
@@ -11084,7 +11178,7 @@
         "is_pure": false,
         "score": 8
       },
-      "priority": 0,
+      "priority": 27,
       "status": "UNKNOWN",
       "observations": 0,
       "satisfied_categories": [],
@@ -11103,7 +11197,7 @@
       "symbol": "OrderService.normalizePackageItems",
       "file": "src/main/java/com/jiuyan/banquet/service/OrderService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 1,
       "logic": {
         "branches": 3,
         "side_effects": 0,
@@ -11111,7 +11205,7 @@
         "is_pure": true,
         "score": 3
       },
-      "priority": 0,
+      "priority": 4,
       "status": "FAIL",
       "observations": 9,
       "satisfied_categories": [
@@ -11132,7 +11226,7 @@
         "OB-NORMALIZE-ITEMS-QUANTITY"
       ],
       "finding_ids": [
-        "function:FN-SEMANTIC-ITEM-QUANTITY-NON-POSITIVE#8"
+        "function:FN-SEMANTIC-ITEM-QUANTITY-NON-POSITIVE#7"
       ],
       "root_cause_keys": [
         "order.item_quantity_unvalidated"
@@ -11148,7 +11242,7 @@
       "symbol": "OrderService.normalizeAddedItems",
       "file": "src/main/java/com/jiuyan/banquet/service/OrderService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 1,
       "logic": {
         "branches": 3,
         "side_effects": 0,
@@ -11156,7 +11250,7 @@
         "is_pure": true,
         "score": 3
       },
-      "priority": 0,
+      "priority": 4,
       "status": "FAIL",
       "observations": 7,
       "satisfied_categories": [
@@ -11187,7 +11281,7 @@
       "symbol": "OrderService.findProduct",
       "file": "src/main/java/com/jiuyan/banquet/service/OrderService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 2,
       "logic": {
         "branches": 0,
         "side_effects": 1,
@@ -11195,7 +11289,7 @@
         "is_pure": false,
         "score": 8
       },
-      "priority": 0,
+      "priority": 18,
       "status": "UNKNOWN",
       "observations": 0,
       "satisfied_categories": [],
@@ -11214,7 +11308,7 @@
       "symbol": "OrderService.findOrder",
       "file": "src/main/java/com/jiuyan/banquet/service/OrderService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 3,
       "logic": {
         "branches": 0,
         "side_effects": 1,
@@ -11222,7 +11316,7 @@
         "is_pure": false,
         "score": 8
       },
-      "priority": 0,
+      "priority": 27,
       "status": "UNKNOWN",
       "observations": 0,
       "satisfied_categories": [],
@@ -11241,7 +11335,7 @@
       "symbol": "OrderService.generateOrderNo",
       "file": "src/main/java/com/jiuyan/banquet/service/OrderService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 1,
       "logic": {
         "branches": 3,
         "side_effects": 1,
@@ -11249,7 +11343,7 @@
         "is_pure": false,
         "score": 11
       },
-      "priority": 0,
+      "priority": 12,
       "status": "FAIL",
       "observations": 3,
       "satisfied_categories": [
@@ -11264,7 +11358,7 @@
         "GON-03"
       ],
       "finding_ids": [
-        "function:FN-ORDER-NO-COLLISION#2"
+        "function:FN-ORDER-NO-COLLISION#1"
       ],
       "root_cause_keys": [
         "order_no.no_collision_guarantee"
@@ -11280,7 +11374,7 @@
       "symbol": "OrderService.parseStatus",
       "file": "src/main/java/com/jiuyan/banquet/service/OrderService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 1,
       "logic": {
         "branches": 1,
         "side_effects": 0,
@@ -11288,7 +11382,7 @@
         "is_pure": true,
         "score": 1
       },
-      "priority": 0,
+      "priority": 2,
       "status": "PASS",
       "observations": 8,
       "satisfied_categories": [
@@ -11319,7 +11413,7 @@
       "symbol": "OrderService.parseDateScope",
       "file": "src/main/java/com/jiuyan/banquet/service/OrderService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 1,
       "logic": {
         "branches": 11,
         "side_effects": 0,
@@ -11327,7 +11421,7 @@
         "is_pure": true,
         "score": 11
       },
-      "priority": 0,
+      "priority": 12,
       "status": "FAIL",
       "observations": 8,
       "satisfied_categories": [
@@ -11359,7 +11453,7 @@
       "symbol": "OrderService.orderSpec",
       "file": "src/main/java/com/jiuyan/banquet/service/OrderService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 1,
       "logic": {
         "branches": 0,
         "side_effects": 0,
@@ -11367,7 +11461,7 @@
         "is_pure": true,
         "score": 0
       },
-      "priority": 0,
+      "priority": 1,
       "status": "UNKNOWN",
       "observations": 0,
       "satisfied_categories": [],
@@ -11386,7 +11480,7 @@
       "symbol": "OrderService.normalizePage",
       "file": "src/main/java/com/jiuyan/banquet/service/OrderService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 1,
       "logic": {
         "branches": 0,
         "side_effects": 0,
@@ -11394,7 +11488,7 @@
         "is_pure": true,
         "score": 0
       },
-      "priority": 0,
+      "priority": 1,
       "status": "UNKNOWN",
       "observations": 0,
       "satisfied_categories": [],
@@ -11413,7 +11507,7 @@
       "symbol": "OrderService.normalizePageSize",
       "file": "src/main/java/com/jiuyan/banquet/service/OrderService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 1,
       "logic": {
         "branches": 0,
         "side_effects": 0,
@@ -11421,7 +11515,7 @@
         "is_pure": true,
         "score": 0
       },
-      "priority": 0,
+      "priority": 1,
       "status": "UNKNOWN",
       "observations": 0,
       "satisfied_categories": [],
@@ -11779,7 +11873,7 @@
       "symbol": "PackageService.findPackage",
       "file": "src/main/java/com/jiuyan/banquet/service/PackageService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 4,
       "logic": {
         "branches": 0,
         "side_effects": 1,
@@ -11787,7 +11881,7 @@
         "is_pure": false,
         "score": 8
       },
-      "priority": 0,
+      "priority": 36,
       "status": "PASS",
       "observations": 1,
       "satisfied_categories": [
@@ -11810,7 +11904,7 @@
       "symbol": "PackageService.applyBase",
       "file": "src/main/java/com/jiuyan/banquet/service/PackageService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 2,
       "logic": {
         "branches": 8,
         "side_effects": 1,
@@ -11818,7 +11912,7 @@
         "is_pure": false,
         "score": 18
       },
-      "priority": 0,
+      "priority": 38,
       "status": "PASS",
       "observations": 1,
       "satisfied_categories": [
@@ -11841,7 +11935,7 @@
       "symbol": "PackageService.applyItems",
       "file": "src/main/java/com/jiuyan/banquet/service/PackageService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 2,
       "logic": {
         "branches": 5,
         "side_effects": 0,
@@ -11849,7 +11943,7 @@
         "is_pure": true,
         "score": 7
       },
-      "priority": 0,
+      "priority": 16,
       "status": "PASS",
       "observations": 1,
       "satisfied_categories": [
@@ -11872,7 +11966,7 @@
       "symbol": "PackageService.normalizeItems",
       "file": "src/main/java/com/jiuyan/banquet/service/PackageService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 1,
       "logic": {
         "branches": 3,
         "side_effects": 0,
@@ -11880,7 +11974,7 @@
         "is_pure": true,
         "score": 3
       },
-      "priority": 0,
+      "priority": 4,
       "status": "UNKNOWN",
       "observations": 0,
       "satisfied_categories": [],
@@ -11899,7 +11993,7 @@
       "symbol": "PackageService.findProduct",
       "file": "src/main/java/com/jiuyan/banquet/service/PackageService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 1,
       "logic": {
         "branches": 0,
         "side_effects": 1,
@@ -11907,7 +12001,7 @@
         "is_pure": false,
         "score": 8
       },
-      "priority": 0,
+      "priority": 9,
       "status": "UNKNOWN",
       "observations": 0,
       "satisfied_categories": [],
@@ -11926,7 +12020,7 @@
       "symbol": "PackageService.packageSpec",
       "file": "src/main/java/com/jiuyan/banquet/service/PackageService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 1,
       "logic": {
         "branches": 0,
         "side_effects": 0,
@@ -11934,7 +12028,7 @@
         "is_pure": true,
         "score": 0
       },
-      "priority": 0,
+      "priority": 1,
       "status": "UNKNOWN",
       "observations": 0,
       "satisfied_categories": [],
@@ -11953,7 +12047,7 @@
       "symbol": "PackageService.normalizePage",
       "file": "src/main/java/com/jiuyan/banquet/service/PackageService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 1,
       "logic": {
         "branches": 0,
         "side_effects": 0,
@@ -11961,7 +12055,7 @@
         "is_pure": true,
         "score": 0
       },
-      "priority": 0,
+      "priority": 1,
       "status": "PASS",
       "observations": 3,
       "satisfied_categories": [
@@ -11986,7 +12080,7 @@
       "symbol": "PackageService.normalizePageSize",
       "file": "src/main/java/com/jiuyan/banquet/service/PackageService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 1,
       "logic": {
         "branches": 0,
         "side_effects": 0,
@@ -11994,7 +12088,7 @@
         "is_pure": true,
         "score": 0
       },
-      "priority": 0,
+      "priority": 1,
       "status": "PASS",
       "observations": 5,
       "satisfied_categories": [
@@ -12497,7 +12591,7 @@
       "symbol": "ProductService.findProduct",
       "file": "src/main/java/com/jiuyan/banquet/service/ProductService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 3,
       "logic": {
         "branches": 0,
         "side_effects": 1,
@@ -12505,7 +12599,7 @@
         "is_pure": false,
         "score": 8
       },
-      "priority": 0,
+      "priority": 27,
       "status": "PASS",
       "observations": 1,
       "satisfied_categories": [
@@ -12528,7 +12622,7 @@
       "symbol": "ProductService.findCategory",
       "file": "src/main/java/com/jiuyan/banquet/service/ProductService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 2,
       "logic": {
         "branches": 0,
         "side_effects": 1,
@@ -12536,7 +12630,7 @@
         "is_pure": false,
         "score": 8
       },
-      "priority": 0,
+      "priority": 18,
       "status": "UNKNOWN",
       "observations": 0,
       "satisfied_categories": [],
@@ -12555,7 +12649,7 @@
       "symbol": "ProductService.apply",
       "file": "src/main/java/com/jiuyan/banquet/service/ProductService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 2,
       "logic": {
         "branches": 8,
         "side_effects": 0,
@@ -12563,7 +12657,7 @@
         "is_pure": true,
         "score": 10
       },
-      "priority": 0,
+      "priority": 22,
       "status": "UNKNOWN",
       "observations": 0,
       "satisfied_categories": [],
@@ -12582,7 +12676,7 @@
       "symbol": "ProductService.productSpec",
       "file": "src/main/java/com/jiuyan/banquet/service/ProductService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 1,
       "logic": {
         "branches": 0,
         "side_effects": 0,
@@ -12590,7 +12684,7 @@
         "is_pure": true,
         "score": 0
       },
-      "priority": 0,
+      "priority": 1,
       "status": "UNKNOWN",
       "observations": 0,
       "satisfied_categories": [],
@@ -12609,7 +12703,7 @@
       "symbol": "ProductService.normalizePage",
       "file": "src/main/java/com/jiuyan/banquet/service/ProductService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 1,
       "logic": {
         "branches": 0,
         "side_effects": 0,
@@ -12617,7 +12711,7 @@
         "is_pure": true,
         "score": 0
       },
-      "priority": 0,
+      "priority": 1,
       "status": "PASS",
       "observations": 3,
       "satisfied_categories": [
@@ -12642,7 +12736,7 @@
       "symbol": "ProductService.normalizePageSize",
       "file": "src/main/java/com/jiuyan/banquet/service/ProductService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 1,
       "logic": {
         "branches": 0,
         "side_effects": 0,
@@ -12650,7 +12744,7 @@
         "is_pure": true,
         "score": 0
       },
-      "priority": 0,
+      "priority": 1,
       "status": "PASS",
       "observations": 5,
       "satisfied_categories": [
@@ -12851,7 +12945,7 @@
       "symbol": "UploadService.uploadImage",
       "file": "src/main/java/com/jiuyan/banquet/service/UploadService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 2,
       "logic": {
         "branches": 9,
         "side_effects": 7,
@@ -12859,7 +12953,7 @@
         "is_pure": false,
         "score": 38
       },
-      "priority": 0,
+      "priority": 78,
       "status": "FAIL",
       "observations": 0,
       "satisfied_categories": [],
@@ -12868,7 +12962,7 @@
       ],
       "case_ids": [],
       "finding_ids": [
-        "function:FN-UPLOAD-NO-SIZE-LIMIT#7"
+        "function:FN-UPLOAD-NO-SIZE-LIMIT#6"
       ],
       "root_cause_keys": [
         "upload.no_size_limit"
@@ -12884,7 +12978,7 @@
       "symbol": "UploadService.extension",
       "file": "src/main/java/com/jiuyan/banquet/service/UploadService.java",
       "role_count": 4,
-      "centrality": 0,
+      "centrality": 1,
       "logic": {
         "branches": 2,
         "side_effects": 0,
@@ -12892,7 +12986,7 @@
         "is_pure": true,
         "score": 2
       },
-      "priority": 0,
+      "priority": 3,
       "status": "PASS",
       "observations": 4,
       "satisfied_categories": [
@@ -13007,11 +13101,11 @@
       "role_count": 4,
       "centrality": 0,
       "logic": {
-        "branches": 0,
-        "side_effects": 0,
-        "null_guards": 0,
-        "is_pure": true,
-        "score": 0
+        "branches": 13,
+        "side_effects": 8,
+        "null_guards": 4,
+        "is_pure": false,
+        "score": 61
       },
       "priority": 0,
       "status": "UNKNOWN",
@@ -13061,11 +13155,11 @@
       "role_count": 4,
       "centrality": 0,
       "logic": {
-        "branches": 2,
+        "branches": 5,
         "side_effects": 0,
-        "null_guards": 1,
+        "null_guards": 2,
         "is_pure": true,
-        "score": 3
+        "score": 7
       },
       "priority": 0,
       "status": "FAIL",
@@ -13911,12 +14005,10 @@
         "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#8",
         "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#9",
         "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#10",
-        "class:CLASS-NOTNULL-BYPASSED-BY-EMPTY-STRING#11",
-        "class:CLASS-REQUIRED-CHECKED-IN-SERVICE-LAYER#12",
-        "class:CLASS-ERROR-MESSAGE-MISMATCH#16"
+        "class:CLASS-REQUIRED-CHECKED-IN-SERVICE-LAYER#11",
+        "class:CLASS-ERROR-MESSAGE-MISMATCH#15"
       ],
       "root_cause_keys": [
-        "db.notnull_bypassed_by_empty_string",
         "dto.required_check_missing",
         "entity.no_value_equality",
         "error.message_mismatch",
@@ -13949,7 +14041,7 @@
       "case_ids": [],
       "finding_ids": [
         "class:CLASS-ENCAPSULATION-LEAK-ENTITY-COLLECTION#1",
-        "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#15"
+        "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#14"
       ],
       "root_cause_keys": [
         "banquet_package.items_exposed",
@@ -14116,8 +14208,8 @@
       "violated_categories": [],
       "case_ids": [],
       "finding_ids": [
-        "class:CLASS-PUT-WIPES-UNSET-FIELD#13",
-        "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#14"
+        "class:CLASS-PUT-WIPES-UNSET-FIELD#12",
+        "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#13"
       ],
       "root_cause_keys": [
         "api.put_full_overwrite",
@@ -14701,7 +14793,7 @@
       "class": "BanquetOrder",
       "symbol": "BanquetOrder",
       "file": "",
-      "role_count": 4,
+      "role_count": 5,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -14727,12 +14819,10 @@
         "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#8",
         "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#9",
         "class:CLASS-ENTITY-WITHOUT-VALUE-EQUALITY#10",
-        "class:CLASS-NOTNULL-BYPASSED-BY-EMPTY-STRING#11",
-        "class:CLASS-REQUIRED-CHECKED-IN-SERVICE-LAYER#12",
-        "class:CLASS-ERROR-MESSAGE-MISMATCH#16"
+        "class:CLASS-REQUIRED-CHECKED-IN-SERVICE-LAYER#11",
+        "class:CLASS-ERROR-MESSAGE-MISMATCH#15"
       ],
       "root_cause_keys": [
-        "db.notnull_bypassed_by_empty_string",
         "dto.required_check_missing",
         "entity.no_value_equality",
         "error.message_mismatch",
@@ -14748,7 +14838,7 @@
       "class": "BanquetPackage",
       "symbol": "BanquetPackage",
       "file": "",
-      "role_count": 4,
+      "role_count": 5,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -14767,7 +14857,7 @@
       "case_ids": [],
       "finding_ids": [
         "class:CLASS-ENCAPSULATION-LEAK-ENTITY-COLLECTION#1",
-        "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#15"
+        "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#14"
       ],
       "root_cause_keys": [
         "banquet_package.items_exposed",
@@ -14783,7 +14873,7 @@
       "class": "BaseEntity",
       "symbol": "BaseEntity",
       "file": "",
-      "role_count": 4,
+      "role_count": 5,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -14810,7 +14900,7 @@
       "class": "Category",
       "symbol": "Category",
       "file": "",
-      "role_count": 4,
+      "role_count": 5,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -14837,7 +14927,7 @@
       "class": "PackageItem",
       "symbol": "PackageItem",
       "file": "",
-      "role_count": 4,
+      "role_count": 5,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -14864,7 +14954,7 @@
       "class": "PackageType",
       "symbol": "PackageType",
       "file": "",
-      "role_count": 4,
+      "role_count": 5,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -14891,7 +14981,7 @@
       "class": "Product",
       "symbol": "Product",
       "file": "",
-      "role_count": 4,
+      "role_count": 5,
       "centrality": 0,
       "logic": {
         "branches": 0,
@@ -14909,8 +14999,8 @@
       ],
       "case_ids": [],
       "finding_ids": [
-        "class:CLASS-PUT-WIPES-UNSET-FIELD#13",
-        "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#14"
+        "class:CLASS-PUT-WIPES-UNSET-FIELD#12",
+        "class:CLASS-DEFAULT-VALUE-DECLARED-IN-THREE-PLACES#13"
       ],
       "root_cause_keys": [
         "api.put_full_overwrite",

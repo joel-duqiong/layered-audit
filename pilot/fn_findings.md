@@ -1,20 +1,6 @@
 # 函数层缺陷报告（JVM 直调 · 字节码声明 vs 实测行为）
 
-函数总数 461，用例 121 条，失败 35 条 / 通过 86 条，归并为 10 条缺陷。
-
-## [CRITICAL] FN-PRICE-CLIENT-CONTROLLED — 成交价由客户端说了算：resolveFinalPrice 只做下界检查，完全不与套餐价比对
-
-- 根因函数：`OrderService.resolveFinalPrice`
-- 根因：resolveFinalPrice(boolean, Long, Long) 只校验成交价 >= 0，既不要求成交价 <= 套餐总价，也不要求有折扣依据，于是客户端可以把任意数字直接变成订单最终价。
-- HTTP 可达：是（边界情况：CreateOrderRequest.finalPriceCent 只有 @Min(0)，上界没有任何约束）
-- 证据（4 条实测）：
-  - `APL-15` com.jiuyan.banquet.service.OrderService#apply — 不变量「落库的成交价不得高于套餐总价」→ 期望 finalPriceCent <= 46800，实际 999999
-  - `RFP-05` com.jiuyan.banquet.service.OrderService#resolveFinalPrice — 不变量「成交价不得低于套餐总价（客户端不能自降定价权）」→ 期望 >= 46800，实际 1
-  - `RFP-06` com.jiuyan.banquet.service.OrderService#resolveFinalPrice — 不变量「成交价不得高于套餐总价」→ 期望 <= 46800，实际 999999
-  - `RFP-07` com.jiuyan.banquet.service.OrderService#resolveFinalPrice — 不变量「成交价不得为 0（0 元成交无任何业务依据）」→ 期望 >= 1，实际 0
-- 跨层关联：
-  - integration 层 `PRICE_CLIENT_CONTROLLED_XL`：集成症状：本层是根因（高层已开单）
-  - service 层 `test_create_order_use_final_price`：既有测试把「保留客户端成交价」写成了断言——缺陷被固化成契约
+函数总数 464，用例 121 条，失败 35 条 / 通过 86 条，归并为 8 条缺陷。
 
 ## [CRITICAL] FN-UPLOAD-NO-CONTENT-SNIFF — 上传只信客户端自报的扩展名与 contentType：任意字节都以 .png 落盘
 
@@ -103,14 +89,6 @@
 - HTTP 可达：是（边界情况：PackageItemRequest.quantity 上没有 @Min(1)，服务端也没补）
 - 证据（1 条实测）：
   - `OB-NORMALIZE-ITEMS-QUANTITY` com.jiuyan.banquet.service.OrderService#normalizePackageItems — 不变量「明细归一化：数量必须是正整数，0 或负数必须拒绝」→ 期望抛异常，实际返回 {'11': 0}
-
-## [HIGH] FN-SEMANTIC-PRICE-UPPER-BOUND — 职责断言：成交价不得高于套餐标价
-
-- 根因函数：`com.jiuyan.banquet.service.OrderService#resolveFinalPrice`
-- 根因：resolveFinalPrice 只校验了成交价非负，没有与套餐标价比对，客户端报 999999 分（套餐价 46800 分）被原样接受
-- HTTP 可达：是（边界情况：DTO 上只有 @Min(0)，没有上界）
-- 证据（1 条实测）：
-  - `OB-RESOLVE-PRICE-UPPER-BOUND` com.jiuyan.banquet.service.OrderService#resolveFinalPrice — 不变量「计算订单最终成交价：客户端报的价格高于套餐标价时，必须被拒绝或限到套餐价以内」→ 期望 <= 46800，实际 999999
 
 ## 假设裁决
 

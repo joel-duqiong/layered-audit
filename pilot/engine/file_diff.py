@@ -36,6 +36,7 @@ from pathlib import Path
 from typing import Any
 
 import findings_schema
+import oracle_gate
 
 
 def project_dir() -> Path:
@@ -275,16 +276,36 @@ def main() -> None:
     derived_values = resolve_derived_values(ctx)
 
     findings: list[dict[str, Any]] = []
+    held: list[dict[str, Any]] = []
     for rec in cfg.get("findings", []):
         out: dict[str, Any] = {}
         for field, value in rec.items():
             out[field] = render_value(value, ctx, derived_values)
-        findings.append(out)
+        # 只有 defect 需要判据来源：positive / observation 不是开单，不受闸门影响。
+        # technical（通用安全/正确性不变式）直接放行；business 必须有 confirmed oracle。
+        if out.get("kind") == "defect":
+            kept, gated = oracle_gate.warrant_split(
+                rec.get("warrant"), [out], rule_id=out.get("id", ""))
+            findings.extend(kept)
+            held.extend(gated)
+        else:
+            findings.append(out)
 
     findings.sort(key=lambda f: (SEV.get(f.get("severity"), 9), f.get("id", "")))
 
     out_json = art / "file_findings.json"
     out_json.write_text(json.dumps(findings, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    # 判据来源不足的业务预期：不进缺陷台账，但必须留痕（硬约束 5）。无条件写。
+    hb = oracle_gate.buckets(held)
+    (art / "file_rule_suspects.json").write_text(json.dumps({
+        "unconfirmed": hb["unconfirmed"], "unconfirmed_count": len(hb["unconfirmed"]),
+        "refuted": hb["refuted"], "refuted_count": len(hb["refuted"]),
+        "note": "文件层开单门的判据来源分流：technical（通用安全/正确性不变式）直接开单，"
+                "business 必须有 confirmed oracle。未经确认的进待确认疑点（规范层风险），"
+                "被文档明确否定的只保留观测；未声明 warrant 的按「未裁定」保守留痕。"
+                "positive / observation 不是开单，不受此闸门影响。",
+    }, ensure_ascii=False, indent=2), encoding="utf-8")
 
     defects = [f for f in findings if f.get("kind") == "defect"]
     positives = [f for f in findings if f.get("kind") == "positive"]
