@@ -7,7 +7,7 @@
 
   `CLASS-RULE-MISSING-IN-ALL-LAYERS` 报 HIGH + ground_truth=verified，
   detail 里明写「定金不超过成交价」—— 而项目权威文档
-  `/Users/june/tests/auto-api/docs/业务校验对照.md` 第 65 行写着
+  `tests/auto-api/docs/业务校验对照.md` 第 65 行写着
   「定金与成交价的大小关系：当前只要求各自 >= 0」，列在「当前未定义」标题下。
 
 同一份文档第 62 行把「预约时间是否允许过去时间」也列为未定义。

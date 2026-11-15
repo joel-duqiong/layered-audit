@@ -271,5 +271,5 @@ demo-shop: shop_order/shop_customer/shop_product 的 ai_probe% 行数 = 0
     两个仓库的 finding 共用一套 category/owner 判定会让归属串台。
 
 11. **没有动 jiuyan 的代码。**
-    `/Users/june/jiuyan` 全程只读（只 cat 实体与迁移文件）。
+    被测仓库 `jiuyan` 全程只读（只 cat 实体与迁移文件）。
     jiuyan 侧被改的只有 `pilot/` 下的类层通用件与 `pilot/class_scenarios.json`（项目声明）。

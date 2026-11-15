@@ -288,7 +288,7 @@ DB 复核：quoted_amount_cent=888888 的行 0 条；shop_order 共 16 行，max
    理由：断言的语义是「期望看到缺陷行为」。如果写成「期望一切正常」，那 demo 反而会绿，
    探针的证明力就没了。判定与期望分离这件事本身也是这套系统的一贯做法。
 
-10. **没有动 `/Users/june/jiuyan`。**
+10. **没有动被测仓库 `jiuyan`。**
     全程只读（只 cat 源码）。jiuyan 侧被改的只有 `pilot/` 下的通用件与
     `pilot/file_cases.json`（项目声明）。
 

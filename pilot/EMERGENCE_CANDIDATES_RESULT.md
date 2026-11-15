@@ -247,7 +247,7 @@ demo 只跑了 **class 层 + integration 层**，service 层没有产物。
 ## 7. 怎么复现
 
 ```bash
-cd /Users/june/.cc-weixin/workspace/layered-audit
+cd <审计仓库根>   # 克隆后的 layered-audit 目录
 
 # 1. 候选生成（固定种子 → 两次跑指纹一致）
 python3 pilot/engine/emergence_candidates.py \

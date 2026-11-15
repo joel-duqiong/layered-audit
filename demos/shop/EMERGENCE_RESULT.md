@@ -250,7 +250,7 @@ python3 emergence_selftest.py                               # 自证（35 项断
     一开始把所有条目都算进去，导致本例三态被误降级，已修。
 
 12. **探针自证用可执行脚本（`emergence_selftest.py`），没有新建 pytest 套件** ——
-    仓库的回归资产在 `/Users/june/tests/auto-api`，按要求没动。
+    仓库的回归资产在 `tests/auto-api`（验收套件），按要求没动。
 
 13. **引擎纯度**：本次新增/改动的 `pilot/engine/emergence.py`、
     `pilot/engine/invariants.py` **零违规**（自证脚本里逐文件断言）。

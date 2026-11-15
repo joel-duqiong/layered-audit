@@ -10,7 +10,7 @@
     MEDIUM / confidence 0.92 / ground_truth=verified / kind=defect
     「orders.address 声明 NOT NULL，实际用空串绕过 —— 非空约束只挡了 NULL」
 
-而 `/Users/june/jiuyan/docs/API.md:307` 明写「`address` 可为空；为空时后端保存为空
+而被测仓库 `jiuyan/docs/API.md:307` 明写「`address` 可为空；为空时后端保存为空
 字符串，避免前端非必填地址导致订单生成失败」——带理由的有意设计。验收用例
 `test_create_order_empty_address`（tests/auto-api/tests/test_orders.py:19-21）
 断言的正是这个行为，即**存在一条 confirmed 的可执行 oracle 断言相反预期**。
