@@ -16,6 +16,8 @@ DERIVES 边不在契约内，未纳入 —— 这是已声明的覆盖缺口，�
      不相交的对根本不枚举（旁条件对它们平凡成立）。
   2. Čech 障碍用重叠图 1-骨架的环一致性（GF(2) 并查集奇偶），不算上同调群。
      成对精确；三元及以上环由奇偶矛盾检测；高阶 H¹ 类算不了，显式报为局限。
+     opt-in 高阶通道（--higher-order，默认关）补跨桶标签聚合环：裁定用全局 1-骨架 GF(2) 奇偶，
+     神经复形余链秩只产 dim H¹ 容量统计量（不参与裁定）；关闭时产物逐字节不变。
 
 用法：
     python3 frame_check.py --net <关系网.json> --units <细胞.json> \
@@ -813,6 +815,245 @@ def overlap_graph_stats(index: dict[str, list[str]]) -> dict[str, int]:
     return {"vertices": v, "edges": e, "components": comps, "cycle_space_dimension": e - v + comps}
 
 
+# ---------------------------------------------------------------- 高阶通道：全局奇偶 + 神经复形容量（opt-in）
+# 1-骨架按桶各算奇偶，**跨桶标签聚合**是盲区：不一致标签可来自另一桶，见证顶点集未必跨桶（CE2）。
+# 裁定用全局 GF(2) 奇偶；神经复形（顶点=细胞，边=重叠对，三角形=同桶三元组）余链秩只产容量统计量：
+# dim H¹ = E - rank δ⁰ - rank δ¹（H¹ 只需到 2-余链），不参与裁定。
+# 不用离散 Morse 归约：实测复形极小（bitset 消元微秒级），且 CGN 定理要求配对限制映射
+# 是同构 —— 约束集通道的限制是求交、非线性映射，前提不成立；常数 GF(2) 系数下成立但零收益。
+
+def _gf2_rank(rows: list[int]) -> int:
+    """GF(2) 矩阵秩：每行一个 bitset，主元消元。"""
+    basis: dict[int, int] = {}
+    rank = 0
+    for r in rows:
+        cur = r
+        while cur:
+            p = cur.bit_length() - 1
+            if p in basis:
+                cur ^= basis[p]
+            else:
+                basis[p] = cur
+                rank += 1
+                break
+    return rank
+
+
+def _nerve_complex(index: dict[str, list[str]]) -> tuple[list[str], list[tuple[str, str]], list[tuple[str, str, str]], dict[tuple[str, str], list[str]]]:
+    buckets = {r: cs for r, cs in index.items() if len(cs) >= 2}
+    verts = sorted({c for cs in buckets.values() for c in cs})
+    pair_res: dict[tuple[str, str], list[str]] = defaultdict(list)
+    for r, cs in buckets.items():
+        for a, b in combinations(cs, 2):
+            pair_res[(a, b)].append(r)
+    edges = sorted(pair_res)
+    tris = sorted({tuple(sorted(t)) for cs in buckets.values() for t in combinations(cs, 3)})
+    return verts, edges, tris, dict(pair_res)
+
+
+def _higher_order_labels(fps: dict[str, Footprint], index: dict[str, list[str]],
+                         findings_by_cell: dict[str, list[dict[str, Any]]],
+                         judgments: dict[tuple[str, str, str], str] | None,
+                         oracles: list[dict[str, Any]],
+                         entity_meta: dict[str, dict[str, Any]] | None,
+                         guard_facts: dict[tuple[str, tuple], list[dict[str, Any]]] | None,
+                         oracle_ids: frozenset[str], satisfaction: bool) -> tuple[dict[tuple[str, str], str], dict[str, dict[tuple[str, str], str]]]:
+    """每对细胞一个三态标签，跨共享桶聚合（与 find_candidates 的 δ⁰ 聚合同语义）。
+    返回 (聚合标签, 逐桶标签)。逐桶标签供冗余对账落到逐对判定粒度（零额外成本）。
+    全截面约束桶贡献成对不相交标签；桶级 Helly 失败（成对交非空、全桶交空）仍归
+    1-骨架通道的全桶交集裁决，这里不重复开单。其余桶走 judgments/二值退回。"""
+    judgments = judgments or {}
+    per_pair: dict[tuple[str, str], list[str]] = defaultdict(list)
+    per_bucket: dict[str, dict[tuple[str, str], str]] = {}
+    for r, cs in index.items():
+        if len(cs) < 2:
+            continue
+        secs = {c: _cell_section(fps[c], r, oracles, entity_meta) for c in cs}
+        full = all(secs[c] is not None for c in cs)
+        bucket_labels: dict[tuple[str, str], str] = {}
+        for a, b in combinations(cs, 2):
+            if full:
+                lab = "inconsistent" if _is_empty(_intersect(secs[a], secs[b])) else "consistent"
+            else:
+                key = (a, b, r)
+                lab = judgments[key] if key in judgments else _pair_label_from_findings(
+                    a, b, r, findings_by_cell, guard_facts, oracle_ids, satisfaction)
+            per_pair[(a, b)].append(lab)
+            bucket_labels[(a, b)] = lab
+        per_bucket[r] = bucket_labels
+    out: dict[tuple[str, str], str] = {}
+    for p, labs in per_pair.items():
+        if "inconsistent" in labs:
+            out[p] = "inconsistent"
+        elif all(l == "consistent" for l in labs):
+            out[p] = "consistent"
+        else:
+            out[p] = "unknown"
+    return out, per_bucket
+
+
+def higher_order_consistency(
+    fps: dict[str, Footprint],
+    index: dict[str, list[str]],
+    findings_by_cell: dict[str, list[dict[str, Any]]],
+    judgments: dict[tuple[str, str, str], str] | None = None,
+    oracles: list[dict[str, Any]] | None = None,
+    entity_meta: dict[str, dict[str, Any]] | None = None,
+    guard_facts: dict[tuple[str, tuple], list[dict[str, Any]]] | None = None,
+    oracle_ids: frozenset[str] = frozenset(),
+    satisfaction: bool = False,
+    old_cycles: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """跨桶标签聚合的环障碍通道（opt-in）。裁定来自**全局 1-骨架 GF(2) 奇偶**（跨桶聚合标签）；
+    神经复形/余链秩只产容量统计量，**不参与裁定**（dim H¹=0 也可有障碍：填充三角形上标签仍可矛盾）。
+    三态：已知边奇环⇒inconsistent；有 unknown 边或零已知边⇒unknown；全已知且无奇环⇒consistent。
+    status 语义是「已知边上无奇环」，**不是「无障碍」**：桶级约束障碍归 1-骨架通道裁决。
+    见证按**逐对判定粒度**对账：只不一致边参与；边覆盖=某含该对的桶给该对 inconsistent 且该桶旧已判红；
+    全部不一致边覆盖 ⇒ 冗余（无信息增量），否则增量。"""
+    oracles = oracles or []
+    verts, edges, tris, pair_res = _nerve_complex(index)
+    vi = {c: i for i, c in enumerate(verts)}
+    ei = {e: i for i, e in enumerate(edges)}
+    d0 = [(1 << vi[a]) | (1 << vi[b]) for a, b in edges]
+    d1 = [(1 << ei[(a, b)]) | (1 << ei[(b, c)]) | (1 << ei[(a, c)]) for a, b, c in tris]
+    r0, r1 = _gf2_rank(d0), _gf2_rank(d1)
+    h1 = len(edges) - r0 - r1
+    labels, per_bucket_labels = _higher_order_labels(fps, index, findings_by_cell, judgments, oracles,
+                                                     entity_meta, guard_facts, oracle_ids, satisfaction)
+    # 已知边子图的全局奇偶并查集（不 break：收集全部冲突见证）
+    parent = {c: c for c in verts}
+    par = {c: 0 for c in verts}
+
+    def find(x: str) -> tuple[str, int]:
+        if parent[x] == x:
+            return x, 0
+        root, p = find(parent[x])
+        return root, p ^ par[x]
+
+    def union(a: str, b: str, rel: int) -> bool:
+        ra, pa = find(a)
+        rb, pb = find(b)
+        if ra == rb:
+            return (pa ^ pb) == rel
+        parent[rb] = ra
+        par[rb] = pa ^ pb ^ rel
+        return True
+
+    forest: dict[str, set[str]] = defaultdict(set)
+    known = unknown = 0
+    conflicts: list[tuple[str, str]] = []
+    for e in edges:
+        lab = labels.get(e, "unknown")
+        if lab == "unknown":
+            unknown += 1
+            continue
+        known += 1
+        a, b = e
+        ra, _ = find(a)
+        rb, _ = find(b)
+        if not union(a, b, 0 if lab == "consistent" else 1):
+            conflicts.append(e)
+        elif ra != rb:
+            forest[a].add(b)
+            forest[b].add(a)
+    # 见证环重构：冲突边 + 生成森林上 a→b 唯一树路径。
+    # 必须用森林路径而非已知子图最短路：冲突后组件内标签已矛盾，任意路径奇偶不定，
+    # 最短路可能凑出偶环（假见证）；森林路径奇偶 = pa⊕pb，加冲突边恒为奇（冲突条件保证）。
+    old_status = {c["resource"]: c["status"] for c in (old_cycles or [])}
+    bucket_sets = {r: set(cs) for r, cs in index.items() if len(cs) >= 2}
+    obstructions: list[dict[str, Any]] = []
+    for a, b in conflicts:
+        prev: dict[str, str | None] = {a: None}
+        queue = [a]
+        while queue and b not in prev:
+            u = queue.pop(0)
+            for v in sorted(forest[u]):
+                if v not in prev:
+                    prev[v] = u
+                    queue.append(v)
+        path = [b]
+        while path[-1] != a:
+            path.append(prev[path[-1]])
+        path.reverse()
+        cyc_edges = list(zip(path, path[1:])) + [(a, b)]
+        cyc_edges = [tuple(sorted(e)) for e in cyc_edges]
+        vset = set(path)
+        containing = [r for r, cs in bucket_sets.items() if vset <= cs]
+        # 冗余对账落到**逐对判定粒度**：只不一致边参与（一致边不携带矛盾，空真覆盖）。
+        # 边覆盖 ⇔ 某含该对的桶给该对 inconsistent 标签**且**该桶已被旧通道判红。
+        # 「两端点 ⊆ 旧红桶」不是覆盖判据：桶判红有三条路径（成对交 break 在首对 /
+        # 全桶交空 Helly / judgments 奇环），都不证明桶内任意一对被判红（CE6）。
+        covered = [labels.get((x, y)) != "inconsistent" or
+                   any(per_bucket_labels.get(r, {}).get((x, y)) == "inconsistent"
+                       and old_status.get(r) == "inconsistent"
+                       for r in pair_res.get((x, y), []))
+                   for x, y in cyc_edges]
+        redundant = all(covered)
+        obstructions.append({
+            "cycle": path,
+            "edges": [list(e) for e in cyc_edges],
+            "edge_resources": {f"{e[0]}|{e[1]}": pair_res.get(e, []) for e in cyc_edges},
+            "scope": "within_bucket" if containing else "cross_resource",
+            "containing_buckets": containing,
+            "redundant_with_skeleton": redundant,
+            "edges_covered_by_skeleton": covered,
+        })
+    incremental = sum(1 for o in obstructions if not o["redundant_with_skeleton"])
+    if conflicts:
+        status = "inconsistent"
+    elif known == 0 or unknown > 0:
+        status = "unknown"
+    else:
+        status = "consistent"
+    # 已知边子图的环空间维数（当前标签下可检验的环容量）
+    kv = sorted({c for e in edges if labels.get(e, "unknown") != "unknown" for c in e})
+    kparent = {c: c for c in kv}
+
+    def kfind(x: str) -> str:
+        while kparent[x] != x:
+            x = kparent[x]
+        return x
+
+    kedges = [(a, b) for a, b in edges if labels.get((a, b), "unknown") != "unknown"]
+    for a, b in kedges:
+        ra, rb = kfind(a), kfind(b)
+        if ra != rb:
+            kparent[rb] = ra
+    kcomps = len({kfind(c) for c in kv}) if kv else 0
+    return {
+        "channel": "ok",
+        "status": status,
+        "nerve": {"vertices": len(verts), "edges": len(edges), "triangles": len(tris)},
+        "cochain": {"rank_delta0": r0, "rank_delta1": r1, "h1_dimension": h1},
+        "edges_known": known, "edges_unknown": unknown,
+        "known_edge_cycle_space_dimension": len(kedges) - len(kv) + kcomps,
+        "conflict": list(conflicts[0]) if conflicts else None,
+        "obstructions": obstructions,
+        "obstructions_incremental": incremental,
+        "notes": [
+            "裁定来自**全局 1-骨架 GF(2) 奇偶**（跨桶聚合标签）；神经复形/余链秩只产容量统计量，**不参与裁定**。"
+            "真盲区是**跨桶标签聚合**：见证顶点集可以在单桶内，但不一致标签来自另一桶（CE2），旧通道按桶各算奇偶看不见；"
+            "「有无单桶包含全环」（scope）只是拓扑分类，不是冗余判据",
+            "dim H¹ = E - rank δ⁰ - rank δ¹ 是拓扑容量（未被同桶三角形填充的独立环数），不是已检出障碍数，也不参与裁定："
+            "dim H¹=0 仍可有障碍（填充三角形上标签可矛盾，CE2）。覆盖≠检测力（坑64/66）",
+            "三态：已知边奇环⇒inconsistent（证明，unknown 边不能抹掉）；有 unknown 边或零已知边⇒unknown；全已知无奇环⇒consistent。"
+            "**status 语义是「已知边上无奇环」（全局 2-着色存在），不是「无障碍」**：桶级约束障碍（截面空集）由 1-骨架通道裁决，"
+            "本通道 status=consistent 可与 cycles obstructions>0 并立，不得读成「查了没问题」",
+            "约束桶只贡献成对不相交标签；约束导出的逐对 inconsistent 标签 ⇒ 所在桶必已被旧通道成对枚举判红 ⇒ "
+            "**不一致边全部约束导出的见证，信息增量为 0**（CE1 全不一致边 / CE5 单不一致边两形态守卫）；混合见证逐边对账。"
+            "**前瞻限定：本论断依赖「约束标签只在 full 桶产生」这一实现事实（_higher_order_labels 全截面才走约束路径）；"
+            "DTO 投影放开部分截面时须重推**。桶级 Helly 失败（成对交非空、全桶交空）仍归旧通道全桶交集裁决，不重复开单",
+            "冗余对账按**逐对判定粒度**：只不一致边参与（一致边不携带矛盾，空真覆盖）；边覆盖 ⇔ 某含该对的桶给该对 "
+            "inconsistent 标签**且**该桶已被旧通道判红。全部不一致边覆盖 ⇒ redundant_with_skeleton=true（无信息增量）。"
+            "「两端点 ⊆ 旧红桶」不是覆盖判据：桶判红有三条路径（成对交 break 在首对 / 全桶交空 / judgments 奇环），"
+            "都不证明桶内任意一对被判红（CE6）；obstructions_incremental 只计含未覆盖不一致边的见证；edges_covered_by_skeleton 逐边留痕",
+            "不用离散 Morse 归约：复形极小（bitset 消元），且 CGN(DOI 10.1007/s10208-015-9266-8) 定理要求配对限制映射为同构 —— "
+            "约束集的限制是求交、非线性映射，前提对约束通道不成立；常数 GF(2) 系数下成立但无规模收益",
+            "本通道 opt-in（--higher-order，默认关）；audit_entry 未传该旗标 ⇒ 对已发布裁定零影响（与满足级通道同族，待接线）",
+        ],
+    }
+
+
 def _variety_deficit(candidates: list[dict[str, Any]], findings: list[dict[str, Any]],
                      findings_by_cell: dict[str, list[dict[str, Any]]]) -> dict[str, Any]:
     """Ashby 判据多样性赤字：finding 通道的粒度与候选资源通道的粒度对不上。
@@ -857,7 +1098,8 @@ def run(net: dict[str, Any], units: dict[str, Any], findings: list[dict[str, Any
         business_levels: set[str] | None = None,
         entity_meta: dict[str, dict[str, Any]] | None = None,
         capability: dict[str, Any] | None = None,
-        satisfaction: bool = False) -> dict[str, Any]:
+        satisfaction: bool = False,
+        higher_order: bool = False) -> dict[str, Any]:
     findings = findings or []
     oracles = oracles or []
     fps, quirks = build_footprints(net, units)
@@ -870,6 +1112,9 @@ def run(net: dict[str, Any], units: dict[str, Any], findings: list[dict[str, Any
     all_candidates, pair_stats = find_candidates(fps, findings_by_cell, oracles, index, plumbing_types, business_levels, entity_meta, gf, oracle_ids, satisfaction)
     candidates = [c for c in all_candidates if c["survives_filter"]]
     cycles = cycle_consistency(fps, index, findings_by_cell, judgments, oracles, entity_meta, gf, oracle_ids, satisfaction)
+    # 高阶通道 opt-in：关闭时不计算不发布，产物逐字节不变（做法66 三锁）。
+    higher = higher_order_consistency(fps, index, findings_by_cell, judgments, oracles,
+                                      entity_meta, gf, oracle_ids, satisfaction, cycles) if higher_order else None
     graph = overlap_graph_stats(index)
     obstructions = [c for c in cycles if c["status"] == "inconsistent"]
     section_cells = sum(c["sections_present"] for c in cycles)  # 口径A：细胞×资源关联数
@@ -953,7 +1198,7 @@ def run(net: dict[str, Any], units: dict[str, Any], findings: list[dict[str, Any
         input_warnings.append("满足级通道已启用但 capability 未供给：guard 证据源 INCOMPLETE"
                               "（oracle 连接的正面 finding 源仍可用）；inconsistent=0 是「未测量」不是「无矛盾」")
 
-    return {
+    report = {
         "schema_version": SCHEMA_VERSION,
         "engine": "frame_check",
         "input_warnings": input_warnings,
@@ -1091,6 +1336,12 @@ def run(net: dict[str, Any], units: dict[str, Any], findings: list[dict[str, Any
             ],
         },
     }
+    if higher is not None:
+        report["higher_order"] = higher
+        report["counts"]["higher_order_obstructions"] = len(higher["obstructions"])
+        report["counts"]["higher_order_obstructions_incremental"] = higher["obstructions_incremental"]
+        report["counts"]["higher_order_h1_dimension"] = higher["cochain"]["h1_dimension"]
+    return report
 
 
 def main() -> None:
@@ -1105,6 +1356,7 @@ def main() -> None:
     ap.add_argument("--declarations", type=Path, help="class_declaration.json（含 jpa @Table 实体→表映射）；供给后表级判据经映射挂到正确实体字段")
     ap.add_argument("--capability", type=Path, help="capability_map.json；满足级通道的 guard 证据源（需同时 --satisfaction）")
     ap.add_argument("--satisfaction", action="store_true", help="启用满足级 δ⁰ 通道（opt-in，默认关）；缺失 capability 时 guard 源报 INCOMPLETE，保守降为 unknown")
+    ap.add_argument("--higher-order", action="store_true", help="启用高阶通道（opt-in，默认关）：全局 GF(2) 奇偶判跨桶标签聚合环障碍，神经复形余链秩产 dim H¹ 容量统计量（不参与裁定）；关闭时产物逐字节不变")
     args = ap.parse_args()
 
     net = json.loads(args.net.read_text(encoding="utf-8"))
@@ -1121,7 +1373,7 @@ def main() -> None:
                            "columns": {c["field"]: c["column"] for c in v.get("columns", []) if "field" in c and "column" in c}}
                        for e, v in jpa.items()}
 
-    report = run(net, units, findings, oracles, plumbing_types=plumbing, business_levels=business, entity_meta=entity_meta, capability=capability, satisfaction=args.satisfaction)
+    report = run(net, units, findings, oracles, plumbing_types=plumbing, business_levels=business, entity_meta=entity_meta, capability=capability, satisfaction=args.satisfaction, higher_order=args.higher_order)
     if args.out:
         args.out.write_text(json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
     c = report["counts"]
@@ -1143,6 +1395,12 @@ def main() -> None:
     rd = report["reduction"]
     print(f"reduction: brute {rd['brute_force_pairs']} pairs -> index {rd['index_comparisons']} comparisons (x{rd['comparison_reduction_factor']}), disjoint never enumerated {rd['disjoint_pairs_never_enumerated']}")
     print(f"cycles: buckets {c['cycle_buckets']} status {c['cycle_status']} obstructions {c['cycle_obstructions']}  constraint-sections assoc {c['constraint_section_cells']} / unique-cells {c['constraint_section_unique_cells']} / buckets {c['constraint_section_buckets']}  graph {report['overlap_graph']}")
+    ho = report.get("higher_order")
+    if ho is None:
+        print("高阶通道: disabled（未测量；--higher-order 启用跨资源环检查，关闭时产物逐字节不变）")
+    else:
+        nv = ho["nerve"]
+        print(f"高阶通道: {ho['channel']} status={ho['status']}（语义=已知边无奇环,不是无障碍）  nerve V{nv['vertices']}/E{nv['edges']}/T{nv['triangles']}  rank δ0={ho['cochain']['rank_delta0']} δ1={ho['cochain']['rank_delta1']}  dim H¹={ho['cochain']['h1_dimension']}  边 known {ho['edges_known']}/unknown {ho['edges_unknown']}  障碍 {len(ho['obstructions'])}（信息增量 {ho['obstructions_incremental']}）—— 裁定=全局 GF(2) 奇偶(跨桶标签聚合);dim H¹ 是容量统计量,不参与裁定;audit_entry 未接旗标，对已发布裁定零影响")
     print(f"检测力: firing_capable {c['buckets_firing_capable']}（区间/有限域,可不相交） / co_singleton_only {c['buckets_co_singleton_only']}（余单例域,永不 inconsistent） / other {c['buckets_other_domain']} —— 守恒 {c['buckets_firing_capable']}+{c['buckets_co_singleton_only']}+{c['buckets_other_domain']}={c['constraint_section_buckets']} 约束桶; 覆盖≠检测力")
     print(f"consistent 信息量: {c['consistent_buckets_symmetric']}/{c['consistent_buckets_total']} 桶两侧约束集逐一相等（对称挂载→检的是资源全局约束可满足，非两细胞独立取值一致）")
     d = report["variety_deficit"]

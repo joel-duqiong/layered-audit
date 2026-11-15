@@ -1,0 +1,4185 @@
+{
+ "schema_version": 1,
+ "engine": "frame_check",
+ "input_warnings": [],
+ "counts": {
+  "cells_total": 546,
+  "cells_footprint_known": 130,
+  "cells_footprint_nonempty": 52,
+  "cells_footprint_unknown": 0,
+  "domain_declared": true,
+  "cells_in_domain": 130,
+  "cells_in_domain_measured": 130,
+  "cells_in_domain_unknown": 0,
+  "cells_out_of_domain": 416,
+  "pairs_total": 148785,
+  "pairs_decidable": 8385,
+  "pairs_not_applicable": 140400,
+  "pairs_candidate": 9,
+  "pairs_disjoint_empty": 8330,
+  "pairs_disjoint_readonly": 28,
+  "pairs_disjoint_unknown_side": 0,
+  "pairs_unknown": 0,
+  "candidates_delta0": {
+   "consistent": 0,
+   "unknown": 9,
+   "inconsistent": 0
+  },
+  "satisfaction_fired_candidates": 0,
+  "satisfaction_fired_resources": 0,
+  "satisfaction_tied_violation_findings": 0,
+  "satisfaction_tied_positive_findings": 0,
+  "candidates_evidence_strength": {
+   "definite": 9,
+   "may_write_unknown": 0
+  },
+  "may_write_edges": 0,
+  "candidates_suspect_write_only": 0,
+  "max_overlap_size": 1,
+  "max_overlap_candidates": [
+   "FC-0019",
+   "FC-0020",
+   "FC-0021",
+   "FC-0022",
+   "FC-0023",
+   "FC-0024",
+   "FC-0025",
+   "FC-0026",
+   "FC-0027"
+  ],
+  "bucket_comparisons": 56,
+  "overlapping_pairs": 55,
+  "cycle_buckets": 14,
+  "cycle_status": {
+   "consistent": 5,
+   "inconsistent": 0,
+   "unknown": 9
+  },
+  "cycle_obstructions": 0,
+  "constraint_section_cells": 12,
+  "constraint_section_unique_cells": 10,
+  "constraint_section_buckets": 5,
+  "buckets_firing_capable": 1,
+  "buckets_co_singleton_only": 4,
+  "buckets_other_domain": 0,
+  "consistent_buckets_symmetric": 5,
+  "consistent_buckets_total": 5,
+  "candidates_before_filter": 27,
+  "dropped_crud_noise": 18,
+  "dropped_no_business": 0
+ },
+ "reduction": {
+  "brute_force_pairs": 8385,
+  "index_comparisons": 56,
+  "disjoint_pairs_never_enumerated": 8330,
+  "comparison_reduction_factor": 149.73,
+  "crud_filter": {
+   "before": 27,
+   "dropped_crud_noise": 18,
+   "dropped_no_business": 0,
+   "after": 9
+  }
+ },
+ "overlap_graph": {
+  "vertices": 52,
+  "edges": 55,
+  "components": 24,
+  "cycle_space_dimension": 27
+ },
+ "ratios": {
+  "candidate_over_decidable": 0.001073,
+  "unknown_pairs_over_total": 0.0,
+  "not_applicable_pairs_over_total": 0.943644,
+  "out_of_domain_cells_over_total": 0.761905,
+  "in_domain_measured_over_in_domain": 1.0,
+  "known_cells_over_total": 0.238095,
+  "delta0_unknown_over_candidates": 1.0,
+  "findings_attributed_over_total": 0.0
+ },
+ "candidates": [
+  {
+   "id": "FC-0019",
+   "cells": [
+    "com.jiuyan.banquet.service.CategoryService#create",
+    "com.jiuyan.banquet.service.CategoryService#delete"
+   ],
+   "cell_types": [
+    "SVC_OP",
+    "SVC_OP"
+   ],
+   "overlap_all": [
+    "com.jiuyan.banquet.entity.Category.setIsDeleted"
+   ],
+   "overlap_written": [
+    "com.jiuyan.banquet.entity.Category.setIsDeleted"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "com.jiuyan.banquet.entity.Category.setIsDeleted",
+     "identity": [
+      "field",
+      "Category",
+      "isDeleted"
+     ],
+     "a_writes": true,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": false,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.service.CategoryService#create": [
+       {
+        "source": "taint.sinks"
+       }
+      ],
+      "com.jiuyan.banquet.service.CategoryService#delete": [
+       {
+        "source": "taint.sinks"
+       }
+      ]
+     },
+     "oracles": [],
+     "business_oracles": [],
+     "findings": {
+      "com.jiuyan.banquet.service.CategoryService#create": [],
+      "com.jiuyan.banquet.service.CategoryService#delete": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.service.CategoryService#create": [],
+      "com.jiuyan.banquet.service.CategoryService#delete": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.service.CategoryService#create": [],
+      "com.jiuyan.banquet.service.CategoryService#delete": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(A) ∩ fp(B) ≠ ∅",
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": false,
+   "business_meaningful": true,
+   "survives_filter": true
+  },
+  {
+   "id": "FC-0020",
+   "cells": [
+    "com.jiuyan.banquet.service.OrderService#apply",
+    "com.jiuyan.banquet.service.OrderService#updateStatus"
+   ],
+   "cell_types": [
+    "SVC_OP",
+    "SVC_OP"
+   ],
+   "overlap_all": [
+    "com.jiuyan.banquet.entity.BanquetOrder.setStatus"
+   ],
+   "overlap_written": [
+    "com.jiuyan.banquet.entity.BanquetOrder.setStatus"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "com.jiuyan.banquet.entity.BanquetOrder.setStatus",
+     "identity": [
+      "field",
+      "BanquetOrder",
+      "status"
+     ],
+     "a_writes": true,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": false,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.service.OrderService#apply": [
+       {
+        "source": "taint.sinks"
+       }
+      ],
+      "com.jiuyan.banquet.service.OrderService#updateStatus": [
+       {
+        "source": "taint.sinks"
+       }
+      ]
+     },
+     "oracles": [
+      "api:CreateOrderRequest.status.enum",
+      "api:CreateOrderRequest.status.required",
+      "api:OrderResponse.status.enum",
+      "api:OrderStatusRequest.status.enum",
+      "api:OrderStatusRequest.status.required",
+      "api:UpdateOrderRequest.status.enum",
+      "api:UpdateOrderRequest.status.required"
+     ],
+     "business_oracles": [],
+     "findings": {
+      "com.jiuyan.banquet.service.OrderService#apply": [],
+      "com.jiuyan.banquet.service.OrderService#updateStatus": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.service.OrderService#apply": [],
+      "com.jiuyan.banquet.service.OrderService#updateStatus": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.service.OrderService#apply": [],
+      "com.jiuyan.banquet.service.OrderService#updateStatus": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(A) ∩ fp(B) ≠ ∅",
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": false,
+   "business_meaningful": true,
+   "survives_filter": true
+  },
+  {
+   "id": "FC-0021",
+   "cells": [
+    "com.jiuyan.banquet.service.PackageService#applyBase",
+    "com.jiuyan.banquet.service.PackageService#delete"
+   ],
+   "cell_types": [
+    "SVC_OP",
+    "SVC_OP"
+   ],
+   "overlap_all": [
+    "com.jiuyan.banquet.entity.BanquetPackage.setIsActive"
+   ],
+   "overlap_written": [
+    "com.jiuyan.banquet.entity.BanquetPackage.setIsActive"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "com.jiuyan.banquet.entity.BanquetPackage.setIsActive",
+     "identity": [
+      "field",
+      "BanquetPackage",
+      "isActive"
+     ],
+     "a_writes": true,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": false,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.service.PackageService#applyBase": [
+       {
+        "source": "taint.sinks"
+       }
+      ],
+      "com.jiuyan.banquet.service.PackageService#delete": [
+       {
+        "source": "taint.sinks"
+       }
+      ]
+     },
+     "oracles": [
+      "api:StatusRequest.isActive.required",
+      "doc:接口清单:31.iface.7",
+      "doc:接口清单:34.iface",
+      "doc:接口清单:40.iface"
+     ],
+     "business_oracles": [
+      "doc:接口清单:31.iface.7",
+      "doc:接口清单:34.iface",
+      "doc:接口清单:40.iface"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.service.PackageService#applyBase": [],
+      "com.jiuyan.banquet.service.PackageService#delete": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.service.PackageService#applyBase": [],
+      "com.jiuyan.banquet.service.PackageService#delete": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.service.PackageService#applyBase": [],
+      "com.jiuyan.banquet.service.PackageService#delete": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(A) ∩ fp(B) ≠ ∅",
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": false,
+   "business_meaningful": true,
+   "survives_filter": true
+  },
+  {
+   "id": "FC-0022",
+   "cells": [
+    "com.jiuyan.banquet.service.PackageService#applyBase",
+    "com.jiuyan.banquet.service.PackageService#updateStatus"
+   ],
+   "cell_types": [
+    "SVC_OP",
+    "SVC_OP"
+   ],
+   "overlap_all": [
+    "com.jiuyan.banquet.entity.BanquetPackage.setIsActive"
+   ],
+   "overlap_written": [
+    "com.jiuyan.banquet.entity.BanquetPackage.setIsActive"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "com.jiuyan.banquet.entity.BanquetPackage.setIsActive",
+     "identity": [
+      "field",
+      "BanquetPackage",
+      "isActive"
+     ],
+     "a_writes": true,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": false,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.service.PackageService#applyBase": [
+       {
+        "source": "taint.sinks"
+       }
+      ],
+      "com.jiuyan.banquet.service.PackageService#updateStatus": [
+       {
+        "source": "taint.sinks"
+       }
+      ]
+     },
+     "oracles": [
+      "api:StatusRequest.isActive.required",
+      "doc:接口清单:31.iface.7",
+      "doc:接口清单:34.iface",
+      "doc:接口清单:40.iface"
+     ],
+     "business_oracles": [
+      "doc:接口清单:31.iface.7",
+      "doc:接口清单:34.iface",
+      "doc:接口清单:40.iface"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.service.PackageService#applyBase": [],
+      "com.jiuyan.banquet.service.PackageService#updateStatus": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.service.PackageService#applyBase": [],
+      "com.jiuyan.banquet.service.PackageService#updateStatus": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.service.PackageService#applyBase": [],
+      "com.jiuyan.banquet.service.PackageService#updateStatus": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(A) ∩ fp(B) ≠ ∅",
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": false,
+   "business_meaningful": true,
+   "survives_filter": true
+  },
+  {
+   "id": "FC-0023",
+   "cells": [
+    "com.jiuyan.banquet.service.PackageService#delete",
+    "com.jiuyan.banquet.service.PackageService#updateStatus"
+   ],
+   "cell_types": [
+    "SVC_OP",
+    "SVC_OP"
+   ],
+   "overlap_all": [
+    "com.jiuyan.banquet.entity.BanquetPackage.setIsActive"
+   ],
+   "overlap_written": [
+    "com.jiuyan.banquet.entity.BanquetPackage.setIsActive"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "com.jiuyan.banquet.entity.BanquetPackage.setIsActive",
+     "identity": [
+      "field",
+      "BanquetPackage",
+      "isActive"
+     ],
+     "a_writes": true,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": false,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.service.PackageService#delete": [
+       {
+        "source": "taint.sinks"
+       }
+      ],
+      "com.jiuyan.banquet.service.PackageService#updateStatus": [
+       {
+        "source": "taint.sinks"
+       }
+      ]
+     },
+     "oracles": [
+      "api:StatusRequest.isActive.required",
+      "doc:接口清单:31.iface.7",
+      "doc:接口清单:34.iface",
+      "doc:接口清单:40.iface"
+     ],
+     "business_oracles": [
+      "doc:接口清单:31.iface.7",
+      "doc:接口清单:34.iface",
+      "doc:接口清单:40.iface"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.service.PackageService#delete": [],
+      "com.jiuyan.banquet.service.PackageService#updateStatus": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.service.PackageService#delete": [],
+      "com.jiuyan.banquet.service.PackageService#updateStatus": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.service.PackageService#delete": [],
+      "com.jiuyan.banquet.service.PackageService#updateStatus": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(A) ∩ fp(B) ≠ ∅",
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": false,
+   "business_meaningful": true,
+   "survives_filter": true
+  },
+  {
+   "id": "FC-0024",
+   "cells": [
+    "com.jiuyan.banquet.service.PackageTypeService#create",
+    "com.jiuyan.banquet.service.PackageTypeService#delete"
+   ],
+   "cell_types": [
+    "SVC_OP",
+    "SVC_OP"
+   ],
+   "overlap_all": [
+    "com.jiuyan.banquet.entity.PackageType.setIsDeleted"
+   ],
+   "overlap_written": [
+    "com.jiuyan.banquet.entity.PackageType.setIsDeleted"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "com.jiuyan.banquet.entity.PackageType.setIsDeleted",
+     "identity": [
+      "field",
+      "PackageType",
+      "isDeleted"
+     ],
+     "a_writes": true,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": false,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.service.PackageTypeService#create": [
+       {
+        "source": "taint.sinks"
+       }
+      ],
+      "com.jiuyan.banquet.service.PackageTypeService#delete": [
+       {
+        "source": "taint.sinks"
+       }
+      ]
+     },
+     "oracles": [],
+     "business_oracles": [],
+     "findings": {
+      "com.jiuyan.banquet.service.PackageTypeService#create": [],
+      "com.jiuyan.banquet.service.PackageTypeService#delete": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.service.PackageTypeService#create": [],
+      "com.jiuyan.banquet.service.PackageTypeService#delete": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.service.PackageTypeService#create": [],
+      "com.jiuyan.banquet.service.PackageTypeService#delete": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(A) ∩ fp(B) ≠ ∅",
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": false,
+   "business_meaningful": true,
+   "survives_filter": true
+  },
+  {
+   "id": "FC-0025",
+   "cells": [
+    "com.jiuyan.banquet.service.ProductService#apply",
+    "com.jiuyan.banquet.service.ProductService#delete"
+   ],
+   "cell_types": [
+    "SVC_OP",
+    "SVC_OP"
+   ],
+   "overlap_all": [
+    "com.jiuyan.banquet.entity.Product.setIsActive"
+   ],
+   "overlap_written": [
+    "com.jiuyan.banquet.entity.Product.setIsActive"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "com.jiuyan.banquet.entity.Product.setIsActive",
+     "identity": [
+      "field",
+      "Product",
+      "isActive"
+     ],
+     "a_writes": true,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": false,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.service.ProductService#apply": [
+       {
+        "source": "taint.sinks"
+       }
+      ],
+      "com.jiuyan.banquet.service.ProductService#delete": [
+       {
+        "source": "taint.sinks"
+       }
+      ]
+     },
+     "oracles": [
+      "api:StatusRequest.isActive.required",
+      "doc:接口清单:31.iface.7",
+      "doc:接口清单:34.iface",
+      "doc:接口清单:40.iface"
+     ],
+     "business_oracles": [
+      "doc:接口清单:31.iface.7",
+      "doc:接口清单:34.iface",
+      "doc:接口清单:40.iface"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.service.ProductService#apply": [],
+      "com.jiuyan.banquet.service.ProductService#delete": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.service.ProductService#apply": [],
+      "com.jiuyan.banquet.service.ProductService#delete": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.service.ProductService#apply": [],
+      "com.jiuyan.banquet.service.ProductService#delete": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(A) ∩ fp(B) ≠ ∅",
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": false,
+   "business_meaningful": true,
+   "survives_filter": true
+  },
+  {
+   "id": "FC-0026",
+   "cells": [
+    "com.jiuyan.banquet.service.ProductService#apply",
+    "com.jiuyan.banquet.service.ProductService#updateStatus"
+   ],
+   "cell_types": [
+    "SVC_OP",
+    "SVC_OP"
+   ],
+   "overlap_all": [
+    "com.jiuyan.banquet.entity.Product.setIsActive"
+   ],
+   "overlap_written": [
+    "com.jiuyan.banquet.entity.Product.setIsActive"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "com.jiuyan.banquet.entity.Product.setIsActive",
+     "identity": [
+      "field",
+      "Product",
+      "isActive"
+     ],
+     "a_writes": true,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": false,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.service.ProductService#apply": [
+       {
+        "source": "taint.sinks"
+       }
+      ],
+      "com.jiuyan.banquet.service.ProductService#updateStatus": [
+       {
+        "source": "taint.sinks"
+       }
+      ]
+     },
+     "oracles": [
+      "api:StatusRequest.isActive.required",
+      "doc:接口清单:31.iface.7",
+      "doc:接口清单:34.iface",
+      "doc:接口清单:40.iface"
+     ],
+     "business_oracles": [
+      "doc:接口清单:31.iface.7",
+      "doc:接口清单:34.iface",
+      "doc:接口清单:40.iface"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.service.ProductService#apply": [],
+      "com.jiuyan.banquet.service.ProductService#updateStatus": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.service.ProductService#apply": [],
+      "com.jiuyan.banquet.service.ProductService#updateStatus": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.service.ProductService#apply": [],
+      "com.jiuyan.banquet.service.ProductService#updateStatus": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(A) ∩ fp(B) ≠ ∅",
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": false,
+   "business_meaningful": true,
+   "survives_filter": true
+  },
+  {
+   "id": "FC-0027",
+   "cells": [
+    "com.jiuyan.banquet.service.ProductService#delete",
+    "com.jiuyan.banquet.service.ProductService#updateStatus"
+   ],
+   "cell_types": [
+    "SVC_OP",
+    "SVC_OP"
+   ],
+   "overlap_all": [
+    "com.jiuyan.banquet.entity.Product.setIsActive"
+   ],
+   "overlap_written": [
+    "com.jiuyan.banquet.entity.Product.setIsActive"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "com.jiuyan.banquet.entity.Product.setIsActive",
+     "identity": [
+      "field",
+      "Product",
+      "isActive"
+     ],
+     "a_writes": true,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": false,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.service.ProductService#delete": [
+       {
+        "source": "taint.sinks"
+       }
+      ],
+      "com.jiuyan.banquet.service.ProductService#updateStatus": [
+       {
+        "source": "taint.sinks"
+       }
+      ]
+     },
+     "oracles": [
+      "api:StatusRequest.isActive.required",
+      "doc:接口清单:31.iface.7",
+      "doc:接口清单:34.iface",
+      "doc:接口清单:40.iface"
+     ],
+     "business_oracles": [
+      "doc:接口清单:31.iface.7",
+      "doc:接口清单:34.iface",
+      "doc:接口清单:40.iface"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.service.ProductService#delete": [],
+      "com.jiuyan.banquet.service.ProductService#updateStatus": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.service.ProductService#delete": [],
+      "com.jiuyan.banquet.service.ProductService#updateStatus": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.service.ProductService#delete": [],
+      "com.jiuyan.banquet.service.ProductService#updateStatus": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(A) ∩ fp(B) ≠ ∅",
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": false,
+   "business_meaningful": true,
+   "survives_filter": true
+  }
+ ],
+ "candidates_all": [
+  {
+   "id": "FC-0001",
+   "cells": [
+    "com.jiuyan.banquet.repository.BanquetPackageRepository#existsByBanquetTypeAndIsDeletedFalse",
+    "com.jiuyan.banquet.repository.BanquetPackageRepository#save"
+   ],
+   "cell_types": [
+    "REPO_OP",
+    "REPO_OP"
+   ],
+   "overlap_all": [
+    "table:packages"
+   ],
+   "overlap_written": [
+    "table:packages"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "table:packages",
+     "identity": [
+      "table",
+      "packages",
+      null
+     ],
+     "a_writes": false,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": true,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#existsByBanquetTypeAndIsDeletedFalse": [
+       {
+        "source": "READS",
+        "to": "table:packages",
+        "access": "read"
+       }
+      ],
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#save": [
+       {
+        "source": "WRITES",
+        "to": "table:packages",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:packages",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:packages",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:packages",
+        "access": "write"
+       }
+      ]
+     },
+     "oracles": [
+      "ddl:packages.banquet_type.not_blank_candidate",
+      "ddl:packages.banquet_type.not_null",
+      "ddl:packages.chk_packages_price_cent",
+      "ddl:packages.created_at.not_null",
+      "ddl:packages.is_active.default",
+      "ddl:packages.is_active.not_null",
+      "ddl:packages.is_deleted.default",
+      "ddl:packages.is_deleted.not_null",
+      "ddl:packages.name.not_blank_candidate",
+      "ddl:packages.name.not_null",
+      "ddl:packages.price_cent.not_null",
+      "ddl:packages.updated_at.not_null",
+      "doc:AGENTS:281.price_cent.packages",
+      "doc:接口清单:25.iface.packages",
+      "doc:接口清单:25.iface.2.packages",
+      "doc:接口清单:28.iface.packages",
+      "doc:接口清单:28.iface.2.packages",
+      "doc:接口清单:31.iface.packages",
+      "doc:接口清单:32.iface.packages",
+      "doc:接口清单:36.iface.packages",
+      "doc:接口清单:37.iface.packages",
+      "doc:接口清单:43.iface.packages"
+     ],
+     "business_oracles": [
+      "doc:AGENTS:281.price_cent.packages",
+      "doc:接口清单:25.iface.packages",
+      "doc:接口清单:25.iface.2.packages",
+      "doc:接口清单:28.iface.packages",
+      "doc:接口清单:28.iface.2.packages",
+      "doc:接口清单:31.iface.packages",
+      "doc:接口清单:32.iface.packages",
+      "doc:接口清单:36.iface.packages",
+      "doc:接口清单:37.iface.packages",
+      "doc:接口清单:43.iface.packages"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#existsByBanquetTypeAndIsDeletedFalse": [],
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#save": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#existsByBanquetTypeAndIsDeletedFalse": [],
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#save": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#existsByBanquetTypeAndIsDeletedFalse": [],
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#save": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": true,
+   "business_meaningful": true,
+   "survives_filter": false
+  },
+  {
+   "id": "FC-0002",
+   "cells": [
+    "com.jiuyan.banquet.repository.BanquetPackageRepository#findAll",
+    "com.jiuyan.banquet.repository.BanquetPackageRepository#save"
+   ],
+   "cell_types": [
+    "REPO_OP",
+    "REPO_OP"
+   ],
+   "overlap_all": [
+    "table:packages"
+   ],
+   "overlap_written": [
+    "table:packages"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "table:packages",
+     "identity": [
+      "table",
+      "packages",
+      null
+     ],
+     "a_writes": false,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": true,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#findAll": [
+       {
+        "source": "READS",
+        "to": "table:packages",
+        "access": "read"
+       }
+      ],
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#save": [
+       {
+        "source": "WRITES",
+        "to": "table:packages",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:packages",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:packages",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:packages",
+        "access": "write"
+       }
+      ]
+     },
+     "oracles": [
+      "ddl:packages.banquet_type.not_blank_candidate",
+      "ddl:packages.banquet_type.not_null",
+      "ddl:packages.chk_packages_price_cent",
+      "ddl:packages.created_at.not_null",
+      "ddl:packages.is_active.default",
+      "ddl:packages.is_active.not_null",
+      "ddl:packages.is_deleted.default",
+      "ddl:packages.is_deleted.not_null",
+      "ddl:packages.name.not_blank_candidate",
+      "ddl:packages.name.not_null",
+      "ddl:packages.price_cent.not_null",
+      "ddl:packages.updated_at.not_null",
+      "doc:AGENTS:281.price_cent.packages",
+      "doc:接口清单:25.iface.packages",
+      "doc:接口清单:25.iface.2.packages",
+      "doc:接口清单:28.iface.packages",
+      "doc:接口清单:28.iface.2.packages",
+      "doc:接口清单:31.iface.packages",
+      "doc:接口清单:32.iface.packages",
+      "doc:接口清单:36.iface.packages",
+      "doc:接口清单:37.iface.packages",
+      "doc:接口清单:43.iface.packages"
+     ],
+     "business_oracles": [
+      "doc:AGENTS:281.price_cent.packages",
+      "doc:接口清单:25.iface.packages",
+      "doc:接口清单:25.iface.2.packages",
+      "doc:接口清单:28.iface.packages",
+      "doc:接口清单:28.iface.2.packages",
+      "doc:接口清单:31.iface.packages",
+      "doc:接口清单:32.iface.packages",
+      "doc:接口清单:36.iface.packages",
+      "doc:接口清单:37.iface.packages",
+      "doc:接口清单:43.iface.packages"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#findAll": [],
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#save": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#findAll": [],
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#save": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#findAll": [],
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#save": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": true,
+   "business_meaningful": true,
+   "survives_filter": false
+  },
+  {
+   "id": "FC-0003",
+   "cells": [
+    "com.jiuyan.banquet.repository.BanquetPackageRepository#findByIdAndIsDeletedFalse",
+    "com.jiuyan.banquet.repository.BanquetPackageRepository#save"
+   ],
+   "cell_types": [
+    "REPO_OP",
+    "REPO_OP"
+   ],
+   "overlap_all": [
+    "table:packages"
+   ],
+   "overlap_written": [
+    "table:packages"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "table:packages",
+     "identity": [
+      "table",
+      "packages",
+      null
+     ],
+     "a_writes": false,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": true,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#findByIdAndIsDeletedFalse": [
+       {
+        "source": "READS",
+        "to": "table:packages",
+        "access": "read"
+       },
+       {
+        "source": "READS",
+        "to": "table:packages",
+        "access": "read"
+       }
+      ],
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#save": [
+       {
+        "source": "WRITES",
+        "to": "table:packages",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:packages",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:packages",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:packages",
+        "access": "write"
+       }
+      ]
+     },
+     "oracles": [
+      "ddl:packages.banquet_type.not_blank_candidate",
+      "ddl:packages.banquet_type.not_null",
+      "ddl:packages.chk_packages_price_cent",
+      "ddl:packages.created_at.not_null",
+      "ddl:packages.is_active.default",
+      "ddl:packages.is_active.not_null",
+      "ddl:packages.is_deleted.default",
+      "ddl:packages.is_deleted.not_null",
+      "ddl:packages.name.not_blank_candidate",
+      "ddl:packages.name.not_null",
+      "ddl:packages.price_cent.not_null",
+      "ddl:packages.updated_at.not_null",
+      "doc:AGENTS:281.price_cent.packages",
+      "doc:接口清单:25.iface.packages",
+      "doc:接口清单:25.iface.2.packages",
+      "doc:接口清单:28.iface.packages",
+      "doc:接口清单:28.iface.2.packages",
+      "doc:接口清单:31.iface.packages",
+      "doc:接口清单:32.iface.packages",
+      "doc:接口清单:36.iface.packages",
+      "doc:接口清单:37.iface.packages",
+      "doc:接口清单:43.iface.packages"
+     ],
+     "business_oracles": [
+      "doc:AGENTS:281.price_cent.packages",
+      "doc:接口清单:25.iface.packages",
+      "doc:接口清单:25.iface.2.packages",
+      "doc:接口清单:28.iface.packages",
+      "doc:接口清单:28.iface.2.packages",
+      "doc:接口清单:31.iface.packages",
+      "doc:接口清单:32.iface.packages",
+      "doc:接口清单:36.iface.packages",
+      "doc:接口清单:37.iface.packages",
+      "doc:接口清单:43.iface.packages"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#findByIdAndIsDeletedFalse": [],
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#save": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#findByIdAndIsDeletedFalse": [],
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#save": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#findByIdAndIsDeletedFalse": [],
+      "com.jiuyan.banquet.repository.BanquetPackageRepository#save": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": true,
+   "business_meaningful": true,
+   "survives_filter": false
+  },
+  {
+   "id": "FC-0004",
+   "cells": [
+    "com.jiuyan.banquet.repository.CategoryRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc",
+    "com.jiuyan.banquet.repository.CategoryRepository#save"
+   ],
+   "cell_types": [
+    "REPO_OP",
+    "REPO_OP"
+   ],
+   "overlap_all": [
+    "table:categories"
+   ],
+   "overlap_written": [
+    "table:categories"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "table:categories",
+     "identity": [
+      "table",
+      "categories",
+      null
+     ],
+     "a_writes": false,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": true,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.repository.CategoryRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc": [
+       {
+        "source": "READS",
+        "to": "table:categories",
+        "access": "read"
+       }
+      ],
+      "com.jiuyan.banquet.repository.CategoryRepository#save": [
+       {
+        "source": "WRITES",
+        "to": "table:categories",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:categories",
+        "access": "write"
+       }
+      ]
+     },
+     "oracles": [
+      "ddl:categories.created_at.not_null",
+      "ddl:categories.is_deleted.default",
+      "ddl:categories.is_deleted.not_null",
+      "ddl:categories.name.not_blank_candidate",
+      "ddl:categories.name.not_null",
+      "ddl:categories.name.unique",
+      "ddl:categories.sort_order.default",
+      "ddl:categories.sort_order.not_null",
+      "ddl:categories.updated_at.not_null",
+      "doc:接口清单:25.iface.categories",
+      "doc:接口清单:25.iface.2.categories",
+      "doc:接口清单:28.iface.categories",
+      "doc:接口清单:28.iface.2.categories",
+      "doc:接口清单:31.iface.categories",
+      "doc:接口清单:32.iface.categories",
+      "doc:接口清单:36.iface.categories",
+      "doc:接口清单:37.iface.categories",
+      "doc:接口清单:43.iface.categories"
+     ],
+     "business_oracles": [
+      "doc:接口清单:25.iface.categories",
+      "doc:接口清单:25.iface.2.categories",
+      "doc:接口清单:28.iface.categories",
+      "doc:接口清单:28.iface.2.categories",
+      "doc:接口清单:31.iface.categories",
+      "doc:接口清单:32.iface.categories",
+      "doc:接口清单:36.iface.categories",
+      "doc:接口清单:37.iface.categories",
+      "doc:接口清单:43.iface.categories"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.repository.CategoryRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc": [],
+      "com.jiuyan.banquet.repository.CategoryRepository#save": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.repository.CategoryRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc": [],
+      "com.jiuyan.banquet.repository.CategoryRepository#save": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.repository.CategoryRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc": [],
+      "com.jiuyan.banquet.repository.CategoryRepository#save": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": true,
+   "business_meaningful": true,
+   "survives_filter": false
+  },
+  {
+   "id": "FC-0005",
+   "cells": [
+    "com.jiuyan.banquet.repository.CategoryRepository#findById",
+    "com.jiuyan.banquet.repository.CategoryRepository#save"
+   ],
+   "cell_types": [
+    "REPO_OP",
+    "REPO_OP"
+   ],
+   "overlap_all": [
+    "table:categories"
+   ],
+   "overlap_written": [
+    "table:categories"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "table:categories",
+     "identity": [
+      "table",
+      "categories",
+      null
+     ],
+     "a_writes": false,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": true,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.repository.CategoryRepository#findById": [
+       {
+        "source": "READS",
+        "to": "table:categories",
+        "access": "read"
+       },
+       {
+        "source": "READS",
+        "to": "table:categories",
+        "access": "read"
+       }
+      ],
+      "com.jiuyan.banquet.repository.CategoryRepository#save": [
+       {
+        "source": "WRITES",
+        "to": "table:categories",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:categories",
+        "access": "write"
+       }
+      ]
+     },
+     "oracles": [
+      "ddl:categories.created_at.not_null",
+      "ddl:categories.is_deleted.default",
+      "ddl:categories.is_deleted.not_null",
+      "ddl:categories.name.not_blank_candidate",
+      "ddl:categories.name.not_null",
+      "ddl:categories.name.unique",
+      "ddl:categories.sort_order.default",
+      "ddl:categories.sort_order.not_null",
+      "ddl:categories.updated_at.not_null",
+      "doc:接口清单:25.iface.categories",
+      "doc:接口清单:25.iface.2.categories",
+      "doc:接口清单:28.iface.categories",
+      "doc:接口清单:28.iface.2.categories",
+      "doc:接口清单:31.iface.categories",
+      "doc:接口清单:32.iface.categories",
+      "doc:接口清单:36.iface.categories",
+      "doc:接口清单:37.iface.categories",
+      "doc:接口清单:43.iface.categories"
+     ],
+     "business_oracles": [
+      "doc:接口清单:25.iface.categories",
+      "doc:接口清单:25.iface.2.categories",
+      "doc:接口清单:28.iface.categories",
+      "doc:接口清单:28.iface.2.categories",
+      "doc:接口清单:31.iface.categories",
+      "doc:接口清单:32.iface.categories",
+      "doc:接口清单:36.iface.categories",
+      "doc:接口清单:37.iface.categories",
+      "doc:接口清单:43.iface.categories"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.repository.CategoryRepository#findById": [],
+      "com.jiuyan.banquet.repository.CategoryRepository#save": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.repository.CategoryRepository#findById": [],
+      "com.jiuyan.banquet.repository.CategoryRepository#save": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.repository.CategoryRepository#findById": [],
+      "com.jiuyan.banquet.repository.CategoryRepository#save": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": true,
+   "business_meaningful": true,
+   "survives_filter": false
+  },
+  {
+   "id": "FC-0006",
+   "cells": [
+    "com.jiuyan.banquet.repository.CategoryRepository#findByName",
+    "com.jiuyan.banquet.repository.CategoryRepository#save"
+   ],
+   "cell_types": [
+    "REPO_OP",
+    "REPO_OP"
+   ],
+   "overlap_all": [
+    "table:categories"
+   ],
+   "overlap_written": [
+    "table:categories"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "table:categories",
+     "identity": [
+      "table",
+      "categories",
+      null
+     ],
+     "a_writes": false,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": true,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.repository.CategoryRepository#findByName": [
+       {
+        "source": "READS",
+        "to": "table:categories",
+        "access": "read"
+       }
+      ],
+      "com.jiuyan.banquet.repository.CategoryRepository#save": [
+       {
+        "source": "WRITES",
+        "to": "table:categories",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:categories",
+        "access": "write"
+       }
+      ]
+     },
+     "oracles": [
+      "ddl:categories.created_at.not_null",
+      "ddl:categories.is_deleted.default",
+      "ddl:categories.is_deleted.not_null",
+      "ddl:categories.name.not_blank_candidate",
+      "ddl:categories.name.not_null",
+      "ddl:categories.name.unique",
+      "ddl:categories.sort_order.default",
+      "ddl:categories.sort_order.not_null",
+      "ddl:categories.updated_at.not_null",
+      "doc:接口清单:25.iface.categories",
+      "doc:接口清单:25.iface.2.categories",
+      "doc:接口清单:28.iface.categories",
+      "doc:接口清单:28.iface.2.categories",
+      "doc:接口清单:31.iface.categories",
+      "doc:接口清单:32.iface.categories",
+      "doc:接口清单:36.iface.categories",
+      "doc:接口清单:37.iface.categories",
+      "doc:接口清单:43.iface.categories"
+     ],
+     "business_oracles": [
+      "doc:接口清单:25.iface.categories",
+      "doc:接口清单:25.iface.2.categories",
+      "doc:接口清单:28.iface.categories",
+      "doc:接口清单:28.iface.2.categories",
+      "doc:接口清单:31.iface.categories",
+      "doc:接口清单:32.iface.categories",
+      "doc:接口清单:36.iface.categories",
+      "doc:接口清单:37.iface.categories",
+      "doc:接口清单:43.iface.categories"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.repository.CategoryRepository#findByName": [],
+      "com.jiuyan.banquet.repository.CategoryRepository#save": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.repository.CategoryRepository#findByName": [],
+      "com.jiuyan.banquet.repository.CategoryRepository#save": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.repository.CategoryRepository#findByName": [],
+      "com.jiuyan.banquet.repository.CategoryRepository#save": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": true,
+   "business_meaningful": true,
+   "survives_filter": false
+  },
+  {
+   "id": "FC-0007",
+   "cells": [
+    "com.jiuyan.banquet.repository.CategoryRepository#findMaxSortOrder",
+    "com.jiuyan.banquet.repository.CategoryRepository#save"
+   ],
+   "cell_types": [
+    "REPO_OP",
+    "REPO_OP"
+   ],
+   "overlap_all": [
+    "table:categories"
+   ],
+   "overlap_written": [
+    "table:categories"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "table:categories",
+     "identity": [
+      "table",
+      "categories",
+      null
+     ],
+     "a_writes": false,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": true,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.repository.CategoryRepository#findMaxSortOrder": [
+       {
+        "source": "READS",
+        "to": "table:categories",
+        "access": "read"
+       }
+      ],
+      "com.jiuyan.banquet.repository.CategoryRepository#save": [
+       {
+        "source": "WRITES",
+        "to": "table:categories",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:categories",
+        "access": "write"
+       }
+      ]
+     },
+     "oracles": [
+      "ddl:categories.created_at.not_null",
+      "ddl:categories.is_deleted.default",
+      "ddl:categories.is_deleted.not_null",
+      "ddl:categories.name.not_blank_candidate",
+      "ddl:categories.name.not_null",
+      "ddl:categories.name.unique",
+      "ddl:categories.sort_order.default",
+      "ddl:categories.sort_order.not_null",
+      "ddl:categories.updated_at.not_null",
+      "doc:接口清单:25.iface.categories",
+      "doc:接口清单:25.iface.2.categories",
+      "doc:接口清单:28.iface.categories",
+      "doc:接口清单:28.iface.2.categories",
+      "doc:接口清单:31.iface.categories",
+      "doc:接口清单:32.iface.categories",
+      "doc:接口清单:36.iface.categories",
+      "doc:接口清单:37.iface.categories",
+      "doc:接口清单:43.iface.categories"
+     ],
+     "business_oracles": [
+      "doc:接口清单:25.iface.categories",
+      "doc:接口清单:25.iface.2.categories",
+      "doc:接口清单:28.iface.categories",
+      "doc:接口清单:28.iface.2.categories",
+      "doc:接口清单:31.iface.categories",
+      "doc:接口清单:32.iface.categories",
+      "doc:接口清单:36.iface.categories",
+      "doc:接口清单:37.iface.categories",
+      "doc:接口清单:43.iface.categories"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.repository.CategoryRepository#findMaxSortOrder": [],
+      "com.jiuyan.banquet.repository.CategoryRepository#save": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.repository.CategoryRepository#findMaxSortOrder": [],
+      "com.jiuyan.banquet.repository.CategoryRepository#save": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.repository.CategoryRepository#findMaxSortOrder": [],
+      "com.jiuyan.banquet.repository.CategoryRepository#save": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": true,
+   "business_meaningful": true,
+   "survives_filter": false
+  },
+  {
+   "id": "FC-0008",
+   "cells": [
+    "com.jiuyan.banquet.repository.OrderRepository#existsByOrderNo",
+    "com.jiuyan.banquet.repository.OrderRepository#save"
+   ],
+   "cell_types": [
+    "REPO_OP",
+    "REPO_OP"
+   ],
+   "overlap_all": [
+    "table:orders"
+   ],
+   "overlap_written": [
+    "table:orders"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "table:orders",
+     "identity": [
+      "table",
+      "orders",
+      null
+     ],
+     "a_writes": false,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": true,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.repository.OrderRepository#existsByOrderNo": [
+       {
+        "source": "READS",
+        "to": "table:orders",
+        "access": "read"
+       }
+      ],
+      "com.jiuyan.banquet.repository.OrderRepository#save": [
+       {
+        "source": "WRITES",
+        "to": "table:orders",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:orders",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:orders",
+        "access": "write"
+       }
+      ]
+     },
+     "oracles": [
+      "ddl:orders.added_items_snapshot.not_null",
+      "ddl:orders.address.not_blank_candidate",
+      "ddl:orders.address.not_null",
+      "ddl:orders.banquet_name.not_blank_candidate",
+      "ddl:orders.banquet_name.not_null",
+      "ddl:orders.banquet_type.not_blank_candidate",
+      "ddl:orders.banquet_type.not_null",
+      "ddl:orders.chk_orders_deposit_cent",
+      "ddl:orders.chk_orders_final_price_cent",
+      "ddl:orders.chk_orders_plan_total_cent",
+      "ddl:orders.chk_orders_status",
+      "ddl:orders.chk_orders_table_count",
+      "ddl:orders.created_at.not_null",
+      "ddl:orders.customer_name.not_blank_candidate",
+      "ddl:orders.customer_name.not_null",
+      "ddl:orders.customer_phone.not_blank_candidate",
+      "ddl:orders.customer_phone.not_null",
+      "ddl:orders.deposit_cent.default",
+      "ddl:orders.deposit_cent.not_null",
+      "ddl:orders.final_price_cent.not_null",
+      "ddl:orders.fk_orders_package",
+      "ddl:orders.order_no.not_blank_candidate",
+      "ddl:orders.order_no.not_null",
+      "ddl:orders.package_snapshot.not_null",
+      "ddl:orders.plan_total_cent.not_null",
+      "ddl:orders.reservation_time.not_null",
+      "ddl:orders.status.not_blank_candidate",
+      "ddl:orders.status.not_null",
+      "ddl:orders.table_count.not_null",
+      "ddl:orders.uk_orders_order_no",
+      "ddl:orders.updated_at.not_null",
+      "ddl:orders.use_final_price.default",
+      "ddl:orders.use_final_price.not_null",
+      "doc:AGENTS:283.table_count",
+      "doc:AGENTS:284.deposit_cent",
+      "doc:AGENTS:285.final_price_cent",
+      "doc:AGENTS:286.status",
+      "doc:接口清单:32.iface.orders",
+      "doc:接口清单:37.iface.orders",
+      "doc:接口清单:41.iface",
+      "doc:接口清单:42.iface.10",
+      "doc:接口清单:43.iface.orders",
+      "doc:接口清单:45.iface"
+     ],
+     "business_oracles": [
+      "doc:AGENTS:283.table_count",
+      "doc:AGENTS:284.deposit_cent",
+      "doc:AGENTS:285.final_price_cent",
+      "doc:AGENTS:286.status",
+      "doc:接口清单:32.iface.orders",
+      "doc:接口清单:37.iface.orders",
+      "doc:接口清单:41.iface",
+      "doc:接口清单:42.iface.10",
+      "doc:接口清单:43.iface.orders",
+      "doc:接口清单:45.iface"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.repository.OrderRepository#existsByOrderNo": [],
+      "com.jiuyan.banquet.repository.OrderRepository#save": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.repository.OrderRepository#existsByOrderNo": [],
+      "com.jiuyan.banquet.repository.OrderRepository#save": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.repository.OrderRepository#existsByOrderNo": [],
+      "com.jiuyan.banquet.repository.OrderRepository#save": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": true,
+   "business_meaningful": true,
+   "survives_filter": false
+  },
+  {
+   "id": "FC-0009",
+   "cells": [
+    "com.jiuyan.banquet.repository.OrderRepository#findAll",
+    "com.jiuyan.banquet.repository.OrderRepository#save"
+   ],
+   "cell_types": [
+    "REPO_OP",
+    "REPO_OP"
+   ],
+   "overlap_all": [
+    "table:orders"
+   ],
+   "overlap_written": [
+    "table:orders"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "table:orders",
+     "identity": [
+      "table",
+      "orders",
+      null
+     ],
+     "a_writes": false,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": true,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.repository.OrderRepository#findAll": [
+       {
+        "source": "READS",
+        "to": "table:orders",
+        "access": "read"
+       }
+      ],
+      "com.jiuyan.banquet.repository.OrderRepository#save": [
+       {
+        "source": "WRITES",
+        "to": "table:orders",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:orders",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:orders",
+        "access": "write"
+       }
+      ]
+     },
+     "oracles": [
+      "ddl:orders.added_items_snapshot.not_null",
+      "ddl:orders.address.not_blank_candidate",
+      "ddl:orders.address.not_null",
+      "ddl:orders.banquet_name.not_blank_candidate",
+      "ddl:orders.banquet_name.not_null",
+      "ddl:orders.banquet_type.not_blank_candidate",
+      "ddl:orders.banquet_type.not_null",
+      "ddl:orders.chk_orders_deposit_cent",
+      "ddl:orders.chk_orders_final_price_cent",
+      "ddl:orders.chk_orders_plan_total_cent",
+      "ddl:orders.chk_orders_status",
+      "ddl:orders.chk_orders_table_count",
+      "ddl:orders.created_at.not_null",
+      "ddl:orders.customer_name.not_blank_candidate",
+      "ddl:orders.customer_name.not_null",
+      "ddl:orders.customer_phone.not_blank_candidate",
+      "ddl:orders.customer_phone.not_null",
+      "ddl:orders.deposit_cent.default",
+      "ddl:orders.deposit_cent.not_null",
+      "ddl:orders.final_price_cent.not_null",
+      "ddl:orders.fk_orders_package",
+      "ddl:orders.order_no.not_blank_candidate",
+      "ddl:orders.order_no.not_null",
+      "ddl:orders.package_snapshot.not_null",
+      "ddl:orders.plan_total_cent.not_null",
+      "ddl:orders.reservation_time.not_null",
+      "ddl:orders.status.not_blank_candidate",
+      "ddl:orders.status.not_null",
+      "ddl:orders.table_count.not_null",
+      "ddl:orders.uk_orders_order_no",
+      "ddl:orders.updated_at.not_null",
+      "ddl:orders.use_final_price.default",
+      "ddl:orders.use_final_price.not_null",
+      "doc:AGENTS:283.table_count",
+      "doc:AGENTS:284.deposit_cent",
+      "doc:AGENTS:285.final_price_cent",
+      "doc:AGENTS:286.status",
+      "doc:接口清单:32.iface.orders",
+      "doc:接口清单:37.iface.orders",
+      "doc:接口清单:41.iface",
+      "doc:接口清单:42.iface.10",
+      "doc:接口清单:43.iface.orders",
+      "doc:接口清单:45.iface"
+     ],
+     "business_oracles": [
+      "doc:AGENTS:283.table_count",
+      "doc:AGENTS:284.deposit_cent",
+      "doc:AGENTS:285.final_price_cent",
+      "doc:AGENTS:286.status",
+      "doc:接口清单:32.iface.orders",
+      "doc:接口清单:37.iface.orders",
+      "doc:接口清单:41.iface",
+      "doc:接口清单:42.iface.10",
+      "doc:接口清单:43.iface.orders",
+      "doc:接口清单:45.iface"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.repository.OrderRepository#findAll": [],
+      "com.jiuyan.banquet.repository.OrderRepository#save": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.repository.OrderRepository#findAll": [],
+      "com.jiuyan.banquet.repository.OrderRepository#save": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.repository.OrderRepository#findAll": [],
+      "com.jiuyan.banquet.repository.OrderRepository#save": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": true,
+   "business_meaningful": true,
+   "survives_filter": false
+  },
+  {
+   "id": "FC-0010",
+   "cells": [
+    "com.jiuyan.banquet.repository.OrderRepository#findById",
+    "com.jiuyan.banquet.repository.OrderRepository#save"
+   ],
+   "cell_types": [
+    "REPO_OP",
+    "REPO_OP"
+   ],
+   "overlap_all": [
+    "table:orders"
+   ],
+   "overlap_written": [
+    "table:orders"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "table:orders",
+     "identity": [
+      "table",
+      "orders",
+      null
+     ],
+     "a_writes": false,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": true,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.repository.OrderRepository#findById": [
+       {
+        "source": "READS",
+        "to": "table:orders",
+        "access": "read"
+       }
+      ],
+      "com.jiuyan.banquet.repository.OrderRepository#save": [
+       {
+        "source": "WRITES",
+        "to": "table:orders",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:orders",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:orders",
+        "access": "write"
+       }
+      ]
+     },
+     "oracles": [
+      "ddl:orders.added_items_snapshot.not_null",
+      "ddl:orders.address.not_blank_candidate",
+      "ddl:orders.address.not_null",
+      "ddl:orders.banquet_name.not_blank_candidate",
+      "ddl:orders.banquet_name.not_null",
+      "ddl:orders.banquet_type.not_blank_candidate",
+      "ddl:orders.banquet_type.not_null",
+      "ddl:orders.chk_orders_deposit_cent",
+      "ddl:orders.chk_orders_final_price_cent",
+      "ddl:orders.chk_orders_plan_total_cent",
+      "ddl:orders.chk_orders_status",
+      "ddl:orders.chk_orders_table_count",
+      "ddl:orders.created_at.not_null",
+      "ddl:orders.customer_name.not_blank_candidate",
+      "ddl:orders.customer_name.not_null",
+      "ddl:orders.customer_phone.not_blank_candidate",
+      "ddl:orders.customer_phone.not_null",
+      "ddl:orders.deposit_cent.default",
+      "ddl:orders.deposit_cent.not_null",
+      "ddl:orders.final_price_cent.not_null",
+      "ddl:orders.fk_orders_package",
+      "ddl:orders.order_no.not_blank_candidate",
+      "ddl:orders.order_no.not_null",
+      "ddl:orders.package_snapshot.not_null",
+      "ddl:orders.plan_total_cent.not_null",
+      "ddl:orders.reservation_time.not_null",
+      "ddl:orders.status.not_blank_candidate",
+      "ddl:orders.status.not_null",
+      "ddl:orders.table_count.not_null",
+      "ddl:orders.uk_orders_order_no",
+      "ddl:orders.updated_at.not_null",
+      "ddl:orders.use_final_price.default",
+      "ddl:orders.use_final_price.not_null",
+      "doc:AGENTS:283.table_count",
+      "doc:AGENTS:284.deposit_cent",
+      "doc:AGENTS:285.final_price_cent",
+      "doc:AGENTS:286.status",
+      "doc:接口清单:32.iface.orders",
+      "doc:接口清单:37.iface.orders",
+      "doc:接口清单:41.iface",
+      "doc:接口清单:42.iface.10",
+      "doc:接口清单:43.iface.orders",
+      "doc:接口清单:45.iface"
+     ],
+     "business_oracles": [
+      "doc:AGENTS:283.table_count",
+      "doc:AGENTS:284.deposit_cent",
+      "doc:AGENTS:285.final_price_cent",
+      "doc:AGENTS:286.status",
+      "doc:接口清单:32.iface.orders",
+      "doc:接口清单:37.iface.orders",
+      "doc:接口清单:41.iface",
+      "doc:接口清单:42.iface.10",
+      "doc:接口清单:43.iface.orders",
+      "doc:接口清单:45.iface"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.repository.OrderRepository#findById": [],
+      "com.jiuyan.banquet.repository.OrderRepository#save": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.repository.OrderRepository#findById": [],
+      "com.jiuyan.banquet.repository.OrderRepository#save": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.repository.OrderRepository#findById": [],
+      "com.jiuyan.banquet.repository.OrderRepository#save": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": true,
+   "business_meaningful": true,
+   "survives_filter": false
+  },
+  {
+   "id": "FC-0011",
+   "cells": [
+    "com.jiuyan.banquet.repository.PackageTypeRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc",
+    "com.jiuyan.banquet.repository.PackageTypeRepository#save"
+   ],
+   "cell_types": [
+    "REPO_OP",
+    "REPO_OP"
+   ],
+   "overlap_all": [
+    "table:package_types"
+   ],
+   "overlap_written": [
+    "table:package_types"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "table:package_types",
+     "identity": [
+      "table",
+      "package_types",
+      null
+     ],
+     "a_writes": false,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": true,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc": [
+       {
+        "source": "READS",
+        "to": "table:package_types",
+        "access": "read"
+       }
+      ],
+      "com.jiuyan.banquet.repository.PackageTypeRepository#save": [
+       {
+        "source": "WRITES",
+        "to": "table:package_types",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:package_types",
+        "access": "write"
+       }
+      ]
+     },
+     "oracles": [
+      "ddl:package_types.created_at.not_null",
+      "ddl:package_types.is_deleted.default",
+      "ddl:package_types.is_deleted.not_null",
+      "ddl:package_types.name.not_blank_candidate",
+      "ddl:package_types.name.not_null",
+      "ddl:package_types.name.unique",
+      "ddl:package_types.sort_order.default",
+      "ddl:package_types.sort_order.not_null",
+      "ddl:package_types.updated_at.not_null",
+      "doc:接口清单:25.iface.package_types",
+      "doc:接口清单:25.iface.2.package_types",
+      "doc:接口清单:28.iface.package_types",
+      "doc:接口清单:28.iface.2.package_types",
+      "doc:接口清单:31.iface.package_types",
+      "doc:接口清单:32.iface.package_types",
+      "doc:接口清单:36.iface.package_types",
+      "doc:接口清单:37.iface.package_types",
+      "doc:接口清单:43.iface.package_types"
+     ],
+     "business_oracles": [
+      "doc:接口清单:25.iface.package_types",
+      "doc:接口清单:25.iface.2.package_types",
+      "doc:接口清单:28.iface.package_types",
+      "doc:接口清单:28.iface.2.package_types",
+      "doc:接口清单:31.iface.package_types",
+      "doc:接口清单:32.iface.package_types",
+      "doc:接口清单:36.iface.package_types",
+      "doc:接口清单:37.iface.package_types",
+      "doc:接口清单:43.iface.package_types"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc": [],
+      "com.jiuyan.banquet.repository.PackageTypeRepository#save": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc": [],
+      "com.jiuyan.banquet.repository.PackageTypeRepository#save": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc": [],
+      "com.jiuyan.banquet.repository.PackageTypeRepository#save": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": true,
+   "business_meaningful": true,
+   "survives_filter": false
+  },
+  {
+   "id": "FC-0012",
+   "cells": [
+    "com.jiuyan.banquet.repository.PackageTypeRepository#findById",
+    "com.jiuyan.banquet.repository.PackageTypeRepository#save"
+   ],
+   "cell_types": [
+    "REPO_OP",
+    "REPO_OP"
+   ],
+   "overlap_all": [
+    "table:package_types"
+   ],
+   "overlap_written": [
+    "table:package_types"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "table:package_types",
+     "identity": [
+      "table",
+      "package_types",
+      null
+     ],
+     "a_writes": false,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": true,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findById": [
+       {
+        "source": "READS",
+        "to": "table:package_types",
+        "access": "read"
+       }
+      ],
+      "com.jiuyan.banquet.repository.PackageTypeRepository#save": [
+       {
+        "source": "WRITES",
+        "to": "table:package_types",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:package_types",
+        "access": "write"
+       }
+      ]
+     },
+     "oracles": [
+      "ddl:package_types.created_at.not_null",
+      "ddl:package_types.is_deleted.default",
+      "ddl:package_types.is_deleted.not_null",
+      "ddl:package_types.name.not_blank_candidate",
+      "ddl:package_types.name.not_null",
+      "ddl:package_types.name.unique",
+      "ddl:package_types.sort_order.default",
+      "ddl:package_types.sort_order.not_null",
+      "ddl:package_types.updated_at.not_null",
+      "doc:接口清单:25.iface.package_types",
+      "doc:接口清单:25.iface.2.package_types",
+      "doc:接口清单:28.iface.package_types",
+      "doc:接口清单:28.iface.2.package_types",
+      "doc:接口清单:31.iface.package_types",
+      "doc:接口清单:32.iface.package_types",
+      "doc:接口清单:36.iface.package_types",
+      "doc:接口清单:37.iface.package_types",
+      "doc:接口清单:43.iface.package_types"
+     ],
+     "business_oracles": [
+      "doc:接口清单:25.iface.package_types",
+      "doc:接口清单:25.iface.2.package_types",
+      "doc:接口清单:28.iface.package_types",
+      "doc:接口清单:28.iface.2.package_types",
+      "doc:接口清单:31.iface.package_types",
+      "doc:接口清单:32.iface.package_types",
+      "doc:接口清单:36.iface.package_types",
+      "doc:接口清单:37.iface.package_types",
+      "doc:接口清单:43.iface.package_types"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findById": [],
+      "com.jiuyan.banquet.repository.PackageTypeRepository#save": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findById": [],
+      "com.jiuyan.banquet.repository.PackageTypeRepository#save": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findById": [],
+      "com.jiuyan.banquet.repository.PackageTypeRepository#save": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": true,
+   "business_meaningful": true,
+   "survives_filter": false
+  },
+  {
+   "id": "FC-0013",
+   "cells": [
+    "com.jiuyan.banquet.repository.PackageTypeRepository#findByName",
+    "com.jiuyan.banquet.repository.PackageTypeRepository#save"
+   ],
+   "cell_types": [
+    "REPO_OP",
+    "REPO_OP"
+   ],
+   "overlap_all": [
+    "table:package_types"
+   ],
+   "overlap_written": [
+    "table:package_types"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "table:package_types",
+     "identity": [
+      "table",
+      "package_types",
+      null
+     ],
+     "a_writes": false,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": true,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findByName": [
+       {
+        "source": "READS",
+        "to": "table:package_types",
+        "access": "read"
+       }
+      ],
+      "com.jiuyan.banquet.repository.PackageTypeRepository#save": [
+       {
+        "source": "WRITES",
+        "to": "table:package_types",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:package_types",
+        "access": "write"
+       }
+      ]
+     },
+     "oracles": [
+      "ddl:package_types.created_at.not_null",
+      "ddl:package_types.is_deleted.default",
+      "ddl:package_types.is_deleted.not_null",
+      "ddl:package_types.name.not_blank_candidate",
+      "ddl:package_types.name.not_null",
+      "ddl:package_types.name.unique",
+      "ddl:package_types.sort_order.default",
+      "ddl:package_types.sort_order.not_null",
+      "ddl:package_types.updated_at.not_null",
+      "doc:接口清单:25.iface.package_types",
+      "doc:接口清单:25.iface.2.package_types",
+      "doc:接口清单:28.iface.package_types",
+      "doc:接口清单:28.iface.2.package_types",
+      "doc:接口清单:31.iface.package_types",
+      "doc:接口清单:32.iface.package_types",
+      "doc:接口清单:36.iface.package_types",
+      "doc:接口清单:37.iface.package_types",
+      "doc:接口清单:43.iface.package_types"
+     ],
+     "business_oracles": [
+      "doc:接口清单:25.iface.package_types",
+      "doc:接口清单:25.iface.2.package_types",
+      "doc:接口清单:28.iface.package_types",
+      "doc:接口清单:28.iface.2.package_types",
+      "doc:接口清单:31.iface.package_types",
+      "doc:接口清单:32.iface.package_types",
+      "doc:接口清单:36.iface.package_types",
+      "doc:接口清单:37.iface.package_types",
+      "doc:接口清单:43.iface.package_types"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findByName": [],
+      "com.jiuyan.banquet.repository.PackageTypeRepository#save": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findByName": [],
+      "com.jiuyan.banquet.repository.PackageTypeRepository#save": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findByName": [],
+      "com.jiuyan.banquet.repository.PackageTypeRepository#save": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": true,
+   "business_meaningful": true,
+   "survives_filter": false
+  },
+  {
+   "id": "FC-0014",
+   "cells": [
+    "com.jiuyan.banquet.repository.PackageTypeRepository#findByNameAndIsDeletedFalse",
+    "com.jiuyan.banquet.repository.PackageTypeRepository#save"
+   ],
+   "cell_types": [
+    "REPO_OP",
+    "REPO_OP"
+   ],
+   "overlap_all": [
+    "table:package_types"
+   ],
+   "overlap_written": [
+    "table:package_types"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "table:package_types",
+     "identity": [
+      "table",
+      "package_types",
+      null
+     ],
+     "a_writes": false,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": true,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findByNameAndIsDeletedFalse": [
+       {
+        "source": "READS",
+        "to": "table:package_types",
+        "access": "read"
+       }
+      ],
+      "com.jiuyan.banquet.repository.PackageTypeRepository#save": [
+       {
+        "source": "WRITES",
+        "to": "table:package_types",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:package_types",
+        "access": "write"
+       }
+      ]
+     },
+     "oracles": [
+      "ddl:package_types.created_at.not_null",
+      "ddl:package_types.is_deleted.default",
+      "ddl:package_types.is_deleted.not_null",
+      "ddl:package_types.name.not_blank_candidate",
+      "ddl:package_types.name.not_null",
+      "ddl:package_types.name.unique",
+      "ddl:package_types.sort_order.default",
+      "ddl:package_types.sort_order.not_null",
+      "ddl:package_types.updated_at.not_null",
+      "doc:接口清单:25.iface.package_types",
+      "doc:接口清单:25.iface.2.package_types",
+      "doc:接口清单:28.iface.package_types",
+      "doc:接口清单:28.iface.2.package_types",
+      "doc:接口清单:31.iface.package_types",
+      "doc:接口清单:32.iface.package_types",
+      "doc:接口清单:36.iface.package_types",
+      "doc:接口清单:37.iface.package_types",
+      "doc:接口清单:43.iface.package_types"
+     ],
+     "business_oracles": [
+      "doc:接口清单:25.iface.package_types",
+      "doc:接口清单:25.iface.2.package_types",
+      "doc:接口清单:28.iface.package_types",
+      "doc:接口清单:28.iface.2.package_types",
+      "doc:接口清单:31.iface.package_types",
+      "doc:接口清单:32.iface.package_types",
+      "doc:接口清单:36.iface.package_types",
+      "doc:接口清单:37.iface.package_types",
+      "doc:接口清单:43.iface.package_types"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findByNameAndIsDeletedFalse": [],
+      "com.jiuyan.banquet.repository.PackageTypeRepository#save": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findByNameAndIsDeletedFalse": [],
+      "com.jiuyan.banquet.repository.PackageTypeRepository#save": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findByNameAndIsDeletedFalse": [],
+      "com.jiuyan.banquet.repository.PackageTypeRepository#save": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": true,
+   "business_meaningful": true,
+   "survives_filter": false
+  },
+  {
+   "id": "FC-0015",
+   "cells": [
+    "com.jiuyan.banquet.repository.PackageTypeRepository#findMaxSortOrder",
+    "com.jiuyan.banquet.repository.PackageTypeRepository#save"
+   ],
+   "cell_types": [
+    "REPO_OP",
+    "REPO_OP"
+   ],
+   "overlap_all": [
+    "table:package_types"
+   ],
+   "overlap_written": [
+    "table:package_types"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "table:package_types",
+     "identity": [
+      "table",
+      "package_types",
+      null
+     ],
+     "a_writes": false,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": true,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findMaxSortOrder": [
+       {
+        "source": "READS",
+        "to": "table:package_types",
+        "access": "read"
+       }
+      ],
+      "com.jiuyan.banquet.repository.PackageTypeRepository#save": [
+       {
+        "source": "WRITES",
+        "to": "table:package_types",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:package_types",
+        "access": "write"
+       }
+      ]
+     },
+     "oracles": [
+      "ddl:package_types.created_at.not_null",
+      "ddl:package_types.is_deleted.default",
+      "ddl:package_types.is_deleted.not_null",
+      "ddl:package_types.name.not_blank_candidate",
+      "ddl:package_types.name.not_null",
+      "ddl:package_types.name.unique",
+      "ddl:package_types.sort_order.default",
+      "ddl:package_types.sort_order.not_null",
+      "ddl:package_types.updated_at.not_null",
+      "doc:接口清单:25.iface.package_types",
+      "doc:接口清单:25.iface.2.package_types",
+      "doc:接口清单:28.iface.package_types",
+      "doc:接口清单:28.iface.2.package_types",
+      "doc:接口清单:31.iface.package_types",
+      "doc:接口清单:32.iface.package_types",
+      "doc:接口清单:36.iface.package_types",
+      "doc:接口清单:37.iface.package_types",
+      "doc:接口清单:43.iface.package_types"
+     ],
+     "business_oracles": [
+      "doc:接口清单:25.iface.package_types",
+      "doc:接口清单:25.iface.2.package_types",
+      "doc:接口清单:28.iface.package_types",
+      "doc:接口清单:28.iface.2.package_types",
+      "doc:接口清单:31.iface.package_types",
+      "doc:接口清单:32.iface.package_types",
+      "doc:接口清单:36.iface.package_types",
+      "doc:接口清单:37.iface.package_types",
+      "doc:接口清单:43.iface.package_types"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findMaxSortOrder": [],
+      "com.jiuyan.banquet.repository.PackageTypeRepository#save": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findMaxSortOrder": [],
+      "com.jiuyan.banquet.repository.PackageTypeRepository#save": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.repository.PackageTypeRepository#findMaxSortOrder": [],
+      "com.jiuyan.banquet.repository.PackageTypeRepository#save": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": true,
+   "business_meaningful": true,
+   "survives_filter": false
+  },
+  {
+   "id": "FC-0016",
+   "cells": [
+    "com.jiuyan.banquet.repository.ProductRepository#existsByCategoryIdAndIsDeletedFalse",
+    "com.jiuyan.banquet.repository.ProductRepository#save"
+   ],
+   "cell_types": [
+    "REPO_OP",
+    "REPO_OP"
+   ],
+   "overlap_all": [
+    "table:products"
+   ],
+   "overlap_written": [
+    "table:products"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "table:products",
+     "identity": [
+      "table",
+      "products",
+      null
+     ],
+     "a_writes": false,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": true,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.repository.ProductRepository#existsByCategoryIdAndIsDeletedFalse": [
+       {
+        "source": "READS",
+        "to": "table:products",
+        "access": "read"
+       }
+      ],
+      "com.jiuyan.banquet.repository.ProductRepository#save": [
+       {
+        "source": "WRITES",
+        "to": "table:products",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:products",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:products",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:products",
+        "access": "write"
+       }
+      ]
+     },
+     "oracles": [
+      "ddl:products.category_id.not_null",
+      "ddl:products.chk_products_price_cent",
+      "ddl:products.created_at.not_null",
+      "ddl:products.fk_products_category",
+      "ddl:products.is_active.default",
+      "ddl:products.is_active.not_null",
+      "ddl:products.is_deleted.default",
+      "ddl:products.is_deleted.not_null",
+      "ddl:products.name.not_blank_candidate",
+      "ddl:products.name.not_null",
+      "ddl:products.price_cent.not_null",
+      "ddl:products.unit.not_blank_candidate",
+      "ddl:products.unit.not_null",
+      "ddl:products.updated_at.not_null",
+      "doc:AGENTS:281.price_cent.products",
+      "doc:接口清单:25.iface.products",
+      "doc:接口清单:25.iface.2.products",
+      "doc:接口清单:28.iface.products",
+      "doc:接口清单:28.iface.2.products",
+      "doc:接口清单:31.iface.products",
+      "doc:接口清单:31.iface.4",
+      "doc:接口清单:32.iface.products",
+      "doc:接口清单:36.iface.products",
+      "doc:接口清单:37.iface.products",
+      "doc:接口清单:43.iface.products"
+     ],
+     "business_oracles": [
+      "doc:AGENTS:281.price_cent.products",
+      "doc:接口清单:25.iface.products",
+      "doc:接口清单:25.iface.2.products",
+      "doc:接口清单:28.iface.products",
+      "doc:接口清单:28.iface.2.products",
+      "doc:接口清单:31.iface.products",
+      "doc:接口清单:31.iface.4",
+      "doc:接口清单:32.iface.products",
+      "doc:接口清单:36.iface.products",
+      "doc:接口清单:37.iface.products",
+      "doc:接口清单:43.iface.products"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.repository.ProductRepository#existsByCategoryIdAndIsDeletedFalse": [],
+      "com.jiuyan.banquet.repository.ProductRepository#save": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.repository.ProductRepository#existsByCategoryIdAndIsDeletedFalse": [],
+      "com.jiuyan.banquet.repository.ProductRepository#save": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.repository.ProductRepository#existsByCategoryIdAndIsDeletedFalse": [],
+      "com.jiuyan.banquet.repository.ProductRepository#save": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": true,
+   "business_meaningful": true,
+   "survives_filter": false
+  },
+  {
+   "id": "FC-0017",
+   "cells": [
+    "com.jiuyan.banquet.repository.ProductRepository#findAll",
+    "com.jiuyan.banquet.repository.ProductRepository#save"
+   ],
+   "cell_types": [
+    "REPO_OP",
+    "REPO_OP"
+   ],
+   "overlap_all": [
+    "table:products"
+   ],
+   "overlap_written": [
+    "table:products"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "table:products",
+     "identity": [
+      "table",
+      "products",
+      null
+     ],
+     "a_writes": false,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": true,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.repository.ProductRepository#findAll": [
+       {
+        "source": "READS",
+        "to": "table:products",
+        "access": "read"
+       }
+      ],
+      "com.jiuyan.banquet.repository.ProductRepository#save": [
+       {
+        "source": "WRITES",
+        "to": "table:products",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:products",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:products",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:products",
+        "access": "write"
+       }
+      ]
+     },
+     "oracles": [
+      "ddl:products.category_id.not_null",
+      "ddl:products.chk_products_price_cent",
+      "ddl:products.created_at.not_null",
+      "ddl:products.fk_products_category",
+      "ddl:products.is_active.default",
+      "ddl:products.is_active.not_null",
+      "ddl:products.is_deleted.default",
+      "ddl:products.is_deleted.not_null",
+      "ddl:products.name.not_blank_candidate",
+      "ddl:products.name.not_null",
+      "ddl:products.price_cent.not_null",
+      "ddl:products.unit.not_blank_candidate",
+      "ddl:products.unit.not_null",
+      "ddl:products.updated_at.not_null",
+      "doc:AGENTS:281.price_cent.products",
+      "doc:接口清单:25.iface.products",
+      "doc:接口清单:25.iface.2.products",
+      "doc:接口清单:28.iface.products",
+      "doc:接口清单:28.iface.2.products",
+      "doc:接口清单:31.iface.products",
+      "doc:接口清单:31.iface.4",
+      "doc:接口清单:32.iface.products",
+      "doc:接口清单:36.iface.products",
+      "doc:接口清单:37.iface.products",
+      "doc:接口清单:43.iface.products"
+     ],
+     "business_oracles": [
+      "doc:AGENTS:281.price_cent.products",
+      "doc:接口清单:25.iface.products",
+      "doc:接口清单:25.iface.2.products",
+      "doc:接口清单:28.iface.products",
+      "doc:接口清单:28.iface.2.products",
+      "doc:接口清单:31.iface.products",
+      "doc:接口清单:31.iface.4",
+      "doc:接口清单:32.iface.products",
+      "doc:接口清单:36.iface.products",
+      "doc:接口清单:37.iface.products",
+      "doc:接口清单:43.iface.products"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.repository.ProductRepository#findAll": [],
+      "com.jiuyan.banquet.repository.ProductRepository#save": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.repository.ProductRepository#findAll": [],
+      "com.jiuyan.banquet.repository.ProductRepository#save": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.repository.ProductRepository#findAll": [],
+      "com.jiuyan.banquet.repository.ProductRepository#save": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": true,
+   "business_meaningful": true,
+   "survives_filter": false
+  },
+  {
+   "id": "FC-0018",
+   "cells": [
+    "com.jiuyan.banquet.repository.ProductRepository#findByIdAndIsDeletedFalse",
+    "com.jiuyan.banquet.repository.ProductRepository#save"
+   ],
+   "cell_types": [
+    "REPO_OP",
+    "REPO_OP"
+   ],
+   "overlap_all": [
+    "table:products"
+   ],
+   "overlap_written": [
+    "table:products"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "table:products",
+     "identity": [
+      "table",
+      "products",
+      null
+     ],
+     "a_writes": false,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": true,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.repository.ProductRepository#findByIdAndIsDeletedFalse": [
+       {
+        "source": "READS",
+        "to": "table:products",
+        "access": "read"
+       },
+       {
+        "source": "READS",
+        "to": "table:products",
+        "access": "read"
+       },
+       {
+        "source": "READS",
+        "to": "table:products",
+        "access": "read"
+       }
+      ],
+      "com.jiuyan.banquet.repository.ProductRepository#save": [
+       {
+        "source": "WRITES",
+        "to": "table:products",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:products",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:products",
+        "access": "write"
+       },
+       {
+        "source": "WRITES",
+        "to": "table:products",
+        "access": "write"
+       }
+      ]
+     },
+     "oracles": [
+      "ddl:products.category_id.not_null",
+      "ddl:products.chk_products_price_cent",
+      "ddl:products.created_at.not_null",
+      "ddl:products.fk_products_category",
+      "ddl:products.is_active.default",
+      "ddl:products.is_active.not_null",
+      "ddl:products.is_deleted.default",
+      "ddl:products.is_deleted.not_null",
+      "ddl:products.name.not_blank_candidate",
+      "ddl:products.name.not_null",
+      "ddl:products.price_cent.not_null",
+      "ddl:products.unit.not_blank_candidate",
+      "ddl:products.unit.not_null",
+      "ddl:products.updated_at.not_null",
+      "doc:AGENTS:281.price_cent.products",
+      "doc:接口清单:25.iface.products",
+      "doc:接口清单:25.iface.2.products",
+      "doc:接口清单:28.iface.products",
+      "doc:接口清单:28.iface.2.products",
+      "doc:接口清单:31.iface.products",
+      "doc:接口清单:31.iface.4",
+      "doc:接口清单:32.iface.products",
+      "doc:接口清单:36.iface.products",
+      "doc:接口清单:37.iface.products",
+      "doc:接口清单:43.iface.products"
+     ],
+     "business_oracles": [
+      "doc:AGENTS:281.price_cent.products",
+      "doc:接口清单:25.iface.products",
+      "doc:接口清单:25.iface.2.products",
+      "doc:接口清单:28.iface.products",
+      "doc:接口清单:28.iface.2.products",
+      "doc:接口清单:31.iface.products",
+      "doc:接口清单:31.iface.4",
+      "doc:接口清单:32.iface.products",
+      "doc:接口清单:36.iface.products",
+      "doc:接口清单:37.iface.products",
+      "doc:接口清单:43.iface.products"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.repository.ProductRepository#findByIdAndIsDeletedFalse": [],
+      "com.jiuyan.banquet.repository.ProductRepository#save": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.repository.ProductRepository#findByIdAndIsDeletedFalse": [],
+      "com.jiuyan.banquet.repository.ProductRepository#save": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.repository.ProductRepository#findByIdAndIsDeletedFalse": [],
+      "com.jiuyan.banquet.repository.ProductRepository#save": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": true,
+   "business_meaningful": true,
+   "survives_filter": false
+  },
+  {
+   "id": "FC-0019",
+   "cells": [
+    "com.jiuyan.banquet.service.CategoryService#create",
+    "com.jiuyan.banquet.service.CategoryService#delete"
+   ],
+   "cell_types": [
+    "SVC_OP",
+    "SVC_OP"
+   ],
+   "overlap_all": [
+    "com.jiuyan.banquet.entity.Category.setIsDeleted"
+   ],
+   "overlap_written": [
+    "com.jiuyan.banquet.entity.Category.setIsDeleted"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "com.jiuyan.banquet.entity.Category.setIsDeleted",
+     "identity": [
+      "field",
+      "Category",
+      "isDeleted"
+     ],
+     "a_writes": true,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": false,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.service.CategoryService#create": [
+       {
+        "source": "taint.sinks"
+       }
+      ],
+      "com.jiuyan.banquet.service.CategoryService#delete": [
+       {
+        "source": "taint.sinks"
+       }
+      ]
+     },
+     "oracles": [],
+     "business_oracles": [],
+     "findings": {
+      "com.jiuyan.banquet.service.CategoryService#create": [],
+      "com.jiuyan.banquet.service.CategoryService#delete": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.service.CategoryService#create": [],
+      "com.jiuyan.banquet.service.CategoryService#delete": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.service.CategoryService#create": [],
+      "com.jiuyan.banquet.service.CategoryService#delete": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(A) ∩ fp(B) ≠ ∅",
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": false,
+   "business_meaningful": true,
+   "survives_filter": true
+  },
+  {
+   "id": "FC-0020",
+   "cells": [
+    "com.jiuyan.banquet.service.OrderService#apply",
+    "com.jiuyan.banquet.service.OrderService#updateStatus"
+   ],
+   "cell_types": [
+    "SVC_OP",
+    "SVC_OP"
+   ],
+   "overlap_all": [
+    "com.jiuyan.banquet.entity.BanquetOrder.setStatus"
+   ],
+   "overlap_written": [
+    "com.jiuyan.banquet.entity.BanquetOrder.setStatus"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "com.jiuyan.banquet.entity.BanquetOrder.setStatus",
+     "identity": [
+      "field",
+      "BanquetOrder",
+      "status"
+     ],
+     "a_writes": true,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": false,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.service.OrderService#apply": [
+       {
+        "source": "taint.sinks"
+       }
+      ],
+      "com.jiuyan.banquet.service.OrderService#updateStatus": [
+       {
+        "source": "taint.sinks"
+       }
+      ]
+     },
+     "oracles": [
+      "api:CreateOrderRequest.status.enum",
+      "api:CreateOrderRequest.status.required",
+      "api:OrderResponse.status.enum",
+      "api:OrderStatusRequest.status.enum",
+      "api:OrderStatusRequest.status.required",
+      "api:UpdateOrderRequest.status.enum",
+      "api:UpdateOrderRequest.status.required"
+     ],
+     "business_oracles": [],
+     "findings": {
+      "com.jiuyan.banquet.service.OrderService#apply": [],
+      "com.jiuyan.banquet.service.OrderService#updateStatus": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.service.OrderService#apply": [],
+      "com.jiuyan.banquet.service.OrderService#updateStatus": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.service.OrderService#apply": [],
+      "com.jiuyan.banquet.service.OrderService#updateStatus": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(A) ∩ fp(B) ≠ ∅",
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": false,
+   "business_meaningful": true,
+   "survives_filter": true
+  },
+  {
+   "id": "FC-0021",
+   "cells": [
+    "com.jiuyan.banquet.service.PackageService#applyBase",
+    "com.jiuyan.banquet.service.PackageService#delete"
+   ],
+   "cell_types": [
+    "SVC_OP",
+    "SVC_OP"
+   ],
+   "overlap_all": [
+    "com.jiuyan.banquet.entity.BanquetPackage.setIsActive"
+   ],
+   "overlap_written": [
+    "com.jiuyan.banquet.entity.BanquetPackage.setIsActive"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "com.jiuyan.banquet.entity.BanquetPackage.setIsActive",
+     "identity": [
+      "field",
+      "BanquetPackage",
+      "isActive"
+     ],
+     "a_writes": true,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": false,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.service.PackageService#applyBase": [
+       {
+        "source": "taint.sinks"
+       }
+      ],
+      "com.jiuyan.banquet.service.PackageService#delete": [
+       {
+        "source": "taint.sinks"
+       }
+      ]
+     },
+     "oracles": [
+      "api:StatusRequest.isActive.required",
+      "doc:接口清单:31.iface.7",
+      "doc:接口清单:34.iface",
+      "doc:接口清单:40.iface"
+     ],
+     "business_oracles": [
+      "doc:接口清单:31.iface.7",
+      "doc:接口清单:34.iface",
+      "doc:接口清单:40.iface"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.service.PackageService#applyBase": [],
+      "com.jiuyan.banquet.service.PackageService#delete": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.service.PackageService#applyBase": [],
+      "com.jiuyan.banquet.service.PackageService#delete": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.service.PackageService#applyBase": [],
+      "com.jiuyan.banquet.service.PackageService#delete": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(A) ∩ fp(B) ≠ ∅",
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": false,
+   "business_meaningful": true,
+   "survives_filter": true
+  },
+  {
+   "id": "FC-0022",
+   "cells": [
+    "com.jiuyan.banquet.service.PackageService#applyBase",
+    "com.jiuyan.banquet.service.PackageService#updateStatus"
+   ],
+   "cell_types": [
+    "SVC_OP",
+    "SVC_OP"
+   ],
+   "overlap_all": [
+    "com.jiuyan.banquet.entity.BanquetPackage.setIsActive"
+   ],
+   "overlap_written": [
+    "com.jiuyan.banquet.entity.BanquetPackage.setIsActive"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "com.jiuyan.banquet.entity.BanquetPackage.setIsActive",
+     "identity": [
+      "field",
+      "BanquetPackage",
+      "isActive"
+     ],
+     "a_writes": true,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": false,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.service.PackageService#applyBase": [
+       {
+        "source": "taint.sinks"
+       }
+      ],
+      "com.jiuyan.banquet.service.PackageService#updateStatus": [
+       {
+        "source": "taint.sinks"
+       }
+      ]
+     },
+     "oracles": [
+      "api:StatusRequest.isActive.required",
+      "doc:接口清单:31.iface.7",
+      "doc:接口清单:34.iface",
+      "doc:接口清单:40.iface"
+     ],
+     "business_oracles": [
+      "doc:接口清单:31.iface.7",
+      "doc:接口清单:34.iface",
+      "doc:接口清单:40.iface"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.service.PackageService#applyBase": [],
+      "com.jiuyan.banquet.service.PackageService#updateStatus": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.service.PackageService#applyBase": [],
+      "com.jiuyan.banquet.service.PackageService#updateStatus": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.service.PackageService#applyBase": [],
+      "com.jiuyan.banquet.service.PackageService#updateStatus": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(A) ∩ fp(B) ≠ ∅",
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": false,
+   "business_meaningful": true,
+   "survives_filter": true
+  },
+  {
+   "id": "FC-0023",
+   "cells": [
+    "com.jiuyan.banquet.service.PackageService#delete",
+    "com.jiuyan.banquet.service.PackageService#updateStatus"
+   ],
+   "cell_types": [
+    "SVC_OP",
+    "SVC_OP"
+   ],
+   "overlap_all": [
+    "com.jiuyan.banquet.entity.BanquetPackage.setIsActive"
+   ],
+   "overlap_written": [
+    "com.jiuyan.banquet.entity.BanquetPackage.setIsActive"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "com.jiuyan.banquet.entity.BanquetPackage.setIsActive",
+     "identity": [
+      "field",
+      "BanquetPackage",
+      "isActive"
+     ],
+     "a_writes": true,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": false,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.service.PackageService#delete": [
+       {
+        "source": "taint.sinks"
+       }
+      ],
+      "com.jiuyan.banquet.service.PackageService#updateStatus": [
+       {
+        "source": "taint.sinks"
+       }
+      ]
+     },
+     "oracles": [
+      "api:StatusRequest.isActive.required",
+      "doc:接口清单:31.iface.7",
+      "doc:接口清单:34.iface",
+      "doc:接口清单:40.iface"
+     ],
+     "business_oracles": [
+      "doc:接口清单:31.iface.7",
+      "doc:接口清单:34.iface",
+      "doc:接口清单:40.iface"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.service.PackageService#delete": [],
+      "com.jiuyan.banquet.service.PackageService#updateStatus": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.service.PackageService#delete": [],
+      "com.jiuyan.banquet.service.PackageService#updateStatus": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.service.PackageService#delete": [],
+      "com.jiuyan.banquet.service.PackageService#updateStatus": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(A) ∩ fp(B) ≠ ∅",
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": false,
+   "business_meaningful": true,
+   "survives_filter": true
+  },
+  {
+   "id": "FC-0024",
+   "cells": [
+    "com.jiuyan.banquet.service.PackageTypeService#create",
+    "com.jiuyan.banquet.service.PackageTypeService#delete"
+   ],
+   "cell_types": [
+    "SVC_OP",
+    "SVC_OP"
+   ],
+   "overlap_all": [
+    "com.jiuyan.banquet.entity.PackageType.setIsDeleted"
+   ],
+   "overlap_written": [
+    "com.jiuyan.banquet.entity.PackageType.setIsDeleted"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "com.jiuyan.banquet.entity.PackageType.setIsDeleted",
+     "identity": [
+      "field",
+      "PackageType",
+      "isDeleted"
+     ],
+     "a_writes": true,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": false,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.service.PackageTypeService#create": [
+       {
+        "source": "taint.sinks"
+       }
+      ],
+      "com.jiuyan.banquet.service.PackageTypeService#delete": [
+       {
+        "source": "taint.sinks"
+       }
+      ]
+     },
+     "oracles": [],
+     "business_oracles": [],
+     "findings": {
+      "com.jiuyan.banquet.service.PackageTypeService#create": [],
+      "com.jiuyan.banquet.service.PackageTypeService#delete": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.service.PackageTypeService#create": [],
+      "com.jiuyan.banquet.service.PackageTypeService#delete": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.service.PackageTypeService#create": [],
+      "com.jiuyan.banquet.service.PackageTypeService#delete": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(A) ∩ fp(B) ≠ ∅",
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": false,
+   "business_meaningful": true,
+   "survives_filter": true
+  },
+  {
+   "id": "FC-0025",
+   "cells": [
+    "com.jiuyan.banquet.service.ProductService#apply",
+    "com.jiuyan.banquet.service.ProductService#delete"
+   ],
+   "cell_types": [
+    "SVC_OP",
+    "SVC_OP"
+   ],
+   "overlap_all": [
+    "com.jiuyan.banquet.entity.Product.setIsActive"
+   ],
+   "overlap_written": [
+    "com.jiuyan.banquet.entity.Product.setIsActive"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "com.jiuyan.banquet.entity.Product.setIsActive",
+     "identity": [
+      "field",
+      "Product",
+      "isActive"
+     ],
+     "a_writes": true,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": false,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.service.ProductService#apply": [
+       {
+        "source": "taint.sinks"
+       }
+      ],
+      "com.jiuyan.banquet.service.ProductService#delete": [
+       {
+        "source": "taint.sinks"
+       }
+      ]
+     },
+     "oracles": [
+      "api:StatusRequest.isActive.required",
+      "doc:接口清单:31.iface.7",
+      "doc:接口清单:34.iface",
+      "doc:接口清单:40.iface"
+     ],
+     "business_oracles": [
+      "doc:接口清单:31.iface.7",
+      "doc:接口清单:34.iface",
+      "doc:接口清单:40.iface"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.service.ProductService#apply": [],
+      "com.jiuyan.banquet.service.ProductService#delete": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.service.ProductService#apply": [],
+      "com.jiuyan.banquet.service.ProductService#delete": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.service.ProductService#apply": [],
+      "com.jiuyan.banquet.service.ProductService#delete": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(A) ∩ fp(B) ≠ ∅",
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": false,
+   "business_meaningful": true,
+   "survives_filter": true
+  },
+  {
+   "id": "FC-0026",
+   "cells": [
+    "com.jiuyan.banquet.service.ProductService#apply",
+    "com.jiuyan.banquet.service.ProductService#updateStatus"
+   ],
+   "cell_types": [
+    "SVC_OP",
+    "SVC_OP"
+   ],
+   "overlap_all": [
+    "com.jiuyan.banquet.entity.Product.setIsActive"
+   ],
+   "overlap_written": [
+    "com.jiuyan.banquet.entity.Product.setIsActive"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "com.jiuyan.banquet.entity.Product.setIsActive",
+     "identity": [
+      "field",
+      "Product",
+      "isActive"
+     ],
+     "a_writes": true,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": false,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.service.ProductService#apply": [
+       {
+        "source": "taint.sinks"
+       }
+      ],
+      "com.jiuyan.banquet.service.ProductService#updateStatus": [
+       {
+        "source": "taint.sinks"
+       }
+      ]
+     },
+     "oracles": [
+      "api:StatusRequest.isActive.required",
+      "doc:接口清单:31.iface.7",
+      "doc:接口清单:34.iface",
+      "doc:接口清单:40.iface"
+     ],
+     "business_oracles": [
+      "doc:接口清单:31.iface.7",
+      "doc:接口清单:34.iface",
+      "doc:接口清单:40.iface"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.service.ProductService#apply": [],
+      "com.jiuyan.banquet.service.ProductService#updateStatus": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.service.ProductService#apply": [],
+      "com.jiuyan.banquet.service.ProductService#updateStatus": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.service.ProductService#apply": [],
+      "com.jiuyan.banquet.service.ProductService#updateStatus": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(A) ∩ fp(B) ≠ ∅",
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": false,
+   "business_meaningful": true,
+   "survives_filter": true
+  },
+  {
+   "id": "FC-0027",
+   "cells": [
+    "com.jiuyan.banquet.service.ProductService#delete",
+    "com.jiuyan.banquet.service.ProductService#updateStatus"
+   ],
+   "cell_types": [
+    "SVC_OP",
+    "SVC_OP"
+   ],
+   "overlap_all": [
+    "com.jiuyan.banquet.entity.Product.setIsActive"
+   ],
+   "overlap_written": [
+    "com.jiuyan.banquet.entity.Product.setIsActive"
+   ],
+   "overlap_may_written": [],
+   "overlap_size": 1,
+   "resources": [
+    {
+     "resource": "com.jiuyan.banquet.entity.Product.setIsActive",
+     "identity": [
+      "field",
+      "Product",
+      "isActive"
+     ],
+     "a_writes": true,
+     "b_writes": true,
+     "a_may_write": false,
+     "b_may_write": false,
+     "a_reads": false,
+     "b_reads": false,
+     "write_strength": "definite",
+     "a_write_suspect": false,
+     "b_write_suspect": false,
+     "provenance": {
+      "com.jiuyan.banquet.service.ProductService#delete": [
+       {
+        "source": "taint.sinks"
+       }
+      ],
+      "com.jiuyan.banquet.service.ProductService#updateStatus": [
+       {
+        "source": "taint.sinks"
+       }
+      ]
+     },
+     "oracles": [
+      "api:StatusRequest.isActive.required",
+      "doc:接口清单:31.iface.7",
+      "doc:接口清单:34.iface",
+      "doc:接口清单:40.iface"
+     ],
+     "business_oracles": [
+      "doc:接口清单:31.iface.7",
+      "doc:接口清单:34.iface",
+      "doc:接口清单:40.iface"
+     ],
+     "findings": {
+      "com.jiuyan.banquet.service.ProductService#delete": [],
+      "com.jiuyan.banquet.service.ProductService#updateStatus": []
+     },
+     "findings_positive": {
+      "com.jiuyan.banquet.service.ProductService#delete": [],
+      "com.jiuyan.banquet.service.ProductService#updateStatus": []
+     },
+     "satisfaction_section": {
+      "com.jiuyan.banquet.service.ProductService#delete": [],
+      "com.jiuyan.banquet.service.ProductService#updateStatus": []
+     },
+     "delta0": "unknown"
+    }
+   ],
+   "delta0": "unknown",
+   "suspect_write_only": false,
+   "evidence_strength": "definite",
+   "frame_violation": [
+    "mod(A) ∩ fp(B) ≠ ∅",
+    "mod(B) ∩ fp(A) ≠ ∅"
+   ],
+   "crud_noise": false,
+   "business_meaningful": true,
+   "survives_filter": true
+  }
+ ],
+ "variety_deficit": {
+  "candidate_resources": 5,
+  "resources_with_finding_coverage": 0,
+  "resources_without_finding_coverage": 5,
+  "resources_with_business_oracle": 2,
+  "findings_total": 0,
+  "findings_covering_any_candidate_resource": 0,
+  "findings_covering_no_candidate_resource": 0,
+  "findings_attributed_to_candidate_cells": 0,
+  "finding_symbol_granularity": {},
+  "covered_resources": [],
+  "business_oracle_channel": "ok"
+ },
+ "cycle_obstructions": [],
+ "cycles": [
+  {
+   "resource": "com.jiuyan.banquet.dto.PackageItemRequest.productId",
+   "cells": [
+    "com.jiuyan.banquet.service.OrderService#normalizePackageItems",
+    "com.jiuyan.banquet.service.PackageService#normalizeItems"
+   ],
+   "status": "consistent",
+   "basis": "constraint_set",
+   "conflict": null,
+   "global_intersection_empty": false,
+   "sections_present": 2,
+   "cells_with_sections": [
+    "com.jiuyan.banquet.service.OrderService#normalizePackageItems",
+    "com.jiuyan.banquet.service.PackageService#normalizeItems"
+   ],
+   "domain_type": "nonnull",
+   "edges_known": 0,
+   "edges_unknown": 0
+  },
+  {
+   "resource": "com.jiuyan.banquet.dto.PackageItemRequest.quantity",
+   "cells": [
+    "com.jiuyan.banquet.service.OrderService#normalizePackageItems",
+    "com.jiuyan.banquet.service.PackageService#normalizeItems"
+   ],
+   "status": "consistent",
+   "basis": "constraint_set",
+   "conflict": null,
+   "global_intersection_empty": false,
+   "sections_present": 2,
+   "cells_with_sections": [
+    "com.jiuyan.banquet.service.OrderService#normalizePackageItems",
+    "com.jiuyan.banquet.service.PackageService#normalizeItems"
+   ],
+   "domain_type": "iv",
+   "edges_known": 0,
+   "edges_unknown": 0
+  },
+  {
+   "resource": "com.jiuyan.banquet.dto.StatusRequest.isActive",
+   "cells": [
+    "com.jiuyan.banquet.controller.PackageController#updateStatus",
+    "com.jiuyan.banquet.controller.ProductController#updateStatus"
+   ],
+   "status": "consistent",
+   "basis": "constraint_set",
+   "conflict": null,
+   "global_intersection_empty": false,
+   "sections_present": 2,
+   "cells_with_sections": [
+    "com.jiuyan.banquet.controller.PackageController#updateStatus",
+    "com.jiuyan.banquet.controller.ProductController#updateStatus"
+   ],
+   "domain_type": "nonnull",
+   "edges_known": 0,
+   "edges_unknown": 0
+  },
+  {
+   "resource": "com.jiuyan.banquet.entity.BanquetOrder.setStatus",
+   "cells": [
+    "com.jiuyan.banquet.service.OrderService#apply",
+    "com.jiuyan.banquet.service.OrderService#updateStatus"
+   ],
+   "status": "unknown",
+   "basis": "binary",
+   "conflict": null,
+   "global_intersection_empty": false,
+   "sections_present": 0,
+   "cells_with_sections": [],
+   "domain_type": null,
+   "edges_known": 0,
+   "edges_unknown": 1
+  },
+  {
+   "resource": "com.jiuyan.banquet.entity.BanquetPackage.setIsActive",
+   "cells": [
+    "com.jiuyan.banquet.service.PackageService#applyBase",
+    "com.jiuyan.banquet.service.PackageService#delete",
+    "com.jiuyan.banquet.service.PackageService#updateStatus"
+   ],
+   "status": "consistent",
+   "basis": "constraint_set",
+   "conflict": null,
+   "global_intersection_empty": false,
+   "sections_present": 3,
+   "cells_with_sections": [
+    "com.jiuyan.banquet.service.PackageService#applyBase",
+    "com.jiuyan.banquet.service.PackageService#delete",
+    "com.jiuyan.banquet.service.PackageService#updateStatus"
+   ],
+   "domain_type": "nonnull",
+   "edges_known": 0,
+   "edges_unknown": 0
+  },
+  {
+   "resource": "com.jiuyan.banquet.entity.Category.setIsDeleted",
+   "cells": [
+    "com.jiuyan.banquet.service.CategoryService#create",
+    "com.jiuyan.banquet.service.CategoryService#delete"
+   ],
+   "status": "unknown",
+   "basis": "binary",
+   "conflict": null,
+   "global_intersection_empty": false,
+   "sections_present": 0,
+   "cells_with_sections": [],
+   "domain_type": null,
+   "edges_known": 0,
+   "edges_unknown": 1
+  },
+  {
+   "resource": "com.jiuyan.banquet.entity.PackageType.setIsDeleted",
+   "cells": [
+    "com.jiuyan.banquet.service.PackageTypeService#create",
+    "com.jiuyan.banquet.service.PackageTypeService#delete"
+   ],
+   "status": "unknown",
+   "basis": "binary",
+   "conflict": null,
+   "global_intersection_empty": false,
+   "sections_present": 0,
+   "cells_with_sections": [],
+   "domain_type": null,
+   "edges_known": 0,
+   "edges_unknown": 1
+  },
+  {
+   "resource": "com.jiuyan.banquet.entity.Product.setIsActive",
+   "cells": [
+    "com.jiuyan.banquet.service.ProductService#apply",
+    "com.jiuyan.banquet.service.ProductService#delete",
+    "com.jiuyan.banquet.service.ProductService#updateStatus"
+   ],
+   "status": "consistent",
+   "basis": "constraint_set",
+   "conflict": null,
+   "global_intersection_empty": false,
+   "sections_present": 3,
+   "cells_with_sections": [
+    "com.jiuyan.banquet.service.ProductService#apply",
+    "com.jiuyan.banquet.service.ProductService#delete",
+    "com.jiuyan.banquet.service.ProductService#updateStatus"
+   ],
+   "domain_type": "nonnull",
+   "edges_known": 0,
+   "edges_unknown": 0
+  },
+  {
+   "resource": "table:categories",
+   "cells": [
+    "com.jiuyan.banquet.repository.CategoryRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc",
+    "com.jiuyan.banquet.repository.CategoryRepository#findById",
+    "com.jiuyan.banquet.repository.CategoryRepository#findByName",
+    "com.jiuyan.banquet.repository.CategoryRepository#findMaxSortOrder",
+    "com.jiuyan.banquet.repository.CategoryRepository#save"
+   ],
+   "status": "unknown",
+   "basis": "binary",
+   "conflict": null,
+   "global_intersection_empty": false,
+   "sections_present": 0,
+   "cells_with_sections": [],
+   "domain_type": null,
+   "edges_known": 0,
+   "edges_unknown": 10
+  },
+  {
+   "resource": "table:orders",
+   "cells": [
+    "com.jiuyan.banquet.repository.OrderRepository#existsByOrderNo",
+    "com.jiuyan.banquet.repository.OrderRepository#findAll",
+    "com.jiuyan.banquet.repository.OrderRepository#findById",
+    "com.jiuyan.banquet.repository.OrderRepository#save"
+   ],
+   "status": "unknown",
+   "basis": "binary",
+   "conflict": null,
+   "global_intersection_empty": false,
+   "sections_present": 0,
+   "cells_with_sections": [],
+   "domain_type": null,
+   "edges_known": 0,
+   "edges_unknown": 6
+  },
+  {
+   "resource": "table:package_items",
+   "cells": [
+    "com.jiuyan.banquet.repository.PackageItemRepository#existsByProductId",
+    "com.jiuyan.banquet.repository.PackageItemRepository#existsNonDeletedPackageReferenceByProductId"
+   ],
+   "status": "unknown",
+   "basis": "binary",
+   "conflict": null,
+   "global_intersection_empty": false,
+   "sections_present": 0,
+   "cells_with_sections": [],
+   "domain_type": null,
+   "edges_known": 0,
+   "edges_unknown": 1
+  },
+  {
+   "resource": "table:package_types",
+   "cells": [
+    "com.jiuyan.banquet.repository.PackageTypeRepository#findAllByIsDeletedFalseOrderBySortOrderAscIdAsc",
+    "com.jiuyan.banquet.repository.PackageTypeRepository#findById",
+    "com.jiuyan.banquet.repository.PackageTypeRepository#findByName",
+    "com.jiuyan.banquet.repository.PackageTypeRepository#findByNameAndIsDeletedFalse",
+    "com.jiuyan.banquet.repository.PackageTypeRepository#findMaxSortOrder",
+    "com.jiuyan.banquet.repository.PackageTypeRepository#save"
+   ],
+   "status": "unknown",
+   "basis": "binary",
+   "conflict": null,
+   "global_intersection_empty": false,
+   "sections_present": 0,
+   "cells_with_sections": [],
+   "domain_type": null,
+   "edges_known": 0,
+   "edges_unknown": 15
+  },
+  {
+   "resource": "table:packages",
+   "cells": [
+    "com.jiuyan.banquet.repository.BanquetPackageRepository#existsByBanquetTypeAndIsDeletedFalse",
+    "com.jiuyan.banquet.repository.BanquetPackageRepository#findAll",
+    "com.jiuyan.banquet.repository.BanquetPackageRepository#findByIdAndIsDeletedFalse",
+    "com.jiuyan.banquet.repository.BanquetPackageRepository#save"
+   ],
+   "status": "unknown",
+   "basis": "binary",
+   "conflict": null,
+   "global_intersection_empty": false,
+   "sections_present": 0,
+   "cells_with_sections": [],
+   "domain_type": null,
+   "edges_known": 0,
+   "edges_unknown": 6
+  },
+  {
+   "resource": "table:products",
+   "cells": [
+    "com.jiuyan.banquet.repository.ProductRepository#existsByCategoryIdAndIsDeletedFalse",
+    "com.jiuyan.banquet.repository.ProductRepository#findAll",
+    "com.jiuyan.banquet.repository.ProductRepository#findByIdAndIsDeletedFalse",
+    "com.jiuyan.banquet.repository.ProductRepository#save"
+   ],
+   "status": "unknown",
+   "basis": "binary",
+   "conflict": null,
+   "global_intersection_empty": false,
+   "sections_present": 0,
+   "cells_with_sections": [],
+   "domain_type": null,
+   "edges_known": 0,
+   "edges_unknown": 6
+  }
+ ],
+ "coverage_gaps": {
+  "unit_records": 536,
+  "unit_keys_unique": 535,
+  "duplicate_unit_keys": [
+   "com.jiuyan.banquet.dto.ApiResponse#ok"
+  ],
+  "graph_only_cells": [
+   "com.jiuyan.banquet.repository.BanquetPackageRepository#findAll",
+   "com.jiuyan.banquet.repository.BanquetPackageRepository#save",
+   "com.jiuyan.banquet.repository.CategoryRepository#findById",
+   "com.jiuyan.banquet.repository.CategoryRepository#save",
+   "com.jiuyan.banquet.repository.OrderRepository#findAll",
+   "com.jiuyan.banquet.repository.OrderRepository#findById",
+   "com.jiuyan.banquet.repository.OrderRepository#save",
+   "com.jiuyan.banquet.repository.PackageTypeRepository#findById",
+   "com.jiuyan.banquet.repository.PackageTypeRepository#save",
+   "com.jiuyan.banquet.repository.ProductRepository#findAll",
+   "com.jiuyan.banquet.repository.ProductRepository#save"
+  ],
+  "unknown_cells_count": 0,
+  "unknown_cells_sample": [],
+  "out_of_domain_cells_count": 416,
+  "out_of_domain_cells_sample": [
+   "BanquetOrder",
+   "BanquetPackage",
+   "BaseEntity",
+   "Category",
+   "PackageItem",
+   "PackageType",
+   "Product",
+   "com.jiuyan.banquet.BanquetApplication",
+   "com.jiuyan.banquet.BanquetApplication#main",
+   "com.jiuyan.banquet.config.ApiResponseAdvice",
+   "com.jiuyan.banquet.config.ApiResponseAdvice#beforeBodyWrite",
+   "com.jiuyan.banquet.config.ApiResponseAdvice#supports",
+   "com.jiuyan.banquet.config.OpenApiConfig",
+   "com.jiuyan.banquet.config.OpenApiConfig#banquetOpenAPI",
+   "com.jiuyan.banquet.config.SeedAssetInitializer",
+   "com.jiuyan.banquet.config.SeedAssetInitializer#cleanDirectory",
+   "com.jiuyan.banquet.config.SeedAssetInitializer#copyResource",
+   "com.jiuyan.banquet.config.SeedAssetInitializer#copySeedImages",
+   "com.jiuyan.banquet.config.SeedAssetInitializer#run",
+   "com.jiuyan.banquet.config.TraceContext"
+  ],
+  "modeling_domain": {
+   "cell_key_form": "FQCN#method",
+   "node_types": [
+    "HTTP_ENTRY",
+    "SVC_OP",
+    "REPO_OP",
+    "TABLE",
+    "ENTITY_FIELD"
+   ],
+   "method_node_types": [
+    "HTTP_ENTRY",
+    "SVC_OP",
+    "REPO_OP"
+   ],
+   "class_suffixes": [
+    "Controller",
+    "Service",
+    "Repository"
+   ],
+   "scope_note": "只建模可执行路径（入口→服务→仓储→表）上的方法细胞；键形态不同或类名不匹配上述后缀的单元不在本图域内，其足迹是 not_applicable（域外），不是 unknown（域内未测）"
+  },
+  "findings_total": 0,
+  "findings_attributed": 0,
+  "oracles_total": 341,
+  "resource_level_satisfaction_judgments": 0,
+  "satisfaction_channel": "disabled",
+  "satisfaction_guard_source": "disabled",
+  "satisfaction_guard_stats": {
+   "guard_edges_seen": 0,
+   "facts_used": 0,
+   "excluded_not_guard": 0,
+   "excluded_oracle_absent": 0,
+   "excluded_not_confirmed": 0,
+   "excluded_entity_unresolved": 0,
+   "excluded_field_mismatch": 0
+  },
+  "suspect_write_edges": 0,
+  "derives_edges_excluded": 25,
+  "ddl_table_only_no_field_oracles": 14,
+  "notes": [
+   "足迹未知 → unknown，不计入不相交；known-empty × unknown 可判不相交（空足迹与任何足迹不交）",
+   "读-读重叠不报候选：双方都不写，mod(C) ∩ fv(R) = ∅ 仍成立",
+   "δ⁰ 三态：consistent/unknown/inconsistent。违反级通道证相等→consistent（positive/observation 不进违反指纹，坑120）；满足级通道 opt-in（--satisfaction，默认关）：同一判据上一侧 verified 违反、另一侧可证明执行（capability guard）或 verified 正面结论（oracle 连接）→inconsistent。连接键=资源×判据：同资源不同性质的违反与满足可同时为真，不构成矛盾（坑121）；guard 的 unknown 绝不读成满足；未启用时 inconsistent 恒 0，是「未测量」不是「无矛盾」",
+   "满足级通道 0 触发须并读分解：satisfaction_fired_* / guard 事实数(satisfaction_guard_stats) / oracle 连接 finding 数(satisfaction_tied_*)。机制成立≠语料充足：违反与 guard 同资源共现、且可归因到同一判据，才有判定力",
+   "DERIVES 边未纳入足迹（任务契约外），entity 字段写重叠可能漏检",
+   "graph_only_cells 是关系网有、units.json 缺失的细胞；不并入则表级足迹全部不可见",
+   "suspect_write_edges：WRITES 边来自 find*/exists* 只读方法名，上游标注可疑；标记不丢弃",
+   "表级足迹无字段粒度，判据按整表挂载，可能过挂（写未必触及表中每个字段）",
+   "环一致性只算重叠图 1-骨架（每资源 clique 的 GF(2) 奇偶），不算全 cover 的 Čech H¹；跨资源环与需三重以上交集才显现的高阶障碍类算不了，显式报为局限",
+   "环一致性已接入多值截面（判据约束集求交）：不相交→inconsistent，相交→consistent，缺约束集→unknown；二值/judgments 路径保留为退回",
+   "约束集仅按字段粒度算：表级资源无字段粒度，聚合不同列约束（status 枚举 ∩ deposit_cent 区间）会造假障碍 → 表级一律 unknown",
+   "coboundary = 边标签形如 c(a)⊕c(b) 的顶点着色导出，parity 恒一致；「端点值的任意函数」意义的顶点导出不一定是 coboundary（三互异指纹三角形在「不同⇒inconsistent」标签下即矛盾）。满足级通道的已知边在三个前提下恰为 coboundary，四个前提：**P1 单向** oa≠∅ ⇒ va≠∅（_tied_oracle_ids 的谓词 = _section_value 的谓词+ 判据连接，故 tied 违反 ⊆ 违反指纹；**反向 va⇒oa 不成立**，无连接的违反不在 oa 里）、P2 firing 要求满足侧无违反指纹(not vb/not va)、P3 无外部 judgments、P4 unknown 边被 _parity_check 排除（label==unknown → continue，不参与 union）。此时 1-边只跨 V/S 切割、0-边只在 V 内，c(v)=1[v∈S] 是全局 2-着色，已知边 parity 恒一致。任一前提破坏环障碍即可达（P1/P2/P4 破坏→1，P3 破坏→0→1，守卫 tests/test_satisfaction_premises.py 逐个坐实），不得声称「结构上不可能」（坑121/125/127，V20 两轮证伪：全称版→双条件版）。**P1 双条件与本通道正确性互斥**：要 va⇒oa 成立就得拆掉判据连接键，那正是 R9 推回的资源级缺陷（同资源不同性质误判矛盾）—— 后人不得朝「补全双条件」方向修",
+   "满足级通道当前对已发布裁定零影响（双重未接线）：audit_entry.pillar_emergence 的 RED 只消费 cycle_obstructions，不读候选 δ⁰=inconsistent；且 audit_entry 不传 --findings/--capability/--satisfaction。候选级 inconsistent 是待接线的机器证明矛盾，不是已生效裁定；环级检测力受上述四前提限定，判定力落点在候选级 δ⁰",
+   "归约3：repository×repository 同表 CRUD 对是数据访问 plumbing，不是关于业务不变式的独立局部推理，排除；候选须至少一方为业务细胞或携带业务级判据/finding",
+   "variety_deficit 是 Ashby 判据多样性赤字：finding 通道粒度（endpoint/class_method/empty）与候选资源粒度（field/table）对不上，两侧缺口显式量化，不因优化隐藏",
+   "三态红线：WRITES 边 access=unknown 是 may-write（可靠过近似），计入 may_writes 而非 writes；其重叠候选标 evidence_strength=may_write_unknown，frame_violation 为空，绝不标确定违反",
+   "上游依赖（不在本文件权限内）：抽取器 javap 缺 -v 导致 MethodHandle(::) 自调用被跳过、@Query 未抽（V7 实证）；relation_net 的 access 编码由 W5 维护，本引擎只消费",
+   "检测力诚实性（坑64）：覆盖≠检测力。buckets_firing_capable（区间/有限域，可不相交）与 buckets_co_singleton_only（余单例域，数学上永不 inconsistent）分报；consistent 头条须并读检测力，不得读成「N 处两细胞取值一致已验证」",
+   "ddl_table_only_no_field_oracles：target={table} 无 field 的 DDL CHECK 判据，字段级资源挂不上（_matching_oracles 读 target.field）；当前检测力后果 0（唯一受影响资源是单细胞桶），记为无计数器的静默不可挂载通道，不夸大成回归"
+  ]
+ }
+}
