@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "layered-audit"
+version = "0.1.0"
+description = "细胞式分层代码审计：从 PRD 与代码采集判据，用图算法判定缺陷与涌现，三态诚实（pass/fail/unknown）"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.scripts]
+layered-audit = "layered_audit_cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "pilot" }
+py-modules = ["layered_audit_cli"]
+
+[tool.setuptools.packages.find]
+where = ["pilot"]
+include = ["engine*"]
